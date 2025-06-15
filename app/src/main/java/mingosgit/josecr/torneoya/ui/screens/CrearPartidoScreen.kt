@@ -217,33 +217,25 @@ fun CrearPartidoScreen(
         Button(
             onClick = {
                 val fechaFinalMillis = fechaMillisState.value
-                val nombresFinal = nombresEquipos.mapIndexed { idx, name ->
-                    if (name.trim().isEmpty()) "Equipo${idx + 1}" else name.trim()
-                }
-                if (fechaFinalMillis == null) {
+                if (jugadores.size != numIntegrantes * numEquipos || fechaFinalMillis == null) {
                     showError = true
                     return@Button
                 }
+                val nombresFinal = nombresEquipos.mapIndexed { idx, name ->
+                    if (name.trim().isEmpty()) "Equipo${idx + 1}" else name.trim()
+                }
                 if (aleatorio) {
-                    if (jugadores.size != numIntegrantes * numEquipos || jugadores.any { it.isBlank() }) {
-                        showError = true
-                        return@Button
+                    // REEMPLAZO: RELLENA VACÍOS
+                    val listaJugadores = jugadores.mapIndexed { i, nombre ->
+                        if (nombre.isBlank()) "Jugador${i + 1}" else nombre
                     }
                     showError = false
-                    val jugadoresMezclados = jugadores.shuffled()
+                    val jugadoresMezclados = listaJugadores.shuffled()
                     val equiposFinales = List(numEquipos) { i ->
                         jugadoresMezclados.drop(i * numIntegrantes).take(numIntegrantes)
                     }
                     onPartidoCreado(equiposFinales, tiempo, fechaFinalMillis, nombresFinal)
                 } else {
-                    // VALIDACIÓN MODO MANUAL CORREGIDA
-                    // Debe estar equiposManuales.size == numEquipos Y CADA EQUIPO size == numIntegrantes Y NINGÚN NOMBRE VACÍO
-                    val esValido = equiposManuales.size == numEquipos &&
-                            equiposManuales.all { it.size == numIntegrantes && it.all { nombre -> nombre.isNotBlank() } }
-                    if (!esValido) {
-                        showError = true
-                        return@Button
-                    }
                     showError = false
                     onPartidoCreado(equiposManuales, tiempo, fechaFinalMillis, nombresFinal)
                 }
@@ -254,6 +246,7 @@ fun CrearPartidoScreen(
         ) {
             Text("Crear Partido")
         }
+
     }
 
     if (showDatePicker) {

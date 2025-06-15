@@ -56,6 +56,13 @@ class PartidoViewModel(
         onFinish: () -> Unit
     ) {
         viewModelScope.launch {
+            // Corregir nombres vacíos automáticamente (primero local, luego visitante)
+            val nombresLocal = nombresIntegrantesLocal.mapIndexed { i, n ->
+                if (n.isBlank()) "Jugador${i + 1}" else n
+            }
+            val nombresVisitante = nombresIntegrantesVisitante.mapIndexed { i, n ->
+                if (n.isBlank()) "Jugador${i + 1 + nombresLocal.size}" else n
+            }
             val equipoLocalId = equiposRepo.insertEquipo(EquipoEntity(nombre = nombreEquipoLocal))
             val equipoVisitanteId = equiposRepo.insertEquipo(EquipoEntity(nombre = nombreEquipoVisitante))
             val partido = PartidoEntity(
@@ -65,10 +72,10 @@ class PartidoViewModel(
                 torneoId = torneoId
             )
             partidosRepo.insertPartido(partido)
-            val integrantesLocal = nombresIntegrantesLocal.map { nombre ->
+            val integrantesLocal = nombresLocal.map { nombre ->
                 IntegranteEntity(equipoId = equipoLocalId, nombre = nombre)
             }
-            val integrantesVisitante = nombresIntegrantesVisitante.map { nombre ->
+            val integrantesVisitante = nombresVisitante.map { nombre ->
                 IntegranteEntity(equipoId = equipoVisitanteId, nombre = nombre)
             }
             integrantesRepo.insertIntegrantes(integrantesLocal)
@@ -76,6 +83,7 @@ class PartidoViewModel(
             onFinish()
         }
     }
+
     fun actualizarNombresIntegrantes(
         nuevosLocal: List<String>,
         nuevosVisitante: List<String>,
