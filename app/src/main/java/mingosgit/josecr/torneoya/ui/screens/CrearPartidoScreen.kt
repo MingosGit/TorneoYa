@@ -3,6 +3,9 @@ package mingosgit.josecr.torneoya.ui.screens
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -16,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 @Composable
 fun CrearPartidoScreen(
     onPartidoCreado: (List<List<String>>, Int, Long, List<String>) -> Unit,
@@ -26,7 +28,6 @@ fun CrearPartidoScreen(
     onNumEquiposChange: (Int) -> Unit,
     numIntegrantes: Int,
     numEquipos: Int,
-    // Estados persistentes que se mantienen aunque se navegue
     fechaMillisState: MutableState<Long?>,
     nombresEquiposState: MutableState<List<String>>,
     horaSeteadaState: MutableState<Boolean>
@@ -41,17 +42,14 @@ fun CrearPartidoScreen(
     }
     var showError by rememberSaveable { mutableStateOf(false) }
 
-    // Estados globales para la fecha/hora y nombres de equipos
     val context = LocalContext.current
 
     val calendar = Calendar.getInstance()
     val fechaMillis = fechaMillisState.value
 
-    // Estados para mostrar el DatePicker y TimePicker
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
-    // Formato amigable
     val fechaString = fechaMillis?.let {
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
     } ?: ""
@@ -59,9 +57,7 @@ fun CrearPartidoScreen(
         SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(it))
     } ?: ""
 
-    // Nombres equipos como estado persistente
     var nombresEquipos by remember { nombresEquiposState }
-    // Control para no re-inicializar nombresEquipos si ya se han tocado
     val nombresInit = remember(numEquipos) { mutableStateOf(false) }
     if (!nombresInit.value) {
         if (nombresEquipos.size != numEquipos) {
@@ -71,7 +67,6 @@ fun CrearPartidoScreen(
         nombresInit.value = true
     }
 
-    // Cuando cambia el número de equipos, actualizar tamaño de nombres
     LaunchedEffect(numEquipos) {
         if (nombresEquipos.size != numEquipos) {
             val nuevos = nombresEquipos.toMutableList()
@@ -82,9 +77,11 @@ fun CrearPartidoScreen(
         }
     }
 
+    // AGREGADO: Permitir scroll general en pantalla (útil en pantallas pequeñas)
     Column(
         Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
         Text("Crear Partido", style = MaterialTheme.typography.titleLarge)
@@ -107,7 +104,6 @@ fun CrearPartidoScreen(
             }
         )
         Spacer(Modifier.height(8.dp))
-        // Selector de hora
         OutlinedTextField(
             value = horaString,
             onValueChange = {},
@@ -198,8 +194,11 @@ fun CrearPartidoScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        // Entrada de nombres de equipos
-        Column {
+        // ENTRADA DE NOMBRES DE EQUIPOS: Scroll horizontal
+        Column(
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState()) // <--- Scroll horizontal
+        ) {
             Text("Nombre de los equipos:")
             Spacer(Modifier.height(4.dp))
             repeat(numEquipos) { equipoIdx ->
@@ -214,14 +213,19 @@ fun CrearPartidoScreen(
                     label = { Text("Equipo ${equipoIdx + 1}") },
                     singleLine = true,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .width(220.dp) // Ancho fijo para facilitar swipe horizontal
                         .padding(vertical = 2.dp)
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
 
-        Box(modifier = Modifier.weight(1f)) {
+        // Para la asignación manual, permitir también scroll horizontal si hay muchos equipos
+        Box(
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .horizontalScroll(rememberScrollState()) // <--- Scroll horizontal equipos
+        ) {
             if (aleatorio) {
                 Text("Total de jugadores: ${jugadores.size}")
             } else {
@@ -244,7 +248,7 @@ fun CrearPartidoScreen(
                                 label = { Text("Integrante ${integranteIdx + 1}") },
                                 singleLine = true,
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .width(220.dp) // Ancho fijo para facilitar scroll
                                     .padding(vertical = 2.dp)
                             )
                         }
@@ -260,6 +264,7 @@ fun CrearPartidoScreen(
 
         Spacer(Modifier.height(16.dp))
 
+        // BOTÓN PARA CREAR PARTIDO: más visible y siempre presente
         Button(
             onClick = {
                 val fechaFinalMillis = fechaMillisState.value
@@ -286,7 +291,9 @@ fun CrearPartidoScreen(
                     onPartidoCreado(equiposManuales, tiempo, fechaFinalMillis, nombresFinal)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         ) {
             Text("Crear Partido")
         }
@@ -305,7 +312,6 @@ fun CrearPartidoScreen(
                 c.set(Calendar.MONTH, month)
                 c.set(Calendar.DAY_OF_MONTH, dayOfMonth)
                 if (!horaSeteadaState.value) {
-                    // Por defecto 12:00
                     c.set(Calendar.HOUR_OF_DAY, 12)
                     c.set(Calendar.MINUTE, 0)
                 }
