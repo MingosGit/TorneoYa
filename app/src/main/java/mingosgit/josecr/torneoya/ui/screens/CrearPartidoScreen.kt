@@ -25,7 +25,7 @@ fun CrearPartidoScreen(
     jugadores: List<String>,
     onAgregarJugadores: () -> Unit,
     onNumIntegrantesChange: (Int) -> Unit,
-    onNumEquiposChange: (Int) -> Unit,
+    onNumEquiposChange: (Int) -> Unit, // Ignorado: ya no hay input para equipos
     numIntegrantes: Int,
     numEquipos: Int,
     fechaMillisState: MutableState<Long?>,
@@ -33,7 +33,9 @@ fun CrearPartidoScreen(
     horaSeteadaState: MutableState<Boolean>
 ) {
     val maxIntegrantes = 24
-    val maxEquipos = 4
+
+    // FIJO: Solo 2 equipos
+    // val numEquipos = 2 // <-- El valor ya se pasa desde el NavHost, y nunca cambia
 
     var tiempo by rememberSaveable { mutableStateOf(10) }
     var aleatorio by rememberSaveable { mutableStateOf(true) }
@@ -77,7 +79,6 @@ fun CrearPartidoScreen(
         }
     }
 
-    // AGREGADO: Permitir scroll general en pantalla (útil en pantallas pequeñas)
     Column(
         Modifier
             .fillMaxSize()
@@ -87,7 +88,6 @@ fun CrearPartidoScreen(
         Text("Crear Partido", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
 
-        // Selector de fecha
         OutlinedTextField(
             value = fechaString,
             onValueChange = {},
@@ -153,22 +153,7 @@ fun CrearPartidoScreen(
         }
         Spacer(Modifier.height(8.dp))
 
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Text("Cantidad de equipos:")
-            Spacer(Modifier.width(8.dp))
-            OutlinedTextField(
-                value = numEquipos.toString(),
-                onValueChange = {
-                    val v = it.toIntOrNull() ?: 2
-                    val safeV = v.coerceIn(2, maxEquipos)
-                    onNumEquiposChange(safeV)
-                },
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                singleLine = true,
-                modifier = Modifier.width(70.dp)
-            )
-        }
-        Spacer(Modifier.height(8.dp))
+        // ELIMINADO: Selector de cantidad de equipos
 
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Text("Minutos por partido:")
@@ -197,7 +182,7 @@ fun CrearPartidoScreen(
         // ENTRADA DE NOMBRES DE EQUIPOS: Scroll horizontal
         Column(
             modifier = Modifier
-                .horizontalScroll(rememberScrollState()) // <--- Scroll horizontal
+                .horizontalScroll(rememberScrollState())
         ) {
             Text("Nombre de los equipos:")
             Spacer(Modifier.height(4.dp))
@@ -213,18 +198,17 @@ fun CrearPartidoScreen(
                     label = { Text("Equipo ${equipoIdx + 1}") },
                     singleLine = true,
                     modifier = Modifier
-                        .width(220.dp) // Ancho fijo para facilitar swipe horizontal
+                        .width(220.dp)
                         .padding(vertical = 2.dp)
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
 
-        // Para la asignación manual, permitir también scroll horizontal si hay muchos equipos
         Box(
             modifier = Modifier
                 .weight(1f, fill = false)
-                .horizontalScroll(rememberScrollState()) // <--- Scroll horizontal equipos
+                .horizontalScroll(rememberScrollState())
         ) {
             if (aleatorio) {
                 Text("Total de jugadores: ${jugadores.size}")
@@ -248,7 +232,7 @@ fun CrearPartidoScreen(
                                 label = { Text("Integrante ${integranteIdx + 1}") },
                                 singleLine = true,
                                 modifier = Modifier
-                                    .width(220.dp) // Ancho fijo para facilitar scroll
+                                    .width(220.dp)
                                     .padding(vertical = 2.dp)
                             )
                         }
@@ -264,7 +248,6 @@ fun CrearPartidoScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        // BOTÓN PARA CREAR PARTIDO: más visible y siempre presente
         Button(
             onClick = {
                 val fechaFinalMillis = fechaMillisState.value
@@ -299,7 +282,6 @@ fun CrearPartidoScreen(
         }
     }
 
-    // DatePickerDialog y TimePickerDialog
     if (showDatePicker) {
         val cal = Calendar.getInstance()
         fechaMillis?.let { cal.timeInMillis = it }

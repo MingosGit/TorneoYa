@@ -23,11 +23,11 @@ fun AppNavHost() {
     val navController = rememberNavController()
     val context = LocalContext.current.applicationContext
 
-    // Estados globales del flujo de creación
     var jugadores by remember { mutableStateOf(listOf<String>()) }
     var totalJugadoresNecesarios by remember { mutableStateOf(2) }
     var numIntegrantes by remember { mutableStateOf(2) }
-    var numEquipos by remember { mutableStateOf(2) }
+    // FIJO: Solo dos equipos, sin estado mutable
+    val numEquipos = 2
 
     // NUEVO: Estados persistentes para fecha/hora y nombres equipos (se recuerdan al navegar)
     val fechaMillisState = rememberSaveable { mutableStateOf<Long?>(null) }
@@ -49,7 +49,6 @@ fun AppNavHost() {
                     jugadores = listOf()
                     totalJugadoresNecesarios = 2
                     numIntegrantes = 2
-                    numEquipos = 2
                     fechaMillisState.value = null
                     nombresEquiposState.value = List(2) { "" }
                     horaSeteadaState.value = false
@@ -67,7 +66,6 @@ fun AppNavHost() {
             )
             CrearPartidoScreen(
                 onPartidoCreado = { equipos, tiempo, fechaLong, nombresEquipos ->
-                    // nombresEquipos tiene el nombre para cada equipo, respetando autogenerado si está vacío
                     if (equipos.size >= 2 && equipos[0].isNotEmpty() && equipos[1].isNotEmpty()) {
                         val nombreEquipoLocal = nombresEquipos.getOrNull(0) ?: "Equipo1"
                         val nombreEquipoVisitante = nombresEquipos.getOrNull(1) ?: "Equipo2"
@@ -80,7 +78,6 @@ fun AppNavHost() {
                             nombresIntegrantesVisitante = nombresIntegrantesVisitante,
                             fecha = fechaLong
                         ) {
-                            // Limpiar estados globales tras crear partido
                             fechaMillisState.value = null
                             nombresEquiposState.value = List(2) { "" }
                             horaSeteadaState.value = false
@@ -98,9 +95,8 @@ fun AppNavHost() {
                 onNumIntegrantesChange = {
                     numIntegrantes = it
                 },
-                onNumEquiposChange = {
-                    numEquipos = it
-                },
+                // ¡IMPORTANTE! onNumEquiposChange se ignora, numEquipos fijo
+                onNumEquiposChange = {},
                 numIntegrantes = numIntegrantes,
                 numEquipos = numEquipos,
                 fechaMillisState = fechaMillisState,
