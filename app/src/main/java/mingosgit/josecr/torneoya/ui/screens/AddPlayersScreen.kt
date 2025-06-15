@@ -14,7 +14,8 @@ import androidx.navigation.NavController
 fun AgregarJugadoresScreen(
     jugadores: List<String>,
     onJugadoresListo: (List<String>) -> Unit,
-    navController: NavController
+    navController: NavController,
+    totalNecesario: Int
 ) {
     val viewModel = remember { AgregarJugadoresViewModel(jugadores) }
     var nombreNuevo by remember { mutableStateOf("") }
@@ -51,7 +52,6 @@ fun AgregarJugadoresScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        // SOLO el listado scrollea
         Box(modifier = Modifier.weight(1f)) {
             LazyColumn {
                 itemsIndexed(viewModel.nombres) { idx, nombre ->
@@ -78,7 +78,23 @@ fun AgregarJugadoresScreen(
         Button(
             enabled = viewModel.nombres.isNotEmpty(),
             onClick = {
-                onJugadoresListo(viewModel.getJugadores())
+                val listaActual = viewModel.getJugadores().toMutableList()
+                val yaUsados = listaActual
+                    .mapNotNull { nombre ->
+                        val match = Regex("""Jugador(\d+)""").matchEntire(nombre)
+                        match?.groupValues?.get(1)?.toIntOrNull()
+                    }
+                    .toMutableSet()
+                var nextNum = 1
+                while (listaActual.size < totalNecesario) {
+                    while (yaUsados.contains(nextNum) || listaActual.contains("Jugador$nextNum")) {
+                        nextNum++
+                    }
+                    listaActual.add("Jugador$nextNum")
+                    yaUsados.add(nextNum)
+                    nextNum++
+                }
+                onJugadoresListo(listaActual)
                 navController.popBackStack()
             },
             modifier = Modifier.fillMaxWidth()
@@ -87,4 +103,3 @@ fun AgregarJugadoresScreen(
         }
     }
 }
-

@@ -19,12 +19,16 @@ import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
-    // Estado para la lista de jugadores seleccionados durante el flujo de creación de partido
+    val context = LocalContext.current.applicationContext
+
+    // Estados globales del flujo de creación
     var jugadores by remember { mutableStateOf(listOf<String>()) }
+    var totalJugadoresNecesarios by remember { mutableStateOf(2) }
+    var numIntegrantes by remember { mutableStateOf(2) }
+    var numEquipos by remember { mutableStateOf(2) }
 
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            val context = LocalContext.current.applicationContext
             val factory = remember { AppViewModelFactory(context) }
             val viewModel: HomeViewModel = viewModel(
                 modelClass = HomeViewModel::class.java,
@@ -35,7 +39,10 @@ fun AppNavHost() {
             }
             HomeScreen(
                 onCrearPartido = {
-                    jugadores = listOf() // Reinicia la lista de jugadores al crear partido
+                    jugadores = listOf()
+                    totalJugadoresNecesarios = 2
+                    numIntegrantes = 2
+                    numEquipos = 2
                     navController.navigate("crearPartido")
                 },
                 onTorneoClick = { /* Puedes agregar navegación a editar torneo aquí */ },
@@ -43,7 +50,6 @@ fun AppNavHost() {
             )
         }
         composable("crearPartido") {
-            val context = LocalContext.current.applicationContext
             val factory = remember { AppViewModelFactory(context) }
             val partidoViewModel: PartidoViewModel = viewModel(
                 modelClass = PartidoViewModel::class.java,
@@ -71,17 +77,25 @@ fun AppNavHost() {
                 },
                 jugadores = jugadores,
                 onAgregarJugadores = {
+                    totalJugadoresNecesarios = numIntegrantes * numEquipos
                     navController.navigate("agregarJugadores")
-                }
+                },
+                onNumIntegrantesChange = {
+                    numIntegrantes = it
+                },
+                onNumEquiposChange = {
+                    numEquipos = it
+                },
+                numIntegrantes = numIntegrantes,
+                numEquipos = numEquipos
             )
         }
         composable("agregarJugadores") {
             AgregarJugadoresScreen(
                 jugadores = jugadores,
-                onJugadoresListo = { nuevosJugadores ->
-                    jugadores = nuevosJugadores
-                },
-                navController = navController
+                onJugadoresListo = { nuevosJugadores -> jugadores = nuevosJugadores },
+                navController = navController,
+                totalNecesario = totalJugadoresNecesarios
             )
         }
         composable(

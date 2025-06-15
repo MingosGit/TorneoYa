@@ -10,19 +10,21 @@ import androidx.compose.ui.unit.dp
 fun CrearPartidoScreen(
     onPartidoCreado: (List<List<String>>, Int) -> Unit,
     jugadores: List<String>,
-    onAgregarJugadores: () -> Unit
+    onAgregarJugadores: () -> Unit,
+    onNumIntegrantesChange: (Int) -> Unit,
+    onNumEquiposChange: (Int) -> Unit,
+    numIntegrantes: Int,
+    numEquipos: Int
 ) {
     val maxIntegrantes = 24
     val maxEquipos = 4
 
-    var numIntegrantes by remember { mutableStateOf(2) }
-    var numEquipos by remember { mutableStateOf(2) }
     var tiempo by remember { mutableStateOf(10) }
     var aleatorio by remember { mutableStateOf(true) }
     var equiposManuales by remember { mutableStateOf(List(numEquipos) { List(numIntegrantes) { "" } }) }
     var showError by remember { mutableStateOf(false) }
 
-    // Cuando cambia la cantidad de equipos/integrantes o modo, reinicia equipos manuales
+    // Reinicia equipos manuales si cambia configuración
     LaunchedEffect(numIntegrantes, numEquipos, aleatorio) {
         equiposManuales = List(numEquipos) { List(numIntegrantes) { "" } }
     }
@@ -57,7 +59,8 @@ fun CrearPartidoScreen(
                 value = numIntegrantes.toString(),
                 onValueChange = {
                     val v = it.toIntOrNull() ?: 1
-                    numIntegrantes = v.coerceIn(1, maxIntegrantes)
+                    val safeV = v.coerceIn(1, maxIntegrantes)
+                    onNumIntegrantesChange(safeV)
                 },
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                 singleLine = true,
@@ -73,7 +76,8 @@ fun CrearPartidoScreen(
                 value = numEquipos.toString(),
                 onValueChange = {
                     val v = it.toIntOrNull() ?: 2
-                    numEquipos = v.coerceIn(2, maxEquipos)
+                    val safeV = v.coerceIn(2, maxEquipos)
+                    onNumEquiposChange(safeV)
                 },
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                 singleLine = true,
@@ -108,10 +112,8 @@ fun CrearPartidoScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             if (aleatorio) {
-                // No se muestran campos de texto para nombres, solo info
                 Text("Total de jugadores: ${jugadores.size}")
             } else {
-                // Asignación manual de jugadores a equipos
                 Column {
                     Text("Integrantes de cada equipo:")
                     Spacer(Modifier.height(8.dp))
