@@ -1,6 +1,7 @@
 package mingosgit.josecr.torneoya.ui.navigation
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -28,6 +29,11 @@ fun AppNavHost() {
     var numIntegrantes by remember { mutableStateOf(2) }
     var numEquipos by remember { mutableStateOf(2) }
 
+    // NUEVO: Estados persistentes para fecha/hora y nombres equipos (se recuerdan al navegar)
+    val fechaMillisState = rememberSaveable { mutableStateOf<Long?>(null) }
+    val nombresEquiposState = rememberSaveable { mutableStateOf<List<String>>(List(numEquipos) { "" }) }
+    val horaSeteadaState = rememberSaveable { mutableStateOf(false) }
+
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             val factory = remember { AppViewModelFactory(context) }
@@ -44,6 +50,9 @@ fun AppNavHost() {
                     totalJugadoresNecesarios = 2
                     numIntegrantes = 2
                     numEquipos = 2
+                    fechaMillisState.value = null
+                    nombresEquiposState.value = List(2) { "" }
+                    horaSeteadaState.value = false
                     navController.navigate("crearPartido")
                 },
                 onTorneoClick = { /* Puedes agregar navegación a editar torneo aquí */ },
@@ -57,10 +66,11 @@ fun AppNavHost() {
                 factory = factory
             )
             CrearPartidoScreen(
-                onPartidoCreado = { equipos, tiempo ->
+                onPartidoCreado = { equipos, tiempo, fechaLong, nombresEquipos ->
+                    // nombresEquipos tiene el nombre para cada equipo, respetando autogenerado si está vacío
                     if (equipos.size >= 2 && equipos[0].isNotEmpty() && equipos[1].isNotEmpty()) {
-                        val nombreEquipoLocal = "Equipo 1"
-                        val nombreEquipoVisitante = "Equipo 2"
+                        val nombreEquipoLocal = nombresEquipos.getOrNull(0) ?: "Equipo1"
+                        val nombreEquipoVisitante = nombresEquipos.getOrNull(1) ?: "Equipo2"
                         val nombresIntegrantesLocal = equipos[0]
                         val nombresIntegrantesVisitante = equipos[1]
                         partidoViewModel.crearPartidoConIntegrantes(
@@ -68,8 +78,12 @@ fun AppNavHost() {
                             nombresIntegrantesLocal = nombresIntegrantesLocal,
                             nombreEquipoVisitante = nombreEquipoVisitante,
                             nombresIntegrantesVisitante = nombresIntegrantesVisitante,
-                            fecha = System.currentTimeMillis()
+                            fecha = fechaLong
                         ) {
+                            // Limpiar estados globales tras crear partido
+                            fechaMillisState.value = null
+                            nombresEquiposState.value = List(2) { "" }
+                            horaSeteadaState.value = false
                             navController.popBackStack()
                         }
                     } else {
@@ -88,7 +102,10 @@ fun AppNavHost() {
                     numEquipos = it
                 },
                 numIntegrantes = numIntegrantes,
-                numEquipos = numEquipos
+                numEquipos = numEquipos,
+                fechaMillisState = fechaMillisState,
+                nombresEquiposState = nombresEquiposState,
+                horaSeteadaState = horaSeteadaState
             )
         }
         composable("agregarJugadores") {
