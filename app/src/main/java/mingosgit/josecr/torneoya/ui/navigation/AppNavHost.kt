@@ -10,7 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 import mingosgit.josecr.torneoya.ui.screens.CrearPartidoScreen
 import mingosgit.josecr.torneoya.ui.screens.EditarPartidoScreen
 import mingosgit.josecr.torneoya.ui.screens.HomeScreen
@@ -23,8 +22,6 @@ fun AppNavHost() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "home") {
-
-        // HOME
         composable("home") {
             val context = LocalContext.current.applicationContext
             val factory = remember { AppViewModelFactory(context) }
@@ -32,20 +29,15 @@ fun AppNavHost() {
                 modelClass = HomeViewModel::class.java,
                 factory = factory
             )
-
-            // Recarga datos al volver a la Home (por ejemplo, tras crear un partido)
             LaunchedEffect(Unit, navController.currentBackStackEntry) {
                 viewModel.cargarDatos()
             }
-
             HomeScreen(
                 onCrearPartido = { navController.navigate("crearPartido") },
                 onTorneoClick = { /* Puedes agregar navegación a editar torneo aquí */ },
                 onPartidoClick = { partidoId -> navController.navigate("editarPartido/$partidoId") }
             )
         }
-
-        // AGREGADO: RUTA PARA CREAR PARTIDO
         composable("crearPartido") {
             val context = LocalContext.current.applicationContext
             val factory = remember { AppViewModelFactory(context) }
@@ -53,16 +45,19 @@ fun AppNavHost() {
                 modelClass = PartidoViewModel::class.java,
                 factory = factory
             )
-
             CrearPartidoScreen { equipos, tiempo ->
-                // Ejemplo para el primer equipo y jugador
                 if (equipos.size >= 2 && equipos[0].isNotEmpty() && equipos[1].isNotEmpty()) {
-                    val partido = PartidoEntity(
-                        equipoLocalId = 1L,
-                        equipoVisitanteId = 2L,
+                    val nombreEquipoLocal = "Equipo 1"
+                    val nombreEquipoVisitante = "Equipo 2"
+                    val nombresIntegrantesLocal = equipos[0]
+                    val nombresIntegrantesVisitante = equipos[1]
+                    partidoViewModel.crearPartidoConIntegrantes(
+                        nombreEquipoLocal = nombreEquipoLocal,
+                        nombresIntegrantesLocal = nombresIntegrantesLocal,
+                        nombreEquipoVisitante = nombreEquipoVisitante,
+                        nombresIntegrantesVisitante = nombresIntegrantesVisitante,
                         fecha = System.currentTimeMillis()
-                    )
-                    partidoViewModel.guardarPartido(partido) {
+                    ) {
                         navController.popBackStack()
                     }
                 } else {
@@ -70,9 +65,6 @@ fun AppNavHost() {
                 }
             }
         }
-
-
-        // EDITAR PARTIDO
         composable(
             "editarPartido/{partidoId}",
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })

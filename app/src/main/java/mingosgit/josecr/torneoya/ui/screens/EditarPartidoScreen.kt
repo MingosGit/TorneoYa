@@ -22,10 +22,8 @@ fun EditarPartidoScreen(
         factory = factory
     )
 
-    // Usamos el estado de UI expuesto por el ViewModel
     val ui by viewModel.ui.collectAsState()
 
-    // Lanzamos la carga sólo una vez por partidoId
     LaunchedEffect(partidoId) {
         viewModel.cargarPartidoCompleto(partidoId)
     }
@@ -57,23 +55,5 @@ fun EditarPartidoScreen(
 
         Spacer(Modifier.height(16.dp))
         Text("Fecha (timestamp): ${ui!!.partido.fecha}", style = MaterialTheme.typography.bodySmall)
-
-        // ...aquí tus OutlinedTextField, botones, etc, usando los datos de ui!!
-        // Ejemplo:
-        /*
-        var fechaEdit by remember { mutableStateOf(ui!!.partido.fecha.toString()) }
-        OutlinedTextField(
-            value = fechaEdit,
-            onValueChange = { fechaEdit = it },
-            label = { Text("Fecha (timestamp)") }
-        )
-        */
-
-        // Botón para guardar (sólo ejemplo)
-        /*
-        Button(onClick = { /* tu lógica aquí usando viewModel.guardarPartido... */ }) {
-            Text("Guardar Cambios")
-        }
-        */
     }
 }
