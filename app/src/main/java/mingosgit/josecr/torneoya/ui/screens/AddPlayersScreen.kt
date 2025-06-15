@@ -2,7 +2,6 @@ package mingosgit.josecr.torneoya.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,8 +18,18 @@ fun AgregarJugadoresScreen(
     aleatorio: Boolean,
     onAleatorioChange: (Boolean) -> Unit
 ) {
-    val viewModel = remember { AgregarJugadoresViewModel(jugadores) }
-    var nombreNuevo by remember { mutableStateOf("") }
+    val jugadoresState = remember {
+        mutableStateListOf<String>().apply {
+            if (jugadores.isNotEmpty()) addAll(jugadores)
+            while (size < totalNecesario) add("")
+        }
+    }
+
+    // sincroniza cuando cambia el totalNecesario
+    LaunchedEffect(totalNecesario) {
+        while (jugadoresState.size < totalNecesario) jugadoresState.add("")
+        while (jugadoresState.size > totalNecesario) jugadoresState.removeLast()
+    }
 
     Column(
         Modifier
@@ -40,42 +49,32 @@ fun AgregarJugadoresScreen(
         }
         Spacer(Modifier.height(16.dp))
 
-        Row {
-            OutlinedTextField(
-                value = nombreNuevo,
-                onValueChange = { nombreNuevo = it },
-                label = { Text("Nombre del jugador") },
-                singleLine = true,
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(Modifier.width(8.dp))
-            Button(
-                onClick = {
-                    val n = nombreNuevo.trim()
-                    if (n.isNotBlank()) {
-                        viewModel.agregar(n)
-                        nombreNuevo = ""
-                    }
-                }
-            ) {
-                Text("Agregar")
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
         Box(modifier = Modifier.weight(1f)) {
-            LazyColumn {
-                if (aleatorio) {
-                    itemsIndexed(viewModel.nombres) { idx, nombre ->
+            if (aleatorio) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(jugadoresState.size) { idx ->
                         Row(
                             Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 2.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Aleatorio: $nombre")
-                            IconButton(onClick = { viewModel.borrar(idx) }) {
+                            OutlinedTextField(
+                                value = jugadoresState[idx],
+                                onValueChange = { jugadoresState[idx] = it },
+                                label = { Text("Jugador ${idx + 1}") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                enabled = jugadoresState.size > 1,
+                                onClick = {
+                                    jugadoresState.removeAt(idx)
+                                    jugadoresState.add("")
+                                }
+                            ) {
                                 Icon(
                                     imageVector = androidx.compose.material.icons.Icons.Default.Delete,
                                     contentDescription = "Eliminar"
@@ -83,19 +82,71 @@ fun AgregarJugadoresScreen(
                             }
                         }
                     }
-                } else {
-                    val jugadoresPorEquipo = totalNecesario / 2
-                    itemsIndexed(viewModel.nombres) { idx, nombre ->
-                        val equipoIdx = idx / jugadoresPorEquipo
-                        val equipo = if (equipoIdx == 0) "Equipo 1" else "Equipo 2"
+                }
+            } else {
+                val mitad = jugadoresState.size / 2
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item {
+                        Text("Equipo 1:")
+                        Spacer(Modifier.height(6.dp))
+                    }
+                    items(mitad) { idx ->
                         Row(
                             Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 2.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("$equipo: $nombre")
-                            IconButton(onClick = { viewModel.borrar(idx) }) {
+                            OutlinedTextField(
+                                value = jugadoresState[idx],
+                                onValueChange = { jugadoresState[idx] = it },
+                                label = { Text("Jugador ${idx + 1}") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                enabled = jugadoresState.size > 1,
+                                onClick = {
+                                    jugadoresState.removeAt(idx)
+                                    jugadoresState.add("")
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.Delete,
+                                    contentDescription = "Eliminar"
+                                )
+                            }
+                        }
+                    }
+                    item {
+                        Spacer(Modifier.height(16.dp))
+                        Text("Equipo 2:")
+                        Spacer(Modifier.height(6.dp))
+                    }
+                    items(jugadoresState.size - mitad) { idx ->
+                        val realIdx = mitad + idx
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            OutlinedTextField(
+                                value = jugadoresState[realIdx],
+                                onValueChange = { jugadoresState[realIdx] = it },
+                                label = { Text("Jugador ${realIdx - mitad + 1}") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                enabled = jugadoresState.size > 1,
+                                onClick = {
+                                    jugadoresState.removeAt(realIdx)
+                                    jugadoresState.add("")
+                                }
+                            ) {
                                 Icon(
                                     imageVector = androidx.compose.material.icons.Icons.Default.Delete,
                                     contentDescription = "Eliminar"
@@ -110,25 +161,12 @@ fun AgregarJugadoresScreen(
         Spacer(Modifier.height(16.dp))
 
         Button(
-            enabled = viewModel.nombres.isNotEmpty(),
+            enabled = jugadoresState.size == totalNecesario,
             onClick = {
-                val listaActual = viewModel.getJugadores().toMutableList()
-                val yaUsados = listaActual
-                    .mapNotNull { nombre ->
-                        val match = Regex("""Jugador(\d+)""").matchEntire(nombre)
-                        match?.groupValues?.get(1)?.toIntOrNull()
-                    }
-                    .toMutableSet()
-                var nextNum = 1
-                while (listaActual.size < totalNecesario) {
-                    while (yaUsados.contains(nextNum) || listaActual.contains("Jugador$nextNum")) {
-                        nextNum++
-                    }
-                    listaActual.add("Jugador$nextNum")
-                    yaUsados.add(nextNum)
-                    nextNum++
+                val listaFinal = jugadoresState.mapIndexed { i, nombre ->
+                    if (nombre.isBlank()) "Jugador${i + 1}" else nombre
                 }
-                onJugadoresListo(listaActual)
+                onJugadoresListo(listaFinal)
                 navController.popBackStack()
             },
             modifier = Modifier.fillMaxWidth()

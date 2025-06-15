@@ -189,40 +189,6 @@ fun CrearPartidoScreen(
         }
         Spacer(Modifier.height(16.dp))
 
-        Box(
-            modifier = Modifier
-                .weight(1f, fill = false)
-                .horizontalScroll(rememberScrollState())
-        ) {
-            if (aleatorio) {
-                Text("Total de jugadores: ${jugadores.size}")
-            } else {
-                Column {
-                    Text("Integrantes de cada equipo:")
-                    Spacer(Modifier.height(8.dp))
-                    repeat(numEquipos) { equipoIdx ->
-                        Text("Equipo ${equipoIdx + 1}", style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.height(4.dp))
-                        repeat(numIntegrantes) { integranteIdx ->
-                            OutlinedTextField(
-                                value = equiposManuales[equipoIdx][integranteIdx],
-                                onValueChange = { newValue ->
-                                    val nuevosEquipos = equiposManuales.map { it.toMutableList() }.toMutableList()
-                                    nuevosEquipos[equipoIdx][integranteIdx] = newValue
-                                    onEquiposManualesChange(nuevosEquipos)
-                                },
-                                label = { Text("Integrante ${integranteIdx + 1}") },
-                                singleLine = true,
-                                modifier = Modifier
-                                    .width(220.dp)
-                                    .padding(vertical = 2.dp)
-                            )
-                        }
-                        Spacer(Modifier.height(8.dp))
-                    }
-                }
-            }
-        }
 
         if (showError) {
             Text("¡Faltan datos obligatorios o cantidad incorrecta!", color = MaterialTheme.colorScheme.error)
