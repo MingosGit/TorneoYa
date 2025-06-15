@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import mingosgit.josecr.torneoya.ui.screens.CrearPartidoScreen
 import mingosgit.josecr.torneoya.ui.screens.EditarPartidoScreen
+import mingosgit.josecr.torneoya.ui.screens.EditarIntegrantesScreen
 import mingosgit.josecr.torneoya.ui.screens.HomeScreen
 import mingosgit.josecr.torneoya.ui.screens.AgregarJugadoresScreen
 import mingosgit.josecr.torneoya.viewmodel.AppViewModelFactory
@@ -105,7 +106,18 @@ fun AppNavHost() {
             val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: 0L
             EditarPartidoScreen(
                 partidoId = partidoId,
-                onPartidoEditado = { navController.popBackStack() }
+                onPartidoEditado = { navController.popBackStack() },
+                navController = navController
+            )
+        }
+        composable(
+            "editarIntegrantes/{partidoId}",
+            arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: 0L
+            EditarIntegrantesScreen(
+                partidoId = partidoId,
+                navController = navController
             )
         }
     }

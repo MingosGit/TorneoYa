@@ -76,4 +76,61 @@ class PartidoViewModel(
             onFinish()
         }
     }
+    fun actualizarNombresIntegrantes(
+        nuevosLocal: List<String>,
+        nuevosVisitante: List<String>,
+        onFinish: () -> Unit
+    ) {
+        viewModelScope.launch {
+            val ui = _ui.value ?: return@launch
+            // Actualiza los nombres en la base de datos
+            val equipoLocalId = ui.partido.equipoLocalId
+            val equipoVisitanteId = ui.partido.equipoVisitanteId
+
+            // Cargar los integrantes
+            val antiguosLocal = integrantesRepo.getIntegrantesByEquipoId(equipoLocalId)
+            val antiguosVisitante = integrantesRepo.getIntegrantesByEquipoId(equipoVisitanteId)
+
+            // Borra todos y vuelve a insertar con los nuevos nombres (sencillo)
+            // Si quieres hacer actualización individual, puedes hacerlo también.
+            // Aquí eliminamos y agregamos.
+            if (antiguosLocal.isNotEmpty()) {
+                antiguosLocal.forEach { antiguo ->
+                    integrantesRepo.eliminarIntegrante(antiguo)
+                }
+            }
+            if (antiguosVisitante.isNotEmpty()) {
+                antiguosVisitante.forEach { antiguo ->
+                    integrantesRepo.eliminarIntegrante(antiguo)
+                }
+            }
+
+            val nuevosLocalEntities = nuevosLocal.map { nombre ->
+                mingosgit.josecr.torneoya.data.entities.IntegranteEntity(
+                    equipoId = equipoLocalId,
+                    nombre = nombre
+                )
+            }
+            val nuevosVisitanteEntities = nuevosVisitante.map { nombre ->
+                mingosgit.josecr.torneoya.data.entities.IntegranteEntity(
+                    equipoId = equipoVisitanteId,
+                    nombre = nombre
+                )
+            }
+
+            integrantesRepo.insertIntegrantes(nuevosLocalEntities)
+            integrantesRepo.insertIntegrantes(nuevosVisitanteEntities)
+
+            cargarPartidoCompleto(ui.partido.id)
+            onFinish()
+        }
+    }
+
+    fun eliminarPartidoActual(onFinish: () -> Unit) {
+        viewModelScope.launch {
+            val ui = _ui.value ?: return@launch
+            partidosRepo.deletePartido(ui.partido)
+            onFinish()
+        }
+    }
 }

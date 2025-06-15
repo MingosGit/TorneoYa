@@ -9,4 +9,7 @@ class IntegrantesRepository(private val dao: IntegrantesDao) {
         dao.getIntegrantesByEquipoId(equipoId)
     suspend fun insertIntegrantes(integrantes: List<IntegranteEntity>) =
         dao.insertIntegrantes(integrantes)
+    suspend fun eliminarIntegrante(integrante: IntegranteEntity) =
+        dao.deleteIntegrante(integrante)
+
 }

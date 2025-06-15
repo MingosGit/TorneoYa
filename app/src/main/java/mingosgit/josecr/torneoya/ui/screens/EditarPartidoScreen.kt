@@ -10,10 +10,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.viewmodel.AppViewModelFactory
 import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
 import androidx.compose.ui.Alignment
+import androidx.navigation.NavController
+
 @Composable
 fun EditarPartidoScreen(
     partidoId: Long,
-    onPartidoEditado: () -> Unit
+    onPartidoEditado: () -> Unit,
+    navController: NavController
 ) {
     val context = LocalContext.current.applicationContext
     val factory = remember { AppViewModelFactory(context) }
@@ -23,6 +26,7 @@ fun EditarPartidoScreen(
     )
 
     val ui by viewModel.ui.collectAsState()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(partidoId) {
         viewModel.cargarPartidoCompleto(partidoId)
@@ -35,7 +39,9 @@ fun EditarPartidoScreen(
         return
     }
 
-    Column(Modifier.padding(24.dp)) {
+    Column(Modifier
+        .fillMaxSize()
+        .padding(24.dp)) {
         Text("Editar Partido", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
 
@@ -55,5 +61,47 @@ fun EditarPartidoScreen(
 
         Spacer(Modifier.height(16.dp))
         Text("Fecha (timestamp): ${ui!!.partido.fecha}", style = MaterialTheme.typography.bodySmall)
+
+        Spacer(Modifier.height(32.dp))
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                navController.navigate("editarIntegrantes/${ui!!.partido.id}")
+            }
+        ) {
+            Text("Editar nombres de los integrantes")
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+            onClick = {
+                showDeleteDialog = true
+            }
+        ) {
+            Text("Eliminar partido")
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar partido") },
+            text = { Text("¿Estás seguro de que quieres eliminar este partido? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    viewModel.eliminarPartidoActual {
+                        onPartidoEditado()
+                    }
+                }) { Text("Sí, eliminar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
+            }
+        )
     }
 }

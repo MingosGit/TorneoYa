@@ -12,4 +12,10 @@ interface IntegrantesDao {
 
     @Insert
     suspend fun insertIntegrantes(integrantes: List<IntegranteEntity>)
+
+    @Delete
+    suspend fun deleteIntegrante(integrante: IntegranteEntity)
+
+
+
 }
