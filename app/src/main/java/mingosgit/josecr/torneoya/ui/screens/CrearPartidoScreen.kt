@@ -39,10 +39,9 @@ fun CrearPartidoScreen(
 
     var tiempo by rememberSaveable { mutableStateOf(10) }
     var showError by rememberSaveable { mutableStateOf(false) }
+    var errorTrigger by remember { mutableStateOf(0) }
 
     val context = LocalContext.current
-
-    val calendar = Calendar.getInstance()
     val fechaMillis = fechaMillisState.value
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -73,6 +72,21 @@ fun CrearPartidoScreen(
             nombresEquipos = nuevos
             nombresEquiposState.value = nuevos
         }
+    }
+
+    // RESETEAR ERROR SI CAMBIA ALGO
+    LaunchedEffect(
+        jugadores,
+        numIntegrantes,
+        numEquipos,
+        fechaMillis,
+        equiposManuales,
+        nombresEquipos,
+        tiempo,
+        aleatorio,
+        errorTrigger
+    ) {
+        showError = false
     }
 
     Column(
@@ -141,6 +155,7 @@ fun CrearPartidoScreen(
                     val v = it.toIntOrNull() ?: 1
                     val safeV = v.coerceIn(1, maxIntegrantes)
                     onNumIntegrantesChange(safeV)
+                    errorTrigger++
                 },
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                 singleLine = true,
@@ -154,7 +169,10 @@ fun CrearPartidoScreen(
             Spacer(Modifier.width(8.dp))
             OutlinedTextField(
                 value = tiempo.toString(),
-                onValueChange = { tiempo = (it.toIntOrNull() ?: 1).coerceIn(1, 240) },
+                onValueChange = {
+                    tiempo = (it.toIntOrNull() ?: 1).coerceIn(1, 240)
+                    errorTrigger++
+                },
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                 singleLine = true,
                 modifier = Modifier.width(90.dp)
@@ -178,6 +196,7 @@ fun CrearPartidoScreen(
                         nuevos[equipoIdx] = newValue
                         nombresEquipos = nuevos
                         nombresEquiposState.value = nuevos
+                        errorTrigger++
                     },
                     label = { Text("Equipo ${equipoIdx + 1}") },
                     singleLine = true,
@@ -189,7 +208,6 @@ fun CrearPartidoScreen(
         }
         Spacer(Modifier.height(16.dp))
 
-
         if (showError) {
             Text("¡Faltan datos obligatorios o cantidad incorrecta!", color = MaterialTheme.colorScheme.error)
         }
@@ -199,27 +217,18 @@ fun CrearPartidoScreen(
         Button(
             onClick = {
                 val fechaFinalMillis = fechaMillisState.value
-                // ---- VALIDACIÓN ----
-                if (aleatorio) {
-                    if (jugadores.size != numIntegrantes * numEquipos || fechaFinalMillis == null) {
-                        showError = true
-                        return@Button
-                    }
-                } else {
-                    // en modo manual NO importa el contenido de la lista jugadores,
-                    // solo que los campos manuales estén todos rellenados:
-                    if (equiposManuales.any { it.size != numIntegrantes } ||
-                        equiposManuales.flatten().any { it.isBlank() } ||
-                        fechaFinalMillis == null
-                    ) {
-                        showError = true
-                        return@Button
-                    }
-                }
                 val nombresFinal = nombresEquipos.mapIndexed { idx, name ->
                     if (name.trim().isEmpty()) "Equipo${idx + 1}" else name.trim()
                 }
+                if (fechaFinalMillis == null) {
+                    showError = true
+                    return@Button
+                }
                 if (aleatorio) {
+                    if (jugadores.size != numIntegrantes * numEquipos || jugadores.any { it.isBlank() }) {
+                        showError = true
+                        return@Button
+                    }
                     showError = false
                     val jugadoresMezclados = jugadores.shuffled()
                     val equiposFinales = List(numEquipos) { i ->
@@ -227,6 +236,14 @@ fun CrearPartidoScreen(
                     }
                     onPartidoCreado(equiposFinales, tiempo, fechaFinalMillis, nombresFinal)
                 } else {
+                    // VALIDACIÓN MODO MANUAL CORREGIDA
+                    // Debe estar equiposManuales.size == numEquipos Y CADA EQUIPO size == numIntegrantes Y NINGÚN NOMBRE VACÍO
+                    val esValido = equiposManuales.size == numEquipos &&
+                            equiposManuales.all { it.size == numIntegrantes && it.all { nombre -> nombre.isNotBlank() } }
+                    if (!esValido) {
+                        showError = true
+                        return@Button
+                    }
                     showError = false
                     onPartidoCreado(equiposManuales, tiempo, fechaFinalMillis, nombresFinal)
                 }
@@ -256,6 +273,7 @@ fun CrearPartidoScreen(
                 }
                 fechaMillisState.value = c.timeInMillis
                 showDatePicker = false
+                errorTrigger++
             },
             cal.get(Calendar.YEAR),
             cal.get(Calendar.MONTH),
@@ -277,6 +295,7 @@ fun CrearPartidoScreen(
                 fechaMillisState.value = c.timeInMillis
                 horaSeteadaState.value = true
                 showTimePicker = false
+                errorTrigger++
             },
             cal.get(Calendar.HOUR_OF_DAY),
             cal.get(Calendar.MINUTE),
