@@ -15,7 +15,9 @@ fun AgregarJugadoresScreen(
     jugadores: List<String>,
     onJugadoresListo: (List<String>) -> Unit,
     navController: NavController,
-    totalNecesario: Int
+    totalNecesario: Int,
+    aleatorio: Boolean,
+    onAleatorioChange: (Boolean) -> Unit
 ) {
     val viewModel = remember { AgregarJugadoresViewModel(jugadores) }
     var nombreNuevo by remember { mutableStateOf("") }
@@ -26,6 +28,16 @@ fun AgregarJugadoresScreen(
             .padding(24.dp)
     ) {
         Text("Agregar jugadores", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(16.dp))
+
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text("¿Equipos aleatorios?")
+            Spacer(Modifier.width(8.dp))
+            Switch(
+                checked = aleatorio,
+                onCheckedChange = { onAleatorioChange(it) }
+            )
+        }
         Spacer(Modifier.height(16.dp))
 
         Row {
@@ -54,19 +66,41 @@ fun AgregarJugadoresScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             LazyColumn {
-                itemsIndexed(viewModel.nombres) { idx, nombre ->
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(nombre)
-                        IconButton(onClick = { viewModel.borrar(idx) }) {
-                            Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Default.Delete,
-                                contentDescription = "Eliminar"
-                            )
+                if (aleatorio) {
+                    itemsIndexed(viewModel.nombres) { idx, nombre ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Aleatorio: $nombre")
+                            IconButton(onClick = { viewModel.borrar(idx) }) {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.Delete,
+                                    contentDescription = "Eliminar"
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    val jugadoresPorEquipo = totalNecesario / 2
+                    itemsIndexed(viewModel.nombres) { idx, nombre ->
+                        val equipoIdx = idx / jugadoresPorEquipo
+                        val equipo = if (equipoIdx == 0) "Equipo 1" else "Equipo 2"
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("$equipo: $nombre")
+                            IconButton(onClick = { viewModel.borrar(idx) }) {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.Delete,
+                                    contentDescription = "Eliminar"
+                                )
+                            }
                         }
                     }
                 }

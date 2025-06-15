@@ -23,15 +23,21 @@ fun AppNavHost() {
     val navController = rememberNavController()
     val context = LocalContext.current.applicationContext
 
+    // Estado principal de jugadores, equipos y modo
     var jugadores by remember { mutableStateOf(listOf<String>()) }
     var totalJugadoresNecesarios by remember { mutableStateOf(2) }
     var numIntegrantes by remember { mutableStateOf(2) }
-    // FIJO: Solo dos equipos, sin estado mutable
     val numEquipos = 2
 
-    // NUEVO: Estados persistentes para fecha/hora y nombres equipos (se recuerdan al navegar)
+    // Estado modo aleatorio/manual
+    val aleatorioState = rememberSaveable { mutableStateOf(false) }
+    val manualEquiposState = rememberSaveable {
+        mutableStateOf(List(numEquipos) { List(numIntegrantes) { "" } })
+    }
+
+    // Estados persistentes para fecha/hora y nombres equipos
     val fechaMillisState = rememberSaveable { mutableStateOf<Long?>(null) }
-    val nombresEquiposState = rememberSaveable { mutableStateOf<List<String>>(List(numEquipos) { "" }) }
+    val nombresEquiposState = rememberSaveable { mutableStateOf(List(numEquipos) { "" }) }
     val horaSeteadaState = rememberSaveable { mutableStateOf(false) }
 
     NavHost(navController = navController, startDestination = "home") {
@@ -52,9 +58,11 @@ fun AppNavHost() {
                     fechaMillisState.value = null
                     nombresEquiposState.value = List(2) { "" }
                     horaSeteadaState.value = false
+                    aleatorioState.value = false
+                    manualEquiposState.value = List(numEquipos) { List(numIntegrantes) { "" } }
                     navController.navigate("crearPartido")
                 },
-                onTorneoClick = { /* Puedes agregar navegación a editar torneo aquí */ },
+                onTorneoClick = {},
                 onPartidoClick = { partidoId -> navController.navigate("editarPartido/$partidoId") }
             )
         }
@@ -94,14 +102,24 @@ fun AppNavHost() {
                 },
                 onNumIntegrantesChange = {
                     numIntegrantes = it
+                    manualEquiposState.value = List(numEquipos) { idx ->
+                        manualEquiposState.value.getOrNull(idx)?.let { oldList ->
+                            oldList.toMutableList().apply {
+                                while (size < it) add("")
+                                while (size > it) removeLast()
+                            }.toList()
+                        } ?: List(it) { "" }
+                    }
                 },
-                // ¡IMPORTANTE! onNumEquiposChange se ignora, numEquipos fijo
                 onNumEquiposChange = {},
                 numIntegrantes = numIntegrantes,
                 numEquipos = numEquipos,
                 fechaMillisState = fechaMillisState,
                 nombresEquiposState = nombresEquiposState,
-                horaSeteadaState = horaSeteadaState
+                horaSeteadaState = horaSeteadaState,
+                aleatorio = aleatorioState.value,
+                equiposManuales = manualEquiposState.value,
+                onEquiposManualesChange = { manualEquiposState.value = it }
             )
         }
         composable("agregarJugadores") {
@@ -109,7 +127,9 @@ fun AppNavHost() {
                 jugadores = jugadores,
                 onJugadoresListo = { nuevosJugadores -> jugadores = nuevosJugadores },
                 navController = navController,
-                totalNecesario = totalJugadoresNecesarios
+                totalNecesario = totalJugadoresNecesarios,
+                aleatorio = aleatorioState.value,
+                onAleatorioChange = { aleatorioState.value = it }
             )
         }
         composable(

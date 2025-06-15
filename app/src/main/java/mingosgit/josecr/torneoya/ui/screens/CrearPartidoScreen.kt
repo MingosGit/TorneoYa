@@ -25,23 +25,19 @@ fun CrearPartidoScreen(
     jugadores: List<String>,
     onAgregarJugadores: () -> Unit,
     onNumIntegrantesChange: (Int) -> Unit,
-    onNumEquiposChange: (Int) -> Unit, // Ignorado: ya no hay input para equipos
+    onNumEquiposChange: (Int) -> Unit,
     numIntegrantes: Int,
     numEquipos: Int,
     fechaMillisState: MutableState<Long?>,
     nombresEquiposState: MutableState<List<String>>,
-    horaSeteadaState: MutableState<Boolean>
+    horaSeteadaState: MutableState<Boolean>,
+    aleatorio: Boolean,
+    equiposManuales: List<List<String>>,
+    onEquiposManualesChange: (List<List<String>>) -> Unit
 ) {
     val maxIntegrantes = 24
 
-    // FIJO: Solo 2 equipos
-    // val numEquipos = 2 // <-- El valor ya se pasa desde el NavHost, y nunca cambia
-
     var tiempo by rememberSaveable { mutableStateOf(10) }
-    var aleatorio by rememberSaveable { mutableStateOf(true) }
-    var equiposManuales by rememberSaveable(numEquipos, numIntegrantes, aleatorio) {
-        mutableStateOf(List(numEquipos) { List(numIntegrantes) { "" } })
-    }
     var showError by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -153,8 +149,6 @@ fun CrearPartidoScreen(
         }
         Spacer(Modifier.height(8.dp))
 
-        // ELIMINADO: Selector de cantidad de equipos
-
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Text("Minutos por partido:")
             Spacer(Modifier.width(8.dp))
@@ -168,18 +162,8 @@ fun CrearPartidoScreen(
         }
         Spacer(Modifier.height(12.dp))
 
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Text("¿Equipos aleatorios?")
-            Spacer(Modifier.width(8.dp))
-            Switch(
-                checked = aleatorio,
-                onCheckedChange = { aleatorio = it }
-            )
-        }
-
         Spacer(Modifier.height(16.dp))
 
-        // ENTRADA DE NOMBRES DE EQUIPOS: Scroll horizontal
         Column(
             modifier = Modifier
                 .horizontalScroll(rememberScrollState())
@@ -223,11 +207,9 @@ fun CrearPartidoScreen(
                             OutlinedTextField(
                                 value = equiposManuales[equipoIdx][integranteIdx],
                                 onValueChange = { newValue ->
-                                    equiposManuales = equiposManuales.toMutableList().also { equiposList ->
-                                        equiposList[equipoIdx] = equiposList[equipoIdx].toMutableList().also { intList ->
-                                            intList[integranteIdx] = newValue
-                                        }
-                                    }
+                                    val nuevosEquipos = equiposManuales.map { it.toMutableList() }.toMutableList()
+                                    nuevosEquipos[equipoIdx][integranteIdx] = newValue
+                                    onEquiposManualesChange(nuevosEquipos)
                                 },
                                 label = { Text("Integrante ${integranteIdx + 1}") },
                                 singleLine = true,
@@ -251,9 +233,22 @@ fun CrearPartidoScreen(
         Button(
             onClick = {
                 val fechaFinalMillis = fechaMillisState.value
-                if (jugadores.size != numIntegrantes * numEquipos || fechaFinalMillis == null) {
-                    showError = true
-                    return@Button
+                // ---- VALIDACIÓN ----
+                if (aleatorio) {
+                    if (jugadores.size != numIntegrantes * numEquipos || fechaFinalMillis == null) {
+                        showError = true
+                        return@Button
+                    }
+                } else {
+                    // en modo manual NO importa el contenido de la lista jugadores,
+                    // solo que los campos manuales estén todos rellenados:
+                    if (equiposManuales.any { it.size != numIntegrantes } ||
+                        equiposManuales.flatten().any { it.isBlank() } ||
+                        fechaFinalMillis == null
+                    ) {
+                        showError = true
+                        return@Button
+                    }
                 }
                 val nombresFinal = nombresEquipos.mapIndexed { idx, name ->
                     if (name.trim().isEmpty()) "Equipo${idx + 1}" else name.trim()
@@ -266,10 +261,6 @@ fun CrearPartidoScreen(
                     }
                     onPartidoCreado(equiposFinales, tiempo, fechaFinalMillis, nombresFinal)
                 } else {
-                    if (equiposManuales.flatten().any { it.isBlank() }) {
-                        showError = true
-                        return@Button
-                    }
                     showError = false
                     onPartidoCreado(equiposManuales, tiempo, fechaFinalMillis, nombresFinal)
                 }
