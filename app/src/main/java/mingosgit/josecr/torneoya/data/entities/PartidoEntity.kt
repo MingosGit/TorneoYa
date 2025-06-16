@@ -2,14 +2,16 @@ package mingosgit.josecr.torneoya.data.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 
-@Entity(tableName = "partidos")
+@Entity(tableName = "partido")
 data class PartidoEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val equipoLocalId: Long,
-    val equipoVisitanteId: Long,
-    val fecha: Long, // timestamp en millis
-    val golesLocal: Int? = null,
-    val golesVisitante: Int? = null,
-    val torneoId: Long? = null // null si es partido suelto
+    @PrimaryKey val id: Long, // timestamp personalizado
+    val fecha: String, // yyyy-MM-dd
+    val horaInicio: String, // HH:mm
+    val numeroPartes: Int,
+    val tiempoPorParte: Int, // minutos
+    val equipoA: String, // nombre o id equipo, puedes cambiar a Int si usas ids
+    val equipoB: String,
+    val numeroJugadores: Int
 )

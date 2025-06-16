@@ -49,7 +49,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-text") // <-- AGREGADO Y ESENCIAL
-
     implementation("androidx.navigation:navigation-compose:2.9.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

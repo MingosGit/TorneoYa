@@ -8,12 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreen() {
+fun PartidoScreen() {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         Text(
-            text = "HomeScreen",
+            text = "Crear Partido",
             fontSize = 28.sp,
             modifier = Modifier.align(Alignment.Center)
         )

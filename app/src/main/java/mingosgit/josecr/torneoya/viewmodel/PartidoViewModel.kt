@@ -2,143 +2,43 @@ package mingosgit.josecr.torneoya.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
-import mingosgit.josecr.torneoya.data.entities.EquipoEntity
-import mingosgit.josecr.torneoya.data.entities.IntegranteEntity
-import mingosgit.josecr.torneoya.repository.PartidosRepository
-import mingosgit.josecr.torneoya.repository.EquiposRepository
-import mingosgit.josecr.torneoya.repository.IntegrantesRepository
+import mingosgit.josecr.torneoya.data.entities.PartidoEquipoJugadorEntity
+import mingosgit.josecr.torneoya.repository.PartidoRepository
 
-data class PartidoCompletoUI(
-    val partido: PartidoEntity,
-    val nombreEquipoLocal: String,
-    val nombreEquipoVisitante: String,
-    val integrantesLocal: List<String>,
-    val integrantesVisitante: List<String>
-)
+class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() {
+    private val _partidos = MutableStateFlow<List<PartidoEntity>>(emptyList())
+    val partidos: StateFlow<List<PartidoEntity>> = _partidos
 
-class PartidoViewModel(
-    private val partidosRepo: PartidosRepository,
-    private val equiposRepo: EquiposRepository,
-    private val integrantesRepo: IntegrantesRepository
-) : ViewModel() {
-
-    private val _ui = MutableStateFlow<PartidoCompletoUI?>(null)
-    val ui: StateFlow<PartidoCompletoUI?> = _ui
-
-    fun cargarPartidoCompleto(partidoId: Long) {
+    fun cargarPartidos() {
         viewModelScope.launch {
-            val partido = partidosRepo.getPartidoById(partidoId) ?: return@launch
-            val equipoLocal = equiposRepo.getEquipoById(partido.equipoLocalId)
-            val equipoVisitante = equiposRepo.getEquipoById(partido.equipoVisitanteId)
-            val integrantesLocal = equipoLocal?.let { integrantesRepo.getIntegrantesByEquipoId(it.id) } ?: emptyList()
-            val integrantesVisitante = equipoVisitante?.let { integrantesRepo.getIntegrantesByEquipoId(it.id) } ?: emptyList()
-            _ui.value = PartidoCompletoUI(
-                partido = partido,
-                nombreEquipoLocal = equipoLocal?.nombre ?: "Equipo local",
-                nombreEquipoVisitante = equipoVisitante?.nombre ?: "Equipo visitante",
-                integrantesLocal = integrantesLocal.map { it.nombre },
-                integrantesVisitante = integrantesVisitante.map { it.nombre }
-            )
+            _partidos.value = repository.getAllPartidos()
         }
     }
 
-    fun crearPartidoConIntegrantes(
-        nombreEquipoLocal: String,
-        nombresIntegrantesLocal: List<String>,
-        nombreEquipoVisitante: String,
-        nombresIntegrantesVisitante: List<String>,
-        fecha: Long,
-        torneoId: Long? = null,
-        onFinish: () -> Unit
-    ) {
+    fun agregarPartido(partido: PartidoEntity) {
         viewModelScope.launch {
-            // Corregir nombres vacíos automáticamente (primero local, luego visitante)
-            val nombresLocal = nombresIntegrantesLocal.mapIndexed { i, n ->
-                if (n.isBlank()) "Jugador${i + 1}" else n
-            }
-            val nombresVisitante = nombresIntegrantesVisitante.mapIndexed { i, n ->
-                if (n.isBlank()) "Jugador${i + 1 + nombresLocal.size}" else n
-            }
-            val equipoLocalId = equiposRepo.insertEquipo(EquipoEntity(nombre = nombreEquipoLocal))
-            val equipoVisitanteId = equiposRepo.insertEquipo(EquipoEntity(nombre = nombreEquipoVisitante))
-            val partido = PartidoEntity(
-                equipoLocalId = equipoLocalId,
-                equipoVisitanteId = equipoVisitanteId,
-                fecha = fecha,
-                torneoId = torneoId
-            )
-            partidosRepo.insertPartido(partido)
-            val integrantesLocal = nombresLocal.map { nombre ->
-                IntegranteEntity(equipoId = equipoLocalId, nombre = nombre)
-            }
-            val integrantesVisitante = nombresVisitante.map { nombre ->
-                IntegranteEntity(equipoId = equipoVisitanteId, nombre = nombre)
-            }
-            integrantesRepo.insertIntegrantes(integrantesLocal)
-            integrantesRepo.insertIntegrantes(integrantesVisitante)
-            onFinish()
+            repository.insertPartido(partido)
+            cargarPartidos()
         }
     }
 
-    fun actualizarNombresIntegrantes(
-        nuevosLocal: List<String>,
-        nuevosVisitante: List<String>,
-        onFinish: () -> Unit
-    ) {
+    fun asignarJugadorAPartido(partidoId: Long, equipo: String, jugadorId: Long) {
         viewModelScope.launch {
-            val ui = _ui.value ?: return@launch
-            // Actualiza los nombres en la base de datos
-            val equipoLocalId = ui.partido.equipoLocalId
-            val equipoVisitanteId = ui.partido.equipoVisitanteId
-
-            // Cargar los integrantes
-            val antiguosLocal = integrantesRepo.getIntegrantesByEquipoId(equipoLocalId)
-            val antiguosVisitante = integrantesRepo.getIntegrantesByEquipoId(equipoVisitanteId)
-
-            // Borra todos y vuelve a insertar con los nuevos nombres (sencillo)
-            // Si quieres hacer actualización individual, puedes hacerlo también.
-            // Aquí eliminamos y agregamos.
-            if (antiguosLocal.isNotEmpty()) {
-                antiguosLocal.forEach { antiguo ->
-                    integrantesRepo.eliminarIntegrante(antiguo)
-                }
-            }
-            if (antiguosVisitante.isNotEmpty()) {
-                antiguosVisitante.forEach { antiguo ->
-                    integrantesRepo.eliminarIntegrante(antiguo)
-                }
-            }
-
-            val nuevosLocalEntities = nuevosLocal.map { nombre ->
-                mingosgit.josecr.torneoya.data.entities.IntegranteEntity(
-                    equipoId = equipoLocalId,
-                    nombre = nombre
-                )
-            }
-            val nuevosVisitanteEntities = nuevosVisitante.map { nombre ->
-                mingosgit.josecr.torneoya.data.entities.IntegranteEntity(
-                    equipoId = equipoVisitanteId,
-                    nombre = nombre
-                )
-            }
-
-            integrantesRepo.insertIntegrantes(nuevosLocalEntities)
-            integrantesRepo.insertIntegrantes(nuevosVisitanteEntities)
-
-            cargarPartidoCompleto(ui.partido.id)
-            onFinish()
+            val rel = PartidoEquipoJugadorEntity(partidoId, equipo, jugadorId)
+            repository.asignarJugadorAPartido(rel)
         }
     }
 
-    fun eliminarPartidoActual(onFinish: () -> Unit) {
+    fun eliminarJugadorDePartido(partidoId: Long, jugadorId: Long) {
         viewModelScope.launch {
-            val ui = _ui.value ?: return@launch
-            partidosRepo.deletePartido(ui.partido)
-            onFinish()
+            val relA = PartidoEquipoJugadorEntity(partidoId, "A", jugadorId)
+            val relB = PartidoEquipoJugadorEntity(partidoId, "B", jugadorId)
+            repository.eliminarJugadorDePartido(relA)
+            repository.eliminarJugadorDePartido(relB)
         }
     }
 }

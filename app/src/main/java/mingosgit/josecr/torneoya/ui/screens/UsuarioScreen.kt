@@ -8,12 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreen() {
+fun UsuarioScreen() {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         Text(
-            text = "HomeScreen",
+            text = "Usuario / Ajustes",
             fontSize = 28.sp,
             modifier = Modifier.align(Alignment.Center)
         )
