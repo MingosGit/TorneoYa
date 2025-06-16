@@ -42,14 +42,12 @@ class AsignarJugadoresViewModel(
     fun cambiarModo(nuevoAleatorio: Boolean) {
         if (nuevoAleatorio == modoAleatorio) return
         if (nuevoAleatorio) {
-            // De manual a aleatorio: copiar nombres manuales a listaNombres
             val nombresManual = (equipoAJugadores + equipoBJugadores).toMutableList()
             for (i in listaNombres.indices) {
                 listaNombres[i] = nombresManual.getOrNull(i) ?: ""
             }
             manualToAleatorioBackup = nombresManual
         } else {
-            // De aleatorio a manual: copiar listaNombres a los equipos, mitad A, mitad B
             val nombres = listaNombres.toList()
             for (i in 0 until numJugadores) {
                 equipoAJugadores[i] = nombres.getOrNull(i) ?: ""
@@ -74,25 +72,60 @@ class AsignarJugadoresViewModel(
 
     fun guardarEnBD(onFinish: () -> Unit = {}) {
         viewModelScope.launch {
-            val nombres = equipoAJugadores + equipoBJugadores
+            // 1. Nombres vacíos → "Jugador X" único (no duplicar)
+            val todosNombres = (equipoAJugadores + equipoBJugadores).toMutableList()
+            val usados = mutableSetOf<String>()
+            var contadorAnon = 1
+
+            for (i in todosNombres.indices) {
+                if (todosNombres[i].isBlank()) {
+                    // Buscar un nombre "Jugador X" que no esté en usados
+                    var nombreGenerado: String
+                    do {
+                        nombreGenerado = "Jugador $contadorAnon"
+                        contadorAnon++
+                    } while (usados.contains(nombreGenerado))
+                    todosNombres[i] = nombreGenerado
+                }
+                // Evitar duplicados: si nombre ya existe, añádele sufijo incremental
+                var nombreFinal = todosNombres[i]
+                var sufijo = 2
+                while (usados.contains(nombreFinal)) {
+                    nombreFinal = "${todosNombres[i]} ($sufijo)"
+                    sufijo++
+                }
+                todosNombres[i] = nombreFinal
+                usados.add(nombreFinal)
+            }
+
+            // 2. Guardar jugadores (no duplicar por nombre en este partido)
             val jugadoresIds = mutableMapOf<String, Long>()
-            for (nombre in nombres) {
-                if (nombre.isBlank()) continue
+            for (nombre in todosNombres) {
                 val id = jugadorRepository.insertJugador(JugadorEntity(nombre = nombre))
                 jugadoresIds[nombre] = id
             }
-            equipoAJugadores.forEach { nombre ->
+
+            // 3. Relacionar con partido/equipo (A: primeros N, B: últimos N)
+            val jugadoresCompletosA = todosNombres.take(numJugadores)
+            val jugadoresCompletosB = todosNombres.drop(numJugadores)
+
+            jugadoresCompletosA.forEach { nombre ->
                 val id = jugadoresIds[nombre] ?: return@forEach
                 partidoRepository.asignarJugadorAPartido(
                     PartidoEquipoJugadorEntity(partidoId, "A", id)
                 )
             }
-            equipoBJugadores.forEach { nombre ->
+            jugadoresCompletosB.forEach { nombre ->
                 val id = jugadoresIds[nombre] ?: return@forEach
                 partidoRepository.asignarJugadorAPartido(
                     PartidoEquipoJugadorEntity(partidoId, "B", id)
                 )
             }
+
+            // 4. Actualiza las listas en la UI con los nombres finales
+            for (i in equipoAJugadores.indices) equipoAJugadores[i] = jugadoresCompletosA[i]
+            for (i in equipoBJugadores.indices) equipoBJugadores[i] = jugadoresCompletosB[i]
+
             onFinish()
         }
     }

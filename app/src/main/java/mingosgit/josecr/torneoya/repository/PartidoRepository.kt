@@ -23,4 +23,9 @@ class PartidoRepository(
         partidoEquipoJugadorDao.getJugadoresDeEquipoEnPartido(partidoId, equipo)
     suspend fun getJugadoresDePartido(partidoId: Long) =
         partidoEquipoJugadorDao.getJugadoresDePartido(partidoId)
+
+    suspend fun getNombresJugadoresDeEquipoEnPartido(partidoId: Long, equipo: String, jugadorDao: mingosgit.josecr.torneoya.data.dao.JugadorDao): List<String> {
+        val relaciones = getJugadoresDeEquipoEnPartido(partidoId, equipo)
+        return relaciones.mapNotNull { jugadorDao.getById(it.jugadorId)?.nombre }
+    }
 }

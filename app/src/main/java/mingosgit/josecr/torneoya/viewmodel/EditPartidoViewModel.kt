@@ -1,3 +1,5 @@
+// mingosgit/josecr/torneoya/viewmodel/EditPartidoViewModel.kt
+
 package mingosgit.josecr.torneoya.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -7,9 +9,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 import mingosgit.josecr.torneoya.repository.PartidoRepository
+import mingosgit.josecr.torneoya.repository.JugadorRepository
 
 class EditPartidoViewModel(
     private val partidoRepository: PartidoRepository,
+    private val jugadorRepository: JugadorRepository,
     private val partidoId: Long
 ) : ViewModel() {
 
@@ -25,8 +29,18 @@ class EditPartidoViewModel(
     private val _guardado = MutableStateFlow(false)
     val guardado: StateFlow<Boolean> get() = _guardado
 
+    private val _jugadoresEquipoA = MutableStateFlow<List<String>>(emptyList())
+    val jugadoresEquipoA: StateFlow<List<String>> get() = _jugadoresEquipoA
+
+    private val _jugadoresEquipoB = MutableStateFlow<List<String>>(emptyList())
+    val jugadoresEquipoB: StateFlow<List<String>> get() = _jugadoresEquipoB
+
+    private val _jugadoresCargados = MutableStateFlow(false)
+    val jugadoresCargados: StateFlow<Boolean> get() = _jugadoresCargados
+
     init {
         cargarPartido()
+        cargarJugadores()
     }
 
     fun cargarPartido() {
@@ -34,6 +48,18 @@ class EditPartidoViewModel(
             _loading.value = true
             _partido.value = partidoRepository.getPartidoById(partidoId)
             _loading.value = false
+        }
+    }
+
+    fun cargarJugadores() {
+        viewModelScope.launch {
+            val relacionesA = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, "A")
+            val relacionesB = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, "B")
+            val jugadoresA = relacionesA.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
+            val jugadoresB = relacionesB.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
+            _jugadoresEquipoA.value = jugadoresA
+            _jugadoresEquipoB.value = jugadoresB
+            _jugadoresCargados.value = true
         }
     }
 

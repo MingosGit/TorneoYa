@@ -24,6 +24,7 @@ import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModelFactory
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.ui.screens.EditPartidoScreen
 import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory
 
 @Composable
 fun NavGraph(
@@ -59,17 +60,30 @@ fun NavGraph(
                 createPartidoViewModel = createPartidoViewModel
             )
         }
+
         composable(
             "editar_partido/{partidoId}",
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+            val editPartidoViewModel: mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                modelClass = mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel::class.java,
+                viewModelStoreOwner = owner,
+                factory = mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory(
+                    partidoRepository = partidoRepository,
+                    jugadorRepository = jugadorRepository,
+                    partidoId = id
+                )
+            )
             EditPartidoScreen(
                 partidoId = id,
                 navController = navController,
-                partidoRepository = partidoRepository
+                editPartidoViewModel = editPartidoViewModel
             )
         }
+
+
+
         composable(
             route = "asignar_jugadores/{partidoId}?equipoA={equipoA}&equipoB={equipoB}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
             arguments = listOf(

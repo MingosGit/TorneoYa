@@ -16,28 +16,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory
-import mingosgit.josecr.torneoya.repository.PartidoRepository
 import java.util.*
 
 @Composable
 fun EditPartidoScreen(
     partidoId: Long,
     navController: NavController,
-    partidoRepository: PartidoRepository
+    editPartidoViewModel: EditPartidoViewModel
 ) {
-    val viewModel: EditPartidoViewModel = viewModel(
-        factory = EditPartidoViewModelFactory(partidoRepository, partidoId)
-    )
     val context = LocalContext.current
 
-    val partido by viewModel.partido.collectAsStateWithLifecycle()
-    val loading by viewModel.loading.collectAsStateWithLifecycle()
-    val eliminado by viewModel.eliminado.collectAsStateWithLifecycle()
-    val guardado by viewModel.guardado.collectAsStateWithLifecycle()
+    val partido by editPartidoViewModel.partido.collectAsStateWithLifecycle()
+    val loading by editPartidoViewModel.loading.collectAsStateWithLifecycle()
+    val eliminado by editPartidoViewModel.eliminado.collectAsStateWithLifecycle()
+    val guardado by editPartidoViewModel.guardado.collectAsStateWithLifecycle()
+    val jugadoresEquipoA by editPartidoViewModel.jugadoresEquipoA.collectAsStateWithLifecycle()
+    val jugadoresEquipoB by editPartidoViewModel.jugadoresEquipoB.collectAsStateWithLifecycle()
+    val jugadoresCargados by editPartidoViewModel.jugadoresCargados.collectAsStateWithLifecycle()
 
     var equipoA by rememberSaveable { mutableStateOf("") }
     var equipoB by rememberSaveable { mutableStateOf("") }
@@ -284,7 +281,7 @@ fun EditPartidoScreen(
                 onClick = {
                     mostrarErrores = true
                     if (validarCampos()) {
-                        viewModel.actualizarPartido(
+                        editPartidoViewModel.actualizarPartido(
                             equipoA,
                             equipoB,
                             fecha,
@@ -320,6 +317,24 @@ fun EditPartidoScreen(
             ) {
                 Text("Eliminar Partido")
             }
+
+            // ---- LISTADO DE JUGADORES ASOCIADOS ----
+            Spacer(modifier = Modifier.height(32.dp))
+            Divider()
+            Text("Jugadores Equipo A:", fontSize = 18.sp, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+            if (jugadoresCargados) {
+                jugadoresEquipoA.forEach { nombre ->
+                    Text(nombre, fontSize = 16.sp, modifier = Modifier.padding(vertical = 2.dp))
+                }
+            } else {
+                Text("Cargando jugadores...", fontSize = 14.sp, modifier = Modifier.padding(vertical = 2.dp))
+            }
+            Text("Jugadores Equipo B:", fontSize = 18.sp, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+            if (jugadoresCargados) {
+                jugadoresEquipoB.forEach { nombre ->
+                    Text(nombre, fontSize = 16.sp, modifier = Modifier.padding(vertical = 2.dp))
+                }
+            }
         }
 
         if (showDeleteDialog) {
@@ -329,7 +344,7 @@ fun EditPartidoScreen(
                     TextButton(
                         onClick = {
                             showDeleteDialog = false
-                            viewModel.eliminarPartido()
+                            editPartidoViewModel.eliminarPartido()
                         }
                     ) { Text("Eliminar", color = Color.Red) }
                 },
