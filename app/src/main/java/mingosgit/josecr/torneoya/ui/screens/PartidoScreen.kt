@@ -54,7 +54,7 @@ fun PartidoScreen(
                             }
                     ) {
                         Text(
-                            text = "${partido.equipoA} v ${partido.equipoB}",
+                            text = "ID ${partido.equipoAId} v ID ${partido.equipoBId}",
                             fontSize = 18.sp
                         )
                         Text(

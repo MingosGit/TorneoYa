@@ -36,8 +36,6 @@ fun EditPartidoScreen(
     val jugadoresEquipoB by editPartidoViewModel.jugadoresEquipoB.collectAsStateWithLifecycle()
     val jugadoresCargados by editPartidoViewModel.jugadoresCargados.collectAsStateWithLifecycle()
 
-    var equipoA by rememberSaveable { mutableStateOf("") }
-    var equipoB by rememberSaveable { mutableStateOf("") }
     var fecha by rememberSaveable { mutableStateOf("") }
     var horaInicio by rememberSaveable { mutableStateOf("") }
     var numeroPartes by rememberSaveable { mutableStateOf("") }
@@ -51,8 +49,6 @@ fun EditPartidoScreen(
 
     LaunchedEffect(partido) {
         partido?.let {
-            equipoA = it.equipoA
-            equipoB = it.equipoB
             fecha = it.fecha
             horaInicio = it.horaInicio
             numeroPartes = it.numeroPartes.toString()
@@ -86,8 +82,6 @@ fun EditPartidoScreen(
 
     fun validarCampos(): Boolean {
         val errores = mutableMapOf<String, Boolean>()
-        errores["equipoA"] = equipoA.isBlank()
-        errores["equipoB"] = equipoB.isBlank()
         errores["fecha"] = fecha.isBlank()
         errores["horaInicio"] = horaInicio.isBlank()
         errores["numeroPartes"] = numeroPartes.isBlank() || numeroPartes.toIntOrNull() == null
@@ -142,37 +136,24 @@ fun EditPartidoScreen(
             Text("Editar Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
 
             OutlinedTextField(
-                value = equipoA,
-                onValueChange = { equipoA = it },
-                label = { Text("Nombre Equipo A") },
+                value = partido?.equipoAId?.toString() ?: "",
+                onValueChange = {},
+                enabled = false,
+                label = { Text("Equipo A ID") },
                 singleLine = true,
-                isError = mostrarErrores && camposError["equipoA"] == true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        if (mostrarErrores && camposError["equipoA"] == true) Color(0xFFFFCDD2) else Color.Transparent
-                    )
+                modifier = Modifier.fillMaxWidth()
             )
-            if (mostrarErrores && camposError["equipoA"] == true) {
-                Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
-            }
 
             OutlinedTextField(
-                value = equipoB,
-                onValueChange = { equipoB = it },
-                label = { Text("Nombre Equipo B") },
+                value = partido?.equipoBId?.toString() ?: "",
+                onValueChange = {},
+                enabled = false,
+                label = { Text("Equipo B ID") },
                 singleLine = true,
-                isError = mostrarErrores && camposError["equipoB"] == true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
-                    .background(
-                        if (mostrarErrores && camposError["equipoB"] == true) Color(0xFFFFCDD2) else Color.Transparent
-                    )
             )
-            if (mostrarErrores && camposError["equipoB"] == true) {
-                Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
-            }
 
             Row(
                 Modifier
@@ -262,7 +243,7 @@ fun EditPartidoScreen(
             }
 
             OutlinedTextField(
-                value = partido!!.numeroJugadores.toString(),
+                value = partido?.numeroJugadores?.toString() ?: "",
                 onValueChange = {},
                 enabled = false,
                 label = { Text("Nº jugadores por equipo") },
@@ -282,8 +263,6 @@ fun EditPartidoScreen(
                     mostrarErrores = true
                     if (validarCampos()) {
                         editPartidoViewModel.actualizarPartido(
-                            equipoA,
-                            equipoB,
                             fecha,
                             horaInicio,
                             numeroPartes.toInt(),
@@ -318,7 +297,6 @@ fun EditPartidoScreen(
                 Text("Eliminar Partido")
             }
 
-            // ---- LISTADO DE JUGADORES ASOCIADOS ----
             Spacer(modifier = Modifier.height(32.dp))
             Divider()
             Text("Jugadores Equipo A:", fontSize = 18.sp, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))

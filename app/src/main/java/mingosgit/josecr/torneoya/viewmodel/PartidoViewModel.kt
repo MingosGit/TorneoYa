@@ -26,17 +26,17 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
-    fun asignarJugadorAPartido(partidoId: Long, equipo: String, jugadorId: Long) {
+    fun asignarJugadorAPartido(partidoId: Long, equipoId: Long, jugadorId: Long) {
         viewModelScope.launch {
-            val rel = PartidoEquipoJugadorEntity(partidoId, equipo, jugadorId)
+            val rel = PartidoEquipoJugadorEntity(partidoId, equipoId, jugadorId)
             repository.asignarJugadorAPartido(rel)
         }
     }
 
-    fun eliminarJugadorDePartido(partidoId: Long, jugadorId: Long) {
+    fun eliminarJugadorDePartido(partidoId: Long, equipoAId: Long, equipoBId: Long, jugadorId: Long) {
         viewModelScope.launch {
-            val relA = PartidoEquipoJugadorEntity(partidoId, "A", jugadorId)
-            val relB = PartidoEquipoJugadorEntity(partidoId, "B", jugadorId)
+            val relA = PartidoEquipoJugadorEntity(partidoId, equipoAId, jugadorId)
+            val relB = PartidoEquipoJugadorEntity(partidoId, equipoBId, jugadorId)
             repository.eliminarJugadorDePartido(relA)
             repository.eliminarJugadorDePartido(relB)
         }

@@ -1,4 +1,3 @@
-// mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory.kt
 package mingosgit.josecr.torneoya.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -9,6 +8,8 @@ import mingosgit.josecr.torneoya.repository.PartidoRepository
 class AsignarJugadoresViewModelFactory(
     private val partidoId: Long,
     private val numJugadores: Int,
+    private val equipoAId: Long,
+    private val equipoBId: Long,
     private val jugadorRepository: JugadorRepository,
     private val partidoRepository: PartidoRepository
 ) : ViewModelProvider.Factory {
@@ -17,6 +18,8 @@ class AsignarJugadoresViewModelFactory(
             return AsignarJugadoresViewModel(
                 partidoId,
                 numJugadores,
+                equipoAId,
+                equipoBId,
                 jugadorRepository,
                 partidoRepository
             ) as T

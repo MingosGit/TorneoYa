@@ -16,7 +16,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
 import java.util.Calendar
 
@@ -68,19 +67,12 @@ fun CreatePartidoScreen(
     fun validarCampos(): Boolean {
         val errores = mutableMapOf<String, Boolean>()
 
-        // Nombre equipo A
         errores["equipoA"] = equipoA.isBlank()
-        // Nombre equipo B
         errores["equipoB"] = equipoB.isBlank()
-        // Fecha
         errores["fecha"] = fecha.isBlank()
-        // Hora
         errores["horaInicio"] = horaInicio.isBlank()
-        // Número de partes
         errores["numeroPartes"] = numeroPartes.isBlank() || numeroPartes.toIntOrNull() == null
-        // Tiempo por parte
         errores["tiempoPorParte"] = tiempoPorParte.isBlank() || tiempoPorParte.toIntOrNull() == null
-        // Número de jugadores
         errores["numeroJugadores"] = numeroJugadores.isBlank() || numeroJugadores.toIntOrNull() == null
 
         camposError = errores
@@ -242,54 +234,31 @@ fun CreatePartidoScreen(
 
             Button(
                 onClick = {
-
-                    navController.navigate(
-                        "asignar_jugadores/$partidoTempId" +
-                                "?equipoA=${equipoA}" +
-                                "&equipoB=${equipoB}" +
-                                "&fecha=${fecha}" +
-                                "&horaInicio=${horaInicio}" +
-                                "&numeroPartes=${numeroPartes}" +
-                                "&tiempoPorParte=${tiempoPorParte}" +
-                                "&numeroJugadores=${numeroJugadores}"
-                    )
-
+                    if (validarCampos()) {
+                        createPartidoViewModel.crearPartido(
+                            equipoA = equipoA,
+                            equipoB = equipoB,
+                            fecha = fecha,
+                            horaInicio = horaInicio,
+                            numeroPartes = numeroPartes.toInt(),
+                            tiempoPorParte = tiempoPorParte.toInt(),
+                            numeroJugadores = numeroJugadores.toInt(),
+                            partidoTempId = partidoTempId
+                        ) {
+                            navController.popBackStack()
+                        }
+                        mostrarErrores = false
+                        partidoTempId = System.currentTimeMillis()
+                    } else {
+                        mostrarErrores = true
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp)
             ) {
-                Text("Asignar Jugadores")
+                Text("Finalizar y Guardar")
             }
-        }
-
-        Button(
-            onClick = {
-                mostrarErrores = true
-                if (validarCampos()) {
-                    val eqA = if (equipoA.isBlank()) "Equipo1" else equipoA
-                    val eqB = if (equipoB.isBlank()) "Equipo2" else equipoB
-                    val partido = PartidoEntity(
-                        id = partidoTempId,
-                        fecha = fecha,
-                        horaInicio = horaInicio,
-                        numeroPartes = numeroPartes.toIntOrNull() ?: 2,
-                        tiempoPorParte = tiempoPorParte.toIntOrNull() ?: 25,
-                        equipoA = eqA,
-                        equipoB = eqB,
-                        numeroJugadores = numeroJugadores.toIntOrNull() ?: 5
-                    )
-                    createPartidoViewModel.crearPartido(partido)
-                    partidoTempId = System.currentTimeMillis()
-                    mostrarErrores = false
-                    navController.popBackStack()
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-        ) {
-            Text("Finalizar")
         }
     }
 }

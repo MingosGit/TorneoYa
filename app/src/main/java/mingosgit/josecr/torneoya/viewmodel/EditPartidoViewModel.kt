@@ -1,5 +1,3 @@
-// mingosgit/josecr/torneoya/viewmodel/EditPartidoViewModel.kt
-
 package mingosgit.josecr.torneoya.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -10,10 +8,12 @@ import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.repository.JugadorRepository
+import mingosgit.josecr.torneoya.repository.EquipoRepository
 
 class EditPartidoViewModel(
     private val partidoRepository: PartidoRepository,
     private val jugadorRepository: JugadorRepository,
+    private val equipoRepository: EquipoRepository,
     private val partidoId: Long
 ) : ViewModel() {
 
@@ -53,8 +53,9 @@ class EditPartidoViewModel(
 
     fun cargarJugadores() {
         viewModelScope.launch {
-            val relacionesA = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, "A")
-            val relacionesB = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, "B")
+            val partido = partidoRepository.getPartidoById(partidoId)
+            val relacionesA = partido?.equipoAId?.let { partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, it) } ?: emptyList()
+            val relacionesB = partido?.equipoBId?.let { partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, it) } ?: emptyList()
             val jugadoresA = relacionesA.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
             val jugadoresB = relacionesB.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
             _jugadoresEquipoA.value = jugadoresA
@@ -64,8 +65,6 @@ class EditPartidoViewModel(
     }
 
     fun actualizarPartido(
-        equipoA: String,
-        equipoB: String,
         fecha: String,
         horaInicio: String,
         numeroPartes: Int,
@@ -73,8 +72,6 @@ class EditPartidoViewModel(
     ) {
         val p = _partido.value ?: return
         val nuevo = p.copy(
-            equipoA = equipoA,
-            equipoB = equipoB,
             fecha = fecha,
             horaInicio = horaInicio,
             numeroPartes = numeroPartes,

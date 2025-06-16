@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
 import mingosgit.josecr.torneoya.repository.PartidoRepository
+import mingosgit.josecr.torneoya.repository.EquipoRepository   // <--- AGREGA ESTA LÍNEA
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavigationBar
 import mingosgit.josecr.torneoya.ui.navigation.NavGraph
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavItem
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
                 val db = AppDatabase.getInstance(context)
                 val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
                 val partidoRepository = PartidoRepository(db.partidoDao(), db.partidoEquipoJugadorDao())
+                val equipoRepository = EquipoRepository(db.equipoDao())    // <--- INICIALIZA AQUÍ
 
                 val usuarioLocalViewModel = ViewModelProvider(
                     owner,
@@ -68,11 +70,13 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
+
                         NavGraph(
                             navController = navController,
                             usuarioLocalViewModel = usuarioLocalViewModel,
                             partidoViewModel = partidoViewModel,
-                            partidoRepository = partidoRepository
+                            partidoRepository = partidoRepository,
+                            equipoRepository = equipoRepository   // <--- PÁSALO AQUÍ
                         )
                     }
                 }

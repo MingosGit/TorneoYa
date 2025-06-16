@@ -3,8 +3,10 @@ package mingosgit.josecr.torneoya.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import mingosgit.josecr.torneoya.ui.screens.AsignarJugadoresScreen
-import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModel
+import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory
 import mingosgit.josecr.torneoya.repository.JugadorRepository
+import mingosgit.josecr.torneoya.repository.EquipoRepository
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -19,19 +21,17 @@ import mingosgit.josecr.torneoya.ui.screens.UsuarioScreen
 import mingosgit.josecr.torneoya.ui.screens.CreatePartidoScreen
 import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
-import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModelFactory
-import mingosgit.josecr.torneoya.repository.PartidoRepository
-import mingosgit.josecr.torneoya.ui.screens.EditPartidoScreen
-import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
     usuarioLocalViewModel: UsuarioLocalViewModel,
     partidoViewModel: PartidoViewModel,
-    partidoRepository: PartidoRepository
+    partidoRepository: mingosgit.josecr.torneoya.repository.PartidoRepository,
+    equipoRepository: EquipoRepository
 ) {
     val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
     val context = LocalContext.current
@@ -51,9 +51,9 @@ fun NavGraph(
         }
         composable("crear_partido") {
             val createPartidoViewModel = viewModel(
-                modelClass = CreatePartidoViewModel::class.java,
+                modelClass = mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = CreatePartidoViewModelFactory(partidoRepository)
+                factory = CreatePartidoViewModelFactory(partidoRepository, equipoRepository)
             )
             CreatePartidoScreen(
                 navController = navController,
@@ -66,30 +66,29 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
-            val editPartidoViewModel: mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+            val editPartidoViewModel = viewModel(
                 modelClass = mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory(
+                factory = EditPartidoViewModelFactory(
                     partidoRepository = partidoRepository,
                     jugadorRepository = jugadorRepository,
+                    equipoRepository = equipoRepository,
                     partidoId = id
                 )
             )
-            EditPartidoScreen(
+            mingosgit.josecr.torneoya.ui.screens.EditPartidoScreen(
                 partidoId = id,
                 navController = navController,
                 editPartidoViewModel = editPartidoViewModel
             )
         }
 
-
-
         composable(
-            route = "asignar_jugadores/{partidoId}?equipoA={equipoA}&equipoB={equipoB}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
+            route = "asignar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
             arguments = listOf(
                 navArgument("partidoId") { type = NavType.LongType },
-                navArgument("equipoA") { defaultValue = "" },
-                navArgument("equipoB") { defaultValue = "" },
+                navArgument("equipoAId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("equipoBId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("fecha") { defaultValue = "" },
                 navArgument("horaInicio") { defaultValue = "" },
                 navArgument("numeroPartes") { defaultValue = "2" },
@@ -98,18 +97,22 @@ fun NavGraph(
             )
         ) { backStackEntry ->
             val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+            val equipoAId = backStackEntry.arguments?.getLong("equipoAId") ?: -1L
+            val equipoBId = backStackEntry.arguments?.getLong("equipoBId") ?: -1L
             val numJugadores = backStackEntry.arguments?.getString("numeroJugadores")?.toIntOrNull() ?: 5
             val vm = viewModel(
                 modelClass = mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory(
+                factory = AsignarJugadoresViewModelFactory(
                     partidoId,
                     numJugadores,
+                    equipoAId,
+                    equipoBId,
                     jugadorRepository,
                     partidoRepository
                 )
             )
-            mingosgit.josecr.torneoya.ui.screens.AsignarJugadoresScreen(
+            AsignarJugadoresScreen(
                 navController = navController,
                 vm = vm
             )

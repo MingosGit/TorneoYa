@@ -16,6 +16,8 @@ import kotlin.random.Random
 class AsignarJugadoresViewModel(
     private val partidoId: Long,
     val numJugadores: Int,
+    private val equipoAId: Long,
+    private val equipoBId: Long,
     private val jugadorRepository: JugadorRepository,
     private val partidoRepository: PartidoRepository
 ) : ViewModel() {
@@ -105,20 +107,20 @@ class AsignarJugadoresViewModel(
                 jugadoresIds[nombre] = id
             }
 
-            // 3. Relacionar con partido/equipo (A: primeros N, B: últimos N)
+            // 3. Relacionar con partido/equipo por ID
             val jugadoresCompletosA = todosNombres.take(numJugadores)
             val jugadoresCompletosB = todosNombres.drop(numJugadores)
 
             jugadoresCompletosA.forEach { nombre ->
                 val id = jugadoresIds[nombre] ?: return@forEach
                 partidoRepository.asignarJugadorAPartido(
-                    PartidoEquipoJugadorEntity(partidoId, "A", id)
+                    PartidoEquipoJugadorEntity(partidoId, equipoAId, id)
                 )
             }
             jugadoresCompletosB.forEach { nombre ->
                 val id = jugadoresIds[nombre] ?: return@forEach
                 partidoRepository.asignarJugadorAPartido(
-                    PartidoEquipoJugadorEntity(partidoId, "B", id)
+                    PartidoEquipoJugadorEntity(partidoId, equipoBId, id)
                 )
             }
 
