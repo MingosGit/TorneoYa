@@ -13,11 +13,14 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.compose.rememberNavController
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
+import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavigationBar
 import mingosgit.josecr.torneoya.ui.navigation.NavGraph
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaTheme
 import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.PartidoViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,13 +31,19 @@ class MainActivity : ComponentActivity() {
                 val context = this@MainActivity
                 val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
 
-                // Instanciar la BD, el repositorio y el ViewModel
                 val db = AppDatabase.getInstance(context)
                 val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
+                val partidoRepository = PartidoRepository(db.partidoDao(), db.partidoEquipoJugadorDao())
+
                 val usuarioLocalViewModel = ViewModelProvider(
                     owner,
                     UsuarioLocalViewModelFactory(usuarioLocalRepository)
                 )[UsuarioLocalViewModel::class.java]
+
+                val partidoViewModel = ViewModelProvider(
+                    owner,
+                    PartidoViewModelFactory(partidoRepository)
+                )[PartidoViewModel::class.java]
 
                 Scaffold(
                     bottomBar = { BottomNavigationBar(navController) },
@@ -47,7 +56,8 @@ class MainActivity : ComponentActivity() {
                     ) {
                         NavGraph(
                             navController = navController,
-                            usuarioLocalViewModel = usuarioLocalViewModel
+                            usuarioLocalViewModel = usuarioLocalViewModel,
+                            partidoViewModel = partidoViewModel
                         )
                     }
                 }
