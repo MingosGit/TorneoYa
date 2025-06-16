@@ -166,7 +166,7 @@ fun AsignarJugadoresScreen(
                 .fillMaxWidth()
                 .padding(top = 24.dp)
         ) {
-            Text("Guardar")
+            Text("Guardar asignación")
         }
     }
 }

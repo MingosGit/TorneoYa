@@ -13,7 +13,8 @@ class CreatePartidoViewModel(
     private val equipoRepository: EquipoRepository
 ) : ViewModel() {
 
-    fun crearPartido(
+    // callback: (partidoId: Long, equipoAId: Long, equipoBId: Long) -> Unit
+    fun crearPartidoYEquipos(
         equipoA: String,
         equipoB: String,
         fecha: String,
@@ -21,14 +22,12 @@ class CreatePartidoViewModel(
         numeroPartes: Int,
         tiempoPorParte: Int,
         numeroJugadores: Int,
-        partidoTempId: Long,
-        onFinish: () -> Unit = {}
+        onFinish: (Long, Long, Long) -> Unit = { _, _, _ -> }
     ) {
         viewModelScope.launch {
             val equipoAId = equipoRepository.insertEquipo(EquipoEntity(nombre = equipoA))
             val equipoBId = equipoRepository.insertEquipo(EquipoEntity(nombre = equipoB))
             val partido = PartidoEntity(
-                id = partidoTempId,
                 fecha = fecha,
                 horaInicio = horaInicio,
                 numeroPartes = numeroPartes,
@@ -37,8 +36,8 @@ class CreatePartidoViewModel(
                 equipoBId = equipoBId,
                 numeroJugadores = numeroJugadores
             )
-            partidoRepository.insertPartido(partido)
-            onFinish()
+            val partidoId = partidoRepository.insertPartido(partido) // DEBE DEVOLVER EL AUTOGEN ID
+            onFinish(partidoId, equipoAId, equipoBId)
         }
     }
 }

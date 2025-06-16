@@ -6,7 +6,7 @@ import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 @Dao
 interface PartidoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(partido: PartidoEntity)
+    suspend fun insert(partido: PartidoEntity): Long // IMPORTANTE: DEVUELVE ID
 
     @Update
     suspend fun update(partido: PartidoEntity)

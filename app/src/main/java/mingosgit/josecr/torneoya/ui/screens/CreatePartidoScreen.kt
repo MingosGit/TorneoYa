@@ -1,5 +1,3 @@
-// mingosgit.josecr.torneoya.ui.screens.CreatePartidoScreen.kt
-
 package mingosgit.josecr.torneoya.ui.screens
 
 import android.app.DatePickerDialog
@@ -18,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
 import java.util.Calendar
 
@@ -35,12 +34,13 @@ fun CreatePartidoScreen(
     var numeroPartes by rememberSaveable { mutableStateOf("2") }
     var tiempoPorParte by rememberSaveable { mutableStateOf("25") }
     var numeroJugadores by rememberSaveable { mutableStateOf("5") }
-    var partidoTempId by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
 
     var camposError by rememberSaveable { mutableStateOf(mapOf<String, Boolean>()) }
     var mostrarErrores by rememberSaveable { mutableStateOf(false) }
 
     val calendar = remember { Calendar.getInstance() }
+    val scope = rememberCoroutineScope()
+    var guardando by remember { mutableStateOf(false) }
 
     val datePickerDialog = remember {
         DatePickerDialog(
@@ -234,49 +234,39 @@ fun CreatePartidoScreen(
                 Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
             }
 
-            // Botón para navegar a asignar jugadores ANTES de guardar el partido.
-            Button(
-                onClick = {
-                    val tempId = partidoTempId
-                    navController.navigate(
-                        "asignar_jugadores/$tempId?equipoAId=-1&equipoBId=-1&fecha=${fecha}&horaInicio=${horaInicio}&numeroPartes=${numeroPartes}&tiempoPorParte=${tiempoPorParte}&numeroJugadores=${numeroJugadores}"
-                    )
-
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-            ) {
-                Text("Agregar jugadores")
-            }
-
-            // Botón para finalizar y guardar el partido
+            // SOLO guarda el partido, luego navega a la pantalla de asignar jugadores.
             Button(
                 onClick = {
                     if (validarCampos()) {
-                        createPartidoViewModel.crearPartido(
-                            equipoA = equipoA,
-                            equipoB = equipoB,
-                            fecha = fecha,
-                            horaInicio = horaInicio,
-                            numeroPartes = numeroPartes.toInt(),
-                            tiempoPorParte = tiempoPorParte.toInt(),
-                            numeroJugadores = numeroJugadores.toInt(),
-                            partidoTempId = partidoTempId
-                        ) {
-                            navController.popBackStack()
+                        guardando = true
+                        scope.launch {
+                            createPartidoViewModel.crearPartidoYEquipos(
+                                equipoA = equipoA,
+                                equipoB = equipoB,
+                                fecha = fecha,
+                                horaInicio = horaInicio,
+                                numeroPartes = numeroPartes.toInt(),
+                                tiempoPorParte = tiempoPorParte.toInt(),
+                                numeroJugadores = numeroJugadores.toInt()
+                            ) { partidoId, equipoAId, equipoBId ->
+                                // Aquí navegas a la pantalla de asignar jugadores con los IDs reales
+                                navController.navigate(
+                                    "asignar_jugadores/$partidoId?equipoAId=$equipoAId&equipoBId=$equipoBId&fecha=$fecha&horaInicio=$horaInicio&numeroPartes=$numeroPartes&tiempoPorParte=$tiempoPorParte&numeroJugadores=$numeroJugadores"
+                                )
+                            }
+                            guardando = false
                         }
                         mostrarErrores = false
-                        partidoTempId = System.currentTimeMillis()
                     } else {
                         mostrarErrores = true
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(top = 24.dp),
+                enabled = !guardando
             ) {
-                Text("Finalizar y Guardar")
+                Text("Crear y asignar jugadores")
             }
         }
     }

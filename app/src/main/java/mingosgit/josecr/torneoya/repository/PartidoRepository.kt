@@ -10,7 +10,7 @@ class PartidoRepository(
     private val partidoDao: PartidoDao,
     private val partidoEquipoJugadorDao: PartidoEquipoJugadorDao
 ) {
-    suspend fun insertPartido(partido: PartidoEntity) = partidoDao.insert(partido)
+    suspend fun insertPartido(partido: PartidoEntity): Long = partidoDao.insert(partido)
     suspend fun updatePartido(partido: PartidoEntity) = partidoDao.update(partido)
     suspend fun deletePartido(partido: PartidoEntity) = partidoDao.delete(partido)
     suspend fun getPartidoById(id: Long) = partidoDao.getPartidoById(id)
