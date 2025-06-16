@@ -8,10 +8,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.compose.rememberNavController
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaTheme
+import mingosgit.josecr.torneoya.data.database.AppDatabase
+import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavigationBar
 import mingosgit.josecr.torneoya.ui.navigation.NavGraph
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaTheme
+import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
+import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,14 +25,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             TorneoYaTheme {
                 val navController = rememberNavController()
+                val context = this@MainActivity
+                val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
+
+                // Instanciar la BD, el repositorio y el ViewModel
+                val db = AppDatabase.getInstance(context)
+                val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
+                val usuarioLocalViewModel = ViewModelProvider(
+                    owner,
+                    UsuarioLocalViewModelFactory(usuarioLocalRepository)
+                )[UsuarioLocalViewModel::class.java]
+
                 Scaffold(
                     bottomBar = { BottomNavigationBar(navController) },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    Column(modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)) {
-                        NavGraph(navController = navController)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        NavGraph(
+                            navController = navController,
+                            usuarioLocalViewModel = usuarioLocalViewModel
+                        )
                     }
                 }
             }
