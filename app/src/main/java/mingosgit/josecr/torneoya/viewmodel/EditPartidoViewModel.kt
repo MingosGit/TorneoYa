@@ -54,12 +54,15 @@ class EditPartidoViewModel(
     fun cargarJugadores() {
         viewModelScope.launch {
             val partido = partidoRepository.getPartidoById(partidoId)
-            val relacionesA = partido?.equipoAId?.let { partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, it) } ?: emptyList()
-            val relacionesB = partido?.equipoBId?.let { partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, it) } ?: emptyList()
-            val jugadoresA = relacionesA.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
-            val jugadoresB = relacionesB.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
-            _jugadoresEquipoA.value = jugadoresA
-            _jugadoresEquipoB.value = jugadoresB
+            val jugadoresA = partido?.equipoAId?.let {
+                partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, it)
+            } ?: emptyList()
+            val jugadoresB = partido?.equipoBId?.let {
+                partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, it)
+            } ?: emptyList()
+            // Aquí ya recibes List<JugadorEntity>, no relaciones
+            _jugadoresEquipoA.value = jugadoresA.map { it.nombre }
+            _jugadoresEquipoB.value = jugadoresB.map { it.nombre }
             _jugadoresCargados.value = true
         }
     }

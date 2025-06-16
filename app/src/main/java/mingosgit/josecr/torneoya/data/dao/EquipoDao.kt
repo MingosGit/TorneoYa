@@ -19,4 +19,18 @@ interface EquipoDao {
 
     @Query("SELECT * FROM equipo ORDER BY id ASC")
     suspend fun getAll(): List<EquipoEntity>
+
+    // NUEVO: obtener nombre del equipo por ID
+    @Query("SELECT nombre FROM equipo WHERE id = :id LIMIT 1")
+    suspend fun getNombreById(id: Long): String?
+
+    // NUEVO: obtener nombres de los jugadores de un equipo en un partido concreto
+    @Query("""
+        SELECT j.nombre 
+        FROM partido_equipo_jugador AS pej
+        INNER JOIN jugador AS j ON pej.jugadorId = j.id
+        WHERE pej.partidoId = :partidoId AND pej.equipoId = :equipoId
+        ORDER BY j.nombre ASC
+    """)
+    suspend fun getNombresJugadoresEquipoEnPartido(partidoId: Long, equipoId: Long): List<String>
 }

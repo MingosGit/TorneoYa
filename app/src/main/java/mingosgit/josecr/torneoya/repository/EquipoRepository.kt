@@ -9,4 +9,9 @@ class EquipoRepository(private val equipoDao: EquipoDao) {
     suspend fun deleteEquipo(equipo: EquipoEntity) = equipoDao.delete(equipo)
     suspend fun getById(id: Long) = equipoDao.getById(id)
     suspend fun getAll() = equipoDao.getAll()
+
+    suspend fun getNombreById(id: Long): String? = equipoDao.getNombreById(id)
+
+    suspend fun getNombresJugadoresEquipoEnPartido(partidoId: Long, equipoId: Long): List<String> =
+        equipoDao.getNombresJugadoresEquipoEnPartido(partidoId, equipoId)
 }

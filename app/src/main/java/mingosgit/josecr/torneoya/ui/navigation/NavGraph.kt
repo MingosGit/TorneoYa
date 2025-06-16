@@ -24,6 +24,8 @@ import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModelFactory
 import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModelFactory
+import mingosgit.josecr.torneoya.ui.screens.VisualizarPartidoScreen
 
 @Composable
 fun NavGraph(
@@ -43,7 +45,8 @@ fun NavGraph(
         composable(BottomNavItem.Partido.route) {
             PartidoScreen(
                 navController = navController,
-                partidoViewModel = partidoViewModel
+                partidoViewModel = partidoViewModel,
+                equipoRepository = equipoRepository
             )
         }
         composable(BottomNavItem.Usuario.route) {
@@ -60,7 +63,26 @@ fun NavGraph(
                 createPartidoViewModel = createPartidoViewModel
             )
         }
-
+        composable(
+            "visualizar_partido/{partidoId}",
+            arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+            val visualizarPartidoViewModel = viewModel(
+                modelClass = mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModel::class.java,
+                viewModelStoreOwner = owner,
+                factory = VisualizarPartidoViewModelFactory(
+                    partidoId = id,
+                    partidoRepository = partidoRepository,
+                    equipoRepository = equipoRepository
+                )
+            )
+            VisualizarPartidoScreen(
+                partidoId = id,
+                navController = navController,
+                vm = visualizarPartidoViewModel
+            )
+        }
         composable(
             "editar_partido/{partidoId}",
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
@@ -82,7 +104,6 @@ fun NavGraph(
                 editPartidoViewModel = editPartidoViewModel
             )
         }
-
         composable(
             route = "asignar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
             arguments = listOf(

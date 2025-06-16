@@ -12,16 +12,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.PartidoConNombres
 
 @Composable
 fun PartidoScreen(
     navController: NavController,
-    partidoViewModel: PartidoViewModel
+    partidoViewModel: PartidoViewModel,
+    equipoRepository: mingosgit.josecr.torneoya.repository.EquipoRepository
 ) {
     LaunchedEffect(Unit) {
-        partidoViewModel.cargarPartidos()
+        partidoViewModel.cargarPartidosConNombres(equipoRepository)
     }
-    val partidos by partidoViewModel.partidos.collectAsState()
+    val partidos by partidoViewModel.partidosConNombres.collectAsState()
 
     Scaffold(
         floatingActionButton = {
@@ -50,11 +52,11 @@ fun PartidoScreen(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                             .clickable {
-                                navController.navigate("editar_partido/${partido.id}")
+                                navController.navigate("visualizar_partido/${partido.id}")
                             }
                     ) {
                         Text(
-                            text = "ID ${partido.equipoAId} v ID ${partido.equipoBId}",
+                            text = "${partido.nombreEquipoA} vs ${partido.nombreEquipoB}",
                             fontSize = 18.sp
                         )
                         Text(
