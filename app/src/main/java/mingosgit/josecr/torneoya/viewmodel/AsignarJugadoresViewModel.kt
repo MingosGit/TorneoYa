@@ -1,7 +1,9 @@
-// mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModel.kt
 package mingosgit.josecr.torneoya.viewmodel
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -17,18 +19,24 @@ class AsignarJugadoresViewModel(
     private val jugadorRepository: JugadorRepository,
     private val partidoRepository: PartidoRepository
 ) : ViewModel() {
+
     var equipoAJugadores = mutableStateListOf<String>().apply { repeat(numJugadores) { add("") } }
     var equipoBJugadores = mutableStateListOf<String>().apply { repeat(numJugadores) { add("") } }
+    var modoAleatorio by mutableStateOf(false)
+    var listaNombres = mutableStateListOf<String>().apply { repeat(numJugadores * 2) { add("") } }
+    var equipoSeleccionado by mutableStateOf("A")
 
     fun setNumJugadoresPorEquipo(n: Int) {
         while (equipoAJugadores.size < n) equipoAJugadores.add("")
         while (equipoAJugadores.size > n) equipoAJugadores.removeAt(equipoAJugadores.size - 1)
         while (equipoBJugadores.size < n) equipoBJugadores.add("")
         while (equipoBJugadores.size > n) equipoBJugadores.removeAt(equipoBJugadores.size - 1)
+        while (listaNombres.size < n * 2) listaNombres.add("")
+        while (listaNombres.size > n * 2) listaNombres.removeAt(listaNombres.size - 1)
     }
 
-    fun asignarAleatorio(listaNombres: List<String>) {
-        val shuffled = listaNombres.shuffled(Random(System.currentTimeMillis()))
+    fun asignarAleatorio(listaNombresParam: List<String>) {
+        val shuffled = listaNombresParam.shuffled(Random(System.currentTimeMillis()))
         setNumJugadoresPorEquipo(numJugadores)
         equipoAJugadores.clear()
         equipoBJugadores.clear()

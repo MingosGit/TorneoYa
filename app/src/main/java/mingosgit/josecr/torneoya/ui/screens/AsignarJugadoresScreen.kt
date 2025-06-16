@@ -19,15 +19,10 @@ fun AsignarJugadoresScreen(
     navController: NavController,
     vm: AsignarJugadoresViewModel
 ) {
-    var modoAleatorio by remember { mutableStateOf(false) }
-    var listaNombres by remember { mutableStateOf(List(vm.numJugadores * 2) { "" }) }
-    var equipoSeleccionado by remember { mutableStateOf("A") }
+    // UI solo se conecta al estado del ViewModel. NO USA remember ni saveable aquí.
 
     LaunchedEffect(vm.numJugadores) {
         vm.setNumJugadoresPorEquipo(vm.numJugadores)
-        if (listaNombres.size != vm.numJugadores * 2) {
-            listaNombres = List(vm.numJugadores * 2) { idx -> listaNombres.getOrNull(idx) ?: "" }
-        }
     }
 
     Column(
@@ -35,7 +30,6 @@ fun AsignarJugadoresScreen(
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        // SIEMPRE FIJO ARRIBA
         Text(
             "Asignar jugadores",
             fontSize = 24.sp,
@@ -44,24 +38,23 @@ fun AsignarJugadoresScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        // EQUIPO SELECCIONADO SI NO MODO ALEATORIO
-        if (!modoAleatorio) {
+        if (!vm.modoAleatorio) {
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    onClick = { equipoSeleccionado = "A" },
+                    onClick = { vm.equipoSeleccionado = "A" },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (equipoSeleccionado == "A") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                        containerColor = if (vm.equipoSeleccionado == "A") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     ),
                     modifier = Modifier.weight(1f)
                 ) { Text("Equipo A") }
                 Spacer(Modifier.width(10.dp))
                 Button(
-                    onClick = { equipoSeleccionado = "B" },
+                    onClick = { vm.equipoSeleccionado = "B" },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (equipoSeleccionado == "B") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                        containerColor = if (vm.equipoSeleccionado == "B") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     ),
                     modifier = Modifier.weight(1f)
                 ) { Text("Equipo B") }
@@ -74,25 +67,25 @@ fun AsignarJugadoresScreen(
                 .align(Alignment.CenterHorizontally)
         ) {
             Button(
-                onClick = { modoAleatorio = false },
+                onClick = { vm.modoAleatorio = false },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (!modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                    containerColor = if (!vm.modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                 ),
                 modifier = Modifier.weight(1f)
             ) { Text("Manual") }
             Spacer(Modifier.width(10.dp))
             Button(
-                onClick = { modoAleatorio = true },
+                onClick = { vm.modoAleatorio = true },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                    containerColor = if (vm.modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                 ),
                 modifier = Modifier.weight(1f)
             ) { Text("Aleatorio") }
         }
 
-        if (!modoAleatorio) {
+        if (!vm.modoAleatorio) {
             Text(
-                if (equipoSeleccionado == "A") "Jugadores Equipo A" else "Jugadores Equipo B",
+                if (vm.equipoSeleccionado == "A") "Jugadores Equipo A" else "Jugadores Equipo B",
                 fontSize = 18.sp,
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 4.dp)
@@ -104,12 +97,12 @@ fun AsignarJugadoresScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 val jugadores =
-                    if (equipoSeleccionado == "A") vm.equipoAJugadores else vm.equipoBJugadores
+                    if (vm.equipoSeleccionado == "A") vm.equipoAJugadores else vm.equipoBJugadores
                 jugadores.forEachIndexed { idx, nombre ->
                     OutlinedTextField(
                         value = nombre,
                         onValueChange = {
-                            if (equipoSeleccionado == "A") vm.equipoAJugadores[idx] = it
+                            if (vm.equipoSeleccionado == "A") vm.equipoAJugadores[idx] = it
                             else vm.equipoBJugadores[idx] = it
                         },
                         label = { Text("Jugador ${idx + 1}") },
@@ -134,11 +127,11 @@ fun AsignarJugadoresScreen(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
             ) {
-                listaNombres.forEachIndexed { idx, nombre ->
+                vm.listaNombres.forEachIndexed { idx, nombre ->
                     OutlinedTextField(
                         value = nombre,
                         onValueChange = {
-                            listaNombres = listaNombres.toMutableList().apply { set(idx, it) }
+                            vm.listaNombres[idx] = it
                         },
                         label = { Text("Jugador ${idx + 1}") },
                         singleLine = true,
@@ -151,10 +144,12 @@ fun AsignarJugadoresScreen(
             }
             Button(
                 onClick = {
-                    val nombresLimpios = listaNombres.filter { it.isNotBlank() }
+                    val nombresLimpios = vm.listaNombres.filter { it.isNotBlank() }
                     if (nombresLimpios.size >= vm.numJugadores * 2) {
                         vm.asignarAleatorio(nombresLimpios)
-                        modoAleatorio = false
+                        vm.modoAleatorio = false
+                        // limpia campos de aleatorio
+                        vm.listaNombres.replaceAll { "" }
                     }
                 },
                 modifier = Modifier
@@ -169,6 +164,7 @@ fun AsignarJugadoresScreen(
             onClick = {
                 vm.guardarEnBD {
                     navController.popBackStack()
+                    // NO limpies el estado aquí, si quieres limpiar puedes hacerlo manual.
                 }
             },
             modifier = Modifier
