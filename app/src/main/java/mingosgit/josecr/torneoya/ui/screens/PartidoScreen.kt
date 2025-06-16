@@ -49,6 +49,9 @@ fun PartidoScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
+                            .clickable {
+                                navController.navigate("editar_partido/${partido.id}")
+                            }
                     ) {
                         Text(
                             text = "${partido.equipoA} v ${partido.equipoB}",

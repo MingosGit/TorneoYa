@@ -22,6 +22,7 @@ import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModelFactory
 import mingosgit.josecr.torneoya.repository.PartidoRepository
+import mingosgit.josecr.torneoya.ui.screens.EditPartidoScreen
 import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory
 
 @Composable
@@ -56,6 +57,17 @@ fun NavGraph(
             CreatePartidoScreen(
                 navController = navController,
                 createPartidoViewModel = createPartidoViewModel
+            )
+        }
+        composable(
+            "editar_partido/{partidoId}",
+            arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+            EditPartidoScreen(
+                partidoId = id,
+                navController = navController,
+                partidoRepository = partidoRepository
             )
         }
         composable(
