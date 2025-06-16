@@ -1,5 +1,7 @@
 package mingosgit.josecr.torneoya.ui.screens
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
+import java.util.Calendar
 
 @Composable
 fun CreatePartidoScreen(
@@ -31,6 +34,34 @@ fun CreatePartidoScreen(
 
     val showError = remember { mutableStateOf(false) }
     val errorMsg = remember { mutableStateOf("") }
+
+    val calendar = remember { Calendar.getInstance() }
+
+    // DatePickerDialog con formato español
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                fecha = "%02d-%02d-%04d".format(dayOfMonth, month + 1, year)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    // TimePickerDialog
+    val timePickerDialog = remember {
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                horaInicio = "%02d:%02d".format(hourOfDay, minute)
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        )
+    }
 
     fun validarCampos(): Boolean {
         if (equipoA.isBlank() || equipoB.isBlank()) {
@@ -69,24 +100,29 @@ fun CreatePartidoScreen(
                 .fillMaxWidth()
                 .padding(top = 8.dp)
         )
-        OutlinedTextField(
-            value = fecha,
-            onValueChange = { fecha = it },
-            label = { Text("Fecha (YYYY-MM-DD)") },
-            singleLine = true,
-            modifier = Modifier
+
+        // FECHA Y HORA CON PICKERS
+        Row(
+            Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
-        )
-        OutlinedTextField(
-            value = horaInicio,
-            onValueChange = { horaInicio = it },
-            label = { Text("Hora (HH:mm)") },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-        )
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedButton(
+                onClick = { datePickerDialog.show() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(if (fecha.isBlank()) "Seleccionar fecha" else fecha)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            OutlinedButton(
+                onClick = { timePickerDialog.show() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio)
+            }
+        }
+
         OutlinedTextField(
             value = numeroPartes,
             onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
