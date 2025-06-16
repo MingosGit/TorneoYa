@@ -7,92 +7,129 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VisualizarPartidoScreen(
     partidoId: Long,
     navController: NavController,
     vm: VisualizarPartidoViewModel
 ) {
-    val partido by vm.partido.collectAsStateWithLifecycle()
-    val nombreEquipoA by vm.nombreEquipoA.collectAsStateWithLifecycle()
-    val nombreEquipoB by vm.nombreEquipoB.collectAsStateWithLifecycle()
-    val jugadoresEquipoA by vm.jugadoresEquipoA.collectAsStateWithLifecycle()
-    val jugadoresEquipoB by vm.jugadoresEquipoB.collectAsStateWithLifecycle()
-    val cargando by vm.cargando.collectAsStateWithLifecycle()
-
-    if (cargando) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-        return
+    // 👇 Fuerza recarga al cambiar partidoId
+    LaunchedEffect(partidoId) {
+        vm.cargarDatos()
     }
 
-    if (partido == null) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("No se encontró el partido.", color = MaterialTheme.colorScheme.error)
-        }
-        return
-    }
+    val uiState by vm.uiState.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Visualizar Partido") }
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
         ) {
-            Text("Detalles del Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
-            Text("Fecha: ${partido!!.fecha}    Hora: ${partido!!.horaInicio}", fontSize = 16.sp)
-
-            Spacer(modifier = Modifier.height(24.dp))
             Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(nombreEquipoA, fontSize = 20.sp, modifier = Modifier.padding(bottom = 8.dp))
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = 200.dp)
-                    ) {
-                        items(jugadoresEquipoA) { nombre ->
-                            Text(nombre, fontSize = 16.sp, modifier = Modifier.padding(2.dp))
+                Text(
+                    text = uiState.nombreEquipoA,
+                    fontSize = 22.sp,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "  VS  ",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                Text(
+                    text = uiState.nombreEquipoB,
+                    fontSize = 22.sp,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                ) {
+                    Text(
+                        text = "Jugadores de ${uiState.nombreEquipoA}",
+                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Divider(modifier = Modifier.padding(vertical = 4.dp))
+                    LazyColumn {
+                        items(uiState.jugadoresEquipoA) { jugador ->
+                            Text(
+                                text = jugador,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        if (uiState.jugadoresEquipoA.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "Sin jugadores asignados",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(nombreEquipoB, fontSize = 20.sp, modifier = Modifier.padding(bottom = 8.dp))
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = 200.dp)
-                    ) {
-                        items(jugadoresEquipoB) { nombre ->
-                            Text(nombre, fontSize = 16.sp, modifier = Modifier.padding(2.dp))
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
+                ) {
+                    Text(
+                        text = "Jugadores de ${uiState.nombreEquipoB}",
+                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Divider(modifier = Modifier.padding(vertical = 4.dp))
+                    LazyColumn {
+                        items(uiState.jugadoresEquipoB) { jugador ->
+                            Text(
+                                text = jugador,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        if (uiState.jugadoresEquipoB.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "Sin jugadores asignados",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-
-        FloatingActionButton(
-            onClick = {
-                navController.navigate("editar_partido/${partidoId}")
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(32.dp)
-        ) {
-            Text("Editar")
         }
     }
 }

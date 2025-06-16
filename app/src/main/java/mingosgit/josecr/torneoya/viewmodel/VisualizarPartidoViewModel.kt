@@ -3,12 +3,18 @@ package mingosgit.josecr.torneoya.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import mingosgit.josecr.torneoya.data.entities.PartidoEntity
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.repository.EquipoRepository
+
+data class VisualizarPartidoUiState(
+    val nombreEquipoA: String = "",
+    val nombreEquipoB: String = "",
+    val jugadoresEquipoA: List<String> = emptyList(),
+    val jugadoresEquipoB: List<String> = emptyList()
+)
 
 class VisualizarPartidoViewModel(
     private val partidoId: Long,
@@ -16,48 +22,40 @@ class VisualizarPartidoViewModel(
     private val equipoRepository: EquipoRepository
 ) : ViewModel() {
 
-    private val _partido = MutableStateFlow<PartidoEntity?>(null)
-    val partido: StateFlow<PartidoEntity?> = _partido
+    private val _uiState = MutableStateFlow(VisualizarPartidoUiState())
+    val uiState: StateFlow<VisualizarPartidoUiState> = _uiState
 
-    private val _nombreEquipoA = MutableStateFlow("")
-    val nombreEquipoA: StateFlow<String> = _nombreEquipoA
+    fun cargarDatos() {
+        viewModelScope.launch {
+            val partido = partidoRepository.getPartidoById(partidoId)
+            if (partido != null) {
+                val equipoAId = partido.equipoAId
+                val equipoBId = partido.equipoBId
 
-    private val _nombreEquipoB = MutableStateFlow("")
-    val nombreEquipoB: StateFlow<String> = _nombreEquipoB
+                // DEBUG: imprime IDs
+                println("CARGAR DATOS partidoId=$partidoId equipoAId=$equipoAId equipoBId=$equipoBId")
 
-    private val _jugadoresEquipoA = MutableStateFlow<List<String>>(emptyList())
-    val jugadoresEquipoA: StateFlow<List<String>> = _jugadoresEquipoA
+                val nombreEquipoA = equipoRepository.getById(equipoAId)?.nombre ?: "Equipo A"
+                val nombreEquipoB = equipoRepository.getById(equipoBId)?.nombre ?: "Equipo B"
+                val jugadoresA = equipoRepository.getNombresJugadoresEquipoEnPartido(partidoId, equipoAId)
+                val jugadoresB = equipoRepository.getNombresJugadoresEquipoEnPartido(partidoId, equipoBId)
 
-    private val _jugadoresEquipoB = MutableStateFlow<List<String>>(emptyList())
-    val jugadoresEquipoB: StateFlow<List<String>> = _jugadoresEquipoB
+                // DEBUG: imprime jugadores
+                println("Jugadores A: $jugadoresA")
+                println("Jugadores B: $jugadoresB")
 
-    private val _cargando = MutableStateFlow(true)
-    val cargando: StateFlow<Boolean> = _cargando
+                _uiState.value = VisualizarPartidoUiState(
+                    nombreEquipoA = nombreEquipoA,
+                    nombreEquipoB = nombreEquipoB,
+                    jugadoresEquipoA = jugadoresA,
+                    jugadoresEquipoB = jugadoresB
+                )
+            }
+        }
+    }
 
     init {
         cargarDatos()
-    }
-
-    private fun cargarDatos() {
-        viewModelScope.launch {
-            _cargando.value = true
-            val partidoEntity = partidoRepository.getPartidoById(partidoId)
-            _partido.value = partidoEntity
-
-            if (partidoEntity != null) {
-                val equipoA = equipoRepository.getById(partidoEntity.equipoAId)
-                val equipoB = equipoRepository.getById(partidoEntity.equipoBId)
-                _nombreEquipoA.value = equipoA?.nombre ?: "Equipo A"
-                _nombreEquipoB.value = equipoB?.nombre ?: "Equipo B"
-
-                val jugadoresA = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, partidoEntity.equipoAId)
-                val jugadoresB = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, partidoEntity.equipoBId)
-
-                _jugadoresEquipoA.value = jugadoresA.map { it.nombre }
-                _jugadoresEquipoB.value = jugadoresB.map { it.nombre }
-            }
-            _cargando.value = false
-        }
     }
 }
 
@@ -66,10 +64,14 @@ class VisualizarPartidoViewModelFactory(
     private val partidoRepository: PartidoRepository,
     private val equipoRepository: EquipoRepository
 ) : ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(VisualizarPartidoViewModel::class.java)) {
-            return VisualizarPartidoViewModel(partidoId, partidoRepository, equipoRepository) as T
+            @Suppress("UNCHECKED_CAST")
+            return VisualizarPartidoViewModel(
+                partidoId = partidoId,
+                partidoRepository = partidoRepository,
+                equipoRepository = equipoRepository
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

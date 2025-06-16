@@ -237,14 +237,11 @@ fun CreatePartidoScreen(
             // Botón para navegar a asignar jugadores ANTES de guardar el partido.
             Button(
                 onClick = {
-                    if (validarCampos()) {
-                        val tempId = partidoTempId
-                        navController.navigate(
-                            "asignar_jugadores/$tempId?equipoAId=-1&equipoBId=-1&fecha=${fecha}&horaInicio=${horaInicio}&numeroPartes=${numeroPartes}&tiempoPorParte=${tiempoPorParte}&numeroJugadores=${numeroJugadores}"
-                        )
-                    } else {
-                        mostrarErrores = true
-                    }
+                    val tempId = partidoTempId
+                    navController.navigate(
+                        "asignar_jugadores/$tempId?equipoAId=-1&equipoBId=-1&fecha=${fecha}&horaInicio=${horaInicio}&numeroPartes=${numeroPartes}&tiempoPorParte=${tiempoPorParte}&numeroJugadores=${numeroJugadores}"
+                    )
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()
