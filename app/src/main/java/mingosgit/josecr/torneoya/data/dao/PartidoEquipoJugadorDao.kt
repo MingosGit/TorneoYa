@@ -12,7 +12,6 @@ interface PartidoEquipoJugadorDao {
     @Delete
     suspend fun delete(rel: PartidoEquipoJugadorEntity)
 
-    // AQUÍ EL JOIN PARA OBTENER LOS JUGADORES COMPLETOS
     @Query("""
         SELECT jugador.* FROM jugador
         INNER JOIN partido_equipo_jugador ON jugador.id = partido_equipo_jugador.jugadorId

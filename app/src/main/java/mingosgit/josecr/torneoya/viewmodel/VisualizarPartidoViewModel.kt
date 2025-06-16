@@ -3,9 +3,9 @@ package mingosgit.josecr.torneoya.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.repository.EquipoRepository
@@ -50,7 +50,6 @@ class VisualizarPartidoViewModel(
                 _nombreEquipoA.value = equipoA?.nombre ?: "Equipo A"
                 _nombreEquipoB.value = equipoB?.nombre ?: "Equipo B"
 
-                // *** IMPORTANTE: getJugadoresDeEquipoEnPartido debe devolver List<JugadorEntity>
                 val jugadoresA = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, partidoEntity.equipoAId)
                 val jugadoresB = partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, partidoEntity.equipoBId)
 

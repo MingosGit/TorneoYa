@@ -13,8 +13,8 @@ import mingosgit.josecr.torneoya.repository.PartidoRepository
 class AsignarJugadoresViewModel(
     private val partidoId: Long,
     val numJugadores: Int,
-    private val equipoAId: Long,
-    private val equipoBId: Long,
+    val equipoAId: Long,
+    val equipoBId: Long,
     private val jugadorRepository: JugadorRepository,
     private val partidoRepository: PartidoRepository,
     private val relacionRepository: PartidoEquipoJugadorRepository
@@ -49,7 +49,10 @@ class AsignarJugadoresViewModel(
 
     fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
-            // Guarda para A
+            // Limpiar previamente la asignación para este partido/equipo
+            relacionRepository.eliminarJugadoresDeEquipo(partidoId, equipoAId)
+            relacionRepository.eliminarJugadoresDeEquipo(partidoId, equipoBId)
+
             for (nombre in equipoAJugadores.filter { it.isNotBlank() }) {
                 val jugadorId = jugadorRepository.getOrCreateJugador(nombre)
                 relacionRepository.insert(
@@ -60,7 +63,6 @@ class AsignarJugadoresViewModel(
                     )
                 )
             }
-            // Guarda para B
             for (nombre in equipoBJugadores.filter { it.isNotBlank() }) {
                 val jugadorId = jugadorRepository.getOrCreateJugador(nombre)
                 relacionRepository.insert(
