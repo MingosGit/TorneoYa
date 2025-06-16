@@ -10,12 +10,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavigationBar
 import mingosgit.josecr.torneoya.ui.navigation.NavGraph
+import mingosgit.josecr.torneoya.ui.navigation.BottomNavItem
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaTheme
 import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModelFactory
@@ -45,8 +47,20 @@ class MainActivity : ComponentActivity() {
                     PartidoViewModelFactory(partidoRepository)
                 )[PartidoViewModel::class.java]
 
+                val navBackStackEntry = navController.currentBackStackEntryAsState()
+                val showBottomBar = when (navBackStackEntry.value?.destination?.route) {
+                    BottomNavItem.Home.route,
+                    BottomNavItem.Partido.route,
+                    BottomNavItem.Usuario.route -> true
+                    else -> false
+                }
+
                 Scaffold(
-                    bottomBar = { BottomNavigationBar(navController) },
+                    bottomBar = {
+                        if (showBottomBar) {
+                            BottomNavigationBar(navController)
+                        }
+                    },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     Column(
@@ -57,7 +71,8 @@ class MainActivity : ComponentActivity() {
                         NavGraph(
                             navController = navController,
                             usuarioLocalViewModel = usuarioLocalViewModel,
-                            partidoViewModel = partidoViewModel
+                            partidoViewModel = partidoViewModel,
+                            partidoRepository = partidoRepository
                         )
                     }
                 }
