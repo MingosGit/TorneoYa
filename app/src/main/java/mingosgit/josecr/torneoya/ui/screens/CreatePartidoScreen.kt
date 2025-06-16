@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -26,18 +27,17 @@ fun CreatePartidoScreen(
 ) {
     val context = LocalContext.current
 
-    var equipoA by remember { mutableStateOf("") }
-    var equipoB by remember { mutableStateOf("") }
-    var fecha by remember { mutableStateOf("") }
-    var horaInicio by remember { mutableStateOf("") }
-    var numeroPartes by remember { mutableStateOf("2") }
-    var tiempoPorParte by remember { mutableStateOf("25") }
-    var numeroJugadores by remember { mutableStateOf("5") }
-    var partidoTempId by remember { mutableStateOf(System.currentTimeMillis()) }
+    var equipoA by rememberSaveable { mutableStateOf("") }
+    var equipoB by rememberSaveable { mutableStateOf("") }
+    var fecha by rememberSaveable { mutableStateOf("") }
+    var horaInicio by rememberSaveable { mutableStateOf("") }
+    var numeroPartes by rememberSaveable { mutableStateOf("2") }
+    var tiempoPorParte by rememberSaveable { mutableStateOf("25") }
+    var numeroJugadores by rememberSaveable { mutableStateOf("5") }
+    var partidoTempId by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
 
-    // Estados de validación
-    var camposError by remember { mutableStateOf(mapOf<String, Boolean>()) }
-    var mostrarErrores by remember { mutableStateOf(false) }
+    var camposError by rememberSaveable { mutableStateOf(mapOf<String, Boolean>()) }
+    var mostrarErrores by rememberSaveable { mutableStateOf(false) }
 
     val calendar = remember { Calendar.getInstance() }
 

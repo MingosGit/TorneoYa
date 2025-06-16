@@ -9,10 +9,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import mingosgit.josecr.torneoya.ui.screens.HomeScreen
 import mingosgit.josecr.torneoya.ui.screens.PartidoScreen
 import mingosgit.josecr.torneoya.ui.screens.UsuarioScreen
@@ -58,12 +59,23 @@ fun NavGraph(
                 createPartidoViewModel = createPartidoViewModel
             )
         }
-        composable("asignar_jugadores/{partidoId}") { backStackEntry ->
-            val partidoId = backStackEntry.arguments?.getString("partidoId")?.toLongOrNull() ?: return@composable
-            // Recupera número de jugadores por partido (esto normalmente lo tendrías que pasar también en la navegación o sacar de la BD)
-            // Aquí, por simplicidad, usamos el último partido cargado:
-            val numJugadores = partidoViewModel.partidos.value.find { it.id == partidoId }?.numeroJugadores ?: 5
-
+        composable(
+            route = "asignar_jugadores/{partidoId}" +
+                    "?equipoA={equipoA}&equipoB={equipoB}&fecha={fecha}&horaInicio={horaInicio}" +
+                    "&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
+            arguments = listOf(
+                navArgument("partidoId") { type = NavType.LongType },
+                navArgument("equipoA") { defaultValue = "" },
+                navArgument("equipoB") { defaultValue = "" },
+                navArgument("fecha") { defaultValue = "" },
+                navArgument("horaInicio") { defaultValue = "" },
+                navArgument("numeroPartes") { defaultValue = "2" },
+                navArgument("tiempoPorParte") { defaultValue = "25" },
+                navArgument("numeroJugadores") { defaultValue = "5" }
+            )
+        ) { backStackEntry ->
+            val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+            val numJugadores = backStackEntry.arguments?.getString("numeroJugadores")?.toIntOrNull() ?: 5
             val vm = viewModel(
                 modelClass = AsignarJugadoresViewModel::class.java,
                 viewModelStoreOwner = owner,
@@ -81,4 +93,3 @@ fun NavGraph(
         }
     }
 }
-
