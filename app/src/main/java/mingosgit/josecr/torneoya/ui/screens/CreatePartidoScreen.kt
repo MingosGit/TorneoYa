@@ -2,11 +2,13 @@ package mingosgit.josecr.torneoya.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,13 +33,14 @@ fun CreatePartidoScreen(
     var numeroPartes by remember { mutableStateOf("2") }
     var tiempoPorParte by remember { mutableStateOf("25") }
     var numeroJugadores by remember { mutableStateOf("5") }
+    var partidoTempId by remember { mutableStateOf(System.currentTimeMillis()) }
 
-    val showError = remember { mutableStateOf(false) }
-    val errorMsg = remember { mutableStateOf("") }
+    // Estados de validación
+    var camposError by remember { mutableStateOf(mapOf<String, Boolean>()) }
+    var mostrarErrores by remember { mutableStateOf(false) }
 
     val calendar = remember { Calendar.getInstance() }
 
-    // DatePickerDialog con formato español
     val datePickerDialog = remember {
         DatePickerDialog(
             context,
@@ -50,7 +53,6 @@ fun CreatePartidoScreen(
         )
     }
 
-    // TimePickerDialog
     val timePickerDialog = remember {
         TimePickerDialog(
             context,
@@ -64,133 +66,207 @@ fun CreatePartidoScreen(
     }
 
     fun validarCampos(): Boolean {
-        if (equipoA.isBlank() || equipoB.isBlank()) {
-            errorMsg.value = "Rellena ambos equipos."
-            return false
-        }
-        if (fecha.isBlank() || horaInicio.isBlank()) {
-            errorMsg.value = "Pon fecha y hora."
-            return false
-        }
-        return true
+        val errores = mutableMapOf<String, Boolean>()
+
+        // Nombre equipo A
+        errores["equipoA"] = equipoA.isBlank()
+        // Nombre equipo B
+        errores["equipoB"] = equipoB.isBlank()
+        // Fecha
+        errores["fecha"] = fecha.isBlank()
+        // Hora
+        errores["horaInicio"] = horaInicio.isBlank()
+        // Número de partes
+        errores["numeroPartes"] = numeroPartes.isBlank() || numeroPartes.toIntOrNull() == null
+        // Tiempo por parte
+        errores["tiempoPorParte"] = tiempoPorParte.isBlank() || tiempoPorParte.toIntOrNull() == null
+        // Número de jugadores
+        errores["numeroJugadores"] = numeroJugadores.isBlank() || numeroJugadores.toIntOrNull() == null
+
+        camposError = errores
+        return !errores.values.any { it }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(24.dp)
     ) {
-        Text("Crear Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
-
-        OutlinedTextField(
-            value = equipoA,
-            onValueChange = { equipoA = it },
-            label = { Text("Nombre Equipo A") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = equipoB,
-            onValueChange = { equipoB = it },
-            label = { Text("Nombre Equipo B") },
-            singleLine = true,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-        )
-
-        // FECHA Y HORA CON PICKERS
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .align(Alignment.TopCenter),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            OutlinedButton(
-                onClick = { datePickerDialog.show() },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(if (fecha.isBlank()) "Seleccionar fecha" else fecha)
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedButton(
-                onClick = { timePickerDialog.show() },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio)
-            }
-        }
+            Text("Crear Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
 
-        OutlinedTextField(
-            value = numeroPartes,
-            onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
-            label = { Text("Número de partes") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-        )
-        OutlinedTextField(
-            value = tiempoPorParte,
-            onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
-            label = { Text("Minutos por parte") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-        )
-        OutlinedTextField(
-            value = numeroJugadores,
-            onValueChange = { numeroJugadores = it.filter { c -> c.isDigit() } },
-            label = { Text("Nº jugadores por equipo") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-        )
-
-        if (showError.value) {
-            Text(
-                text = errorMsg.value,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 10.dp)
+            OutlinedTextField(
+                value = equipoA,
+                onValueChange = { equipoA = it },
+                label = { Text("Nombre Equipo A") },
+                singleLine = true,
+                isError = mostrarErrores && camposError["equipoA"] == true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (mostrarErrores && camposError["equipoA"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                    )
             )
+            if (mostrarErrores && camposError["equipoA"] == true) {
+                Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
+            }
+
+            OutlinedTextField(
+                value = equipoB,
+                onValueChange = { equipoB = it },
+                label = { Text("Nombre Equipo B") },
+                singleLine = true,
+                isError = mostrarErrores && camposError["equipoB"] == true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .background(
+                        if (mostrarErrores && camposError["equipoB"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                    )
+            )
+            if (mostrarErrores && camposError["equipoB"] == true) {
+                Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = { datePickerDialog.show() },
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["fecha"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        )
+                ) {
+                    Text(if (fecha.isBlank()) "Seleccionar fecha" else fecha)
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedButton(
+                    onClick = { timePickerDialog.show() },
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["horaInicio"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        )
+                ) {
+                    Text(if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio)
+                }
+            }
+            if (mostrarErrores && (camposError["fecha"] == true || camposError["horaInicio"] == true)) {
+                Row(Modifier.fillMaxWidth()) {
+                    if (camposError["fecha"] == true)
+                        Text("Falta la fecha", color = Color.Red, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                    if (camposError["horaInicio"] == true)
+                        Text("Falta la hora", color = Color.Red, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                }
+            }
+
+            OutlinedTextField(
+                value = numeroPartes,
+                onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
+                label = { Text("Número de partes") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = mostrarErrores && camposError["numeroPartes"] == true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .background(
+                        if (mostrarErrores && camposError["numeroPartes"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                    )
+            )
+            if (mostrarErrores && camposError["numeroPartes"] == true) {
+                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
+            }
+
+            OutlinedTextField(
+                value = tiempoPorParte,
+                onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
+                label = { Text("Minutos por parte") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = mostrarErrores && camposError["tiempoPorParte"] == true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .background(
+                        if (mostrarErrores && camposError["tiempoPorParte"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                    )
+            )
+            if (mostrarErrores && camposError["tiempoPorParte"] == true) {
+                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
+            }
+
+            OutlinedTextField(
+                value = numeroJugadores,
+                onValueChange = { numeroJugadores = it.filter { c -> c.isDigit() } },
+                label = { Text("Nº jugadores por equipo") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = mostrarErrores && camposError["numeroJugadores"] == true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .background(
+                        if (mostrarErrores && camposError["numeroJugadores"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                    )
+            )
+            if (mostrarErrores && camposError["numeroJugadores"] == true) {
+                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
+            }
+
+            Button(
+                onClick = {
+                    if (validarCampos()) {
+                        navController.navigate("asignar_jugadores/$partidoTempId")
+                    } else {
+                        mostrarErrores = true
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+            ) {
+                Text("Asignar Jugadores")
+            }
         }
 
         Button(
             onClick = {
-                if (!validarCampos()) {
-                    showError.value = true
-                    return@Button
+                mostrarErrores = true
+                if (validarCampos()) {
+                    val eqA = if (equipoA.isBlank()) "Equipo1" else equipoA
+                    val eqB = if (equipoB.isBlank()) "Equipo2" else equipoB
+                    val partido = PartidoEntity(
+                        id = partidoTempId,
+                        fecha = fecha,
+                        horaInicio = horaInicio,
+                        numeroPartes = numeroPartes.toIntOrNull() ?: 2,
+                        tiempoPorParte = tiempoPorParte.toIntOrNull() ?: 25,
+                        equipoA = eqA,
+                        equipoB = eqB,
+                        numeroJugadores = numeroJugadores.toIntOrNull() ?: 5
+                    )
+                    createPartidoViewModel.crearPartido(partido)
+                    partidoTempId = System.currentTimeMillis()
+                    mostrarErrores = false
+                    navController.popBackStack()
                 }
-                showError.value = false
-
-                val id = System.currentTimeMillis()
-
-                val partido = PartidoEntity(
-                    id = id,
-                    fecha = fecha,
-                    horaInicio = horaInicio,
-                    numeroPartes = numeroPartes.toIntOrNull() ?: 2,
-                    tiempoPorParte = tiempoPorParte.toIntOrNull() ?: 25,
-                    equipoA = equipoA,
-                    equipoB = equipoB,
-                    numeroJugadores = numeroJugadores.toIntOrNull() ?: 5
-                )
-                createPartidoViewModel.crearPartido(partido)
-
-                navController.navigate("asignar_jugadores/$id")
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp)
+                .align(Alignment.BottomCenter)
         ) {
-            Text("Continuar")
+            Text("Finalizar")
         }
     }
 }
