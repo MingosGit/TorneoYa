@@ -7,6 +7,7 @@ import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory
 import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory
 import mingosgit.josecr.torneoya.repository.JugadorRepository
 import mingosgit.josecr.torneoya.repository.EquipoRepository
+import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -39,9 +40,12 @@ fun NavGraph(
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
     val jugadorRepository = JugadorRepository(db.jugadorDao())
+    val relacionRepository = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
-        composable(BottomNavItem.Home.route) { HomeScreen() }
+        composable(BottomNavItem.Home.route) {
+            HomeScreen()
+        }
         composable(BottomNavItem.Partido.route) {
             PartidoScreen(
                 navController = navController,
@@ -130,7 +134,8 @@ fun NavGraph(
                     equipoAId,
                     equipoBId,
                     jugadorRepository,
-                    partidoRepository
+                    partidoRepository,
+                    relacionRepository
                 )
             )
             AsignarJugadoresScreen(

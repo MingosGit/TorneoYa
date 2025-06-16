@@ -1,3 +1,5 @@
+// mingosgit.josecr.torneoya.ui.screens.CreatePartidoScreen.kt
+
 package mingosgit.josecr.torneoya.ui.screens
 
 import android.app.DatePickerDialog
@@ -232,6 +234,26 @@ fun CreatePartidoScreen(
                 Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
             }
 
+            // Botón para navegar a asignar jugadores ANTES de guardar el partido.
+            Button(
+                onClick = {
+                    if (validarCampos()) {
+                        val tempId = partidoTempId
+                        navController.navigate(
+                            "asignar_jugadores/$tempId?equipoAId=-1&equipoBId=-1&fecha=${fecha}&horaInicio=${horaInicio}&numeroPartes=${numeroPartes}&tiempoPorParte=${tiempoPorParte}&numeroJugadores=${numeroJugadores}"
+                        )
+                    } else {
+                        mostrarErrores = true
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+            ) {
+                Text("Agregar jugadores")
+            }
+
+            // Botón para finalizar y guardar el partido
             Button(
                 onClick = {
                     if (validarCampos()) {
@@ -255,7 +277,7 @@ fun CreatePartidoScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp)
+                    .padding(top = 8.dp)
             ) {
                 Text("Finalizar y Guardar")
             }

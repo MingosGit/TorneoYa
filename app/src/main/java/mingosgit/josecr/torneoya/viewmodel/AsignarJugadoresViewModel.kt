@@ -1,17 +1,14 @@
 package mingosgit.josecr.torneoya.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.data.entities.JugadorEntity
 import mingosgit.josecr.torneoya.data.entities.PartidoEquipoJugadorEntity
 import mingosgit.josecr.torneoya.repository.JugadorRepository
+import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
 import mingosgit.josecr.torneoya.repository.PartidoRepository
-import kotlin.random.Random
 
 class AsignarJugadoresViewModel(
     private val partidoId: Long,
@@ -19,116 +16,88 @@ class AsignarJugadoresViewModel(
     private val equipoAId: Long,
     private val equipoBId: Long,
     private val jugadorRepository: JugadorRepository,
-    private val partidoRepository: PartidoRepository
+    private val partidoRepository: PartidoRepository,
+    private val relacionRepository: PartidoEquipoJugadorRepository
 ) : ViewModel() {
 
-    var equipoAJugadores = mutableStateListOf<String>().apply { repeat(numJugadores) { add("") } }
-    var equipoBJugadores = mutableStateListOf<String>().apply { repeat(numJugadores) { add("") } }
+    var equipoAJugadores = mutableStateListOf<String>()
+    var equipoBJugadores = mutableStateListOf<String>()
+    var listaNombres = mutableStateListOf<String>()
     var modoAleatorio by mutableStateOf(false)
-    var listaNombres = mutableStateListOf<String>().apply { repeat(numJugadores * 2) { add("") } }
     var equipoSeleccionado by mutableStateOf("A")
 
-    private var manualToAleatorioBackup = List(numJugadores * 2) { "" }
-    private var aleatorioToManualA = List(numJugadores) { "" }
-    private var aleatorioToManualB = List(numJugadores) { "" }
+    init { setNumJugadoresPorEquipo(numJugadores) }
 
-    fun setNumJugadoresPorEquipo(n: Int) {
-        while (equipoAJugadores.size < n) equipoAJugadores.add("")
-        while (equipoAJugadores.size > n) equipoAJugadores.removeAt(equipoAJugadores.size - 1)
-        while (equipoBJugadores.size < n) equipoBJugadores.add("")
-        while (equipoBJugadores.size > n) equipoBJugadores.removeAt(equipoBJugadores.size - 1)
-        while (listaNombres.size < n * 2) listaNombres.add("")
-        while (listaNombres.size > n * 2) listaNombres.removeAt(listaNombres.size - 1)
-    }
-
-    fun cambiarModo(nuevoAleatorio: Boolean) {
-        if (nuevoAleatorio == modoAleatorio) return
-        if (nuevoAleatorio) {
-            val nombresManual = (equipoAJugadores + equipoBJugadores).toMutableList()
-            for (i in listaNombres.indices) {
-                listaNombres[i] = nombresManual.getOrNull(i) ?: ""
-            }
-            manualToAleatorioBackup = nombresManual
-        } else {
-            val nombres = listaNombres.toList()
-            for (i in 0 until numJugadores) {
-                equipoAJugadores[i] = nombres.getOrNull(i) ?: ""
-            }
-            for (i in 0 until numJugadores) {
-                equipoBJugadores[i] = nombres.getOrNull(i + numJugadores) ?: ""
-            }
-            aleatorioToManualA = equipoAJugadores.toList()
-            aleatorioToManualB = equipoBJugadores.toList()
-        }
-        modoAleatorio = nuevoAleatorio
-    }
-
-    fun asignarAleatorio(listaNombresParam: List<String>) {
-        val shuffled = listaNombresParam.shuffled(Random(System.currentTimeMillis()))
-        setNumJugadoresPorEquipo(numJugadores)
+    fun setNumJugadoresPorEquipo(num: Int) {
         equipoAJugadores.clear()
         equipoBJugadores.clear()
-        equipoAJugadores.addAll(shuffled.take(numJugadores))
-        equipoBJugadores.addAll(shuffled.drop(numJugadores).take(numJugadores))
+        listaNombres.clear()
+        repeat(num) { equipoAJugadores.add("") }
+        repeat(num) { equipoBJugadores.add("") }
+        repeat(num * 2) { listaNombres.add("") }
     }
 
-    fun guardarEnBD(onFinish: () -> Unit = {}) {
+    fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
+
+    fun asignarAleatorio(nombres: List<String>) {
+        val mezclados = nombres.shuffled()
+        equipoAJugadores.clear()
+        equipoBJugadores.clear()
+        equipoAJugadores.addAll(mezclados.take(numJugadores))
+        equipoBJugadores.addAll(mezclados.drop(numJugadores).take(numJugadores))
+    }
+
+    fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
-            // 1. Nombres vacíos → "Jugador X" único (no duplicar)
-            val todosNombres = (equipoAJugadores + equipoBJugadores).toMutableList()
-            val usados = mutableSetOf<String>()
-            var contadorAnon = 1
-
-            for (i in todosNombres.indices) {
-                if (todosNombres[i].isBlank()) {
-                    // Buscar un nombre "Jugador X" que no esté en usados
-                    var nombreGenerado: String
-                    do {
-                        nombreGenerado = "Jugador $contadorAnon"
-                        contadorAnon++
-                    } while (usados.contains(nombreGenerado))
-                    todosNombres[i] = nombreGenerado
-                }
-                // Evitar duplicados: si nombre ya existe, añádele sufijo incremental
-                var nombreFinal = todosNombres[i]
-                var sufijo = 2
-                while (usados.contains(nombreFinal)) {
-                    nombreFinal = "${todosNombres[i]} ($sufijo)"
-                    sufijo++
-                }
-                todosNombres[i] = nombreFinal
-                usados.add(nombreFinal)
-            }
-
-            // 2. Guardar jugadores (no duplicar por nombre en este partido)
-            val jugadoresIds = mutableMapOf<String, Long>()
-            for (nombre in todosNombres) {
-                val id = jugadorRepository.insertJugador(JugadorEntity(nombre = nombre))
-                jugadoresIds[nombre] = id
-            }
-
-            // 3. Relacionar con partido/equipo por ID
-            val jugadoresCompletosA = todosNombres.take(numJugadores)
-            val jugadoresCompletosB = todosNombres.drop(numJugadores)
-
-            jugadoresCompletosA.forEach { nombre ->
-                val id = jugadoresIds[nombre] ?: return@forEach
-                partidoRepository.asignarJugadorAPartido(
-                    PartidoEquipoJugadorEntity(partidoId, equipoAId, id)
+            // Guarda para A
+            for (nombre in equipoAJugadores.filter { it.isNotBlank() }) {
+                val jugadorId = jugadorRepository.getOrCreateJugador(nombre)
+                relacionRepository.insert(
+                    PartidoEquipoJugadorEntity(
+                        partidoId = partidoId,
+                        equipoId = equipoAId,
+                        jugadorId = jugadorId
+                    )
                 )
             }
-            jugadoresCompletosB.forEach { nombre ->
-                val id = jugadoresIds[nombre] ?: return@forEach
-                partidoRepository.asignarJugadorAPartido(
-                    PartidoEquipoJugadorEntity(partidoId, equipoBId, id)
+            // Guarda para B
+            for (nombre in equipoBJugadores.filter { it.isNotBlank() }) {
+                val jugadorId = jugadorRepository.getOrCreateJugador(nombre)
+                relacionRepository.insert(
+                    PartidoEquipoJugadorEntity(
+                        partidoId = partidoId,
+                        equipoId = equipoBId,
+                        jugadorId = jugadorId
+                    )
                 )
             }
-
-            // 4. Actualiza las listas en la UI con los nombres finales
-            for (i in equipoAJugadores.indices) equipoAJugadores[i] = jugadoresCompletosA[i]
-            for (i in equipoBJugadores.indices) equipoBJugadores[i] = jugadoresCompletosB[i]
-
             onFinish()
         }
+    }
+}
+
+class AsignarJugadoresViewModelFactory(
+    private val partidoId: Long,
+    private val numJugadores: Int,
+    private val equipoAId: Long,
+    private val equipoBId: Long,
+    private val jugadorRepository: JugadorRepository,
+    private val partidoRepository: PartidoRepository,
+    private val relacionRepository: PartidoEquipoJugadorRepository
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(AsignarJugadoresViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return AsignarJugadoresViewModel(
+                partidoId,
+                numJugadores,
+                equipoAId,
+                equipoBId,
+                jugadorRepository,
+                partidoRepository,
+                relacionRepository
+            ) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
