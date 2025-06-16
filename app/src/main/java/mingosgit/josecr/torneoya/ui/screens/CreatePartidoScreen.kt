@@ -155,7 +155,9 @@ fun CreatePartidoScreen(
                     modifier = Modifier
                         .weight(1f)
                         .background(
-                            if (mostrarErrores && camposError["horaInicio"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                            if (mostrarErrores && camposError["horaInicio"] == true) Color(
+                                0xFFFFCDD2
+                            ) else Color.Transparent
                         )
                 ) {
                     Text(if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio)
@@ -164,9 +166,19 @@ fun CreatePartidoScreen(
             if (mostrarErrores && (camposError["fecha"] == true || camposError["horaInicio"] == true)) {
                 Row(Modifier.fillMaxWidth()) {
                     if (camposError["fecha"] == true)
-                        Text("Falta la fecha", color = Color.Red, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                        Text(
+                            "Falta la fecha",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
                     if (camposError["horaInicio"] == true)
-                        Text("Falta la hora", color = Color.Red, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                        Text(
+                            "Falta la hora",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
                 }
             }
 
@@ -199,7 +211,9 @@ fun CreatePartidoScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
                     .background(
-                        if (mostrarErrores && camposError["tiempoPorParte"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        if (mostrarErrores && camposError["tiempoPorParte"] == true) Color(
+                            0xFFFFCDD2
+                        ) else Color.Transparent
                     )
             )
             if (mostrarErrores && camposError["tiempoPorParte"] == true) {
@@ -217,7 +231,9 @@ fun CreatePartidoScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
                     .background(
-                        if (mostrarErrores && camposError["numeroJugadores"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        if (mostrarErrores && camposError["numeroJugadores"] == true) Color(
+                            0xFFFFCDD2
+                        ) else Color.Transparent
                     )
             )
             if (mostrarErrores && camposError["numeroJugadores"] == true) {
@@ -226,11 +242,18 @@ fun CreatePartidoScreen(
 
             Button(
                 onClick = {
-                    if (validarCampos()) {
-                        navController.navigate("asignar_jugadores/$partidoTempId")
-                    } else {
-                        mostrarErrores = true
-                    }
+
+                    navController.navigate(
+                        "asignar_jugadores/$partidoTempId" +
+                                "?equipoA=${equipoA}" +
+                                "&equipoB=${equipoB}" +
+                                "&fecha=${fecha}" +
+                                "&horaInicio=${horaInicio}" +
+                                "&numeroPartes=${numeroPartes}" +
+                                "&tiempoPorParte=${tiempoPorParte}" +
+                                "&numeroJugadores=${numeroJugadores}"
+                    )
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()

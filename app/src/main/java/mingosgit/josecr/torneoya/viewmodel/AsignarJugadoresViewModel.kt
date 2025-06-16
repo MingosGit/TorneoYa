@@ -1,5 +1,7 @@
+// mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModel.kt
 package mingosgit.josecr.torneoya.viewmodel
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -15,28 +17,34 @@ class AsignarJugadoresViewModel(
     private val jugadorRepository: JugadorRepository,
     private val partidoRepository: PartidoRepository
 ) : ViewModel() {
-    var equipoAJugadores: MutableList<String> = MutableList(numJugadores) { "" }
-    var equipoBJugadores: MutableList<String> = MutableList(numJugadores) { "" }
+    var equipoAJugadores = mutableStateListOf<String>().apply { repeat(numJugadores) { add("") } }
+    var equipoBJugadores = mutableStateListOf<String>().apply { repeat(numJugadores) { add("") } }
 
-    // Asignación aleatoria
-    fun asignarAleatorio(listaNombres: List<String>) {
-        val shuffled = listaNombres.shuffled(Random(System.currentTimeMillis()))
-        equipoAJugadores = shuffled.take(numJugadores).toMutableList()
-        equipoBJugadores = shuffled.drop(numJugadores).take(numJugadores).toMutableList()
+    fun setNumJugadoresPorEquipo(n: Int) {
+        while (equipoAJugadores.size < n) equipoAJugadores.add("")
+        while (equipoAJugadores.size > n) equipoAJugadores.removeAt(equipoAJugadores.size - 1)
+        while (equipoBJugadores.size < n) equipoBJugadores.add("")
+        while (equipoBJugadores.size > n) equipoBJugadores.removeAt(equipoBJugadores.size - 1)
     }
 
-    // Guardar todos los jugadores a la BBDD y relacionarlos al partido
+    fun asignarAleatorio(listaNombres: List<String>) {
+        val shuffled = listaNombres.shuffled(Random(System.currentTimeMillis()))
+        setNumJugadoresPorEquipo(numJugadores)
+        equipoAJugadores.clear()
+        equipoBJugadores.clear()
+        equipoAJugadores.addAll(shuffled.take(numJugadores))
+        equipoBJugadores.addAll(shuffled.drop(numJugadores).take(numJugadores))
+    }
+
     fun guardarEnBD(onFinish: () -> Unit = {}) {
         viewModelScope.launch {
             val nombres = equipoAJugadores + equipoBJugadores
             val jugadoresIds = mutableMapOf<String, Long>()
-            // Inserta si no existe ese nombre
             for (nombre in nombres) {
                 if (nombre.isBlank()) continue
                 val id = jugadorRepository.insertJugador(JugadorEntity(nombre = nombre))
                 jugadoresIds[nombre] = id
             }
-            // Relaciona jugadores a partido
             equipoAJugadores.forEach { nombre ->
                 val id = jugadoresIds[nombre] ?: return@forEach
                 partidoRepository.asignarJugadorAPartido(

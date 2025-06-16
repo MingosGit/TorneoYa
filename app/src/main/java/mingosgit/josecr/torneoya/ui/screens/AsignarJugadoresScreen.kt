@@ -1,8 +1,8 @@
 package mingosgit.josecr.torneoya.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,13 +21,52 @@ fun AsignarJugadoresScreen(
 ) {
     var modoAleatorio by remember { mutableStateOf(false) }
     var listaNombres by remember { mutableStateOf(List(vm.numJugadores * 2) { "" }) }
+    var equipoSeleccionado by remember { mutableStateOf("A") }
+
+    LaunchedEffect(vm.numJugadores) {
+        vm.setNumJugadoresPorEquipo(vm.numJugadores)
+        if (listaNombres.size != vm.numJugadores * 2) {
+            listaNombres = List(vm.numJugadores * 2) { idx -> listaNombres.getOrNull(idx) ?: "" }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        Text("Asignar jugadores", fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+        // SIEMPRE FIJO ARRIBA
+        Text(
+            "Asignar jugadores",
+            fontSize = 24.sp,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        // EQUIPO SELECCIONADO SI NO MODO ALEATORIO
+        if (!modoAleatorio) {
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = { equipoSeleccionado = "A" },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (equipoSeleccionado == "A") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) { Text("Equipo A") }
+                Spacer(Modifier.width(10.dp))
+                Button(
+                    onClick = { equipoSeleccionado = "B" },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (equipoSeleccionado == "B") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) { Text("Equipo B") }
+            }
+        }
 
         Row(
             modifier = Modifier
@@ -52,27 +91,27 @@ fun AsignarJugadoresScreen(
         }
 
         if (!modoAleatorio) {
-            Text("Equipo A", fontSize = 18.sp, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-            LazyColumn {
-                itemsIndexed(vm.equipoAJugadores) { idx, nombre ->
+            Text(
+                if (equipoSeleccionado == "A") "Jugadores Equipo A" else "Jugadores Equipo B",
+                fontSize = 18.sp,
+                modifier = Modifier
+                    .padding(top = 12.dp, bottom = 4.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                val jugadores =
+                    if (equipoSeleccionado == "A") vm.equipoAJugadores else vm.equipoBJugadores
+                jugadores.forEachIndexed { idx, nombre ->
                     OutlinedTextField(
                         value = nombre,
-                        onValueChange = { vm.equipoAJugadores[idx] = it },
-                        label = { Text("Jugador ${idx + 1}") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp)
-                    )
-                }
-            }
-            Text("Equipo B", fontSize = 18.sp, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-            LazyColumn {
-                itemsIndexed(vm.equipoBJugadores) { idx, nombre ->
-                    OutlinedTextField(
-                        value = nombre,
-                        onValueChange = { vm.equipoBJugadores[idx] = it },
+                        onValueChange = {
+                            if (equipoSeleccionado == "A") vm.equipoAJugadores[idx] = it
+                            else vm.equipoBJugadores[idx] = it
+                        },
                         label = { Text("Jugador ${idx + 1}") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -83,12 +122,24 @@ fun AsignarJugadoresScreen(
                 }
             }
         } else {
-            Text("Pon todos los nombres de jugadores, se asignarán aleatoriamente", fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
-            LazyColumn {
-                itemsIndexed(listaNombres) { idx, nombre ->
+            Text(
+                "Pon todos los nombres de jugadores, se asignarán aleatoriamente",
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                listaNombres.forEachIndexed { idx, nombre ->
                     OutlinedTextField(
                         value = nombre,
-                        onValueChange = { listaNombres = listaNombres.toMutableList().also { it[idx] = it[idx].replace(it[idx], nombre) } },
+                        onValueChange = {
+                            listaNombres = listaNombres.toMutableList().apply { set(idx, it) }
+                        },
                         label = { Text("Jugador ${idx + 1}") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -100,10 +151,10 @@ fun AsignarJugadoresScreen(
             }
             Button(
                 onClick = {
-                    // reparte random
                     val nombresLimpios = listaNombres.filter { it.isNotBlank() }
                     if (nombresLimpios.size >= vm.numJugadores * 2) {
                         vm.asignarAleatorio(nombresLimpios)
+                        modoAleatorio = false
                     }
                 },
                 modifier = Modifier

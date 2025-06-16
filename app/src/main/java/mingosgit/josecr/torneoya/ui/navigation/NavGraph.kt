@@ -60,9 +60,7 @@ fun NavGraph(
             )
         }
         composable(
-            route = "asignar_jugadores/{partidoId}" +
-                    "?equipoA={equipoA}&equipoB={equipoB}&fecha={fecha}&horaInicio={horaInicio}" +
-                    "&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
+            route = "asignar_jugadores/{partidoId}?equipoA={equipoA}&equipoB={equipoB}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
             arguments = listOf(
                 navArgument("partidoId") { type = NavType.LongType },
                 navArgument("equipoA") { defaultValue = "" },
@@ -77,16 +75,16 @@ fun NavGraph(
             val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
             val numJugadores = backStackEntry.arguments?.getString("numeroJugadores")?.toIntOrNull() ?: 5
             val vm = viewModel(
-                modelClass = AsignarJugadoresViewModel::class.java,
+                modelClass = mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = AsignarJugadoresViewModelFactory(
+                factory = mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory(
                     partidoId,
                     numJugadores,
                     jugadorRepository,
                     partidoRepository
                 )
             )
-            AsignarJugadoresScreen(
+            mingosgit.josecr.torneoya.ui.screens.AsignarJugadoresScreen(
                 navController = navController,
                 vm = vm
             )
