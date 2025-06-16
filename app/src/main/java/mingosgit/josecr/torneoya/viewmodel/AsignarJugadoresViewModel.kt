@@ -26,6 +26,10 @@ class AsignarJugadoresViewModel(
     var listaNombres = mutableStateListOf<String>().apply { repeat(numJugadores * 2) { add("") } }
     var equipoSeleccionado by mutableStateOf("A")
 
+    private var manualToAleatorioBackup = List(numJugadores * 2) { "" }
+    private var aleatorioToManualA = List(numJugadores) { "" }
+    private var aleatorioToManualB = List(numJugadores) { "" }
+
     fun setNumJugadoresPorEquipo(n: Int) {
         while (equipoAJugadores.size < n) equipoAJugadores.add("")
         while (equipoAJugadores.size > n) equipoAJugadores.removeAt(equipoAJugadores.size - 1)
@@ -33,6 +37,30 @@ class AsignarJugadoresViewModel(
         while (equipoBJugadores.size > n) equipoBJugadores.removeAt(equipoBJugadores.size - 1)
         while (listaNombres.size < n * 2) listaNombres.add("")
         while (listaNombres.size > n * 2) listaNombres.removeAt(listaNombres.size - 1)
+    }
+
+    fun cambiarModo(nuevoAleatorio: Boolean) {
+        if (nuevoAleatorio == modoAleatorio) return
+        if (nuevoAleatorio) {
+            // De manual a aleatorio: copiar nombres manuales a listaNombres
+            val nombresManual = (equipoAJugadores + equipoBJugadores).toMutableList()
+            for (i in listaNombres.indices) {
+                listaNombres[i] = nombresManual.getOrNull(i) ?: ""
+            }
+            manualToAleatorioBackup = nombresManual
+        } else {
+            // De aleatorio a manual: copiar listaNombres a los equipos, mitad A, mitad B
+            val nombres = listaNombres.toList()
+            for (i in 0 until numJugadores) {
+                equipoAJugadores[i] = nombres.getOrNull(i) ?: ""
+            }
+            for (i in 0 until numJugadores) {
+                equipoBJugadores[i] = nombres.getOrNull(i + numJugadores) ?: ""
+            }
+            aleatorioToManualA = equipoAJugadores.toList()
+            aleatorioToManualB = equipoBJugadores.toList()
+        }
+        modoAleatorio = nuevoAleatorio
     }
 
     fun asignarAleatorio(listaNombresParam: List<String>) {

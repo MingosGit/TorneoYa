@@ -19,8 +19,6 @@ fun AsignarJugadoresScreen(
     navController: NavController,
     vm: AsignarJugadoresViewModel
 ) {
-    // UI solo se conecta al estado del ViewModel. NO USA remember ni saveable aquí.
-
     LaunchedEffect(vm.numJugadores) {
         vm.setNumJugadoresPorEquipo(vm.numJugadores)
     }
@@ -67,7 +65,7 @@ fun AsignarJugadoresScreen(
                 .align(Alignment.CenterHorizontally)
         ) {
             Button(
-                onClick = { vm.modoAleatorio = false },
+                onClick = { vm.cambiarModo(false) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (!vm.modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                 ),
@@ -75,7 +73,7 @@ fun AsignarJugadoresScreen(
             ) { Text("Manual") }
             Spacer(Modifier.width(10.dp))
             Button(
-                onClick = { vm.modoAleatorio = true },
+                onClick = { vm.cambiarModo(true) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (vm.modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                 ),
@@ -147,9 +145,7 @@ fun AsignarJugadoresScreen(
                     val nombresLimpios = vm.listaNombres.filter { it.isNotBlank() }
                     if (nombresLimpios.size >= vm.numJugadores * 2) {
                         vm.asignarAleatorio(nombresLimpios)
-                        vm.modoAleatorio = false
-                        // limpia campos de aleatorio
-                        vm.listaNombres.replaceAll { "" }
+                        vm.cambiarModo(false)
                     }
                 },
                 modifier = Modifier
@@ -164,7 +160,6 @@ fun AsignarJugadoresScreen(
             onClick = {
                 vm.guardarEnBD {
                     navController.popBackStack()
-                    // NO limpies el estado aquí, si quieres limpiar puedes hacerlo manual.
                 }
             },
             modifier = Modifier
