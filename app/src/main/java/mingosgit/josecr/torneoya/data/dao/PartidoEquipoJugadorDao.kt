@@ -11,8 +11,8 @@ interface PartidoEquipoJugadorDao {
     @Delete
     suspend fun delete(rel: PartidoEquipoJugadorEntity)
 
-    @Query("SELECT * FROM partido_equipo_jugador WHERE partidoId = :partidoId AND equipo = :equipo")
-    suspend fun getJugadoresDeEquipoEnPartido(partidoId: Long, equipo: String): List<PartidoEquipoJugadorEntity>
+    @Query("SELECT * FROM partido_equipo_jugador WHERE partidoId = :partidoId AND equipoId = :equipoId")
+    suspend fun getJugadoresDeEquipoEnPartido(partidoId: Long, equipoId: Long): List<PartidoEquipoJugadorEntity>
 
     @Query("SELECT * FROM partido_equipo_jugador WHERE partidoId = :partidoId")
     suspend fun getJugadoresDePartido(partidoId: Long): List<PartidoEquipoJugadorEntity>

@@ -16,16 +16,18 @@ class PartidoRepository(
     suspend fun getPartidoById(id: Long) = partidoDao.getPartidoById(id)
     suspend fun getAllPartidos() = partidoDao.getAllPartidos()
 
-    // JUGADORES EN PARTIDO
+    // JUGADORES EN PARTIDO (usando equipoId)
     suspend fun asignarJugadorAPartido(rel: PartidoEquipoJugadorEntity) = partidoEquipoJugadorDao.insert(rel)
     suspend fun eliminarJugadorDePartido(rel: PartidoEquipoJugadorEntity) = partidoEquipoJugadorDao.delete(rel)
-    suspend fun getJugadoresDeEquipoEnPartido(partidoId: Long, equipo: String) =
-        partidoEquipoJugadorDao.getJugadoresDeEquipoEnPartido(partidoId, equipo)
+    suspend fun getJugadoresDeEquipoEnPartido(partidoId: Long, equipoId: Long) =
+        partidoEquipoJugadorDao.getJugadoresDeEquipoEnPartido(partidoId, equipoId)
     suspend fun getJugadoresDePartido(partidoId: Long) =
         partidoEquipoJugadorDao.getJugadoresDePartido(partidoId)
 
-    suspend fun getNombresJugadoresDeEquipoEnPartido(partidoId: Long, equipo: String, jugadorDao: mingosgit.josecr.torneoya.data.dao.JugadorDao): List<String> {
-        val relaciones = getJugadoresDeEquipoEnPartido(partidoId, equipo)
-        return relaciones.mapNotNull { jugadorDao.getById(it.jugadorId)?.nombre }
+    suspend fun eliminarJugadoresDeEquipo(partidoId: Long, equipoId: Long) {
+        val relaciones = partidoEquipoJugadorDao.getJugadoresDeEquipoEnPartido(partidoId, equipoId)
+        for (rel in relaciones) {
+            partidoEquipoJugadorDao.delete(rel)
+        }
     }
 }

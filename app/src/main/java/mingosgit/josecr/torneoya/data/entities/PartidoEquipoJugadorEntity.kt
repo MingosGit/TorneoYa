@@ -4,10 +4,10 @@ import androidx.room.Entity
 
 @Entity(
     tableName = "partido_equipo_jugador",
-    primaryKeys = ["partidoId", "jugadorId"]
+    primaryKeys = ["partidoId", "equipoId", "jugadorId"]
 )
 data class PartidoEquipoJugadorEntity(
     val partidoId: Long,
-    val equipo: String, // "A" o "B"
+    val equipoId: Long,  // referencia por id
     val jugadorId: Long
 )
