@@ -10,7 +10,4 @@ interface UsuarioLocalDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUsuario(usuario: UsuarioLocalEntity)
-
-    @Update
-    suspend fun updateUsuario(usuario: UsuarioLocalEntity)
 }

@@ -19,7 +19,7 @@ class UsuarioLocalViewModel(
         viewModelScope.launch {
             var user = repository.getUsuario()
             if (user == null) {
-                user = UsuarioLocalEntity(nombre = "Usuario1")
+                user = UsuarioLocalEntity(id = 1, nombre = "Usuario1")
                 repository.guardarUsuario(user)
             }
             _usuario.value = user
@@ -28,11 +28,9 @@ class UsuarioLocalViewModel(
 
     fun cambiarNombre(nuevoNombre: String) {
         viewModelScope.launch {
-            val user = _usuario.value?.copy(nombre = nuevoNombre)
-            if (user != null) {
-                repository.actualizarUsuario(user)
-                _usuario.value = user
-            }
+            val user = UsuarioLocalEntity(id = 1, nombre = nuevoNombre)
+            repository.actualizarUsuario(user)
+            _usuario.value = user
         }
     }
 }
