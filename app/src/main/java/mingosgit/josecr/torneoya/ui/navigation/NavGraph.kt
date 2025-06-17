@@ -39,6 +39,11 @@ fun NavGraph(
     val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
+    val equipoRepository = EquipoRepository(
+        equipoDao = db.equipoDao(),
+        partidoEquipoJugadorDao = db.partidoEquipoJugadorDao(),
+        jugadorDao = db.jugadorDao()
+    )
     val jugadorRepository = JugadorRepository(db.jugadorDao())
     val relacionRepository = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
 

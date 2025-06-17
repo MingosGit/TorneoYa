@@ -8,6 +8,6 @@ import androidx.room.Entity
 )
 data class PartidoEquipoJugadorEntity(
     val partidoId: Long,
-    val equipoId: Long,  // referencia por id
+    val equipoId: Long,
     val jugadorId: Long
 )

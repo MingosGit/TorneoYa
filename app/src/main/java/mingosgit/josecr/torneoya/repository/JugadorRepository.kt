@@ -9,11 +9,9 @@ class JugadorRepository(private val jugadorDao: JugadorDao) {
     suspend fun deleteJugador(jugador: JugadorEntity) = jugadorDao.delete(jugador)
     suspend fun getById(id: Long) = jugadorDao.getById(id)
     suspend fun getAll() = jugadorDao.getAll()
-    // Añadir dentro de JugadorRepository
     suspend fun getOrCreateJugador(nombre: String): Long {
         val todos = getAll()
         val yaExiste = todos.find { it.nombre.equals(nombre.trim(), ignoreCase = true) }
         return yaExiste?.id ?: insertJugador(JugadorEntity(nombre = nombre.trim()))
     }
-
 }
