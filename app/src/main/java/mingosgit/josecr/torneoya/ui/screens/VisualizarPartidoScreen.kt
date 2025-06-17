@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,7 +29,15 @@ fun VisualizarPartidoScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val eliminado by vm.eliminado.collectAsState()
 
-    // Cuando se elimina, vuelve a la pantalla de partidos y limpia el backstack
+    val navBackStackEntry = navController.currentBackStackEntryAsState()
+    LaunchedEffect(navBackStackEntry.value) {
+        val recargar = navController.previousBackStackEntry?.arguments?.getBoolean("reload_partido") == true
+        if (recargar) {
+            vm.cargarDatos()
+            navController.previousBackStackEntry?.arguments?.remove("reload_partido")
+        }
+    }
+
     LaunchedEffect(eliminado) {
         if (eliminado) {
             navController.navigate("partido") {
@@ -52,6 +61,7 @@ fun VisualizarPartidoScreen(
             ) {
                 Button(
                     onClick = {
+                        navController.currentBackStackEntry?.arguments?.putBoolean("reload_partido", true)
                         navController.navigate("editar_partido/$partidoId")
                     },
                     modifier = Modifier

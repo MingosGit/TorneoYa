@@ -22,7 +22,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel
-import kotlinx.coroutines.Dispatchers
 import java.util.*
 
 @Composable
@@ -30,7 +29,7 @@ fun EditPartidoScreen(
     partidoId: Long,
     navController: NavController,
     editPartidoViewModel: EditPartidoViewModel,
-    onFinish: (() -> Unit)? = null // Nuevo parámetro opcional
+    onFinish: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -59,23 +58,21 @@ fun EditPartidoScreen(
     val calendar = remember { Calendar.getInstance() }
     val scope = rememberCoroutineScope()
 
-    // ---- Cargar nombre de equipos al iniciar
     LaunchedEffect(partido) {
         partido?.let {
             fecha = it.fecha
             horaInicio = it.horaInicio
             numeroPartes = it.numeroPartes.toString()
             tiempoPorParte = it.tiempoPorParte.toString()
-
             equipoANombre = editPartidoViewModel.getEquipoNombre(it.equipoAId) ?: ""
             equipoBNombre = editPartidoViewModel.getEquipoNombre(it.equipoBId) ?: ""
         }
     }
 
-    // --- NUEVO: Al eliminar o guardar, navega SIEMPRE a "partido" y ejecuta onFinish
     LaunchedEffect(eliminado, guardado) {
         if (eliminado || guardado) {
             navController.previousBackStackEntry?.arguments?.putBoolean("reload_partidos", true)
+            navController.previousBackStackEntry?.arguments?.putBoolean("reload_partido", true)
             onFinish?.invoke()
             navController.navigate("partido") {
                 popUpTo("partido") { inclusive = true }
@@ -152,8 +149,6 @@ fun EditPartidoScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("Editar Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
-
-            // ---- CAMPO EDITABLE DEL NOMBRE DEL EQUIPO A ----
             OutlinedTextField(
                 value = equipoANombre,
                 onValueChange = { equipoANombre = it },
@@ -178,8 +173,6 @@ fun EditPartidoScreen(
                     }
                 }
             )
-
-            // ---- CAMPO EDITABLE DEL NOMBRE DEL EQUIPO B ----
             OutlinedTextField(
                 value = equipoBNombre,
                 onValueChange = { equipoBNombre = it },
@@ -206,7 +199,6 @@ fun EditPartidoScreen(
                     }
                 }
             )
-
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -255,7 +247,6 @@ fun EditPartidoScreen(
                         )
                 }
             }
-
             OutlinedTextField(
                 value = numeroPartes,
                 onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
@@ -273,7 +264,6 @@ fun EditPartidoScreen(
             if (mostrarErrores && camposError["numeroPartes"] == true) {
                 Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
             }
-
             OutlinedTextField(
                 value = tiempoPorParte,
                 onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
@@ -293,7 +283,6 @@ fun EditPartidoScreen(
             if (mostrarErrores && camposError["tiempoPorParte"] == true) {
                 Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
             }
-
             OutlinedTextField(
                 value = partido?.numeroJugadores?.toString() ?: "",
                 onValueChange = {},
@@ -304,11 +293,9 @@ fun EditPartidoScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             )
-
             if (errorGeneral != null) {
                 Text(errorGeneral ?: "", color = Color.Red, modifier = Modifier.padding(top = 8.dp))
             }
-
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {
@@ -338,7 +325,6 @@ fun EditPartidoScreen(
             ) {
                 Text("Cancelar")
             }
-
             OutlinedButton(
                 onClick = { showDeleteDialog = true },
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
@@ -348,11 +334,8 @@ fun EditPartidoScreen(
             ) {
                 Text("Eliminar Partido")
             }
-
             Spacer(modifier = Modifier.height(32.dp))
-
         }
-
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },

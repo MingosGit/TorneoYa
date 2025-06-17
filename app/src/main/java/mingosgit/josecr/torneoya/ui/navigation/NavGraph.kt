@@ -98,8 +98,6 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
-
-            // CAMBIO CLAVE: Usar key dinámico basado en id+timestamp para forzar ViewModel NUEVO cada vez
             val uniqueKey = "editar_partido_${id}_${System.currentTimeMillis()}"
             val editPartidoViewModel = viewModel(
                 modelClass = mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel::class.java,
@@ -110,14 +108,15 @@ fun NavGraph(
                     equipoRepository = equipoRepository,
                     partidoId = id
                 ),
-                key = uniqueKey // <-- Aquí está el truco
+                key = uniqueKey
             )
             mingosgit.josecr.torneoya.ui.screens.EditPartidoScreen(
                 partidoId = id,
                 navController = navController,
                 editPartidoViewModel = editPartidoViewModel,
                 onFinish = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set("reload_partidos", true)
+                    navController.previousBackStackEntry?.arguments?.putBoolean("reload_partidos", true)
+                    navController.previousBackStackEntry?.arguments?.putBoolean("reload_partido", true)
                 }
             )
         }

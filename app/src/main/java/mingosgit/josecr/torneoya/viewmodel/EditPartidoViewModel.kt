@@ -95,12 +95,10 @@ class EditPartidoViewModel(
         }
     }
 
-    // NUEVO: Obtener nombre del equipo por su id
     suspend fun getEquipoNombre(equipoId: Long): String? {
         return equipoRepository.getById(equipoId)?.nombre
     }
 
-    // NUEVO: Actualizar nombre del equipo (por id)
     suspend fun actualizarEquipoNombre(equipoId: Long, nuevoNombre: String): Boolean {
         val equipo = equipoRepository.getById(equipoId)
         return if (equipo != null) {
