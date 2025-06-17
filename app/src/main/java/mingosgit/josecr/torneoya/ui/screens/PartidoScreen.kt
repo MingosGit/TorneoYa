@@ -4,6 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +28,6 @@ fun PartidoScreen(
     }
 
     val partidos by partidoViewModel.partidosConNombres.collectAsState()
-
     val needReload = remember { mutableStateOf(false) }
 
     LaunchedEffect(navController) {
@@ -47,6 +49,18 @@ fun PartidoScreen(
         }
     }
 
+    var sortOption by remember { mutableStateOf("Nombre") }
+    var ascending by remember { mutableStateOf(true) }
+    var expanded by remember { mutableStateOf(false) }
+
+    val sortedPartidos = remember(partidos, sortOption, ascending) {
+        when (sortOption) {
+            "Nombre" -> if (ascending) partidos.sortedBy { it.nombreEquipoA } else partidos.sortedByDescending { it.nombreEquipoA }
+            "Fecha" -> if (ascending) partidos.sortedBy { it.fecha } else partidos.sortedByDescending { it.fecha }
+            else -> partidos
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -65,10 +79,57 @@ fun PartidoScreen(
             Text(
                 text = "Partidos",
                 fontSize = 24.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 10.dp)
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+            ) {
+                Text("Ordenar por: ", fontSize = 15.sp)
+                Box {
+                    Button(
+                        onClick = { expanded = true },
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(sortOption)
+                        Icon(
+                            imageVector = if (ascending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Nombre") },
+                            onClick = {
+                                sortOption = "Nombre"
+                                expanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Fecha") },
+                            onClick = {
+                                sortOption = "Fecha"
+                                expanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(if (ascending) "Descendente" else "Ascendente") },
+                            onClick = {
+                                ascending = !ascending
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
             LazyColumn {
-                items(partidos) { partido ->
+                items(sortedPartidos) { partido ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
