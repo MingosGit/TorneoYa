@@ -160,6 +160,7 @@ fun AsignarJugadoresScreen(
             onClick = {
                 vm.guardarEnBD {
                     navController.popBackStack()
+                    navController.navigate("partido") // Navega a la lista de partidos tras guardar
                 }
             },
             modifier = Modifier

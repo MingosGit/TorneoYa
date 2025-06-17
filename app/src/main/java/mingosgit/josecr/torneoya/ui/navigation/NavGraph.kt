@@ -67,14 +67,11 @@ fun NavGraph(
                 createPartidoViewModel = createPartidoViewModel
             )
         }
-// ...resto igual, sólo muestro la parte de visualización de partido actualizada
-
         composable(
             "visualizar_partido/{partidoId}",
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
-            // 👇 AGREGA key = "visualizar_partido_$id"
             val visualizarPartidoViewModel = viewModel(
                 modelClass = mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
@@ -83,7 +80,7 @@ fun NavGraph(
                     partidoRepository = partidoRepository,
                     equipoRepository = equipoRepository
                 ),
-                key = "visualizar_partido_$id" // <--- ESTA LÍNEA ES CLAVE!!!
+                key = "visualizar_partido_$id"
             )
             VisualizarPartidoScreen(
                 partidoId = id,
@@ -91,8 +88,6 @@ fun NavGraph(
                 vm = visualizarPartidoViewModel
             )
         }
-
-
         composable(
             "editar_partido/{partidoId}",
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })

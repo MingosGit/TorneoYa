@@ -234,7 +234,6 @@ fun CreatePartidoScreen(
                 Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
             }
 
-            // SOLO guarda el partido, luego navega a la pantalla de asignar jugadores.
             Button(
                 onClick = {
                     if (validarCampos()) {
@@ -249,7 +248,6 @@ fun CreatePartidoScreen(
                                 tiempoPorParte = tiempoPorParte.toInt(),
                                 numeroJugadores = numeroJugadores.toInt()
                             ) { partidoId, equipoAId, equipoBId ->
-                                // Aquí navegas a la pantalla de asignar jugadores con los IDs reales
                                 navController.navigate(
                                     "asignar_jugadores/$partidoId?equipoAId=$equipoAId&equipoBId=$equipoBId&fecha=$fecha&horaInicio=$horaInicio&numeroPartes=$numeroPartes&tiempoPorParte=$tiempoPorParte&numeroJugadores=$numeroJugadores"
                                 )
