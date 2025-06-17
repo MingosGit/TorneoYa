@@ -137,7 +137,8 @@ fun NavGraph(
                     jugadorRepository,
                     partidoRepository,
                     relacionRepository
-                )
+                ),
+                key = "asignar_jugadores_${partidoId}"
             )
             AsignarJugadoresScreen(
                 navController = navController,
