@@ -20,10 +20,42 @@ fun PartidoScreen(
     partidoViewModel: PartidoViewModel,
     equipoRepository: mingosgit.josecr.torneoya.repository.EquipoRepository
 ) {
+    // Cambia este LaunchedEffect para que vuelva a cargar los partidos cada vez que esta pantalla sea mostrada.
     LaunchedEffect(Unit) {
         partidoViewModel.cargarPartidosConNombres(equipoRepository)
     }
+
     val partidos by partidoViewModel.partidosConNombres.collectAsState()
+
+    // NUEVO: Recarga partidos al volver de editar o crear (trigger por navigationResult)
+    // Este hack funciona porque al navegar con launchSingleTop=true, el backstack no se duplica
+    // y LaunchedEffect(Unit) no se dispara si ya estaba montado, así que debemos forzar el reload.
+
+    // Aquí nos suscribimos a un resultado simple (navigation result) que dispara reload:
+    val needReload = remember {
+        mutableStateOf(false)
+    }
+
+    // Listener para reload manual por navegación (coloca esto al inicio del Composable)
+    LaunchedEffect(navController) {
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            // Solo recarga cuando vuelves a PartidoScreen y hay un trigger en backStack
+            val entry = controller.previousBackStackEntry
+            if (destination.route == "partido" &&
+                entry?.arguments?.containsKey("reload_partidos") == true
+            ) {
+                needReload.value = true
+                entry.arguments?.remove("reload_partidos")
+            }
+        }
+    }
+
+    LaunchedEffect(needReload.value) {
+        if (needReload.value) {
+            partidoViewModel.cargarPartidosConNombres(equipoRepository)
+            needReload.value = false
+        }
+    }
 
     Scaffold(
         floatingActionButton = {

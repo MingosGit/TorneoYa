@@ -29,7 +29,8 @@ import java.util.*
 fun EditPartidoScreen(
     partidoId: Long,
     navController: NavController,
-    editPartidoViewModel: EditPartidoViewModel
+    editPartidoViewModel: EditPartidoViewModel,
+    onFinish: (() -> Unit)? = null // Nuevo parámetro opcional
 ) {
     val context = LocalContext.current
 
@@ -66,15 +67,16 @@ fun EditPartidoScreen(
             numeroPartes = it.numeroPartes.toString()
             tiempoPorParte = it.tiempoPorParte.toString()
 
-            // Cargar nombres usando ViewModel (se recomienda un flow, pero para este caso es suficiente así)
             equipoANombre = editPartidoViewModel.getEquipoNombre(it.equipoAId) ?: ""
             equipoBNombre = editPartidoViewModel.getEquipoNombre(it.equipoBId) ?: ""
         }
     }
 
-    // --- NUEVO: Al eliminar o guardar, navega SIEMPRE a "partido"
+    // --- NUEVO: Al eliminar o guardar, navega SIEMPRE a "partido" y ejecuta onFinish
     LaunchedEffect(eliminado, guardado) {
         if (eliminado || guardado) {
+            navController.previousBackStackEntry?.arguments?.putBoolean("reload_partidos", true)
+            onFinish?.invoke()
             navController.navigate("partido") {
                 popUpTo("partido") { inclusive = true }
                 launchSingleTop = true
