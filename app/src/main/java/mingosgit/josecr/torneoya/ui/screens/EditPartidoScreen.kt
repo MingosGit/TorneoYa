@@ -80,7 +80,6 @@ fun EditPartidoScreen(
             horaInicio = it.horaInicio
             numeroPartes = it.numeroPartes.toString()
             tiempoPorParte = it.tiempoPorParte.toString()
-            // Aquí no se setea directamente el nombre, lo hace el otro LaunchedEffect usando los StateFlow
         }
     }
 
@@ -298,22 +297,22 @@ fun EditPartidoScreen(
             if (mostrarErrores && camposError["tiempoPorParte"] == true) {
                 Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
             }
-            OutlinedTextField(
-                value = partido?.numeroJugadores?.toString() ?: "",
-                onValueChange = {},
-                enabled = false,
-                label = { Text("Nº jugadores por equipo") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
-            if (errorGeneral != null) {
-                Text(errorGeneral ?: "", color = Color.Red, modifier = Modifier.padding(top = 8.dp))
-            }
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {
+                    // Si está editando algún nombre, primero lo guarda (simula dar al tick)
+                    if (equipoAEditando) {
+                        scope.launch {
+                            editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoAId, equipoANombre)
+                        }
+                        equipoAEditando = false
+                    }
+                    if (equipoBEditando) {
+                        scope.launch {
+                            editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoBId, equipoBNombre)
+                        }
+                        equipoBEditando = false
+                    }
                     mostrarErrores = true
                     if (validarCampos()) {
                         editPartidoViewModel.actualizarPartido(
