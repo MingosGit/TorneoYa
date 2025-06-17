@@ -300,6 +300,18 @@ fun EditPartidoScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {
+                    navController.navigate("editar_jugadores/$partidoId?equipoAId=${partido!!.equipoAId}&equipoBId=${partido!!.equipoBId}")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            ) {
+                Text("Editar Jugadores")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = {
                     // Si está editando algún nombre, primero lo guarda (simula dar al tick)
                     if (equipoAEditando) {
                         scope.launch {

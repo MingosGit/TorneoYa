@@ -20,6 +20,7 @@ import mingosgit.josecr.torneoya.ui.screens.HomeScreen
 import mingosgit.josecr.torneoya.ui.screens.PartidoScreen
 import mingosgit.josecr.torneoya.ui.screens.UsuarioScreen
 import mingosgit.josecr.torneoya.ui.screens.CreatePartidoScreen
+import mingosgit.josecr.torneoya.ui.screens.EditarJugadoresEquipoScreen
 import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModelFactory
@@ -27,6 +28,8 @@ import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModelFactory
 import mingosgit.josecr.torneoya.ui.screens.VisualizarPartidoScreen
+import mingosgit.josecr.torneoya.viewmodel.EditarJugadoresEquipoViewModel
+import mingosgit.josecr.torneoya.viewmodel.EditarJugadoresEquipoViewModelFactory
 
 @Composable
 fun NavGraph(
@@ -39,13 +42,13 @@ fun NavGraph(
     val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
-    val equipoRepository = EquipoRepository(
+    val equipoRepositoryInst = EquipoRepository(
         equipoDao = db.equipoDao(),
         partidoEquipoJugadorDao = db.partidoEquipoJugadorDao(),
         jugadorDao = db.jugadorDao()
     )
-    val jugadorRepository = JugadorRepository(db.jugadorDao())
-    val relacionRepository = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
+    val jugadorRepositoryInst = JugadorRepository(db.jugadorDao())
+    val relacionRepositoryInst = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
@@ -55,7 +58,7 @@ fun NavGraph(
             PartidoScreen(
                 navController = navController,
                 partidoViewModel = partidoViewModel,
-                equipoRepository = equipoRepository
+                equipoRepository = equipoRepositoryInst
             )
         }
         composable(BottomNavItem.Usuario.route) {
@@ -65,7 +68,7 @@ fun NavGraph(
             val createPartidoViewModel = viewModel(
                 modelClass = mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = CreatePartidoViewModelFactory(partidoRepository, equipoRepository)
+                factory = CreatePartidoViewModelFactory(partidoRepository, equipoRepositoryInst)
             )
             CreatePartidoScreen(
                 navController = navController,
@@ -83,7 +86,7 @@ fun NavGraph(
                 factory = VisualizarPartidoViewModelFactory(
                     partidoId = id,
                     partidoRepository = partidoRepository,
-                    equipoRepository = equipoRepository
+                    equipoRepository = equipoRepositoryInst
                 ),
                 key = "visualizar_partido_$id"
             )
@@ -104,8 +107,8 @@ fun NavGraph(
                 viewModelStoreOwner = owner,
                 factory = EditPartidoViewModelFactory(
                     partidoRepository = partidoRepository,
-                    jugadorRepository = jugadorRepository,
-                    equipoRepository = equipoRepository,
+                    jugadorRepository = jugadorRepositoryInst,
+                    equipoRepository = equipoRepositoryInst,
                     partidoId = id
                 ),
                 key = uniqueKey
@@ -145,13 +148,45 @@ fun NavGraph(
                     numJugadores,
                     equipoAId,
                     equipoBId,
-                    jugadorRepository,
+                    jugadorRepositoryInst,
                     partidoRepository,
-                    relacionRepository
+                    relacionRepositoryInst
                 ),
                 key = "asignar_jugadores_${partidoId}"
             )
             AsignarJugadoresScreen(
+                navController = navController,
+                vm = vm
+            )
+        }
+        composable(
+            route = "editar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}",
+            arguments = listOf(
+                navArgument("partidoId") { type = NavType.LongType },
+                navArgument("equipoAId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("equipoBId") { type = NavType.LongType; defaultValue = -1L }
+            )
+        ) { backStackEntry ->
+            val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+            val equipoAId = backStackEntry.arguments?.getLong("equipoAId") ?: -1L
+            val equipoBId = backStackEntry.arguments?.getLong("equipoBId") ?: -1L
+            val vm = viewModel(
+                modelClass = EditarJugadoresEquipoViewModel::class.java,
+                viewModelStoreOwner = owner,
+                factory = EditarJugadoresEquipoViewModelFactory(
+                    partidoId,
+                    equipoAId,
+                    equipoBId,
+                    jugadorRepositoryInst,
+                    relacionRepositoryInst,
+                    equipoRepositoryInst
+                ),
+                key = "editar_jugadores_${partidoId}_${equipoAId}_${equipoBId}_${System.currentTimeMillis()}"
+            )
+            EditarJugadoresEquipoScreen(
+                partidoId = partidoId,
+                equipoAId = equipoAId,
+                equipoBId = equipoBId,
                 navController = navController,
                 vm = vm
             )
