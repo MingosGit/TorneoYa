@@ -98,7 +98,7 @@ fun VisualizarPartidoScreen(
                 Text(
                     text = uiState.nombreEquipoA,
                     fontSize = 22.sp,
-                    textAlign = TextAlign.End,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
@@ -109,7 +109,7 @@ fun VisualizarPartidoScreen(
                 Text(
                     text = uiState.nombreEquipoB,
                     fontSize = 22.sp,
-                    textAlign = TextAlign.Start,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -120,19 +120,28 @@ fun VisualizarPartidoScreen(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp)
+                        .padding(end = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Jugadores de ${uiState.nombreEquipoA}",
+                        text = "Jugadores",
                         fontSize = 16.sp,
-                        style = MaterialTheme.typography.titleSmall
+                        style = MaterialTheme.typography.titleSmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Divider(modifier = Modifier.padding(vertical = 4.dp))
-                    LazyColumn {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         items(uiState.jugadoresEquipoA) { jugador ->
                             Text(
                                 text = jugador,
-                                modifier = Modifier.padding(vertical = 4.dp)
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center
                             )
                         }
                         if (uiState.jugadoresEquipoA.isEmpty()) {
@@ -141,7 +150,10 @@ fun VisualizarPartidoScreen(
                                     text = "Sin jugadores asignados",
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(vertical = 8.dp)
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp)
+                                        .fillMaxWidth(),
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         }
@@ -150,19 +162,28 @@ fun VisualizarPartidoScreen(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 8.dp)
+                        .padding(start = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Jugadores de ${uiState.nombreEquipoB}",
                         fontSize = 16.sp,
-                        style = MaterialTheme.typography.titleSmall
+                        style = MaterialTheme.typography.titleSmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Divider(modifier = Modifier.padding(vertical = 4.dp))
-                    LazyColumn {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         items(uiState.jugadoresEquipoB) { jugador ->
                             Text(
                                 text = jugador,
-                                modifier = Modifier.padding(vertical = 4.dp)
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center
                             )
                         }
                         if (uiState.jugadoresEquipoB.isEmpty()) {
@@ -171,7 +192,10 @@ fun VisualizarPartidoScreen(
                                     text = "Sin jugadores asignados",
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(vertical = 8.dp)
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp)
+                                        .fillMaxWidth(),
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         }

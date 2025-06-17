@@ -140,27 +140,20 @@ fun AsignarJugadoresScreen(
                     )
                 }
             }
-            Button(
-                onClick = {
-                    val nombresLimpios = vm.listaNombres.filter { it.isNotBlank() }
-                    if (nombresLimpios.size >= vm.numJugadores * 2) {
-                        vm.asignarAleatorio(nombresLimpios)
-                        vm.cambiarModo(false)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 10.dp)
-            ) {
-                Text("Asignar aleatorio")
-            }
         }
 
         Button(
             onClick = {
+                if (vm.modoAleatorio) {
+                    val nombresLimpios = vm.listaNombres.filter { it.isNotBlank() }
+                    if (nombresLimpios.size >= 2) { // Debe haber al menos 2 jugadores
+                        vm.repartirAleatoriamente(nombresLimpios)
+                        vm.cambiarModo(false)
+                    }
+                }
                 vm.guardarEnBD {
                     navController.popBackStack()
-                    navController.navigate("partido") // Navega a la lista de partidos tras guardar
+                    navController.navigate("partido")
                 }
             },
             modifier = Modifier

@@ -9,6 +9,7 @@ import mingosgit.josecr.torneoya.data.entities.PartidoEquipoJugadorEntity
 import mingosgit.josecr.torneoya.repository.JugadorRepository
 import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
 import mingosgit.josecr.torneoya.repository.PartidoRepository
+import kotlin.random.Random
 
 class AsignarJugadoresViewModel(
     private val partidoId: Long,
@@ -39,12 +40,31 @@ class AsignarJugadoresViewModel(
 
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
 
-    fun asignarAleatorio(nombres: List<String>) {
-        val mezclados = nombres.shuffled()
+    fun repartirAleatoriamente(nombres: List<String>) {
+        val nombresLimpios = nombres.filter { it.isNotBlank() }.shuffled(Random(System.currentTimeMillis()))
+        val total = nombresLimpios.size
+        val mitad = total / 2
+
         equipoAJugadores.clear()
         equipoBJugadores.clear()
-        equipoAJugadores.addAll(mezclados.take(numJugadores))
-        equipoBJugadores.addAll(mezclados.drop(numJugadores).take(numJugadores))
+
+        if (total % 2 == 0) {
+            equipoAJugadores.addAll(nombresLimpios.take(mitad))
+            equipoBJugadores.addAll(nombresLimpios.drop(mitad))
+        } else {
+            // Uno de los equipos tendrá uno más
+            val equipoConExtra = if (Random.nextBoolean()) "A" else "B"
+            if (equipoConExtra == "A") {
+                equipoAJugadores.addAll(nombresLimpios.take(mitad + 1))
+                equipoBJugadores.addAll(nombresLimpios.drop(mitad + 1))
+            } else {
+                equipoAJugadores.addAll(nombresLimpios.take(mitad))
+                equipoBJugadores.addAll(nombresLimpios.drop(mitad))
+            }
+        }
+        // Rellenar con cadenas vacías si hace falta (para que los OutlinedTextField no fallen)
+        while (equipoAJugadores.size < numJugadores) equipoAJugadores.add("")
+        while (equipoBJugadores.size < numJugadores) equipoBJugadores.add("")
     }
 
     fun guardarEnBD(onFinish: () -> Unit) {
