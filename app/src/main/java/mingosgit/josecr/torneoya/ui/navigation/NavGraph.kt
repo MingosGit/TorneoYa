@@ -93,6 +93,7 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+
             val editPartidoViewModel = viewModel(
                 modelClass = mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
@@ -101,7 +102,8 @@ fun NavGraph(
                     jugadorRepository = jugadorRepository,
                     equipoRepository = equipoRepository,
                     partidoId = id
-                )
+                ),
+                key = "editar_partido_$id"
             )
             mingosgit.josecr.torneoya.ui.screens.EditPartidoScreen(
                 partidoId = id,

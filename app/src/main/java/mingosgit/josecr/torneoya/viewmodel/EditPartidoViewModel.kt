@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
+import mingosgit.josecr.torneoya.data.entities.EquipoEntity
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.repository.JugadorRepository
 import mingosgit.josecr.torneoya.repository.EquipoRepository
@@ -60,7 +61,6 @@ class EditPartidoViewModel(
             val jugadoresB = partido?.equipoBId?.let {
                 partidoRepository.getJugadoresDeEquipoEnPartido(partidoId, it)
             } ?: emptyList()
-            // Aquí ya recibes List<JugadorEntity>, no relaciones
             _jugadoresEquipoA.value = jugadoresA.map { it.nombre }
             _jugadoresEquipoB.value = jugadoresB.map { it.nombre }
             _jugadoresCargados.value = true
@@ -92,6 +92,22 @@ class EditPartidoViewModel(
         viewModelScope.launch {
             partidoRepository.deletePartido(p)
             _eliminado.value = true
+        }
+    }
+
+    // NUEVO: Obtener nombre del equipo por su id
+    suspend fun getEquipoNombre(equipoId: Long): String? {
+        return equipoRepository.getById(equipoId)?.nombre
+    }
+
+    // NUEVO: Actualizar nombre del equipo (por id)
+    suspend fun actualizarEquipoNombre(equipoId: Long, nuevoNombre: String): Boolean {
+        val equipo = equipoRepository.getById(equipoId)
+        return if (equipo != null) {
+            equipoRepository.updateEquipo(equipo.copy(nombre = nuevoNombre.trim()))
+            true
+        } else {
+            false
         }
     }
 }

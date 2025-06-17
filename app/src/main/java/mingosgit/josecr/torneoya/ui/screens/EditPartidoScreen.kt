@@ -12,12 +12,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel
+import kotlinx.coroutines.Dispatchers
 import java.util.*
 
 @Composable
@@ -45,14 +50,25 @@ fun EditPartidoScreen(
     var errorGeneral by rememberSaveable { mutableStateOf<String?>(null) }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
-    val calendar = remember { Calendar.getInstance() }
+    var equipoAEditando by rememberSaveable { mutableStateOf(false) }
+    var equipoBEditando by rememberSaveable { mutableStateOf(false) }
+    var equipoANombre by rememberSaveable { mutableStateOf("") }
+    var equipoBNombre by rememberSaveable { mutableStateOf("") }
 
+    val calendar = remember { Calendar.getInstance() }
+    val scope = rememberCoroutineScope()
+
+    // ---- Cargar nombre de equipos al iniciar
     LaunchedEffect(partido) {
         partido?.let {
             fecha = it.fecha
             horaInicio = it.horaInicio
             numeroPartes = it.numeroPartes.toString()
             tiempoPorParte = it.tiempoPorParte.toString()
+
+            // Cargar nombres usando ViewModel (se recomienda un flow, pero para este caso es suficiente así)
+            equipoANombre = editPartidoViewModel.getEquipoNombre(it.equipoAId) ?: ""
+            equipoBNombre = editPartidoViewModel.getEquipoNombre(it.equipoBId) ?: ""
         }
     }
 
@@ -135,24 +151,58 @@ fun EditPartidoScreen(
         ) {
             Text("Editar Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
 
+            // ---- CAMPO EDITABLE DEL NOMBRE DEL EQUIPO A ----
             OutlinedTextField(
-                value = partido?.equipoAId?.toString() ?: "",
-                onValueChange = {},
-                enabled = false,
-                label = { Text("Equipo A ID") },
+                value = equipoANombre,
+                onValueChange = { equipoANombre = it },
+                label = { Text("Equipo A") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                enabled = equipoAEditando,
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = {
+                        if (equipoAEditando) {
+                            scope.launch {
+                                val exito = editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoAId, equipoANombre)
+                                if (!exito) errorGeneral = "No se pudo actualizar el nombre del equipo A"
+                            }
+                        }
+                        equipoAEditando = !equipoAEditando
+                    }) {
+                        Icon(
+                            imageVector = if (equipoAEditando) Icons.Default.Check else Icons.Default.Edit,
+                            contentDescription = if (equipoAEditando) "Guardar" else "Editar"
+                        )
+                    }
+                }
             )
 
+            // ---- CAMPO EDITABLE DEL NOMBRE DEL EQUIPO B ----
             OutlinedTextField(
-                value = partido?.equipoBId?.toString() ?: "",
-                onValueChange = {},
-                enabled = false,
-                label = { Text("Equipo B ID") },
+                value = equipoBNombre,
+                onValueChange = { equipoBNombre = it },
+                label = { Text("Equipo B") },
                 singleLine = true,
+                enabled = equipoBEditando,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(top = 8.dp),
+                trailingIcon = {
+                    IconButton(onClick = {
+                        if (equipoBEditando) {
+                            scope.launch {
+                                val exito = editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoBId, equipoBNombre)
+                                if (!exito) errorGeneral = "No se pudo actualizar el nombre del equipo B"
+                            }
+                        }
+                        equipoBEditando = !equipoBEditando
+                    }) {
+                        Icon(
+                            imageVector = if (equipoBEditando) Icons.Default.Check else Icons.Default.Edit,
+                            contentDescription = if (equipoBEditando) "Guardar" else "Editar"
+                        )
+                    }
+                }
             )
 
             Row(
@@ -298,21 +348,7 @@ fun EditPartidoScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-            Divider()
-            Text("Jugadores Equipo A:", fontSize = 18.sp, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-            if (jugadoresCargados) {
-                jugadoresEquipoA.forEach { nombre ->
-                    Text(nombre, fontSize = 16.sp, modifier = Modifier.padding(vertical = 2.dp))
-                }
-            } else {
-                Text("Cargando jugadores...", fontSize = 14.sp, modifier = Modifier.padding(vertical = 2.dp))
-            }
-            Text("Jugadores Equipo B:", fontSize = 18.sp, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-            if (jugadoresCargados) {
-                jugadoresEquipoB.forEach { nombre ->
-                    Text(nombre, fontSize = 16.sp, modifier = Modifier.padding(vertical = 2.dp))
-                }
-            }
+
         }
 
         if (showDeleteDialog) {
