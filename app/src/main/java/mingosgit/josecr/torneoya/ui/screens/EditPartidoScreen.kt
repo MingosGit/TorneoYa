@@ -41,6 +41,10 @@ fun EditPartidoScreen(
     val jugadoresEquipoB by editPartidoViewModel.jugadoresEquipoB.collectAsStateWithLifecycle()
     val jugadoresCargados by editPartidoViewModel.jugadoresCargados.collectAsStateWithLifecycle()
 
+    // Nuevo: usa los nombres locales del ViewModel
+    val equipoANombreVM by editPartidoViewModel.nombreEquipoA.collectAsStateWithLifecycle()
+    val equipoBNombreVM by editPartidoViewModel.nombreEquipoB.collectAsStateWithLifecycle()
+
     var fecha by rememberSaveable { mutableStateOf("") }
     var horaInicio by rememberSaveable { mutableStateOf("") }
     var numeroPartes by rememberSaveable { mutableStateOf("") }
@@ -58,14 +62,25 @@ fun EditPartidoScreen(
     val calendar = remember { Calendar.getInstance() }
     val scope = rememberCoroutineScope()
 
+    // Cuando cambia el nombre en el ViewModel, actualiza el estado de Compose local (solo si no se está editando)
+    LaunchedEffect(equipoANombreVM) {
+        if (!equipoAEditando && equipoANombreVM != null) {
+            equipoANombre = equipoANombreVM!!
+        }
+    }
+    LaunchedEffect(equipoBNombreVM) {
+        if (!equipoBEditando && equipoBNombreVM != null) {
+            equipoBNombre = equipoBNombreVM!!
+        }
+    }
+
     LaunchedEffect(partido) {
         partido?.let {
             fecha = it.fecha
             horaInicio = it.horaInicio
             numeroPartes = it.numeroPartes.toString()
             tiempoPorParte = it.tiempoPorParte.toString()
-            equipoANombre = editPartidoViewModel.getEquipoNombre(it.equipoAId) ?: ""
-            equipoBNombre = editPartidoViewModel.getEquipoNombre(it.equipoBId) ?: ""
+            // Aquí no se setea directamente el nombre, lo hace el otro LaunchedEffect usando los StateFlow
         }
     }
 

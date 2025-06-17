@@ -39,6 +39,13 @@ class EditPartidoViewModel(
     private val _jugadoresCargados = MutableStateFlow(false)
     val jugadoresCargados: StateFlow<Boolean> get() = _jugadoresCargados
 
+    // Nombre local en memoria de los equipos para refrescar Compose al editar
+    private val _nombreEquipoA = MutableStateFlow<String?>(null)
+    val nombreEquipoA: StateFlow<String?> get() = _nombreEquipoA
+
+    private val _nombreEquipoB = MutableStateFlow<String?>(null)
+    val nombreEquipoB: StateFlow<String?> get() = _nombreEquipoB
+
     init {
         cargarPartido()
         cargarJugadores()
@@ -47,7 +54,12 @@ class EditPartidoViewModel(
     fun cargarPartido() {
         viewModelScope.launch {
             _loading.value = true
-            _partido.value = partidoRepository.getPartidoById(partidoId)
+            val partidoEntity = partidoRepository.getPartidoById(partidoId)
+            _partido.value = partidoEntity
+            partidoEntity?.let {
+                _nombreEquipoA.value = equipoRepository.getById(it.equipoAId)?.nombre
+                _nombreEquipoB.value = equipoRepository.getById(it.equipoBId)?.nombre
+            }
             _loading.value = false
         }
     }
@@ -96,16 +108,29 @@ class EditPartidoViewModel(
     }
 
     suspend fun getEquipoNombre(equipoId: Long): String? {
-        return equipoRepository.getById(equipoId)?.nombre
+        // Usa el nombre guardado si ya fue editado
+        return if (_partido.value?.equipoAId == equipoId) {
+            _nombreEquipoA.value ?: equipoRepository.getById(equipoId)?.nombre
+        } else if (_partido.value?.equipoBId == equipoId) {
+            _nombreEquipoB.value ?: equipoRepository.getById(equipoId)?.nombre
+        } else {
+            equipoRepository.getById(equipoId)?.nombre
+        }
     }
 
     suspend fun actualizarEquipoNombre(equipoId: Long, nuevoNombre: String): Boolean {
         val equipo = equipoRepository.getById(equipoId)
         return if (equipo != null) {
-            equipoRepository.updateEquipo(equipo.copy(nombre = nuevoNombre.trim()))
+            val actualizado = equipo.copy(nombre = nuevoNombre.trim())
+            equipoRepository.updateEquipo(actualizado)
+            // Relee siempre de la BD para reflejar persistencia real
+            val actualizadoReal = equipoRepository.getById(equipoId)
+            if (_partido.value?.equipoAId == equipoId) _nombreEquipoA.value = actualizadoReal?.nombre
+            if (_partido.value?.equipoBId == equipoId) _nombreEquipoB.value = actualizadoReal?.nombre
             true
         } else {
             false
         }
     }
+
 }
