@@ -20,18 +20,56 @@ fun VisualizarPartidoScreen(
     navController: NavController,
     vm: VisualizarPartidoViewModel
 ) {
-    // 👇 Fuerza recarga al cambiar partidoId
     LaunchedEffect(partidoId) {
         vm.cargarDatos()
     }
 
     val uiState by vm.uiState.collectAsState()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val eliminado by vm.eliminado.collectAsState()
+
+    // Cuando se elimina, vuelve a la pantalla de partidos y limpia el backstack
+    LaunchedEffect(eliminado) {
+        if (eliminado) {
+            navController.navigate("partido") {
+                popUpTo("partido") { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Visualizar Partido") }
             )
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Button(
+                    onClick = {
+                        navController.navigate("editar_partido/$partidoId")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Text("Editar")
+                }
+                OutlinedButton(
+                    onClick = {
+                        showDeleteDialog = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Eliminar")
+                }
+            }
         }
     ) { innerPadding ->
         Column(
@@ -130,6 +168,29 @@ fun VisualizarPartidoScreen(
                     }
                 }
             }
+        }
+
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            vm.eliminarPartido()
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Cancelar")
+                    }
+                },
+                title = { Text("Eliminar Partido") },
+                text = { Text("¿Seguro que deseas eliminar este partido? Esta acción no se puede deshacer.") }
+            )
         }
     }
 }

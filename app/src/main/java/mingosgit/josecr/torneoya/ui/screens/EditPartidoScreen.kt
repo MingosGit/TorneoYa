@@ -56,6 +56,16 @@ fun EditPartidoScreen(
         }
     }
 
+    // --- NUEVO: Al eliminar o guardar, navega SIEMPRE a "partido"
+    LaunchedEffect(eliminado, guardado) {
+        if (eliminado || guardado) {
+            navController.navigate("partido") {
+                popUpTo("partido") { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
+
     val datePickerDialog = remember {
         DatePickerDialog(
             context,
@@ -99,16 +109,6 @@ fun EditPartidoScreen(
         ) {
             CircularProgressIndicator()
         }
-        return
-    }
-
-    if (eliminado) {
-        LaunchedEffect(true) { navController.popBackStack() }
-        return
-    }
-
-    if (guardado) {
-        LaunchedEffect(true) { navController.popBackStack() }
         return
     }
 

@@ -25,6 +25,9 @@ class VisualizarPartidoViewModel(
     private val _uiState = MutableStateFlow(VisualizarPartidoUiState())
     val uiState: StateFlow<VisualizarPartidoUiState> = _uiState
 
+    private val _eliminado = MutableStateFlow(false)
+    val eliminado: StateFlow<Boolean> = _eliminado
+
     fun cargarDatos() {
         viewModelScope.launch {
             val partido = partidoRepository.getPartidoById(partidoId)
@@ -32,17 +35,10 @@ class VisualizarPartidoViewModel(
                 val equipoAId = partido.equipoAId
                 val equipoBId = partido.equipoBId
 
-                // DEBUG: imprime IDs
-                println("CARGAR DATOS partidoId=$partidoId equipoAId=$equipoAId equipoBId=$equipoBId")
-
                 val nombreEquipoA = equipoRepository.getById(equipoAId)?.nombre ?: "Equipo A"
                 val nombreEquipoB = equipoRepository.getById(equipoBId)?.nombre ?: "Equipo B"
                 val jugadoresA = equipoRepository.getNombresJugadoresEquipoEnPartido(partidoId, equipoAId)
                 val jugadoresB = equipoRepository.getNombresJugadoresEquipoEnPartido(partidoId, equipoBId)
-
-                // DEBUG: imprime jugadores
-                println("Jugadores A: $jugadoresA")
-                println("Jugadores B: $jugadoresB")
 
                 _uiState.value = VisualizarPartidoUiState(
                     nombreEquipoA = nombreEquipoA,
@@ -50,6 +46,16 @@ class VisualizarPartidoViewModel(
                     jugadoresEquipoA = jugadoresA,
                     jugadoresEquipoB = jugadoresB
                 )
+            }
+        }
+    }
+
+    fun eliminarPartido() {
+        viewModelScope.launch {
+            val partido = partidoRepository.getPartidoById(partidoId)
+            if (partido != null) {
+                partidoRepository.deletePartido(partido)
+                _eliminado.value = true
             }
         }
     }
