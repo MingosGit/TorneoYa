@@ -3,10 +3,14 @@ package mingosgit.josecr.torneoya.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,36 +54,41 @@ fun VisualizarPartidoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Visualizar Partido") }
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Visualizar Partido",
+                            modifier = Modifier.weight(1f)
+                        )
+                        // Botón de Editar
+                        IconButton(
+                            onClick = {
+                                navController.currentBackStackEntry?.arguments?.putBoolean("reload_partido", true)
+                                navController.navigate("editar_partido/$partidoId")
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Editar",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        // Botón de Eliminar
+                        IconButton(
+                            onClick = { showDeleteDialog = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
             )
-        },
-        bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Button(
-                    onClick = {
-                        navController.currentBackStackEntry?.arguments?.putBoolean("reload_partido", true)
-                        navController.navigate("editar_partido/$partidoId")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Editar")
-                }
-                OutlinedButton(
-                    onClick = {
-                        showDeleteDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Eliminar")
-                }
-            }
         }
     ) { innerPadding ->
         Column(

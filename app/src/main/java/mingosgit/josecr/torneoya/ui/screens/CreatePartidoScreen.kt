@@ -176,48 +176,66 @@ fun CreatePartidoScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = numeroPartes,
-                onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
-                label = { Text("Número de partes") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = mostrarErrores && camposError["numeroPartes"] == true,
+            // Agrupa numero de partes y minutos por parte en un solo Row
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .background(
-                        if (mostrarErrores && camposError["numeroPartes"] == true) Color(0xFFFFCDD2) else Color.Transparent
-                    )
-            )
-            if (mostrarErrores && camposError["numeroPartes"] == true) {
-                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = numeroPartes,
+                    onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
+                    label = { Text("Número de partes") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = mostrarErrores && camposError["numeroPartes"] == true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["numeroPartes"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = tiempoPorParte,
+                    onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
+                    label = { Text("Minutos por parte") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = mostrarErrores && camposError["tiempoPorParte"] == true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["tiempoPorParte"] == true) Color(
+                                0xFFFFCDD2
+                            ) else Color.Transparent
+                        )
+                )
             }
-
-            OutlinedTextField(
-                value = tiempoPorParte,
-                onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
-                label = { Text("Minutos por parte") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = mostrarErrores && camposError["tiempoPorParte"] == true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .background(
-                        if (mostrarErrores && camposError["tiempoPorParte"] == true) Color(
-                            0xFFFFCDD2
-                        ) else Color.Transparent
-                    )
-            )
-            if (mostrarErrores && camposError["tiempoPorParte"] == true) {
-                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
+            if (mostrarErrores && (camposError["numeroPartes"] == true || camposError["tiempoPorParte"] == true)) {
+                Row(Modifier.fillMaxWidth()) {
+                    if (camposError["numeroPartes"] == true)
+                        Text(
+                            "Campo obligatorio o inválido",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    if (camposError["tiempoPorParte"] == true)
+                        Text(
+                            "Campo obligatorio o inválido",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                }
             }
 
             OutlinedTextField(
                 value = numeroJugadores,
                 onValueChange = { numeroJugadores = it.filter { c -> c.isDigit() } },
-                label = { Text("Nº jugadores por equipo") },
+                label = { Text("Número de jugadores por equipo") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 isError = mostrarErrores && camposError["numeroJugadores"] == true,
