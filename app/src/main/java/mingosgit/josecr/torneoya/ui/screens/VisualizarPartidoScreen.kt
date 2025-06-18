@@ -1,8 +1,10 @@
 package mingosgit.josecr.torneoya.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -63,7 +65,6 @@ fun VisualizarPartidoScreen(
                             "Visualizar Partido",
                             modifier = Modifier.weight(1f)
                         )
-                        // Botón de Editar
                         IconButton(
                             onClick = {
                                 navController.currentBackStackEntry?.arguments?.putBoolean("reload_partido", true)
@@ -76,7 +77,6 @@ fun VisualizarPartidoScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        // Botón de Eliminar
                         IconButton(
                             onClick = { showDeleteDialog = true }
                         ) {
@@ -97,6 +97,7 @@ fun VisualizarPartidoScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            // Nombres de equipos deslizable horizontal si es largo, "VS" SIEMPRE al centro
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -104,23 +105,67 @@ fun VisualizarPartidoScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = uiState.nombreEquipoA,
-                    fontSize = 22.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
+                // Nombre equipo A con scroll lateral si es muy largo
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(IntrinsicSize.Min)
+                        .padding(end = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.nombreEquipoA,
+                            fontSize = 22.sp,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
+                }
+                // "VS" SIEMPRE centrado y fijo
                 Text(
                     text = "  VS  ",
                     fontSize = 18.sp,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .align(Alignment.CenterVertically),
+                    textAlign = TextAlign.Center
                 )
-                Text(
-                    text = uiState.nombreEquipoB,
-                    fontSize = 22.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
+                // Nombre equipo B con scroll lateral si es muy largo
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(IntrinsicSize.Min)
+                        .padding(start = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.nombreEquipoB,
+                            fontSize = 22.sp,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -175,7 +220,7 @@ fun VisualizarPartidoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Jugadores de ${uiState.nombreEquipoB}",
+                        text = "Jugadores",
                         fontSize = 16.sp,
                         style = MaterialTheme.typography.titleSmall,
                         textAlign = TextAlign.Center,

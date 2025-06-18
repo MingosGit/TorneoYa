@@ -1,8 +1,10 @@
 package mingosgit.josecr.torneoya.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,40 +45,81 @@ fun EditarJugadoresEquipoScreen(
         return
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        Text(
-            text = "Editar Jugadores",
-            fontSize = 24.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp) // espacio para los botones fijos abajo
         ) {
             Text(
-                text = equipoA ?: "Equipo A",
-                fontSize = 20.sp,
-                modifier = Modifier.weight(1f)
+                text = "Editar Jugadores",
+                fontSize = 24.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-            Text(
-                text = equipoB ?: "Equipo B",
-                fontSize = 20.sp,
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(Modifier.fillMaxWidth()) {
-            Column(Modifier.weight(1f)) {
-                LazyColumn {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Equipo A
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState()),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = equipoA ?: "Equipo A",
+                            fontSize = 20.sp,
+                        )
+                    }
+                }
+                // Espaciado entre los nombres
+                Spacer(modifier = Modifier.width(8.dp))
+                // Equipo B
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState()),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = equipoB ?: "Equipo B",
+                            fontSize = 20.sp,
+                        )
+                    }
+                }
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
                     itemsIndexed(nombresA) { i, value ->
                         OutlinedTextField(
                             value = value,
                             onValueChange = { vm.onNombreAChange(i, it) },
-                            label = { Text("Jugador ${i + 1}") },
+                            label = { Text(if (i == nombresA.lastIndex) "Agregar Jugador" else "Jugador ${i + 1}") },
                             singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -84,15 +127,17 @@ fun EditarJugadoresEquipoScreen(
                         )
                     }
                 }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                LazyColumn {
+                Spacer(modifier = Modifier.width(16.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
                     itemsIndexed(nombresB) { i, value ->
                         OutlinedTextField(
                             value = value,
                             onValueChange = { vm.onNombreBChange(i, it) },
-                            label = { Text("Jugador ${i + 1}") },
+                            label = { Text(if (i == nombresB.lastIndex) "Agregar Jugador" else "Jugador ${i + 1}") },
                             singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -101,23 +146,30 @@ fun EditarJugadoresEquipoScreen(
                     }
                 }
             }
+            if (error != null) {
+                Spacer(Modifier.height(8.dp))
+                Text(error!!, color = Color.Red, fontSize = 14.sp)
+            }
         }
-        Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = { vm.randomizar() },
+        Row(
             modifier = Modifier
+                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) { Text("Randomizar") }
-        Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = { scope.launch { vm.guardar() } },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) { Text("Guardar") }
-        if (error != null) {
-            Text(error!!, color = Color.Red, fontSize = 14.sp)
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
+        ) {
+            Button(
+                onClick = { vm.randomizar() },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+            ) { Text("Randomizar") }
+            Button(
+                onClick = { scope.launch { vm.guardar() } },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+            ) { Text("Guardar") }
         }
     }
 }

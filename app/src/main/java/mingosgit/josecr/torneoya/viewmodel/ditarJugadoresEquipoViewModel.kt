@@ -26,10 +26,10 @@ class EditarJugadoresEquipoViewModel(
     private val _equipoB = MutableStateFlow<String?>(null)
     val equipoB: StateFlow<String?> = _equipoB
 
-    private val _nombresA = MutableStateFlow<List<String>>(emptyList())
+    private val _nombresA = MutableStateFlow<List<String>>(listOf(""))
     val nombresA: StateFlow<List<String>> = _nombresA
 
-    private val _nombresB = MutableStateFlow<List<String>>(emptyList())
+    private val _nombresB = MutableStateFlow<List<String>>(listOf(""))
     val nombresB: StateFlow<List<String>> = _nombresB
 
     private val _loading = MutableStateFlow(true)
@@ -46,15 +46,47 @@ class EditarJugadoresEquipoViewModel(
     }
 
     fun onNombreAChange(idx: Int, valor: String) {
-        _nombresA.value = _nombresA.value.toMutableList().also { it[idx] = valor }
+        val actual = _nombresA.value.toMutableList()
+        if (valor.isEmpty()) {
+            // Eliminar recuadro si se borra el nombre y hay más de uno
+            if (actual.size > 1) {
+                actual.removeAt(idx)
+            } else {
+                actual[idx] = ""
+            }
+        } else {
+            actual[idx] = valor
+            // Si es el último, agregar otro vacío
+            if (idx == actual.size - 1) {
+                actual.add("")
+            }
+        }
+        _nombresA.value = actual
     }
 
     fun onNombreBChange(idx: Int, valor: String) {
-        _nombresB.value = _nombresB.value.toMutableList().also { it[idx] = valor }
+        val actual = _nombresB.value.toMutableList()
+        if (valor.isEmpty()) {
+            // Eliminar recuadro si se borra el nombre y hay más de uno
+            if (actual.size > 1) {
+                actual.removeAt(idx)
+            } else {
+                actual[idx] = ""
+            }
+        } else {
+            actual[idx] = valor
+            // Si es el último, agregar otro vacío
+            if (idx == actual.size - 1) {
+                actual.add("")
+            }
+        }
+        _nombresB.value = actual
     }
 
     fun randomizar() {
-        val todos = (_nombresA.value + _nombresB.value).map { it.trim() }.filter { it.isNotBlank() }
+        val todos = (_nombresA.value + _nombresB.value)
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
         val barajado = todos.shuffled(Random(System.currentTimeMillis()))
         val n = barajado.size
         val mitad = n / 2
@@ -64,20 +96,18 @@ class EditarJugadoresEquipoViewModel(
             return
         }
         if (n % 2 == 0) {
-            _nombresA.value = barajado.take(mitad)
-            _nombresB.value = barajado.drop(mitad)
+            _nombresA.value = barajado.take(mitad) + listOf("")
+            _nombresB.value = barajado.drop(mitad) + listOf("")
         } else {
             val extraA = Random.nextBoolean()
             if (extraA) {
-                _nombresA.value = barajado.take(mitad + 1)
-                _nombresB.value = barajado.drop(mitad + 1)
+                _nombresA.value = barajado.take(mitad + 1) + listOf("")
+                _nombresB.value = barajado.drop(mitad + 1) + listOf("")
             } else {
-                _nombresA.value = barajado.take(mitad)
-                _nombresB.value = barajado.drop(mitad)
+                _nombresA.value = barajado.take(mitad) + listOf("")
+                _nombresB.value = barajado.drop(mitad) + listOf("")
             }
         }
-        if (_nombresA.value.isEmpty()) _nombresA.value = listOf("")
-        if (_nombresB.value.isEmpty()) _nombresB.value = listOf("")
     }
 
     fun guardar() {
@@ -140,13 +170,10 @@ class EditarJugadoresEquipoViewModel(
                 val relB = relacionRepository.getJugadoresDeEquipoEnPartido(partidoId, equipoBId)
                 val listaA = relA.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
                 val listaB = relB.mapNotNull { jugadorRepository.getById(it.jugadorId)?.nombre }
-                val max = maxOf(listaA.size, listaB.size, 1)
-                val paddedA = listaA + List(max - listaA.size) { "" }
-                val paddedB = listaB + List(max - listaB.size) { "" }
                 _equipoA.value = nombreA
                 _equipoB.value = nombreB
-                _nombresA.value = paddedA
-                _nombresB.value = paddedB
+                _nombresA.value = (listaA + listOf("")).ifEmpty { listOf("") }
+                _nombresB.value = (listaB + listOf("")).ifEmpty { listOf("") }
                 _loading.value = false
             } catch (e: Exception) {
                 _error.value = "Error al cargar jugadores: ${e.message}"
