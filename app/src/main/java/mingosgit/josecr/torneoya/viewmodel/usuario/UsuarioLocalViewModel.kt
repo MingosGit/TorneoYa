@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.viewmodel
+package mingosgit.josecr.torneoya.viewmodel.usuario
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -22,10 +22,10 @@ import mingosgit.josecr.torneoya.ui.navigation.BottomNavigationBar
 import mingosgit.josecr.torneoya.ui.navigation.NavGraph
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavItem
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaTheme
-import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
-import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.PartidoViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

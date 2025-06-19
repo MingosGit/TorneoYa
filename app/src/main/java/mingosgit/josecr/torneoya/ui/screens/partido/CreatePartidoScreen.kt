@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens
+package mingosgit.josecr.torneoya.ui.screens.partido
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModel
 import java.util.Calendar
 
 @Composable

@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens
+package mingosgit.josecr.torneoya.ui.screens.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text

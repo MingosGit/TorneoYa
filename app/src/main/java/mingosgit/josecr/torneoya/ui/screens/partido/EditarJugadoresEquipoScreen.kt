@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens
+package mingosgit.josecr.torneoya.ui.screens.partido
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.viewmodel.EditarJugadoresEquipoViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.EditarJugadoresEquipoViewModel
 
 @Composable
 fun EditarJugadoresEquipoScreen(

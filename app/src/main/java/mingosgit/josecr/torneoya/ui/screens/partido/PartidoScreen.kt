@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens
+package mingosgit.josecr.torneoya.ui.screens.partido
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
 import mingosgit.josecr.torneoya.repository.EquipoRepository
 
 @Composable

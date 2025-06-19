@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens
+package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -25,7 +25,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import java.io.File
 
 fun saveImageToInternalStorage(context: Context, uri: Uri): String? {

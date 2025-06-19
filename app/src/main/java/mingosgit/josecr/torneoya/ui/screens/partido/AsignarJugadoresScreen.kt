@@ -1,8 +1,6 @@
-package mingosgit.josecr.torneoya.ui.screens
+package mingosgit.josecr.torneoya.ui.screens.partido
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
@@ -14,7 +12,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.AsignarJugadoresViewModel
 
 @Composable
 fun AsignarJugadoresScreen(

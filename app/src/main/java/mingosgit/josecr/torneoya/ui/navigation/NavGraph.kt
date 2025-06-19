@@ -2,9 +2,9 @@ package mingosgit.josecr.torneoya.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import mingosgit.josecr.torneoya.ui.screens.AsignarJugadoresScreen
-import mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModelFactory
+import mingosgit.josecr.torneoya.ui.screens.partido.AsignarJugadoresScreen
+import mingosgit.josecr.torneoya.viewmodel.partido.AsignarJugadoresViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModelFactory
 import mingosgit.josecr.torneoya.repository.JugadorRepository
 import mingosgit.josecr.torneoya.repository.EquipoRepository
 import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
@@ -16,20 +16,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import mingosgit.josecr.torneoya.ui.screens.HomeScreen
-import mingosgit.josecr.torneoya.ui.screens.PartidoScreen
-import mingosgit.josecr.torneoya.ui.screens.UsuarioScreen
-import mingosgit.josecr.torneoya.ui.screens.CreatePartidoScreen
-import mingosgit.josecr.torneoya.ui.screens.EditarJugadoresEquipoScreen
-import mingosgit.josecr.torneoya.viewmodel.PartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.UsuarioLocalViewModel
-import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModelFactory
-import mingosgit.josecr.torneoya.ui.screens.VisualizarPartidoScreen
-import mingosgit.josecr.torneoya.viewmodel.EditarJugadoresEquipoViewModel
-import mingosgit.josecr.torneoya.viewmodel.EditarJugadoresEquipoViewModelFactory
+import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
+import mingosgit.josecr.torneoya.ui.screens.partido.PartidoScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.UsuarioScreen
+import mingosgit.josecr.torneoya.ui.screens.partido.CreatePartidoScreen
+import mingosgit.josecr.torneoya.ui.screens.partido.EditarJugadoresEquipoScreen
+import mingosgit.josecr.torneoya.ui.screens.partido.EditPartidoScreen
+import mingosgit.josecr.torneoya.ui.screens.partido.VisualizarPartidoScreen
+import mingosgit.josecr.torneoya.viewmodel.partido.AsignarJugadoresViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.partido.EditarJugadoresEquipoViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.EditarJugadoresEquipoViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 
 @Composable
 fun NavGraph(
@@ -66,7 +69,7 @@ fun NavGraph(
         }
         composable("crear_partido") {
             val createPartidoViewModel = viewModel(
-                modelClass = mingosgit.josecr.torneoya.viewmodel.CreatePartidoViewModel::class.java,
+                modelClass = CreatePartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
                 factory = CreatePartidoViewModelFactory(partidoRepository, equipoRepositoryInst)
             )
@@ -81,7 +84,7 @@ fun NavGraph(
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
             val visualizarPartidoViewModel = viewModel(
-                modelClass = mingosgit.josecr.torneoya.viewmodel.VisualizarPartidoViewModel::class.java,
+                modelClass = VisualizarPartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
                 factory = VisualizarPartidoViewModelFactory(
                     partidoId = id,
@@ -90,7 +93,7 @@ fun NavGraph(
                 ),
                 key = "visualizar_partido_$id"
             )
-            mingosgit.josecr.torneoya.ui.screens.VisualizarPartidoScreen(
+            VisualizarPartidoScreen(
                 partidoId = id,
                 navController = navController,
                 vm = visualizarPartidoViewModel
@@ -103,7 +106,7 @@ fun NavGraph(
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
             val uniqueKey = "editar_partido_${id}_${System.currentTimeMillis()}"
             val editPartidoViewModel = viewModel(
-                modelClass = mingosgit.josecr.torneoya.viewmodel.EditPartidoViewModel::class.java,
+                modelClass = EditPartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
                 factory = EditPartidoViewModelFactory(
                     partidoRepository = partidoRepository,
@@ -113,13 +116,19 @@ fun NavGraph(
                 ),
                 key = uniqueKey
             )
-            mingosgit.josecr.torneoya.ui.screens.EditPartidoScreen(
+            EditPartidoScreen(
                 partidoId = id,
                 navController = navController,
                 editPartidoViewModel = editPartidoViewModel,
                 onFinish = {
-                    navController.previousBackStackEntry?.arguments?.putBoolean("reload_partidos", true)
-                    navController.previousBackStackEntry?.arguments?.putBoolean("reload_partido", true)
+                    navController.previousBackStackEntry?.arguments?.putBoolean(
+                        "reload_partidos",
+                        true
+                    )
+                    navController.previousBackStackEntry?.arguments?.putBoolean(
+                        "reload_partido",
+                        true
+                    )
                 }
             )
         }
@@ -141,7 +150,7 @@ fun NavGraph(
             val equipoBId = backStackEntry.arguments?.getLong("equipoBId") ?: -1L
             val numJugadores = backStackEntry.arguments?.getString("numeroJugadores")?.toIntOrNull() ?: 5
             val vm = viewModel(
-                modelClass = mingosgit.josecr.torneoya.viewmodel.AsignarJugadoresViewModel::class.java,
+                modelClass = AsignarJugadoresViewModel::class.java,
                 viewModelStoreOwner = owner,
                 factory = AsignarJugadoresViewModelFactory(
                     partidoId,

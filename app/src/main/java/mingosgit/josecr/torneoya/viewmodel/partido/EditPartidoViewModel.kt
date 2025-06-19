@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.viewmodel
+package mingosgit.josecr.torneoya.viewmodel.partido
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
-import mingosgit.josecr.torneoya.data.entities.EquipoEntity
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.repository.JugadorRepository
 import mingosgit.josecr.torneoya.repository.EquipoRepository

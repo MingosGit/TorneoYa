@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.viewmodel
+package mingosgit.josecr.torneoya.viewmodel.partido
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
