@@ -23,7 +23,7 @@ import mingosgit.josecr.torneoya.data.entities.UsuarioLocalEntity
         PartidoEquipoJugadorEntity::class,
         UsuarioLocalEntity::class
     ],
-    version = 1
+    version = 2 // <-- CAMBIADO DE 1 a 2 POR CAMBIO DE ESQUEMA
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun equipoDao(): EquipoDao
@@ -42,7 +42,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "torneoya_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration() // <-- Añade esto para desarrollo rápido
+                    .build()
                 INSTANCE = instance
                 instance
             }

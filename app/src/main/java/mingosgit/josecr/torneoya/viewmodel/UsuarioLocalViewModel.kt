@@ -19,7 +19,7 @@ class UsuarioLocalViewModel(
         viewModelScope.launch {
             var user = repository.getUsuario()
             if (user == null) {
-                user = UsuarioLocalEntity(id = 1, nombre = "Usuario1")
+                user = UsuarioLocalEntity(id = 1, nombre = "Usuario1", fotoPerfilPath = null)
                 repository.guardarUsuario(user)
             }
             _usuario.value = user
@@ -28,7 +28,25 @@ class UsuarioLocalViewModel(
 
     fun cambiarNombre(nuevoNombre: String) {
         viewModelScope.launch {
-            val user = UsuarioLocalEntity(id = 1, nombre = nuevoNombre)
+            val actual = _usuario.value
+            val user = UsuarioLocalEntity(
+                id = 1,
+                nombre = nuevoNombre,
+                fotoPerfilPath = actual?.fotoPerfilPath // mantiene la foto si existe
+            )
+            repository.actualizarUsuario(user)
+            _usuario.value = user
+        }
+    }
+
+    fun cambiarFotoPerfil(path: String) {
+        viewModelScope.launch {
+            val actual = _usuario.value
+            val user = UsuarioLocalEntity(
+                id = 1,
+                nombre = actual?.nombre ?: "Usuario1",
+                fotoPerfilPath = path
+            )
             repository.actualizarUsuario(user)
             _usuario.value = user
         }
