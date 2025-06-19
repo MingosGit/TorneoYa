@@ -33,9 +33,7 @@ class AsignarJugadoresViewModel(
         equipoAJugadores.clear()
         equipoBJugadores.clear()
         listaNombres.clear()
-        repeat(num) { equipoAJugadores.add("") }
-        repeat(num) { equipoBJugadores.add("") }
-        repeat(num * 2) { listaNombres.add("") }
+        // No rellenar por defecto, solo vacío
     }
 
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
@@ -52,7 +50,6 @@ class AsignarJugadoresViewModel(
             equipoAJugadores.addAll(nombresLimpios.take(mitad))
             equipoBJugadores.addAll(nombresLimpios.drop(mitad))
         } else {
-            // Uno de los equipos tendrá uno más
             val equipoConExtra = if (Random.nextBoolean()) "A" else "B"
             if (equipoConExtra == "A") {
                 equipoAJugadores.addAll(nombresLimpios.take(mitad + 1))
@@ -62,14 +59,12 @@ class AsignarJugadoresViewModel(
                 equipoBJugadores.addAll(nombresLimpios.drop(mitad))
             }
         }
-        // Rellenar con cadenas vacías si hace falta (para que los OutlinedTextField no fallen)
         while (equipoAJugadores.size < numJugadores) equipoAJugadores.add("")
         while (equipoBJugadores.size < numJugadores) equipoBJugadores.add("")
     }
 
     fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
-            // Limpiar previamente la asignación para este partido/equipo
             relacionRepository.eliminarJugadoresDeEquipo(partidoId, equipoAId)
             relacionRepository.eliminarJugadoresDeEquipo(partidoId, equipoBId)
 

@@ -3,6 +3,8 @@ package mingosgit.josecr.torneoya.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -89,21 +91,36 @@ fun AsignarJugadoresScreen(
                     .padding(top = 12.dp, bottom = 4.dp)
                     .align(Alignment.CenterHorizontally)
             )
-            Column(
+            val jugadores =
+                if (vm.equipoSeleccionado == "A") vm.equipoAJugadores else vm.equipoBJugadores
+
+            LazyColumn(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
             ) {
-                val jugadores =
-                    if (vm.equipoSeleccionado == "A") vm.equipoAJugadores else vm.equipoBJugadores
-                jugadores.forEachIndexed { idx, nombre ->
+                itemsIndexed(jugadores + "") { idx, value ->
                     OutlinedTextField(
-                        value = nombre,
-                        onValueChange = {
-                            if (vm.equipoSeleccionado == "A") vm.equipoAJugadores[idx] = it
-                            else vm.equipoBJugadores[idx] = it
+                        value = value,
+                        onValueChange = { newValue ->
+                            if (idx == jugadores.size) {
+                                // Último campo: agregar jugador si se escribe algo
+                                if (newValue.isNotBlank()) {
+                                    if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.add(newValue)
+                                    else vm.equipoBJugadores.add(newValue)
+                                }
+                            } else {
+                                // Si se borra el campo, eliminar el jugador
+                                if (newValue.isEmpty()) {
+                                    if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.removeAt(idx)
+                                    else vm.equipoBJugadores.removeAt(idx)
+                                } else {
+                                    if (vm.equipoSeleccionado == "A") vm.equipoAJugadores[idx] = newValue
+                                    else vm.equipoBJugadores[idx] = newValue
+                                }
+                            }
                         },
-                        label = { Text("Jugador ${idx + 1}") },
+                        label = { Text(if (idx == jugadores.size) "Agregar un jugador nuevo" else "Jugador ${idx + 1}") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier
@@ -120,18 +137,28 @@ fun AsignarJugadoresScreen(
                     .padding(vertical = 8.dp)
                     .align(Alignment.CenterHorizontally)
             )
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
             ) {
-                vm.listaNombres.forEachIndexed { idx, nombre ->
+                itemsIndexed(vm.listaNombres + "") { idx, value ->
                     OutlinedTextField(
-                        value = nombre,
-                        onValueChange = {
-                            vm.listaNombres[idx] = it
+                        value = value,
+                        onValueChange = { newValue ->
+                            if (idx == vm.listaNombres.size) {
+                                if (newValue.isNotBlank()) {
+                                    vm.listaNombres.add(newValue)
+                                }
+                            } else {
+                                if (newValue.isEmpty()) {
+                                    vm.listaNombres.removeAt(idx)
+                                } else {
+                                    vm.listaNombres[idx] = newValue
+                                }
+                            }
                         },
-                        label = { Text("Jugador ${idx + 1}") },
+                        label = { Text(if (idx == vm.listaNombres.size) "Agregar un jugador nuevo" else "Jugador ${idx + 1}") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier
@@ -146,7 +173,7 @@ fun AsignarJugadoresScreen(
             onClick = {
                 if (vm.modoAleatorio) {
                     val nombresLimpios = vm.listaNombres.filter { it.isNotBlank() }
-                    if (nombresLimpios.size >= 2) { // Debe haber al menos 2 jugadores
+                    if (nombresLimpios.size >= 2) {
                         vm.repartirAleatoriamente(nombresLimpios)
                         vm.cambiarModo(false)
                     }
