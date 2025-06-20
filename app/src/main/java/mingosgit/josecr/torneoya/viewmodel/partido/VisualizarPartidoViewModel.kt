@@ -21,7 +21,9 @@ data class VisualizarPartidoUiState(
     val estado: String = "",
     val minutoActual: String = "",
     val parteActual: Int = 0,
-    val partesTotales: Int = 0
+    val partesTotales: Int = 0,
+    val golesEquipoA: Int = 0,
+    val golesEquipoB: Int = 0
 )
 
 class VisualizarPartidoViewModel(
@@ -64,7 +66,9 @@ class VisualizarPartidoViewModel(
                     estado = tiempo.estadoVisible,
                     minutoActual = tiempo.minutoVisible,
                     parteActual = tiempo.parteActual,
-                    partesTotales = partido.numeroPartes
+                    partesTotales = partido.numeroPartes,
+                    golesEquipoA = partido.golesEquipoA,
+                    golesEquipoB = partido.golesEquipoB
                 )
             }
         }

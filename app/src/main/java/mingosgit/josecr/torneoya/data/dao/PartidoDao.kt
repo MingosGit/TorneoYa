@@ -22,4 +22,7 @@ interface PartidoDao {
 
     @Query("UPDATE partido SET estado = :nuevoEstado WHERE id = :partidoId")
     suspend fun actualizarEstado(partidoId: Long, nuevoEstado: String)
+
+    @Query("UPDATE partido SET golesEquipoA = :golesA, golesEquipoB = :golesB WHERE id = :partidoId")
+    suspend fun actualizarGoles(partidoId: Long, golesA: Int, golesB: Int)
 }

@@ -169,6 +169,37 @@ fun VisualizarPartidoScreen(
                 }
             }
 
+            // MOSTRAR GOLES DE CADA EQUIPO
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "${uiState.golesEquipoA}",
+                    fontSize = 38.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "-",
+                    fontSize = 28.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "${uiState.golesEquipoB}",
+                    fontSize = 38.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+            }
+
             // Barra horizontal con estado y minuto/parte
             Row(
                 modifier = Modifier

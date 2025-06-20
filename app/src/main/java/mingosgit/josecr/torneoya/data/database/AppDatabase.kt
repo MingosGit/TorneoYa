@@ -23,7 +23,7 @@ import mingosgit.josecr.torneoya.data.entities.UsuarioLocalEntity
         PartidoEquipoJugadorEntity::class,
         UsuarioLocalEntity::class
     ],
-    version = 3 // <--- SUBE LA VERSIÓN PORQUE CAMBIASTE EL ESQUEMA!!!
+    version = 4 // SUBE LA VERSIÓN PORQUE CAMBIASTE EL ESQUEMA!!!
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun equipoDao(): EquipoDao
