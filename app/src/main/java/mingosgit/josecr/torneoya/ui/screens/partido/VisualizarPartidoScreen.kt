@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,9 +29,7 @@ fun VisualizarPartidoScreen(
     navController: NavController,
     vm: VisualizarPartidoViewModel
 ) {
-    LaunchedEffect(partidoId) {
-        vm.cargarDatos()
-    }
+    LaunchedEffect(partidoId) { vm.cargarDatos() }
 
     val uiState by vm.uiState.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -106,7 +105,6 @@ fun VisualizarPartidoScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Nombre equipo A con scroll lateral si es muy largo
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -132,7 +130,6 @@ fun VisualizarPartidoScreen(
                         )
                     }
                 }
-                // "VS" SIEMPRE centrado y fijo
                 Text(
                     text = "  VS  ",
                     fontSize = 18.sp,
@@ -141,7 +138,6 @@ fun VisualizarPartidoScreen(
                         .align(Alignment.CenterVertically),
                     textAlign = TextAlign.Center
                 )
-                // Nombre equipo B con scroll lateral si es muy largo
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -180,27 +176,26 @@ fun VisualizarPartidoScreen(
                 Text(
                     text = "${uiState.golesEquipoA}",
                     fontSize = 38.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "-",
                     fontSize = 28.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 8.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "${uiState.golesEquipoB}",
                     fontSize = 38.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center
                 )
             }
 
-            // Barra horizontal con estado y minuto/parte
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -233,91 +228,156 @@ fun VisualizarPartidoScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth()
+            // Menú horizontal con pestañas
+            var selectedTabIndex by remember { mutableStateOf(0) }
+            val tabTitles = listOf("Jugadores", "Eventos", "Comentarios", "Encuestas")
+
+            ScrollableTabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.fillMaxWidth(),
+                edgePadding = 0.dp
             ) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Jugadores",
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.titleSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title, fontSize = 16.sp) }
                     )
-                    Divider(modifier = Modifier.padding(vertical = 4.dp))
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            when (selectedTabIndex) {
+                0 -> { // Jugadores
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(uiState.jugadoresEquipoA) { jugador ->
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
-                                text = jugador,
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp)
-                                    .fillMaxWidth(),
-                                textAlign = TextAlign.Center
+                                text = uiState.nombreEquipoA,
+                                fontSize = 16.sp,
+                                style = MaterialTheme.typography.titleSmall,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
+                            Divider(modifier = Modifier.padding(vertical = 4.dp))
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                items(uiState.jugadoresEquipoA) { jugador ->
+                                    Text(
+                                        text = jugador,
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp)
+                                            .fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                if (uiState.jugadoresEquipoA.isEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "Sin jugadores asignados",
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier
+                                                .padding(vertical = 8.dp)
+                                                .fillMaxWidth(),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
                         }
-                        if (uiState.jugadoresEquipoA.isEmpty()) {
-                            item {
-                                Text(
-                                    text = "Sin jugadores asignados",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier
-                                        .padding(vertical = 8.dp)
-                                        .fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = uiState.nombreEquipoB,
+                                fontSize = 16.sp,
+                                style = MaterialTheme.typography.titleSmall,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Divider(modifier = Modifier.padding(vertical = 4.dp))
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                items(uiState.jugadoresEquipoB) { jugador ->
+                                    Text(
+                                        text = jugador,
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp)
+                                            .fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                if (uiState.jugadoresEquipoB.isEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "Sin jugadores asignados",
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier
+                                                .padding(vertical = 8.dp)
+                                                .fillMaxWidth(),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Jugadores",
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.titleSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Divider(modifier = Modifier.padding(vertical = 4.dp))
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                1 -> { // Eventos
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 32.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        items(uiState.jugadoresEquipoB) { jugador ->
-                            Text(
-                                text = jugador,
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp)
-                                    .fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                        if (uiState.jugadoresEquipoB.isEmpty()) {
-                            item {
-                                Text(
-                                    text = "Sin jugadores asignados",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier
-                                        .padding(vertical = 8.dp)
-                                        .fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
+                        Text(
+                            text = "Sin eventos",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                2 -> { // Comentarios
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Sin comentarios",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                3 -> { // Encuestas
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Sin encuestas",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
