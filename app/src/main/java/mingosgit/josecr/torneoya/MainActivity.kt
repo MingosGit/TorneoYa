@@ -1,5 +1,6 @@
 package mingosgit.josecr.torneoya
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,10 +27,22 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModelFactory
 import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModelFactory
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import android.graphics.Color as AndroidColor
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // COLOR DE LA BARRA DE ESTADO NEGRA (AUNQUE DÉ WARNING)
+        window.statusBarColor = AndroidColor.BLACK
+
+        // ICONOS DE LA BARRA SIEMPRE BLANCOS (APARIENCIA OSCURA)
+        WindowCompat.getInsetsController(window, window.decorView)?.isAppearanceLightStatusBars = false
+
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+
         setContent {
             TorneoYaTheme {
                 val navController = rememberNavController()
