@@ -33,6 +33,7 @@ fun CreatePartidoScreen(
     var horaInicio by rememberSaveable { mutableStateOf("") }
     var numeroPartes by rememberSaveable { mutableStateOf("2") }
     var tiempoPorParte by rememberSaveable { mutableStateOf("25") }
+    var tiempoDescanso by rememberSaveable { mutableStateOf("5") } // Nuevo campo
     var numeroJugadores by rememberSaveable { mutableStateOf("5") }
 
     var camposError by rememberSaveable { mutableStateOf(mapOf<String, Boolean>()) }
@@ -75,6 +76,7 @@ fun CreatePartidoScreen(
         errores["horaInicio"] = horaInicio.isBlank()
         errores["numeroPartes"] = numeroPartes.isBlank() || numeroPartes.toIntOrNull() == null
         errores["tiempoPorParte"] = tiempoPorParte.isBlank() || tiempoPorParte.toIntOrNull() == null
+        errores["tiempoDescanso"] = tiempoDescanso.isBlank() || tiempoDescanso.toIntOrNull() == null
         errores["numeroJugadores"] = numeroJugadores.isBlank() || numeroJugadores.toIntOrNull() == null
 
         camposError = errores
@@ -176,7 +178,7 @@ fun CreatePartidoScreen(
                 }
             }
 
-            // Agrupa numero de partes y minutos por parte en un solo Row
+            // Agrupa numero de partes, minutos por parte y descanso en un solo Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -186,7 +188,7 @@ fun CreatePartidoScreen(
                 OutlinedTextField(
                     value = numeroPartes,
                     onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
-                    label = { Text("Número de partes") },
+                    label = { Text("Nº de partes") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = mostrarErrores && camposError["numeroPartes"] == true,
@@ -200,7 +202,7 @@ fun CreatePartidoScreen(
                 OutlinedTextField(
                     value = tiempoPorParte,
                     onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
-                    label = { Text("Minutos por parte") },
+                    label = { Text("Min/parte") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = mostrarErrores && camposError["tiempoPorParte"] == true,
@@ -212,19 +214,42 @@ fun CreatePartidoScreen(
                             ) else Color.Transparent
                         )
                 )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = tiempoDescanso,
+                    onValueChange = { tiempoDescanso = it.filter { c -> c.isDigit() } },
+                    label = { Text("Descanso (min)") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = mostrarErrores && camposError["tiempoDescanso"] == true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["tiempoDescanso"] == true) Color(
+                                0xFFFFCDD2
+                            ) else Color.Transparent
+                        )
+                )
             }
-            if (mostrarErrores && (camposError["numeroPartes"] == true || camposError["tiempoPorParte"] == true)) {
+            if (mostrarErrores && (camposError["numeroPartes"] == true || camposError["tiempoPorParte"] == true || camposError["tiempoDescanso"] == true)) {
                 Row(Modifier.fillMaxWidth()) {
                     if (camposError["numeroPartes"] == true)
                         Text(
-                            "Campo obligatorio o inválido",
+                            "Obligatorio o inválido",
                             color = Color.Red,
                             fontSize = 12.sp,
                             modifier = Modifier.weight(1f)
                         )
                     if (camposError["tiempoPorParte"] == true)
                         Text(
-                            "Campo obligatorio o inválido",
+                            "Obligatorio o inválido",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    if (camposError["tiempoDescanso"] == true)
+                        Text(
+                            "Obligatorio o inválido",
                             color = Color.Red,
                             fontSize = 12.sp,
                             modifier = Modifier.weight(1f)
@@ -235,7 +260,7 @@ fun CreatePartidoScreen(
             OutlinedTextField(
                 value = numeroJugadores,
                 onValueChange = { numeroJugadores = it.filter { c -> c.isDigit() } },
-                label = { Text("Número de jugadores por equipo") },
+                label = { Text("Jugadores por equipo") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 isError = mostrarErrores && camposError["numeroJugadores"] == true,
@@ -264,10 +289,11 @@ fun CreatePartidoScreen(
                                 horaInicio = horaInicio,
                                 numeroPartes = numeroPartes.toInt(),
                                 tiempoPorParte = tiempoPorParte.toInt(),
+                                tiempoDescanso = tiempoDescanso.toInt(),
                                 numeroJugadores = numeroJugadores.toInt()
                             ) { partidoId, equipoAId, equipoBId ->
                                 navController.navigate(
-                                    "asignar_jugadores/$partidoId?equipoAId=$equipoAId&equipoBId=$equipoBId&fecha=$fecha&horaInicio=$horaInicio&numeroPartes=$numeroPartes&tiempoPorParte=$tiempoPorParte&numeroJugadores=$numeroJugadores"
+                                    "asignar_jugadores/$partidoId?equipoAId=$equipoAId&equipoBId=$equipoBId&fecha=$fecha&horaInicio=$horaInicio&numeroPartes=$numeroPartes&tiempoPorParte=$tiempoPorParte&tiempoDescanso=$tiempoDescanso&numeroJugadores=$numeroJugadores"
                                 )
                             }
                             guardando = false

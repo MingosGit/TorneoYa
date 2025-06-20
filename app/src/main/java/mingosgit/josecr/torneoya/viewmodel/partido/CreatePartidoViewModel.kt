@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.EquipoEntity
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
+import mingosgit.josecr.torneoya.data.entities.PartidoEstado
 import mingosgit.josecr.torneoya.repository.EquipoRepository
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 
@@ -21,6 +22,7 @@ class CreatePartidoViewModel(
         horaInicio: String,
         numeroPartes: Int,
         tiempoPorParte: Int,
+        tiempoDescanso: Int,
         numeroJugadores: Int,
         onFinish: (Long, Long, Long) -> Unit = { _, _, _ -> }
     ) {
@@ -32,11 +34,13 @@ class CreatePartidoViewModel(
                 horaInicio = horaInicio,
                 numeroPartes = numeroPartes,
                 tiempoPorParte = tiempoPorParte,
+                tiempoDescanso = tiempoDescanso,
                 equipoAId = equipoAId,
                 equipoBId = equipoBId,
-                numeroJugadores = numeroJugadores
+                numeroJugadores = numeroJugadores,
+                estado = PartidoEstado.PREVIA
             )
-            val partidoId = partidoRepository.insertPartido(partido) // DEBE DEVOLVER EL AUTOGEN ID
+            val partidoId = partidoRepository.insertPartido(partido)
             onFinish(partidoId, equipoAId, equipoBId)
         }
     }

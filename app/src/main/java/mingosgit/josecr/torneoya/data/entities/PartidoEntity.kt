@@ -10,7 +10,13 @@ data class PartidoEntity(
     val horaInicio: String,
     val numeroPartes: Int,
     val tiempoPorParte: Int,
+    val tiempoDescanso: Int, // Nuevo campo para el descanso entre partes
     val equipoAId: Long,
     val equipoBId: Long,
-    val numeroJugadores: Int
+    val numeroJugadores: Int,
+    val estado: PartidoEstado = PartidoEstado.PREVIA // Nuevo campo de estado
 )
+
+enum class PartidoEstado {
+    PREVIA, JUGANDO, FINALIZADO
+}

@@ -19,4 +19,7 @@ interface PartidoDao {
 
     @Query("SELECT * FROM partido ORDER BY fecha DESC, horaInicio DESC")
     suspend fun getAllPartidos(): List<PartidoEntity>
+
+    @Query("UPDATE partido SET estado = :nuevoEstado WHERE id = :partidoId")
+    suspend fun actualizarEstado(partidoId: Long, nuevoEstado: String)
 }
