@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
 import mingosgit.josecr.torneoya.repository.EquipoRepository
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun PartidoScreen(
@@ -53,10 +56,36 @@ fun PartidoScreen(
     var ascending by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
 
+    fun parseFechaHora(fecha: String, hora: String): LocalDateTime? {
+        val patronesFecha = listOf("yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd")
+        val patronesHora = listOf("HH:mm", "H:mm")
+        for (pf in patronesFecha) {
+            for (ph in patronesHora) {
+                try {
+                    val formatter = DateTimeFormatter.ofPattern("$pf $ph")
+                    return LocalDateTime.parse("$fecha $hora", formatter)
+                } catch (_: Exception) {}
+            }
+            // Por si no hay hora válida, usar 00:00
+            try {
+                val formatter = DateTimeFormatter.ofPattern("$pf HH:mm")
+                return LocalDateTime.parse("$fecha 00:00", formatter)
+            } catch (_: Exception) {}
+        }
+        return null
+    }
+
     val sortedPartidos = remember(partidos, sortOption, ascending) {
         when (sortOption) {
             "Nombre" -> if (ascending) partidos.sortedBy { it.nombreEquipoA } else partidos.sortedByDescending { it.nombreEquipoA }
-            "Fecha" -> if (ascending) partidos.sortedBy { it.fecha } else partidos.sortedByDescending { it.fecha }
+            "Fecha" -> {
+                val lista = partidos.sortedWith(compareBy(
+                    { parseFechaHora(it.fecha, it.horaInicio) ?: LocalDateTime.MIN },
+                    { it.horaInicio },
+                    { it.nombreEquipoA }
+                ))
+                if (ascending) lista else lista.reversed()
+            }
             else -> partidos
         }
     }
@@ -143,7 +172,7 @@ fun PartidoScreen(
                             fontSize = 18.sp
                         )
                         Text(
-                            text = partido.fecha,
+                            text = "Fecha: ${partido.fecha} - Inicio: ${partido.horaInicio} - Fin: ${partido.horaFin}",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
