@@ -1,5 +1,6 @@
 package mingosgit.josecr.torneoya.ui.screens.partido
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -166,7 +168,40 @@ fun VisualizarPartidoScreen(
                     }
                 }
             }
+
+            // Barra horizontal con estado y minuto/parte
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .background(
+                        when (uiState.estado) {
+                            "Finalizado" -> Color(0xFFE0E0E0)
+                            "Jugando" -> Color(0xFFB3E5FC)
+                            "Descanso" -> Color(0xFFFFF59D)
+                            else -> Color(0xFFEEEEEE)
+                        }
+                    )
+                    .height(48.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Estado: ${uiState.estado}",
+                    modifier = Modifier.padding(start = 16.dp),
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+                Text(
+                    text = if (uiState.estado == "Jugando") "${uiState.minutoActual}" else if (uiState.estado == "Descanso") "Descanso" else "",
+                    modifier = Modifier.padding(end = 16.dp),
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
