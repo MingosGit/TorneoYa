@@ -34,6 +34,9 @@ import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 
+import mingosgit.josecr.torneoya.repository.ComentarioRepository
+import mingosgit.josecr.torneoya.repository.EncuestaRepository
+
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -52,6 +55,8 @@ fun NavGraph(
     )
     val jugadorRepositoryInst = JugadorRepository(db.jugadorDao())
     val relacionRepositoryInst = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
+    val comentarioRepository = ComentarioRepository(db.comentarioDao())
+    val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
@@ -89,7 +94,9 @@ fun NavGraph(
                 factory = VisualizarPartidoViewModelFactory(
                     partidoId = id,
                     partidoRepository = partidoRepository,
-                    equipoRepository = equipoRepositoryInst
+                    equipoRepository = equipoRepositoryInst,
+                    comentarioRepository = comentarioRepository,
+                    encuestaRepository = encuestaRepository
                 ),
                 key = "visualizar_partido_$id"
             )
