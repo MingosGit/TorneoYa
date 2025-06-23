@@ -15,6 +15,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import kotlinx.coroutines.runBlocking
 import androidx.compose.material.icons.filled.Add
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
@@ -124,91 +126,99 @@ fun PartidoTabEncuestas(vm: VisualizarPartidoViewModel, usuarioId: Long) {
                     }
                 }
                 if (expandedCrear) {
-                    OutlinedTextField(
-                        value = pregunta,
-                        onValueChange = { pregunta = it },
-                        label = { Text("Pregunta de la encuesta") },
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)
-                    )
-                    opciones.forEachIndexed { idx, valor ->
-                        val opcionesFiltradas = jugadores.filter { j -> j == valor || !seleccionados.contains(j) }
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-                            var expanded by remember { mutableStateOf(false) }
-                            ExposedDropdownMenuBox(
-                                expanded = expanded,
-                                onExpandedChange = { expanded = !expanded },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                OutlinedTextField(
-                                    value = valor ?: "",
-                                    onValueChange = {},
-                                    label = { Text("Opción ${idx + 1}") },
-                                    readOnly = true,
-                                    modifier = Modifier.menuAnchor().fillMaxWidth().clickable { expanded = true }
-                                )
-                                ExposedDropdownMenu(
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 280.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        OutlinedTextField(
+                            value = pregunta,
+                            onValueChange = { pregunta = it },
+                            label = { Text("Pregunta de la encuesta") },
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)
+                        )
+                        opciones.forEachIndexed { idx, valor ->
+                            val opcionesFiltradas = jugadores.filter { j -> j == valor || !seleccionados.contains(j) }
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                                var expanded by remember { mutableStateOf(false) }
+                                ExposedDropdownMenuBox(
                                     expanded = expanded,
-                                    onDismissRequest = { expanded = false }
+                                    onExpandedChange = { expanded = !expanded },
+                                    modifier = Modifier.weight(1f)
                                 ) {
-                                    opcionesFiltradas.forEach { jugador ->
-                                        DropdownMenuItem(
-                                            text = { Text(jugador) },
-                                            onClick = {
-                                                val anterior = opciones[idx]
-                                                if (!anterior.isNullOrEmpty()) {
-                                                    seleccionados = seleccionados - anterior
+                                    OutlinedTextField(
+                                        value = valor ?: "",
+                                        onValueChange = {},
+                                        label = { Text("Opción ${idx + 1}") },
+                                        readOnly = true,
+                                        modifier = Modifier.menuAnchor().fillMaxWidth().clickable { expanded = true }
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = expanded,
+                                        onDismissRequest = { expanded = false }
+                                    ) {
+                                        opcionesFiltradas.forEach { jugador ->
+                                            DropdownMenuItem(
+                                                text = { Text(jugador) },
+                                                onClick = {
+                                                    val anterior = opciones[idx]
+                                                    if (!anterior.isNullOrEmpty()) {
+                                                        seleccionados = seleccionados - anterior
+                                                    }
+                                                    opciones[idx] = jugador
+                                                    seleccionados = seleccionados + jugador
+                                                    expanded = false
                                                 }
-                                                opciones[idx] = jugador
-                                                seleccionados = seleccionados + jugador
-                                                expanded = false
-                                            }
-                                        )
+                                            )
+                                        }
+                                    }
+                                }
+                                if (valor?.isNotBlank() == true) {
+                                    IconButton(onClick = {
+                                        seleccionados = seleccionados - (opciones[idx] ?: "")
+                                        opciones[idx] = ""
+                                    }) {
+                                        Icon(Icons.Default.Close, contentDescription = "Eliminar selección")
                                     }
                                 }
                             }
-                            if (valor?.isNotBlank() == true) {
-                                IconButton(onClick = {
-                                    seleccionados = seleccionados - (opciones[idx] ?: "")
-                                    opciones[idx] = ""
-                                }) {
-                                    Icon(Icons.Default.Close, contentDescription = "Eliminar selección")
+                        }
+                        Row(modifier = Modifier.padding(top = 8.dp)) {
+                            if (opciones.size < 5)
+                                Button(onClick = { opciones.add(""); }, modifier = Modifier.padding(end = 8.dp)) {
+                                    Text("+ Opción")
                                 }
-                            }
+                            if (opciones.size > 2)
+                                Button(onClick = {
+                                    val last = opciones.last()
+                                    if (!last.isNullOrEmpty()) seleccionados = seleccionados - last!!
+                                    opciones.removeAt(opciones.size - 1)
+                                }) {
+                                    Text("- Opción")
+                                }
+                        }
+                        Button(
+                            onClick = {
+                                if (
+                                    pregunta.isNotBlank() &&
+                                    opciones.all { !it.isNullOrBlank() } &&
+                                    opciones.size in 2..5
+                                ) {
+                                    vm.agregarEncuesta(pregunta, opciones.filterNotNull())
+                                    pregunta = ""
+                                    seleccionados = setOf()
+                                    opciones.clear(); opciones.addAll(listOf("", ""))
+                                    expandedCrear = false
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.End).padding(top = 8.dp)
+                        ) {
+                            Text("Crear encuesta")
                         }
                     }
-                    Row(modifier = Modifier.padding(top = 8.dp)) {
-                        if (opciones.size < 5)
-                            Button(onClick = { opciones.add(""); }, modifier = Modifier.padding(end = 8.dp)) {
-                                Text("+ Opción")
-                            }
-                        if (opciones.size > 2)
-                            Button(onClick = {
-                                val last = opciones.last()
-                                if (!last.isNullOrEmpty()) seleccionados = seleccionados - last!!
-                                opciones.removeAt(opciones.size - 1)
-                            }) {
-                                Text("- Opción")
-                            }
-                    }
-                    Button(
-                        onClick = {
-                            if (
-                                pregunta.isNotBlank() &&
-                                opciones.all { !it.isNullOrBlank() } &&
-                                opciones.size in 2..5
-                            ) {
-                                vm.agregarEncuesta(pregunta, opciones.filterNotNull())
-                                pregunta = ""
-                                seleccionados = setOf()
-                                opciones.clear(); opciones.addAll(listOf("", ""))
-                                expandedCrear = false
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.End).padding(top = 8.dp)
-                    ) {
-                        Text("Crear encuesta")
-                    }
                 }
+
             }
         }
     }
