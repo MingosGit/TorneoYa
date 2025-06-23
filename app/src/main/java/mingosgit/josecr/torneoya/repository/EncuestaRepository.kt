@@ -12,8 +12,19 @@ class EncuestaRepository(
 ) {
     suspend fun agregarEncuesta(encuesta: EncuestaEntity) = encuestaDao.insert(encuesta)
     suspend fun obtenerEncuestas(partidoId: Long) = encuestaDao.getEncuestasDePartido(partidoId)
-    suspend fun votar(encuestaId: Long, opcionIndex: Int) = encuestaVotoDao.insert(
-        EncuestaVotoEntity(encuestaId = encuestaId, opcionIndex = opcionIndex)
-    )
     suspend fun votosPorOpcion(encuestaId: Long): List<VotoOpcionCount> = encuestaVotoDao.getVotosPorOpcion(encuestaId)
+
+    suspend fun votarUnico(encuestaId: Long, opcionIndex: Int, usuarioId: Long) {
+        encuestaVotoDao.eliminarVotoUsuario(encuestaId, usuarioId)
+        encuestaVotoDao.insert(
+            EncuestaVotoEntity(
+                encuestaId = encuestaId,
+                opcionIndex = opcionIndex,
+                usuarioId = usuarioId
+            )
+        )
+    }
+
+    suspend fun getVotoUsuario(encuestaId: Long, usuarioId: Long): Int? =
+        encuestaVotoDao.getVotoUsuario(encuestaId, usuarioId)
 }

@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class EncuestaVotoEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val encuestaId: Long,
-    val opcionIndex: Int
+    val opcionIndex: Int,
+    val usuarioId: Long
 )

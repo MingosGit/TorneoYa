@@ -88,6 +88,18 @@ class VisualizarPartidoViewModel(
         }
     }
 
+
+    suspend fun getVotoUsuarioEncuesta(encuestaId: Long, usuarioId: Long): Int? {
+        return encuestaRepository.getVotoUsuario(encuestaId, usuarioId)
+    }
+
+    fun votarUnicoEnEncuesta(encuestaId: Long, opcionIndex: Int, usuarioId: Long) {
+        viewModelScope.launch {
+            encuestaRepository.votarUnico(encuestaId, opcionIndex, usuarioId)
+            cargarComentariosEncuestas()
+        }
+    }
+
     fun cargarComentariosEncuestas() {
         viewModelScope.launch {
             val comentarios = comentarioRepository.obtenerComentarios(partidoId)
@@ -133,12 +145,12 @@ class VisualizarPartidoViewModel(
         }
     }
 
-    fun votarEnEncuesta(encuestaId: Long, opcionIndex: Int) {
-        viewModelScope.launch {
-            encuestaRepository.votar(encuestaId, opcionIndex)
-            cargarComentariosEncuestas()
-        }
-    }
+//    fun votarEnEncuesta(encuestaId: Long, opcionIndex: Int) {
+//        viewModelScope.launch {
+//            encuestaRepository.votar(encuestaId, opcionIndex)
+//            cargarComentariosEncuestas()
+//        }
+//    }
 
     fun eliminarPartido() {
         viewModelScope.launch {

@@ -15,7 +15,8 @@ import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 fun VisualizarPartidoScreen(
     partidoId: Long,
     navController: NavController,
-    vm: VisualizarPartidoViewModel
+    vm: VisualizarPartidoViewModel,
+    usuarioId: Long // <--- AGREGA EL PARÁMETRO AQUÍ
 ) {
     LaunchedEffect(partidoId) { vm.cargarDatos() }
     val uiState by vm.uiState.collectAsState()
@@ -50,7 +51,8 @@ fun VisualizarPartidoScreen(
         VisualizarPartidoContent(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
-            vm = vm
+            vm = vm,
+            usuarioId = usuarioId // <--- YA NO DA ERROR
         )
         if (showDeleteDialog) {
             EliminarPartidoDialog(

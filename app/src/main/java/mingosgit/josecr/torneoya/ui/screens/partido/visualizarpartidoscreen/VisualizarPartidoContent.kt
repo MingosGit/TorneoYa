@@ -12,7 +12,8 @@ import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoUiState
 fun VisualizarPartidoContent(
     modifier: Modifier = Modifier,
     uiState: VisualizarPartidoUiState,
-    vm: VisualizarPartidoViewModel
+    vm: VisualizarPartidoViewModel,
+    usuarioId: Long
 ) {
     Column(
         modifier = modifier
@@ -23,6 +24,6 @@ fun VisualizarPartidoContent(
         PartidoGolesHeader(uiState)
         PartidoEstadoBanner(uiState)
         Spacer(modifier = Modifier.height(16.dp))
-        PartidoTabs(uiState, vm)
+        PartidoTabs(uiState, vm, usuarioId)
     }
 }

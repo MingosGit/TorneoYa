@@ -12,7 +12,8 @@ import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 @Composable
 fun PartidoTabs(
     uiState: VisualizarPartidoUiState,
-    vm: VisualizarPartidoViewModel
+    vm: VisualizarPartidoViewModel,
+    usuarioId: Long
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Jugadores", "Eventos", "Comentarios", "Encuestas")
@@ -36,6 +37,6 @@ fun PartidoTabs(
         0 -> PartidoTabJugadores(uiState)
         1 -> PartidoTabEventos()
         2 -> PartidoTabComentarios(vm)
-        3 -> PartidoTabEncuestas(vm)
+        3 -> PartidoTabEncuestas(vm, usuarioId)
     }
 }

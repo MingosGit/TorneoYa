@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import kotlinx.coroutines.runBlocking
 import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
 import mingosgit.josecr.torneoya.ui.screens.partido.PartidoScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.UsuarioScreen
@@ -36,6 +37,7 @@ import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 
 import mingosgit.josecr.torneoya.repository.ComentarioRepository
 import mingosgit.josecr.torneoya.repository.EncuestaRepository
+import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
 
 @Composable
 fun NavGraph(
@@ -53,10 +55,15 @@ fun NavGraph(
         partidoEquipoJugadorDao = db.partidoEquipoJugadorDao(),
         jugadorDao = db.jugadorDao()
     )
+    val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
     val jugadorRepositoryInst = JugadorRepository(db.jugadorDao())
     val relacionRepositoryInst = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
     val comentarioRepository = ComentarioRepository(db.comentarioDao())
     val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
+
+    val usuarioId = runBlocking {
+        usuarioLocalRepository.getUsuario()?.id ?: 0L
+    }
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
@@ -88,6 +95,12 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+
+            // FRAGMENTO IMPORTANTE
+            val usuarioId = runBlocking {
+                usuarioLocalRepository.getUsuario()?.id ?: 0L
+            }
+
             val visualizarPartidoViewModel = viewModel(
                 modelClass = VisualizarPartidoViewModel::class.java,
                 viewModelStoreOwner = owner,
@@ -103,7 +116,8 @@ fun NavGraph(
             VisualizarPartidoScreen(
                 partidoId = id,
                 navController = navController,
-                vm = visualizarPartidoViewModel
+                vm = visualizarPartidoViewModel,
+                usuarioId = usuarioId
             )
         }
         composable(
