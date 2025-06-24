@@ -28,21 +28,7 @@ import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import java.io.File
 
-fun saveImageToInternalStorage(context: Context, uri: Uri): String? {
-    return try {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val filename = "profile_${System.currentTimeMillis()}.jpg"
-        val file = File(context.filesDir, filename)
-        inputStream?.use { input ->
-            file.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-        file.absolutePath
-    } catch (e: Exception) {
-        null
-    }
-}
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 fun UsuarioScreen(
@@ -58,6 +44,7 @@ fun UsuarioScreen(
     var editando by remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf(TextFieldValue(nombreActual)) }
     var showDialog by remember { mutableStateOf(false) }
+    var cropUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current
 
@@ -65,10 +52,7 @@ fun UsuarioScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            val path = saveImageToInternalStorage(context, uri)
-            if (path != null) {
-                usuarioLocalViewModel.cambiarFotoPerfil(path)
-            }
+            cropUri = uri
         }
     }
 
@@ -99,6 +83,17 @@ fun UsuarioScreen(
                 TextButton(onClick = { showDialog = false }) {
                     Text("No")
                 }
+            }
+        )
+    }
+
+    cropUri?.let { uriParaCropear ->
+        CropImageDialog(
+            uri = uriParaCropear,
+            onDismiss = { cropUri = null },
+            onCropDone = { croppedPath ->
+                usuarioLocalViewModel.cambiarFotoPerfil(croppedPath)
+                cropUri = null
             }
         )
     }
