@@ -2,27 +2,20 @@ package mingosgit.josecr.torneoya.ui.screens.partido
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
+import mingosgit.josecr.torneoya.ui.screens.partido.editpartidoscreen.EditPartidoDeleteDialog
+import mingosgit.josecr.torneoya.ui.screens.partido.editpartidoscreen.EditPartidoForm
 import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModel
-import java.util.*
 
 @Composable
 fun EditPartidoScreen(
@@ -32,7 +25,6 @@ fun EditPartidoScreen(
     onFinish: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-
     val partido by editPartidoViewModel.partido.collectAsStateWithLifecycle()
     val loading by editPartidoViewModel.loading.collectAsStateWithLifecycle()
     val eliminado by editPartidoViewModel.eliminado.collectAsStateWithLifecycle()
@@ -40,8 +32,6 @@ fun EditPartidoScreen(
     val jugadoresEquipoA by editPartidoViewModel.jugadoresEquipoA.collectAsStateWithLifecycle()
     val jugadoresEquipoB by editPartidoViewModel.jugadoresEquipoB.collectAsStateWithLifecycle()
     val jugadoresCargados by editPartidoViewModel.jugadoresCargados.collectAsStateWithLifecycle()
-
-    // Nuevo: usa los nombres locales del ViewModel
     val equipoANombreVM by editPartidoViewModel.nombreEquipoA.collectAsStateWithLifecycle()
     val equipoBNombreVM by editPartidoViewModel.nombreEquipoB.collectAsStateWithLifecycle()
 
@@ -53,16 +43,14 @@ fun EditPartidoScreen(
     var mostrarErrores by rememberSaveable { mutableStateOf(false) }
     var errorGeneral by rememberSaveable { mutableStateOf<String?>(null) }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-
     var equipoAEditando by rememberSaveable { mutableStateOf(false) }
     var equipoBEditando by rememberSaveable { mutableStateOf(false) }
     var equipoANombre by rememberSaveable { mutableStateOf("") }
     var equipoBNombre by rememberSaveable { mutableStateOf("") }
 
-    val calendar = remember { Calendar.getInstance() }
+    val calendar = remember { java.util.Calendar.getInstance() }
     val scope = rememberCoroutineScope()
 
-    // Cuando cambia el nombre en el ViewModel, actualiza el estado de Compose local (solo si no se está editando)
     LaunchedEffect(equipoANombreVM) {
         if (!equipoAEditando && equipoANombreVM != null) {
             equipoANombre = equipoANombreVM!!
@@ -101,9 +89,9 @@ fun EditPartidoScreen(
             { _, year, month, dayOfMonth ->
                 fecha = "%02d-%02d-%04d".format(dayOfMonth, month + 1, year)
             },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
+            calendar.get(java.util.Calendar.YEAR),
+            calendar.get(java.util.Calendar.MONTH),
+            calendar.get(java.util.Calendar.DAY_OF_MONTH)
         )
     }
 
@@ -113,8 +101,8 @@ fun EditPartidoScreen(
             { _, hourOfDay, minute ->
                 horaInicio = "%02d:%02d".format(hourOfDay, minute)
             },
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
+            calendar.get(java.util.Calendar.HOUR_OF_DAY),
+            calendar.get(java.util.Calendar.MINUTE),
             true
         )
     }
@@ -156,228 +144,45 @@ fun EditPartidoScreen(
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .align(Alignment.TopCenter),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text("Editar Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
-            OutlinedTextField(
-                value = equipoANombre,
-                onValueChange = { equipoANombre = it },
-                label = { Text("Equipo A") },
-                singleLine = true,
-                enabled = equipoAEditando,
-                modifier = Modifier.fillMaxWidth(),
-                trailingIcon = {
-                    IconButton(onClick = {
-                        if (equipoAEditando) {
-                            scope.launch {
-                                val exito = editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoAId, equipoANombre)
-                                if (!exito) errorGeneral = "No se pudo actualizar el nombre del equipo A"
-                            }
-                        }
-                        equipoAEditando = !equipoAEditando
-                    }) {
-                        Icon(
-                            imageVector = if (equipoAEditando) Icons.Default.Check else Icons.Default.Edit,
-                            contentDescription = if (equipoAEditando) "Guardar" else "Editar"
-                        )
-                    }
-                }
-            )
-            OutlinedTextField(
-                value = equipoBNombre,
-                onValueChange = { equipoBNombre = it },
-                label = { Text("Equipo B") },
-                singleLine = true,
-                enabled = equipoBEditando,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                trailingIcon = {
-                    IconButton(onClick = {
-                        if (equipoBEditando) {
-                            scope.launch {
-                                val exito = editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoBId, equipoBNombre)
-                                if (!exito) errorGeneral = "No se pudo actualizar el nombre del equipo B"
-                            }
-                        }
-                        equipoBEditando = !equipoBEditando
-                    }) {
-                        Icon(
-                            imageVector = if (equipoBEditando) Icons.Default.Check else Icons.Default.Edit,
-                            contentDescription = if (equipoBEditando) "Guardar" else "Editar"
-                        )
-                    }
-                }
-            )
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedButton(
-                    onClick = { datePickerDialog.show() },
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(
-                            if (mostrarErrores && camposError["fecha"] == true) Color(0xFFFFCDD2) else Color.Transparent
-                        )
-                ) {
-                    Text(if (fecha.isBlank()) "Seleccionar fecha" else fecha)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(
-                    onClick = { timePickerDialog.show() },
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(
-                            if (mostrarErrores && camposError["horaInicio"] == true) Color(
-                                0xFFFFCDD2
-                            ) else Color.Transparent
-                        )
-                ) {
-                    Text(if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio)
-                }
-            }
-            if (mostrarErrores && (camposError["fecha"] == true || camposError["horaInicio"] == true)) {
-                Row(Modifier.fillMaxWidth()) {
-                    if (camposError["fecha"] == true)
-                        Text(
-                            "Falta la fecha",
-                            color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                    if (camposError["horaInicio"] == true)
-                        Text(
-                            "Falta la hora",
-                            color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                }
-            }
-            OutlinedTextField(
-                value = numeroPartes,
-                onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
-                label = { Text("Número de partes") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = mostrarErrores && camposError["numeroPartes"] == true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .background(
-                        if (mostrarErrores && camposError["numeroPartes"] == true) Color(0xFFFFCDD2) else Color.Transparent
-                    )
-            )
-            if (mostrarErrores && camposError["numeroPartes"] == true) {
-                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
-            }
-            OutlinedTextField(
-                value = tiempoPorParte,
-                onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
-                label = { Text("Minutos por parte") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = mostrarErrores && camposError["tiempoPorParte"] == true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .background(
-                        if (mostrarErrores && camposError["tiempoPorParte"] == true) Color(
-                            0xFFFFCDD2
-                        ) else Color.Transparent
-                    )
-            )
-            if (mostrarErrores && camposError["tiempoPorParte"] == true) {
-                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = {
-                    navController.navigate("editar_jugadores/$partidoId?equipoAId=${partido!!.equipoAId}&equipoBId=${partido!!.equipoBId}")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-            ) {
-                Text("Editar Jugadores")
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = {
-                    // Si está editando algún nombre, primero lo guarda (simula dar al tick)
-                    if (equipoAEditando) {
-                        scope.launch {
-                            editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoAId, equipoANombre)
-                        }
-                        equipoAEditando = false
-                    }
-                    if (equipoBEditando) {
-                        scope.launch {
-                            editPartidoViewModel.actualizarEquipoNombre(partido!!.equipoBId, equipoBNombre)
-                        }
-                        equipoBEditando = false
-                    }
-                    mostrarErrores = true
-                    if (validarCampos()) {
-                        editPartidoViewModel.actualizarPartido(
-                            fecha,
-                            horaInicio,
-                            numeroPartes.toInt(),
-                            tiempoPorParte.toInt()
-                        )
-                    } else {
-                        errorGeneral = "Revisa los campos obligatorios."
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Text("Guardar")
-            }
-            OutlinedButton(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                Text("Cancelar")
-            }
-            OutlinedButton(
-                onClick = { showDeleteDialog = true },
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-            ) {
-                Text("Eliminar Partido")
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-        }
+        EditPartidoForm(
+            partido = partido!!,
+            equipoANombre = equipoANombre,
+            onEquipoANombreChange = { equipoANombre = it },
+            equipoAEditando = equipoAEditando,
+            onEquipoAEditandoChange = { equipoAEditando = it },
+            equipoBNombre = equipoBNombre,
+            onEquipoBNombreChange = { equipoBNombre = it },
+            equipoBEditando = equipoBEditando,
+            onEquipoBEditandoChange = { equipoBEditando = it },
+            scope = scope,
+            editPartidoViewModel = editPartidoViewModel,
+            errorGeneral = errorGeneral,
+            onErrorGeneralChange = { errorGeneral = it },
+            fecha = fecha,
+            onFechaChange = { fecha = it },
+            horaInicio = horaInicio,
+            onHoraInicioChange = { horaInicio = it },
+            numeroPartes = numeroPartes,
+            onNumeroPartesChange = { numeroPartes = it },
+            tiempoPorParte = tiempoPorParte,
+            onTiempoPorParteChange = { tiempoPorParte = it },
+            camposError = camposError,
+            mostrarErrores = mostrarErrores,
+            onMostrarErroresChange = { mostrarErrores = it },
+            datePickerDialog = datePickerDialog,
+            timePickerDialog = timePickerDialog,
+            navController = navController,
+            partidoId = partidoId,
+            validarCampos = ::validarCampos,
+            setShowDeleteDialog = { showDeleteDialog = it }
+        )
         if (showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showDeleteDialog = false
-                            editPartidoViewModel.eliminarPartido()
-                        }
-                    ) { Text("Eliminar", color = Color.Red) }
+            EditPartidoDeleteDialog(
+                onConfirmDelete = {
+                    showDeleteDialog = false
+                    editPartidoViewModel.eliminarPartido()
                 },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
-                },
-                title = { Text("Eliminar Partido") },
-                text = { Text("¿Seguro que deseas eliminar este partido? Esta acción no se puede deshacer.") }
+                onDismiss = { showDeleteDialog = false }
             )
         }
     }
