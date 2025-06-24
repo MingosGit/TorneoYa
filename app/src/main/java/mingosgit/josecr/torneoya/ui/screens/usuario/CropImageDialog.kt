@@ -29,6 +29,8 @@ import java.io.File
 import android.graphics.BitmapFactory
 import androidx.compose.ui.unit.Dp
 import kotlin.math.roundToInt
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun CropImageDialog(
@@ -51,8 +53,60 @@ fun CropImageDialog(
     val cropBoxSize = 240.dp
     val cropBoxPx = cropBoxSize.dpToPx()
 
-    var scale by remember { mutableStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
+    // Calcula el scale mínimo para cubrir el círculo
+    val minScale by remember(originalBitmap) {
+        mutableStateOf(
+            max(
+                cropBoxPx.toFloat() / originalBitmap.width.toFloat(),
+                cropBoxPx.toFloat() / originalBitmap.height.toFloat()
+            )
+        )
+    }
+
+    val maxScale = 5f
+
+    // Centrado automático inicial:
+    var scale by remember { mutableStateOf(minScale) }
+    // Offset inicial centrado
+    var offset by remember {
+        mutableStateOf(
+            Offset.Zero
+        )
+    }
+
+    // Lógica para que el usuario NO pueda dejar el círculo fuera de la imagen
+    fun clampOffset(offset: Offset, scale: Float): Offset {
+        val imageWidth = originalBitmap.width * scale
+        val imageHeight = originalBitmap.height * scale
+        val halfCrop = cropBoxPx / 2f
+
+        // Cuánto se puede mover la imagen para que el círculo no se quede vacío
+        val maxX = (imageWidth / 2f) - halfCrop
+        val maxY = (imageHeight / 2f) - halfCrop
+        val minX = -(imageWidth / 2f) + halfCrop
+        val minY = -(imageHeight / 2f) + halfCrop
+
+        // Si la imagen es más pequeña que el círculo (no debería pasar), fuerza offset a 0
+        return Offset(
+            x = offset.x.coerceIn(minX, maxX),
+            y = offset.y.coerceIn(minY, maxY)
+        )
+    }
+
+    // Resetear offset si el usuario hace demasiado zoom out (para no ver bordes vacíos)
+    fun fixOffset(scale: Float): Offset {
+        val imageWidth = originalBitmap.width * scale
+        val imageHeight = originalBitmap.height * scale
+        val halfCrop = cropBoxPx / 2f
+        val maxX = (imageWidth / 2f) - halfCrop
+        val maxY = (imageHeight / 2f) - halfCrop
+        val minX = -(imageWidth / 2f) + halfCrop
+        val minY = -(imageHeight / 2f) + halfCrop
+        return Offset(
+            x = offset.x.coerceIn(minX, maxX),
+            y = offset.y.coerceIn(minY, maxY)
+        )
+    }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -69,10 +123,15 @@ fun CropImageDialog(
                         .size(cropBoxSize)
                         .clip(CircleShape)
                         .background(androidx.compose.ui.graphics.Color.Gray)
-                        .pointerInput(Unit) {
+                        .pointerInput(minScale, scale, offset) {
                             detectTransformGestures { _, pan, zoom, _ ->
-                                scale = (scale * zoom).coerceIn(1f, 5f)
-                                offset += pan
+                                var newScale = (scale * zoom).coerceIn(minScale, maxScale)
+                                // Si el usuario hace zoom out, corrije el offset también
+                                if (newScale != scale) {
+                                    offset = fixOffset(newScale)
+                                }
+                                scale = newScale
+                                offset = clampOffset(offset + pan, scale)
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -85,9 +144,10 @@ fun CropImageDialog(
                             modifier = Modifier
                                 .size(cropBoxSize * scale)
                                 .offset {
+                                    val clamped = clampOffset(offset, scale)
                                     IntOffset(
-                                        offset.x.roundToInt(),
-                                        offset.y.roundToInt()
+                                        clamped.x.roundToInt(),
+                                        clamped.y.roundToInt()
                                     )
                                 }
                         )
@@ -154,7 +214,6 @@ private fun cropCircleBitmap(
     return output
 }
 
-// Extension dp -> px para Compose
 private fun Dp.dpToPx(): Int {
     val density = Resources.getSystem().displayMetrics.density
     return (value * density).roundToInt()
