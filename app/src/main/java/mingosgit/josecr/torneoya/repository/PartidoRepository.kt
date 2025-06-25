@@ -37,4 +37,8 @@ class PartidoRepository(
         val relaciones = partidoEquipoJugadorDao.getJugadoresDeEquipoEnPartido(partidoId, equipoId)
         relaciones.forEach { partidoEquipoJugadorDao.delete(it) }
     }
+    suspend fun actualizarGoles(partidoId: Long, golesA: Int, golesB: Int) {
+        partidoDao.actualizarGoles(partidoId, golesA, golesB)
+    }
+
 }

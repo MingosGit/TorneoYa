@@ -172,6 +172,13 @@ fun UsuarioScreen(
                 }
             }
 
+            Button(
+                onClick = { navController.navigate("partidos_lista_busqueda") },
+                modifier = Modifier.padding(top = 10.dp)
+            ) {
+                Text("Administrar partidos")
+            }
+
             if (editando) {
                 OutlinedTextField(
                     value = textFieldValue,

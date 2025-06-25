@@ -1,5 +1,5 @@
 package mingosgit.josecr.torneoya.ui.navigation
-
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import mingosgit.josecr.torneoya.ui.screens.partido.AsignarJugadoresScreen
@@ -39,6 +39,9 @@ import mingosgit.josecr.torneoya.repository.ComentarioRepository
 import mingosgit.josecr.torneoya.repository.EncuestaRepository
 import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
 import mingosgit.josecr.torneoya.ui.screens.usuario.MisJugadoresScreen
+import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
+import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.AdministrarPartidosScreen
 
 @Composable
 fun NavGraph(
@@ -224,6 +227,40 @@ fun NavGraph(
                 navController = navController,
                 vm = vm
             )
+        }
+        // Lista de partidos con buscador
+        composable("partidos_lista_busqueda") {
+            val administrarViewModel: AdministrarPartidosViewModel = viewModel(
+                modelClass = AdministrarPartidosViewModel::class.java,
+                viewModelStoreOwner = owner,
+                factory = AdministrarPartidosViewModel.Factory(partidoRepository)
+            )
+            PartidosListaBusquedaScreen(
+                viewModel = administrarViewModel,
+                navController = navController
+            )
+        }
+
+// Screen para administrar los goles de un partido
+        composable(
+            "administrar_partido_goles/{partidoId}",
+            arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
+            val administrarViewModel: AdministrarPartidosViewModel = viewModel(
+                modelClass = AdministrarPartidosViewModel::class.java,
+                viewModelStoreOwner = owner,
+                factory = AdministrarPartidosViewModel.Factory(partidoRepository)
+            )
+            val partidos = administrarViewModel.partidos.collectAsState().value
+            val partido = partidos.find { it.id == partidoId }
+            if (partido != null) {
+                AdministrarPartidosScreen(
+                    partido = partido,
+                    viewModel = administrarViewModel,
+                    navController = navController
+                )
+            }
         }
     }
 }
