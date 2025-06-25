@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.entities.PartidoEquipoJugadorEntity
+import mingosgit.josecr.torneoya.data.entities.JugadorEntity
 import mingosgit.josecr.torneoya.repository.JugadorRepository
 import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
 import mingosgit.josecr.torneoya.repository.PartidoRepository
@@ -27,13 +28,18 @@ class AsignarJugadoresViewModel(
     var modoAleatorio by mutableStateOf(false)
     var equipoSeleccionado by mutableStateOf("A")
 
-    init { setNumJugadoresPorEquipo(numJugadores) }
+    var jugadoresExistentes by mutableStateOf<List<JugadorEntity>>(emptyList())
+        private set
+
+    init {
+        setNumJugadoresPorEquipo(numJugadores)
+        cargarJugadoresExistentes()
+    }
 
     fun setNumJugadoresPorEquipo(num: Int) {
         equipoAJugadores.clear()
         equipoBJugadores.clear()
         listaNombres.clear()
-        // No rellenar por defecto, solo vacío
     }
 
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
@@ -90,6 +96,32 @@ class AsignarJugadoresViewModel(
             }
             onFinish()
         }
+    }
+
+    fun cargarJugadoresExistentes() {
+        viewModelScope.launch {
+            jugadoresExistentes = jugadorRepository.getAll()
+        }
+    }
+
+    // Para manual: quita los jugadores usados en ambos equipos excepto el del campo actual
+    fun jugadoresDisponiblesManual(equipo: String, idx: Int): List<JugadorEntity> {
+        val (jugadoresActuales, jugadoresOtroEquipo) = if (equipo == "A") {
+            equipoAJugadores to equipoBJugadores
+        } else {
+            equipoBJugadores to equipoAJugadores
+        }
+        val yaElegidosEsteEquipo = jugadoresActuales.withIndex().filter { it.index != idx }.map { it.value }
+        val yaElegidosOtroEquipo = jugadoresOtroEquipo.filter { it.isNotBlank() }
+        return jugadoresExistentes.filter {
+            it.nombre !in yaElegidosEsteEquipo && it.nombre !in yaElegidosOtroEquipo
+        }
+    }
+
+    // Para aleatorio: los jugadores que no están ya usados en otros campos
+    fun jugadoresDisponiblesAleatorio(idx: Int): List<JugadorEntity> {
+        val yaElegidos = listaNombres.withIndex().filter { it.index != idx }.map { it.value }
+        return jugadoresExistentes.filter { jugador -> jugador.nombre !in yaElegidos }
     }
 }
 
