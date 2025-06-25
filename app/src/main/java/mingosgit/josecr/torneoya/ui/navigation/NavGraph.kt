@@ -38,6 +38,7 @@ import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 import mingosgit.josecr.torneoya.repository.ComentarioRepository
 import mingosgit.josecr.torneoya.repository.EncuestaRepository
 import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
+import mingosgit.josecr.torneoya.ui.screens.usuario.MisJugadoresScreen
 
 @Composable
 fun NavGraph(
@@ -77,7 +78,7 @@ fun NavGraph(
             )
         }
         composable(BottomNavItem.Usuario.route) {
-            UsuarioScreen(usuarioLocalViewModel)
+            UsuarioScreen(usuarioLocalViewModel,navController)
         }
         composable("crear_partido") {
             val createPartidoViewModel = viewModel(
@@ -89,6 +90,9 @@ fun NavGraph(
                 navController = navController,
                 createPartidoViewModel = createPartidoViewModel
             )
+        }
+        composable("mis_jugadores") {
+            MisJugadoresScreen(navController)
         }
         composable(
             "visualizar_partido/{partidoId}",

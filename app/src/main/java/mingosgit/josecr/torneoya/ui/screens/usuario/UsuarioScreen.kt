@@ -29,10 +29,12 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import java.io.File
 
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.navigation.NavController
 
 @Composable
 fun UsuarioScreen(
-    usuarioLocalViewModel: UsuarioLocalViewModel
+    usuarioLocalViewModel: UsuarioLocalViewModel,
+    navController: NavController // <- Agregar este parámetro
 ) {
     LaunchedEffect(Unit) {
         usuarioLocalViewModel.cargarUsuario()
@@ -160,6 +162,14 @@ fun UsuarioScreen(
                     fontSize = 24.sp,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+
+                // BOTÓN "Mis Jugadores" aquí debajo del nombre
+                Button(
+                    onClick = { navController.navigate("mis_jugadores") },
+                    modifier = Modifier.padding(top = 10.dp)
+                ) {
+                    Text("Mis Jugadores")
+                }
             }
 
             if (editando) {
