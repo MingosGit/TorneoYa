@@ -4,22 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import mingosgit.josecr.torneoya.data.dao.EquipoDao
-import mingosgit.josecr.torneoya.data.dao.JugadorDao
-import mingosgit.josecr.torneoya.data.dao.PartidoDao
-import mingosgit.josecr.torneoya.data.dao.PartidoEquipoJugadorDao
-import mingosgit.josecr.torneoya.data.dao.UsuarioLocalDao
-import mingosgit.josecr.torneoya.data.dao.ComentarioDao
-import mingosgit.josecr.torneoya.data.dao.EncuestaDao
-import mingosgit.josecr.torneoya.data.dao.EncuestaVotoDao
-import mingosgit.josecr.torneoya.data.entities.EquipoEntity
-import mingosgit.josecr.torneoya.data.entities.JugadorEntity
-import mingosgit.josecr.torneoya.data.entities.PartidoEntity
-import mingosgit.josecr.torneoya.data.entities.PartidoEquipoJugadorEntity
-import mingosgit.josecr.torneoya.data.entities.UsuarioLocalEntity
-import mingosgit.josecr.torneoya.data.entities.ComentarioEntity
-import mingosgit.josecr.torneoya.data.entities.EncuestaEntity
-import mingosgit.josecr.torneoya.data.entities.EncuestaVotoEntity
+import mingosgit.josecr.torneoya.data.dao.*
+import mingosgit.josecr.torneoya.data.entities.*
+import mingosgit.josecr.torneoya.data.entities.GoleadorEntity
+import mingosgit.josecr.torneoya.data.dao.GoleadorDao
+
 
 @Database(
     entities = [
@@ -30,9 +19,10 @@ import mingosgit.josecr.torneoya.data.entities.EncuestaVotoEntity
         UsuarioLocalEntity::class,
         ComentarioEntity::class,
         EncuestaEntity::class,
-        EncuestaVotoEntity::class
+        EncuestaVotoEntity::class,
+        GoleadorEntity::class
     ],
-    version = 6 // SUBE LA VERSIÓN PORQUE CAMBIASTE EL ESQUEMA!!!
+    version = 7 // sube versión si agregaste entidad nueva
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun equipoDao(): EquipoDao
@@ -43,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun comentarioDao(): ComentarioDao
     abstract fun encuestaDao(): EncuestaDao
     abstract fun encuestaVotoDao(): EncuestaVotoDao
+    abstract fun goleadorDao(): GoleadorDao // <-- DEBE IR AQUÍ
 
     companion object {
         @Volatile
@@ -55,7 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "torneoya_db"
                 )
-                    .fallbackToDestructiveMigration() // Para DEV rápido, destruye y recrea todo
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

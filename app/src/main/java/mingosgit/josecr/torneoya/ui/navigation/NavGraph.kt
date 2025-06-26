@@ -1,4 +1,5 @@
 package mingosgit.josecr.torneoya.ui.navigation
+
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
@@ -34,10 +35,10 @@ import mingosgit.josecr.torneoya.viewmodel.partido.EditarJugadoresEquipoViewMode
 import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
-
 import mingosgit.josecr.torneoya.repository.ComentarioRepository
 import mingosgit.josecr.torneoya.repository.EncuestaRepository
 import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
+import mingosgit.josecr.torneoya.repository.GoleadorRepository
 import mingosgit.josecr.torneoya.ui.screens.usuario.MisJugadoresScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
@@ -64,6 +65,7 @@ fun NavGraph(
     val relacionRepositoryInst = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
     val comentarioRepository = ComentarioRepository(db.comentarioDao())
     val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
+    val goleadorRepository = GoleadorRepository(db.goleadorDao()) // <-- NUEVO
 
     val usuarioId = runBlocking {
         usuarioLocalRepository.getUsuario()?.id ?: 0L
@@ -103,7 +105,6 @@ fun NavGraph(
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
 
-            // FRAGMENTO IMPORTANTE
             val usuarioId = runBlocking {
                 usuarioLocalRepository.getUsuario()?.id ?: 0L
             }
@@ -233,7 +234,7 @@ fun NavGraph(
             val administrarViewModel: AdministrarPartidosViewModel = viewModel(
                 modelClass = AdministrarPartidosViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = AdministrarPartidosViewModel.Factory(partidoRepository)
+                factory = AdministrarPartidosViewModel.Factory(partidoRepository, goleadorRepository)
             )
             PartidosListaBusquedaScreen(
                 viewModel = administrarViewModel,
@@ -241,7 +242,7 @@ fun NavGraph(
             )
         }
 
-// Screen para administrar los goles de un partido
+        // Screen para administrar los goles de un partido
         composable(
             "administrar_partido_goles/{partidoId}",
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
@@ -250,15 +251,37 @@ fun NavGraph(
             val administrarViewModel: AdministrarPartidosViewModel = viewModel(
                 modelClass = AdministrarPartidosViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = AdministrarPartidosViewModel.Factory(partidoRepository)
+                factory = AdministrarPartidosViewModel.Factory(partidoRepository, goleadorRepository)
             )
             val partidos = administrarViewModel.partidos.collectAsState().value
             val partido = partidos.find { it.id == partidoId }
             if (partido != null) {
+                val jugadoresEquipoA = runBlocking {
+                    db.partidoEquipoJugadorDao()
+                        .getJugadoresDeEquipoEnPartido(partidoId, partido.equipoAId)
+                        .mapNotNull { rel ->
+                            db.jugadorDao().getById(rel.jugadorId)?.let { jugador ->
+                                Pair(jugador.id, jugador.nombre)
+                            }
+                        }
+                }
+                val jugadoresEquipoB = runBlocking {
+                    db.partidoEquipoJugadorDao()
+                        .getJugadoresDeEquipoEnPartido(partidoId, partido.equipoBId)
+                        .mapNotNull { rel ->
+                            db.jugadorDao().getById(rel.jugadorId)?.let { jugador ->
+                                Pair(jugador.id, jugador.nombre)
+                            }
+                        }
+                }
                 AdministrarPartidosScreen(
                     partido = partido,
                     viewModel = administrarViewModel,
-                    navController = navController
+                    navController = navController,
+                    equipoAId = partido.equipoAId,
+                    equipoBId = partido.equipoBId,
+                    jugadoresEquipoA = jugadoresEquipoA,
+                    jugadoresEquipoB = jugadoresEquipoB
                 )
             }
         }
