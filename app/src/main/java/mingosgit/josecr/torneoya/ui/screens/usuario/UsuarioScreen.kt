@@ -34,7 +34,7 @@ import androidx.navigation.NavController
 @Composable
 fun UsuarioScreen(
     usuarioLocalViewModel: UsuarioLocalViewModel,
-    navController: NavController // <- Agregar este parámetro
+    navController: NavController
 ) {
     LaunchedEffect(Unit) {
         usuarioLocalViewModel.cargarUsuario()
@@ -57,6 +57,9 @@ fun UsuarioScreen(
             cropUri = uri
         }
     }
+
+    // Solo permite editar la imagen cuando se está editando
+    val puedeEditarImagen = editando
 
     // Sincroniza el campo de texto si el nombre cambia desde el ViewModel
     LaunchedEffect(nombreActual) {
@@ -112,7 +115,10 @@ fun UsuarioScreen(
                 .padding(top = 8.dp, end = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            IconButton(onClick = { editando = true }) {
+            IconButton(
+                onClick = { editando = true },
+                enabled = !editando // Deshabilita el lápiz mientras ya está editando
+            ) {
                 Icon(Icons.Default.Edit, contentDescription = "Editar nombre de usuario")
             }
             IconButton(onClick = { /* Futuro: navegación ajustes */ }) {
@@ -127,13 +133,15 @@ fun UsuarioScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Circulo para foto perfil, clickable
+            // Circulo para foto perfil, clickable solo si editando
             Box(
                 modifier = Modifier
                     .size(110.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFDADADA))
-                    .clickable { showDialog = true },
+                    .then(
+                        if (puedeEditarImagen) Modifier.clickable { showDialog = true } else Modifier
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 val fotoPerfilPath = usuario?.fotoPerfilPath
@@ -170,13 +178,14 @@ fun UsuarioScreen(
                 ) {
                     Text("Mis Jugadores")
                 }
-            }
 
-            Button(
-                onClick = { navController.navigate("partidos_lista_busqueda") },
-                modifier = Modifier.padding(top = 10.dp)
-            ) {
-                Text("Administrar partidos")
+                // Solo muestra "Administrar Partidos" cuando NO está editando
+                Button(
+                    onClick = { navController.navigate("partidos_lista_busqueda") },
+                    modifier = Modifier.padding(top = 10.dp)
+                ) {
+                    Text("Administrar partidos")
+                }
             }
 
             if (editando) {
