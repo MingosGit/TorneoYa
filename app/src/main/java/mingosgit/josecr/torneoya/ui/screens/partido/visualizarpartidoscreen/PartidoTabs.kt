@@ -8,12 +8,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoUiState
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
+import mingosgit.josecr.torneoya.repository.EventoRepository
+import mingosgit.josecr.torneoya.repository.JugadorRepository
+import mingosgit.josecr.torneoya.repository.EquipoRepository
 
 @Composable
 fun PartidoTabs(
     uiState: VisualizarPartidoUiState,
     vm: VisualizarPartidoViewModel,
-    usuarioId: Long
+    usuarioId: Long,
+    eventoRepository: EventoRepository,
+    jugadorRepository: JugadorRepository,
+    equipoRepository: EquipoRepository,
+    partidoId: Long
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Jugadores", "Eventos", "Comentarios", "Encuestas")
@@ -35,7 +42,12 @@ fun PartidoTabs(
 
     when (selectedTabIndex) {
         0 -> PartidoTabJugadores(uiState)
-        1 -> PartidoTabEventos()
+        1 -> PartidoTabEventos(
+            partidoId = partidoId,
+            eventoRepository = eventoRepository,
+            jugadorRepository = jugadorRepository,
+            equipoRepository = equipoRepository
+        )
         2 -> PartidoTabComentarios(vm)
         3 -> PartidoTabEncuestas(vm, usuarioId)
     }

@@ -20,9 +20,10 @@ import mingosgit.josecr.torneoya.data.dao.GoleadorDao
         ComentarioEntity::class,
         EncuestaEntity::class,
         EncuestaVotoEntity::class,
-        GoleadorEntity::class
+        GoleadorEntity::class,
+        EventoEntity::class // <--- AGREGA AQUÍ
     ],
-    version = 7 // sube versión si agregaste entidad nueva
+    version = 8 // sube versión
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun equipoDao(): EquipoDao
@@ -34,6 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun encuestaDao(): EncuestaDao
     abstract fun encuestaVotoDao(): EncuestaVotoDao
     abstract fun goleadorDao(): GoleadorDao // <-- DEBE IR AQUÍ
+    abstract fun eventoDao(): EventoDao
 
     companion object {
         @Volatile

@@ -9,6 +9,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import mingosgit.josecr.torneoya.ui.screens.partido.visualizarpartidoscreen.PartidoTopBar
 import mingosgit.josecr.torneoya.ui.screens.partido.visualizarpartidoscreen.VisualizarPartidoContent
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
+import mingosgit.josecr.torneoya.repository.EventoRepository
+import mingosgit.josecr.torneoya.repository.JugadorRepository
+import mingosgit.josecr.torneoya.repository.EquipoRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -16,7 +19,10 @@ fun VisualizarPartidoScreen(
     partidoId: Long,
     navController: NavController,
     vm: VisualizarPartidoViewModel,
-    usuarioId: Long // <--- AGREGA EL PARÁMETRO AQUÍ
+    usuarioId: Long,
+    eventoRepository: EventoRepository,
+    jugadorRepository: JugadorRepository,
+    equipoRepository: EquipoRepository
 ) {
     LaunchedEffect(partidoId) { vm.cargarDatos() }
     val uiState by vm.uiState.collectAsState()
@@ -52,7 +58,11 @@ fun VisualizarPartidoScreen(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
             vm = vm,
-            usuarioId = usuarioId // <--- YA NO DA ERROR
+            usuarioId = usuarioId,
+            eventoRepository = eventoRepository,
+            jugadorRepository = jugadorRepository,
+            equipoRepository = equipoRepository,
+            partidoId = partidoId
         )
         if (showDeleteDialog) {
             EliminarPartidoDialog(

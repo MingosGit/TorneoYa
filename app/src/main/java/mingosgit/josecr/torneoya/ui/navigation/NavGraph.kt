@@ -37,6 +37,7 @@ import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 import mingosgit.josecr.torneoya.repository.ComentarioRepository
 import mingosgit.josecr.torneoya.repository.EncuestaRepository
+import mingosgit.josecr.torneoya.repository.EventoRepository
 import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
 import mingosgit.josecr.torneoya.repository.GoleadorRepository
 import mingosgit.josecr.torneoya.ui.screens.usuario.MisJugadoresScreen
@@ -65,7 +66,8 @@ fun NavGraph(
     val relacionRepositoryInst = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
     val comentarioRepository = ComentarioRepository(db.comentarioDao())
     val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
-    val goleadorRepository = GoleadorRepository(db.goleadorDao()) // <-- NUEVO
+    val goleadorRepository = GoleadorRepository(db.goleadorDao())
+    val eventoRepository = EventoRepository(db.eventoDao())
 
     val usuarioId = runBlocking {
         usuarioLocalRepository.getUsuario()?.id ?: 0L
@@ -83,7 +85,7 @@ fun NavGraph(
             )
         }
         composable(BottomNavItem.Usuario.route) {
-            UsuarioScreen(usuarioLocalViewModel,navController)
+            UsuarioScreen(usuarioLocalViewModel, navController)
         }
         composable("crear_partido") {
             val createPartidoViewModel = viewModel(
@@ -125,7 +127,10 @@ fun NavGraph(
                 partidoId = id,
                 navController = navController,
                 vm = visualizarPartidoViewModel,
-                usuarioId = usuarioId
+                usuarioId = usuarioId,
+                eventoRepository = eventoRepository,
+                jugadorRepository = jugadorRepositoryInst,
+                equipoRepository = equipoRepositoryInst
             )
         }
         composable(
@@ -234,7 +239,11 @@ fun NavGraph(
             val administrarViewModel: AdministrarPartidosViewModel = viewModel(
                 modelClass = AdministrarPartidosViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = AdministrarPartidosViewModel.Factory(partidoRepository, goleadorRepository)
+                factory = AdministrarPartidosViewModel.Factory(
+                    partidoRepository,
+                    goleadorRepository,
+                    eventoRepository // <--- Ahora sí!
+                )
             )
             PartidosListaBusquedaScreen(
                 viewModel = administrarViewModel,
@@ -251,7 +260,11 @@ fun NavGraph(
             val administrarViewModel: AdministrarPartidosViewModel = viewModel(
                 modelClass = AdministrarPartidosViewModel::class.java,
                 viewModelStoreOwner = owner,
-                factory = AdministrarPartidosViewModel.Factory(partidoRepository, goleadorRepository)
+                factory = AdministrarPartidosViewModel.Factory(
+                    partidoRepository,
+                    goleadorRepository,
+                    eventoRepository
+                )
             )
             val partidos = administrarViewModel.partidos.collectAsState().value
             val partido = partidos.find { it.id == partidoId }

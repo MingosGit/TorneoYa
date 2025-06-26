@@ -10,10 +10,13 @@ import mingosgit.josecr.torneoya.data.entities.PartidoEntity
 import mingosgit.josecr.torneoya.data.entities.GoleadorEntity
 import mingosgit.josecr.torneoya.repository.PartidoRepository
 import mingosgit.josecr.torneoya.repository.GoleadorRepository
+import mingosgit.josecr.torneoya.repository.EventoRepository
+import mingosgit.josecr.torneoya.data.entities.EventoEntity
 
 class AdministrarPartidosViewModel(
     private val partidoRepository: PartidoRepository,
-    private val goleadorRepository: GoleadorRepository
+    private val goleadorRepository: GoleadorRepository,
+    private val eventoRepository: EventoRepository
 ) : ViewModel() {
 
     private val _partidos = MutableStateFlow<List<PartidoEntity>>(emptyList())
@@ -72,6 +75,19 @@ class AdministrarPartidosViewModel(
                 minuto,
                 asistenciaJugadorId
             )
+            // Nuevo: agregar evento
+            val fechaHora = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            eventoRepository.agregarEvento(
+                EventoEntity(
+                    partidoId = partidoId,
+                    tipo = "GOL",
+                    minuto = minuto,
+                    equipoId = equipoId,
+                    jugadorId = jugadorId,
+                    asistenteId = asistenciaJugadorId,
+                    fechaHora = fechaHora
+                )
+            )
             actualizarGolesPartido(partidoId)
             cargarGoleadores(partidoId)
         }
@@ -110,12 +126,17 @@ class AdministrarPartidosViewModel(
 
     class Factory(
         private val partidoRepository: PartidoRepository,
-        private val goleadorRepository: GoleadorRepository
+        private val goleadorRepository: GoleadorRepository,
+        private val eventoRepository: EventoRepository
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(AdministrarPartidosViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return AdministrarPartidosViewModel(partidoRepository, goleadorRepository) as T
+                return AdministrarPartidosViewModel(
+                    partidoRepository,
+                    goleadorRepository,
+                    eventoRepository
+                ) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }
