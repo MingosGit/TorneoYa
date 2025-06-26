@@ -1,49 +1,25 @@
 package mingosgit.josecr.torneoya.ui.navigation
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
-import mingosgit.josecr.torneoya.ui.screens.partido.AsignarJugadoresScreen
-import mingosgit.josecr.torneoya.viewmodel.partido.AsignarJugadoresViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModelFactory
-import mingosgit.josecr.torneoya.repository.JugadorRepository
-import mingosgit.josecr.torneoya.repository.EquipoRepository
-import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
-import androidx.lifecycle.viewmodel.compose.viewModel
-import mingosgit.josecr.torneoya.data.database.AppDatabase
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import kotlinx.coroutines.runBlocking
+import mingosgit.josecr.torneoya.data.database.AppDatabase
+import mingosgit.josecr.torneoya.repository.*
 import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
-import mingosgit.josecr.torneoya.ui.screens.partido.PartidoScreen
-import mingosgit.josecr.torneoya.ui.screens.usuario.UsuarioScreen
-import mingosgit.josecr.torneoya.ui.screens.partido.CreatePartidoScreen
-import mingosgit.josecr.torneoya.ui.screens.partido.EditarJugadoresEquipoScreen
-import mingosgit.josecr.torneoya.ui.screens.partido.EditPartidoScreen
-import mingosgit.josecr.torneoya.ui.screens.partido.VisualizarPartidoScreen
-import mingosgit.josecr.torneoya.viewmodel.partido.AsignarJugadoresViewModel
-import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
-import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.partido.EditarJugadoresEquipoViewModel
-import mingosgit.josecr.torneoya.viewmodel.partido.EditarJugadoresEquipoViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.partido.EditPartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
-import mingosgit.josecr.torneoya.repository.ComentarioRepository
-import mingosgit.josecr.torneoya.repository.EncuestaRepository
-import mingosgit.josecr.torneoya.repository.EventoRepository
-import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
-import mingosgit.josecr.torneoya.repository.GoleadorRepository
-import mingosgit.josecr.torneoya.ui.screens.usuario.MisJugadoresScreen
+import mingosgit.josecr.torneoya.ui.screens.partido.*
+import mingosgit.josecr.torneoya.ui.screens.usuario.*
+import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
-import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
-import mingosgit.josecr.torneoya.ui.screens.usuario.AdministrarPartidosScreen
+import mingosgit.josecr.torneoya.viewmodel.usuario.MisJugadoresViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 
 @Composable
 fun NavGraph(
@@ -99,7 +75,27 @@ fun NavGraph(
             )
         }
         composable("mis_jugadores") {
-            MisJugadoresScreen(navController)
+            val misJugadoresViewModel: MisJugadoresViewModel = viewModel(
+                modelClass = MisJugadoresViewModel::class.java,
+                viewModelStoreOwner = owner,
+                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return MisJugadoresViewModel(jugadorRepositoryInst) as T
+                    }
+                }
+            )
+            MisJugadoresScreen(navController, misJugadoresViewModel)
+        }
+        composable(
+            "estadisticas_jugador/{jugadorId}",
+            arguments = listOf(navArgument("jugadorId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val jugadorId = backStackEntry.arguments?.getLong("jugadorId") ?: return@composable
+            EstadisticasJugadorScreen(
+                navController = navController,
+                jugadorId = jugadorId
+            )
         }
         composable(
             "visualizar_partido/{partidoId}",
@@ -242,7 +238,7 @@ fun NavGraph(
                 factory = AdministrarPartidosViewModel.Factory(
                     partidoRepository,
                     goleadorRepository,
-                    eventoRepository // <--- Ahora sí!
+                    eventoRepository
                 )
             )
             PartidosListaBusquedaScreen(
@@ -250,7 +246,6 @@ fun NavGraph(
                 navController = navController
             )
         }
-
         // Screen para administrar los goles de un partido
         composable(
             "administrar_partido_goles/{partidoId}",

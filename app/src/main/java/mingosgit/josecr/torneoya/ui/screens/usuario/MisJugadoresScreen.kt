@@ -1,39 +1,33 @@
 package mingosgit.josecr.torneoya.ui.screens.usuario
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.data.entities.JugadorEntity
-import mingosgit.josecr.torneoya.repository.JugadorRepository
-import mingosgit.josecr.torneoya.data.database.AppDatabase
-import androidx.compose.ui.platform.LocalContext
+import mingosgit.josecr.torneoya.viewmodel.usuario.MisJugadoresViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisJugadoresScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: MisJugadoresViewModel
 ) {
-    val context = LocalContext.current
-    val jugadorDao = remember { AppDatabase.getInstance(context).jugadorDao() }
-    val jugadorRepo = remember { JugadorRepository(jugadorDao) }
-
-    var jugadores by remember { mutableStateOf<List<JugadorEntity>>(emptyList()) }
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        scope.launch {
-            jugadores = jugadorRepo.getAll()
-        }
-    }
+    val jugadores by viewModel.jugadores.collectAsState()
 
     Scaffold(
         topBar = {
@@ -41,37 +35,79 @@ fun MisJugadoresScreen(
                 title = { Text("Mis Jugadores") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                     }
                 }
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color(0xFFE3F2FD), Color(0xFF90CAF9))
+                    )
+                )
                 .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 10.dp)
         ) {
             if (jugadores.isEmpty()) {
                 Text(
                     text = "No tienes jugadores creados aún.",
                     fontSize = 18.sp,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             } else {
-                jugadores.forEach { jugador ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                    ) {
-                        Row(
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(jugadores) { jugador ->
+                        Card(
                             modifier = Modifier
-                                .padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .fillMaxWidth()
+                                .shadow(6.dp, shape = MaterialTheme.shapes.extraLarge)
+                                .clickable {
+                                    navController.navigate("estadisticas_jugador/${jugador.id}")
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White.copy(alpha = 0.96f)
+                            ),
+                            shape = MaterialTheme.shapes.extraLarge,
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
-                            Text(jugador.nombre, fontSize = 20.sp)
+                            Row(
+                                modifier = Modifier
+                                    .padding(18.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.Person,
+                                    contentDescription = null,
+                                    tint = Color(0xFF1976D2),
+                                    modifier = Modifier.size(40.dp)
+                                )
+                                Spacer(modifier = Modifier.width(18.dp))
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        jugador.nombre,
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1976D2)
+                                    )
+                                    Text(
+                                        "Toca para ver estadísticas",
+                                        fontSize = 13.sp,
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(top = 2.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
