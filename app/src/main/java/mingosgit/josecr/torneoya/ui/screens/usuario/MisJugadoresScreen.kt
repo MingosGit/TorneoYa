@@ -28,6 +28,16 @@ fun MisJugadoresScreen(
     viewModel: MisJugadoresViewModel
 ) {
     val jugadores by viewModel.jugadores.collectAsState()
+    var searchText by remember { mutableStateOf("") }
+
+    // Filtrado por búsqueda (ignora mayúsculas/minúsculas y espacios)
+    val filteredJugadores = jugadores.filter {
+        it.nombre.trim().contains(searchText.trim(), ignoreCase = true)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.cargarJugadores()
+    }
 
     Scaffold(
         topBar = {
@@ -51,61 +61,99 @@ fun MisJugadoresScreen(
                 )
                 .padding(padding)
         ) {
-            if (jugadores.isEmpty()) {
-                Text(
-                    text = "No tienes jugadores creados aún.",
-                    fontSize = 18.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn(
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Buscador SIEMPRE visible
+                Card(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .fillMaxWidth()
+                        .padding(top = 14.dp, start = 12.dp, end = 12.dp, bottom = 8.dp)
+                        .shadow(4.dp, shape = MaterialTheme.shapes.large),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    shape = MaterialTheme.shapes.large
                 ) {
-                    items(jugadores) { jugador ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(6.dp, shape = MaterialTheme.shapes.extraLarge)
-                                .clickable {
-                                    navController.navigate("estadisticas_jugador/${jugador.id}")
-                                },
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.White.copy(alpha = 0.96f)
-                            ),
-                            shape = MaterialTheme.shapes.extraLarge,
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Row(
+                    OutlinedTextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        placeholder = { Text("Buscar jugador...") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 2.dp),
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.Person,
+                                contentDescription = null,
+                                tint = Color(0xFF1976D2)
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color(0xFF1976D2).copy(alpha = 0.4f),
+                            focusedBorderColor = Color(0xFF1976D2)
+                        )
+                    )
+                }
+
+                if (jugadores.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = "No tienes jugadores creados aún.",
+                            fontSize = 18.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(filteredJugadores) { jugador ->
+                            Card(
                                 modifier = Modifier
-                                    .padding(18.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .fillMaxWidth()
+                                    .shadow(6.dp, shape = MaterialTheme.shapes.extraLarge)
+                                    .clickable {
+                                        navController.navigate("estadisticas_jugador/${jugador.id}")
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.White.copy(alpha = 0.96f)
+                                ),
+                                shape = MaterialTheme.shapes.extraLarge,
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
-                                Icon(
-                                    Icons.Filled.Person,
-                                    contentDescription = null,
-                                    tint = Color(0xFF1976D2),
-                                    modifier = Modifier.size(40.dp)
-                                )
-                                Spacer(modifier = Modifier.width(18.dp))
-                                Column(
-                                    modifier = Modifier.weight(1f)
+                                Row(
+                                    modifier = Modifier
+                                        .padding(18.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        jugador.nombre,
-                                        fontSize = 22.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1976D2)
+                                    Icon(
+                                        Icons.Filled.Person,
+                                        contentDescription = null,
+                                        tint = Color(0xFF1976D2),
+                                        modifier = Modifier.size(40.dp)
                                     )
-                                    Text(
-                                        "Toca para ver estadísticas",
-                                        fontSize = 13.sp,
-                                        color = Color.Gray,
-                                        modifier = Modifier.padding(top = 2.dp)
-                                    )
+                                    Spacer(modifier = Modifier.width(18.dp))
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            jugador.nombre,
+                                            fontSize = 22.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF1976D2)
+                                        )
+                                        Text(
+                                            "Toca para ver estadísticas",
+                                            fontSize = 13.sp,
+                                            color = Color.Gray,
+                                            modifier = Modifier.padding(top = 2.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
