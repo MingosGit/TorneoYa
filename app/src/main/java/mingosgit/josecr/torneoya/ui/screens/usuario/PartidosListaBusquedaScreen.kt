@@ -11,12 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
-import mingosgit.josecr.torneoya.repository.EquipoRepository
-import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.runBlocking
+import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 import mingosgit.josecr.torneoya.data.database.AppDatabase
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun PartidosListaBusquedaScreen(
@@ -68,20 +66,41 @@ fun PartidosListaBusquedaScreen(
                             navController.navigate("administrar_partido_goles/${partido.id}")
                         }
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(18.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(18.dp)
                     ) {
-                        Column(Modifier.weight(1f)) {
-                            Text("ID: ${partido.id}")
-                            Text("Fecha: ${partido.fecha}")
-                            // Mostramos los nombres de los dos equipos
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Text(
-                                "Equipos: ${getNombreEquipo(partido.equipoAId)} vs ${getNombreEquipo(partido.equipoBId)}"
+                                text = "${getNombreEquipo(partido.equipoAId)} vs ${getNombreEquipo(partido.equipoBId)}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f)
                             )
-                            Text("Goles: ${partido.golesEquipoA} - ${partido.golesEquipoB}")
+                            Text(
+                                text = "ID: ${partido.id}",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 10.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Fecha: ${partido.fecha}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "Goles: ${partido.golesEquipoA} - ${partido.golesEquipoB}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 10.dp)
+                            )
                         }
                     }
                 }
