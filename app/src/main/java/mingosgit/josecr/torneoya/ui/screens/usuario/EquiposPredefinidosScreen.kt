@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -22,6 +23,10 @@ fun EquiposPredefinidosScreen(
     val equipos by viewModel.equipos.collectAsState()
     var nombreNuevoEquipo by remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        viewModel.recargarEquipos()
+    }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Equipos predefinidos", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
@@ -34,12 +39,15 @@ fun EquiposPredefinidosScreen(
                 modifier = Modifier.weight(1f)
             )
             Spacer(Modifier.width(8.dp))
-            Button(onClick = {
-                if (nombreNuevoEquipo.isNotBlank()) {
-                    viewModel.agregarEquipo(nombreNuevoEquipo)
-                    nombreNuevoEquipo = ""
+            Button(
+                onClick = {
+                    navController.navigate("crear_equipo_predefinido") {
+                        popUpTo("equipos_predefinidos") { inclusive = false }
+                    }
                 }
-            }) {
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Crear equipo")
+                Spacer(Modifier.width(4.dp))
                 Text("Crear")
             }
         }

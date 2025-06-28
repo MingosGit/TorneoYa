@@ -17,10 +17,12 @@ import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
 import mingosgit.josecr.torneoya.ui.screens.partido.*
 import mingosgit.josecr.torneoya.ui.screens.usuario.*
 import mingosgit.josecr.torneoya.ui.screens.equipopredefinido.EquiposPredefinidosScreen
+import mingosgit.josecr.torneoya.ui.screens.equipopredefinido.CrearEquipoPredefinidoScreen
 import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.MisJugadoresViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.CrearEquipoPredefinidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 
 @Composable
@@ -304,7 +306,6 @@ fun NavGraph(
                 )
             }
         }
-        // NUEVO: Pantalla de equipos predefinidos
         composable("equipos_predefinidos") {
             val equiposPredefinidosVM: EquiposPredefinidosViewModel = viewModel(
                 factory = object : androidx.lifecycle.ViewModelProvider.Factory {
@@ -321,5 +322,19 @@ fun NavGraph(
                 viewModel = equiposPredefinidosVM
             )
         }
+        // NUEVO: Pantalla crear equipo predefinido
+        composable("crear_equipo_predefinido") {
+            val crearEquipoPredefinidoVM = viewModel<mingosgit.josecr.torneoya.viewmodel.usuario.CrearEquipoPredefinidoViewModel>(
+                factory = mingosgit.josecr.torneoya.viewmodel.usuario.CrearEquipoPredefinidoViewModel.Factory(
+                    mingosgit.josecr.torneoya.repository.EquipoPredefinidoRepository(db.equipoPredefinidoDao()),
+                    mingosgit.josecr.torneoya.repository.JugadorRepository(db.jugadorDao())
+                )
+            )
+            mingosgit.josecr.torneoya.ui.screens.equipopredefinido.CrearEquipoPredefinidoScreen(
+                navController = navController,
+                viewModel = crearEquipoPredefinidoVM
+            )
+        }
+
     }
 }

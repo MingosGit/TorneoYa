@@ -26,6 +26,10 @@ class EquiposPredefinidosViewModel(
         }
     }
 
+    fun recargarEquipos() {
+        cargarEquipos()
+    }
+
     fun agregarEquipo(nombre: String) {
         viewModelScope.launch {
             repository.insertEquipo(EquipoPredefinidoEntity(nombre = nombre))
