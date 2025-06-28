@@ -16,10 +16,12 @@ import mingosgit.josecr.torneoya.repository.*
 import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
 import mingosgit.josecr.torneoya.ui.screens.partido.*
 import mingosgit.josecr.torneoya.ui.screens.usuario.*
+import mingosgit.josecr.torneoya.ui.screens.equipopredefinido.EquiposPredefinidosScreen
 import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.MisJugadoresViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
+import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 
 @Composable
 fun NavGraph(
@@ -42,7 +44,7 @@ fun NavGraph(
     val relacionRepositoryInst = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
     val comentarioRepository = ComentarioRepository(
         comentarioDao = db.comentarioDao(),
-        comentarioVotoDao = db.comentarioVotoDao() // <-- AGREGA ESTO
+        comentarioVotoDao = db.comentarioVotoDao()
     )
     val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
     val goleadorRepository = GoleadorRepository(db.goleadorDao())
@@ -233,7 +235,6 @@ fun NavGraph(
                 vm = vm
             )
         }
-        // Lista de partidos con buscador
         composable("partidos_lista_busqueda") {
             val administrarViewModel: AdministrarPartidosViewModel = viewModel(
                 modelClass = AdministrarPartidosViewModel::class.java,
@@ -249,7 +250,6 @@ fun NavGraph(
                 navController = navController
             )
         }
-        // Screen para administrar los goles de un partido
         composable(
             "administrar_partido_goles/{partidoId}",
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
@@ -303,6 +303,23 @@ fun NavGraph(
                     nombreEquipoB = nombreEquipoB
                 )
             }
+        }
+        // NUEVO: Pantalla de equipos predefinidos
+        composable("equipos_predefinidos") {
+            val equiposPredefinidosVM: EquiposPredefinidosViewModel = viewModel(
+                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return EquiposPredefinidosViewModel(
+                            EquipoPredefinidoRepository(db.equipoPredefinidoDao())
+                        ) as T
+                    }
+                }
+            )
+            EquiposPredefinidosScreen(
+                navController = navController,
+                viewModel = equiposPredefinidosVM
+            )
         }
     }
 }

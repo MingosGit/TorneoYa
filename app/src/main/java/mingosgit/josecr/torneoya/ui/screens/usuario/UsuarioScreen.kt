@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,10 +59,8 @@ fun UsuarioScreen(
         }
     }
 
-    // Solo permite editar la imagen cuando se está editando
     val puedeEditarImagen = editando
 
-    // Sincroniza el campo de texto si el nombre cambia desde el ViewModel
     LaunchedEffect(nombreActual) {
         if (!editando) {
             textFieldValue = TextFieldValue(
@@ -108,7 +107,6 @@ fun UsuarioScreen(
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        // Acciones arriba a la derecha
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -117,7 +115,7 @@ fun UsuarioScreen(
         ) {
             IconButton(
                 onClick = { editando = true },
-                enabled = !editando // Deshabilita el lápiz mientras ya está editando
+                enabled = !editando
             ) {
                 Icon(Icons.Default.Edit, contentDescription = "Editar nombre de usuario")
             }
@@ -126,14 +124,12 @@ fun UsuarioScreen(
             }
         }
 
-        // Centro: Foto y bienvenida
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Circulo para foto perfil, clickable solo si editando
             Box(
                 modifier = Modifier
                     .size(110.dp)
@@ -171,7 +167,6 @@ fun UsuarioScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // BOTÓN "Mis Jugadores" aquí debajo del nombre
                 Button(
                     onClick = { navController.navigate("mis_jugadores") },
                     modifier = Modifier.padding(top = 10.dp)
@@ -179,12 +174,18 @@ fun UsuarioScreen(
                     Text("Mis Jugadores")
                 }
 
-                // Solo muestra "Administrar Partidos" cuando NO está editando
                 Button(
                     onClick = { navController.navigate("partidos_lista_busqueda") },
                     modifier = Modifier.padding(top = 10.dp)
                 ) {
                     Text("Administrar partidos")
+                }
+
+                Button(
+                    onClick = { navController.navigate("equipos_predefinidos") },
+                    modifier = Modifier.padding(top = 10.dp)
+                ) {
+                    Text("Equipos predefinidos")
                 }
             }
 
