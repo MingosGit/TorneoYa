@@ -3,14 +3,15 @@ package mingosgit.josecr.torneoya.ui.screens.usuario
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 import mingosgit.josecr.torneoya.data.entities.PartidoEntity
@@ -32,6 +33,9 @@ fun AdministrarPartidosScreen(
     var jugadorSeleccionado by remember { mutableStateOf<Long?>(null) }
     var asistenciaSeleccionada by remember { mutableStateOf<Long?>(null) }
     var minuto by remember { mutableStateOf("") }
+    var expandedEquipo by remember { mutableStateOf(false) }
+    var expandedJugador by remember { mutableStateOf(false) }
+    var expandedAsistente by remember { mutableStateOf(false) }
 
     LaunchedEffect(partido.id) {
         viewModel.cargarGoleadores(partido.id)
@@ -84,8 +88,7 @@ fun AdministrarPartidosScreen(
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(
-                            onClick = { viewModel.borrarGol(gol) },
-                            colors = IconButtonDefaults.iconButtonColors(contentColor = Color.Red)
+                            onClick = { viewModel.borrarGol(gol) }
                         ) {
                             Icon(Icons.Default.Remove, contentDescription = "Quitar gol")
                         }
@@ -99,17 +102,21 @@ fun AdministrarPartidosScreen(
             Text("Agregar gol", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
 
-            // SELECCIÓN EQUIPO Y JUGADOR
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            // SELECCIÓN EQUIPO, JUGADOR, MINUTO Y ASISTENTE
+
+            // Equipo
+            ExposedDropdownMenuBox(
+                expanded = expandedEquipo,
+                onExpandedChange = { expandedEquipo = !expandedEquipo }
             ) {
-                // Selección equipo (A o B)
-                var expandedEquipo by remember { mutableStateOf(false) }
-                TextButton(onClick = { expandedEquipo = true }) {
-                    Text(if (equipoSeleccionado == equipoAId) "Equipo A" else "Equipo B")
-                }
-                DropdownMenu(
+                OutlinedTextField(
+                    readOnly = true,
+                    value = if (equipoSeleccionado == equipoAId) "Equipo A" else "Equipo B",
+                    onValueChange = {},
+                    label = { Text("Equipo") },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
                     expanded = expandedEquipo,
                     onDismissRequest = { expandedEquipo = false }
                 ) {
@@ -132,103 +139,116 @@ fun AdministrarPartidosScreen(
                         }
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                // Selección jugador
-                var expandedJugador by remember { mutableStateOf(false) }
-                TextButton(
-                    onClick = { expandedJugador = true },
-                    enabled = true
-                ) {
-                    Text(jugadoresEquipoA.plus(jugadoresEquipoB).find { it.first == jugadorSeleccionado }?.second ?: "Seleccionar jugador")
-                }
-                DropdownMenu(
+            // Jugador (solo los del equipo seleccionado)
+            val jugadoresActual = if (equipoSeleccionado == equipoAId) jugadoresEquipoA else jugadoresEquipoB
+            ExposedDropdownMenuBox(
+                expanded = expandedJugador,
+                onExpandedChange = { expandedJugador = !expandedJugador }
+            ) {
+                OutlinedTextField(
+                    readOnly = true,
+                    value = jugadoresActual.find { it.first == jugadorSeleccionado }?.second ?: "",
+                    onValueChange = {},
+                    label = { Text("Jugador") },
+                    placeholder = { Text("Seleccionar jugador") },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
                     expanded = expandedJugador,
                     onDismissRequest = { expandedJugador = false }
                 ) {
-                    val jugadores = if (equipoSeleccionado == equipoAId) jugadoresEquipoA else jugadoresEquipoB
-                    jugadores.forEach { (id, nombre) ->
+                    jugadoresActual.forEach { (id, nombre) ->
                         DropdownMenuItem(
                             text = { Text(nombre) },
                             onClick = {
                                 jugadorSeleccionado = id
+                                if (asistenciaSeleccionada == id) asistenciaSeleccionada = null
                                 expandedJugador = false
                             }
                         )
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Minuto y asistencia
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            // Minuto y Asistencia juntos
+            Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = minuto,
-                    onValueChange = { minuto = it.filter { c -> c.isDigit() } },
-                    label = { Text("Minuto") },
-                    modifier = Modifier.width(100.dp)
+                    onValueChange = { minuto = it.filter { c -> c.isDigit() }.take(3) },
+                    label = { Text("Min") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                var expandedAsistente by remember { mutableStateOf(false) }
-                TextButton(
-                    onClick = { expandedAsistente = true },
-                    enabled = jugadorSeleccionado != null
-                ) {
-                    Text(jugadoresEquipoA.plus(jugadoresEquipoB).find { it.first == asistenciaSeleccionada }?.second ?: "Asistente (opcional)")
-                }
-                DropdownMenu(
+                ExposedDropdownMenuBox(
                     expanded = expandedAsistente,
-                    onDismissRequest = { expandedAsistente = false }
+                    onExpandedChange = { expandedAsistente = !expandedAsistente }
                 ) {
-                    val jugadores = if (equipoSeleccionado == equipoAId) jugadoresEquipoA else jugadoresEquipoB
-                    DropdownMenuItem(
-                        text = { Text("Sin asistencia") },
-                        onClick = {
-                            asistenciaSeleccionada = null
-                            expandedAsistente = false
-                        }
+                    val asistentesPosibles = jugadoresActual.filter { it.first != jugadorSeleccionado }
+                    OutlinedTextField(
+                        readOnly = true,
+                        value = asistentesPosibles.find { it.first == asistenciaSeleccionada }?.second ?: "",
+                        onValueChange = {},
+                        label = { Text("Asistencia (opcional)") },
+                        placeholder = { Text("Sin asistencia") },
+                        enabled = jugadorSeleccionado != null,
+                        modifier = Modifier.menuAnchor().weight(1f)
                     )
-                    jugadores.filter { it.first != jugadorSeleccionado }.forEach { (id, nombre) ->
+                    ExposedDropdownMenu(
+                        expanded = expandedAsistente,
+                        onDismissRequest = { expandedAsistente = false }
+                    ) {
                         DropdownMenuItem(
-                            text = { Text(nombre) },
+                            text = { Text("Sin asistencia") },
                             onClick = {
-                                asistenciaSeleccionada = id
+                                asistenciaSeleccionada = null
                                 expandedAsistente = false
                             }
                         )
+                        asistentesPosibles.forEach { (id, nombre) ->
+                            DropdownMenuItem(
+                                text = { Text(nombre) },
+                                onClick = {
+                                    asistenciaSeleccionada = id
+                                    expandedAsistente = false
+                                }
+                            )
+                        }
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    if (jugadorSeleccionado != null) {
-                        viewModel.agregarGol(
-                            partidoId = partido.id,
-                            equipoId = equipoSeleccionado,
-                            jugadorId = jugadorSeleccionado!!,
-                            minuto = minuto.toIntOrNull(),
-                            asistenciaJugadorId = asistenciaSeleccionada
-                        )
-                        jugadorSeleccionado = null
-                        asistenciaSeleccionada = null
-                        minuto = ""
-                    }
+                    viewModel.agregarGol(
+                        partidoId = partido.id,
+                        equipoId = equipoSeleccionado,
+                        jugadorId = jugadorSeleccionado!!,
+                        minuto = minuto.toIntOrNull(),
+                        asistenciaJugadorId = asistenciaSeleccionada
+                    )
+                    jugadorSeleccionado = null
+                    asistenciaSeleccionada = null
+                    minuto = ""
                 },
-                enabled = jugadorSeleccionado != null
+                enabled = jugadorSeleccionado != null && minuto.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Agregar gol")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = {
-                    showDialog = true
-                }
+                onClick = { showDialog = true },
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Guardar y salir")
             }
@@ -240,9 +260,7 @@ fun AdministrarPartidosScreen(
                     text = { Text("¿Guardar y volver?") },
                     confirmButton = {
                         TextButton(
-                            onClick = {
-                                navController.popBackStack()
-                            }
+                            onClick = { navController.popBackStack() }
                         ) { Text("Guardar") }
                     },
                     dismissButton = {
