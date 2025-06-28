@@ -1,6 +1,8 @@
 package mingosgit.josecr.torneoya.ui.screens.partido
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
 import mingosgit.josecr.torneoya.repository.EquipoRepository
 import java.time.LocalDate
@@ -27,12 +30,15 @@ enum class EstadoPartido(val display: String) {
     FINALIZADO("Finalizado")
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PartidoScreen(
     navController: NavController,
     partidoViewModel: PartidoViewModel,
     equipoRepository: EquipoRepository
 ) {
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(Unit) {
         partidoViewModel.cargarPartidosConNombres(equipoRepository)
     }
@@ -63,9 +69,15 @@ fun PartidoScreen(
     var ascending by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
 
-    // Por defecto "Todos"
     var estadoSeleccionado by remember { mutableStateOf(EstadoPartido.TODOS) }
     var expandedEstado by remember { mutableStateOf(false) }
+
+    // BottomSheet para duplicar/eliminar
+    var showOptionsSheet by remember { mutableStateOf(false) }
+    var partidoSeleccionado by remember { mutableStateOf<mingosgit.josecr.torneoya.viewmodel.partido.PartidoConNombres?>(null) }
+
+    // Dialog para confirmar eliminación
+    var showConfirmDialog by remember { mutableStateOf(false) }
 
     fun parseFecha(fecha: String): LocalDate? {
         val patronesFecha = listOf("yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yyyy")
@@ -103,7 +115,7 @@ fun PartidoScreen(
         return when {
             fecha.isBefore(hoy) -> EstadoPartido.FINALIZADO
             fecha.isAfter(hoy) -> EstadoPartido.PREVIA
-            else -> { // Es el mismo día
+            else -> {
                 when {
                     ahora.isBefore(horaInicio) -> EstadoPartido.PREVIA
                     (ahora == horaInicio || (ahora.isAfter(horaInicio) && ahora.isBefore(horaFin))) -> EstadoPartido.JUGANDO
@@ -144,6 +156,65 @@ fun PartidoScreen(
         }
     }
 
+    // --- Sheet con opciones Duplicar/Eliminar ---
+    if (showOptionsSheet && partidoSeleccionado != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showOptionsSheet = false },
+            dragHandle = null
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                ListItem(
+                    headlineContent = { Text("Duplicar") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showOptionsSheet = false
+                            scope.launch {
+                                partidoViewModel.duplicarPartido(partidoSeleccionado!!.id, equipoRepository)
+                            }
+                        }
+                )
+                ListItem(
+                    headlineContent = { Text("Eliminar") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showOptionsSheet = false
+                            showConfirmDialog = true
+                        }
+                )
+            }
+        }
+    }
+
+    // --- Confirmación para eliminar ---
+    if (showConfirmDialog && partidoSeleccionado != null) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("¿Eliminar partido?") },
+            text = { Text("¿Estás seguro que deseas eliminar el partido \"${partidoSeleccionado!!.nombreEquipoA} vs ${partidoSeleccionado!!.nombreEquipoB}\"?") },
+            confirmButton = {
+                Button(onClick = {
+                    showConfirmDialog = false
+                    scope.launch {
+                        partidoViewModel.eliminarPartido(partidoSeleccionado!!.id, equipoRepository)
+                    }
+                }) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showConfirmDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -171,7 +242,6 @@ fun PartidoScreen(
                     .fillMaxWidth()
                     .padding(bottom = 10.dp)
             ) {
-                // FILTRO ESTADO
                 Text("Estado: ", fontSize = 15.sp)
                 Box {
                     Button(
@@ -196,7 +266,6 @@ fun PartidoScreen(
                     }
                 }
                 Spacer(modifier = Modifier.width(16.dp))
-                // ORDENAR
                 Text("Ordenar por: ", fontSize = 15.sp)
                 Box {
                     Button(
@@ -244,9 +313,15 @@ fun PartidoScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
-                            .clickable {
-                                navController.navigate("visualizar_partido/${partido.id}")
-                            }
+                            .combinedClickable(
+                                onClick = {
+                                    navController.navigate("visualizar_partido/${partido.id}")
+                                },
+                                onLongClick = {
+                                    partidoSeleccionado = partido
+                                    showOptionsSheet = true
+                                }
+                            )
                     ) {
                         Text(
                             text = "${partido.nombreEquipoA} vs ${partido.nombreEquipoB}",

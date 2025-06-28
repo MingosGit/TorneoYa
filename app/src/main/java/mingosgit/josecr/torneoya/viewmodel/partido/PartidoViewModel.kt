@@ -16,7 +16,7 @@ data class PartidoConNombres(
     val nombreEquipoB: String,
     val fecha: String,
     val horaInicio: String,
-    val horaFin: String // NUEVO CAMPO
+    val horaFin: String
 )
 
 class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() {
@@ -38,7 +38,6 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
             val partidosNombres = partidos.map { partido ->
                 val equipoA = equipoRepository.getById(partido.equipoAId)
                 val equipoB = equipoRepository.getById(partido.equipoBId)
-                // Suponemos que el campo horaFin NO está en PartidoEntity. Si quieres el cálculo real, añade ese campo en la entidad o calcula aquí.
                 PartidoConNombres(
                     id = partido.id,
                     nombreEquipoA = equipoA?.nombre ?: "Equipo A",
@@ -52,7 +51,6 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
-    // Calcula la hora de finalización en formato HH:mm
     private fun calcularHoraFin(horaInicio: String, numeroPartes: Int, tiempoPorParte: Int, tiempoDescanso: Int): String {
         return try {
             val partesTotal = (numeroPartes * tiempoPorParte) + ((numeroPartes - 1) * tiempoDescanso)
@@ -65,10 +63,10 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
-    fun agregarPartido(partido: PartidoEntity) {
+    fun agregarPartido(partido: PartidoEntity, equipoRepository: EquipoRepository) {
         viewModelScope.launch {
             repository.insertPartido(partido)
-            cargarPartidos()
+            cargarPartidosConNombres(equipoRepository)
         }
     }
 
@@ -85,6 +83,26 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
             val relB = PartidoEquipoJugadorEntity(partidoId, equipoBId, jugadorId)
             repository.eliminarJugadorDePartido(relA)
             repository.eliminarJugadorDePartido(relB)
+        }
+    }
+
+    fun eliminarPartido(partidoId: Long, equipoRepository: EquipoRepository) {
+        viewModelScope.launch {
+            repository.deletePartidoById(partidoId)
+            cargarPartidosConNombres(equipoRepository)
+        }
+    }
+
+    fun duplicarPartido(partidoId: Long, equipoRepository: EquipoRepository) {
+        viewModelScope.launch {
+            val partido = repository.getPartidoById(partidoId)
+            partido?.let {
+                val nuevoPartido = it.copy(
+                    id = 0L
+                )
+                repository.insertPartido(nuevoPartido)
+            }
+            cargarPartidosConNombres(equipoRepository)
         }
     }
 }

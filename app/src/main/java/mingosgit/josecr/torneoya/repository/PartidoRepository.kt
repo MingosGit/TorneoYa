@@ -41,4 +41,11 @@ class PartidoRepository(
         partidoDao.actualizarGoles(partidoId, golesA, golesB)
     }
 
+    // === NUEVO: Eliminar partido por id (Room) ===
+    suspend fun deletePartidoById(id: Long) {
+        val partido = partidoDao.getPartidoById(id)
+        if (partido != null) {
+            partidoDao.delete(partido)
+        }
+    }
 }
