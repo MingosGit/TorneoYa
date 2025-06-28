@@ -21,6 +21,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 enum class EstadoPartido(val display: String) {
+    TODOS("Todos"),
     PREVIA("Previa"),
     JUGANDO("Jugando"),
     FINALIZADO("Finalizado")
@@ -62,7 +63,8 @@ fun PartidoScreen(
     var ascending by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
 
-    var estadoSeleccionado by remember { mutableStateOf(EstadoPartido.PREVIA) }
+    // Por defecto "Todos"
+    var estadoSeleccionado by remember { mutableStateOf(EstadoPartido.TODOS) }
     var expandedEstado by remember { mutableStateOf(false) }
 
     fun parseFecha(fecha: String): LocalDate? {
@@ -94,12 +96,7 @@ fun PartidoScreen(
         val horaInicio = parseHora(partido.horaInicio)
         val horaFin = parseHora(partido.horaFin)
 
-        // DEBUG: Puedes borrar estos println cuando ya funcione
-        println("Partido ID: ${partido.id}, fechaRaw: ${partido.fecha}, horaInicioRaw: ${partido.horaInicio}, horaFinRaw: ${partido.horaFin}")
-        println("fecha: $fecha, horaInicio: $horaInicio, horaFin: $horaFin")
-
         if (fecha == null || horaInicio == null || horaFin == null) {
-            println("Estado PREVIA por datos nulos/incorrectos")
             return EstadoPartido.PREVIA
         }
 
@@ -117,8 +114,12 @@ fun PartidoScreen(
     }
 
     val partidosFiltrados = remember(partidos, estadoSeleccionado) {
-        partidos.filter { partido ->
-            obtenerEstadoPartido(partido) == estadoSeleccionado
+        if (estadoSeleccionado == EstadoPartido.TODOS) {
+            partidos
+        } else {
+            partidos.filter { partido ->
+                obtenerEstadoPartido(partido) == estadoSeleccionado
+            }
         }
     }
 
