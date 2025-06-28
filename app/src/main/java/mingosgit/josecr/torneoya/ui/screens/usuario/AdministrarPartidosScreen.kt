@@ -25,7 +25,9 @@ fun AdministrarPartidosScreen(
     equipoAId: Long,
     equipoBId: Long,
     jugadoresEquipoA: List<Pair<Long, String>>,
-    jugadoresEquipoB: List<Pair<Long, String>>
+    jugadoresEquipoB: List<Pair<Long, String>>,
+    nombreEquipoA: String, // <--- Añade este parámetro
+    nombreEquipoB: String  // <--- Añade este parámetro
 ) {
     val goleadores by viewModel.goleadores.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
@@ -81,8 +83,13 @@ fun AdministrarPartidosScreen(
                             .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val equipoNombre = when (gol.equipoId) {
+                            equipoAId -> nombreEquipoA
+                            equipoBId -> nombreEquipoB
+                            else -> "Equipo"
+                        }
                         Text(
-                            text = "Equipo ${if (gol.equipoId == equipoAId) "A" else "B"} - Jugador: ${jugadoresEquipoA.plus(jugadoresEquipoB).find { it.first == gol.jugadorId }?.second ?: ""} " +
+                            text = "$equipoNombre - Jugador: ${jugadoresEquipoA.plus(jugadoresEquipoB).find { it.first == gol.jugadorId }?.second ?: ""} " +
                                     (gol.minuto?.let { " (${it}') " } ?: "") +
                                     (gol.asistenciaJugadorId?.let { "Asist: ${jugadoresEquipoA.plus(jugadoresEquipoB).find { j -> j.first == it }?.second ?: ""}" } ?: ""),
                             modifier = Modifier.weight(1f)
@@ -111,7 +118,7 @@ fun AdministrarPartidosScreen(
             ) {
                 OutlinedTextField(
                     readOnly = true,
-                    value = if (equipoSeleccionado == equipoAId) "Equipo A" else "Equipo B",
+                    value = if (equipoSeleccionado == equipoAId) nombreEquipoA else nombreEquipoB,
                     onValueChange = {},
                     label = { Text("Equipo") },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
@@ -121,7 +128,7 @@ fun AdministrarPartidosScreen(
                     onDismissRequest = { expandedEquipo = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Equipo A") },
+                        text = { Text(nombreEquipoA) },
                         onClick = {
                             equipoSeleccionado = equipoAId
                             jugadorSeleccionado = null
@@ -130,7 +137,7 @@ fun AdministrarPartidosScreen(
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Equipo B") },
+                        text = { Text(nombreEquipoB) },
                         onClick = {
                             equipoSeleccionado = equipoBId
                             jugadorSeleccionado = null

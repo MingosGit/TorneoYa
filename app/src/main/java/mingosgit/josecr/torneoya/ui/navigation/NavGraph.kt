@@ -282,6 +282,12 @@ fun NavGraph(
                             }
                         }
                 }
+                val nombreEquipoA = runBlocking {
+                    db.equipoDao().getById(partido.equipoAId)?.nombre ?: "Equipo A"
+                }
+                val nombreEquipoB = runBlocking {
+                    db.equipoDao().getById(partido.equipoBId)?.nombre ?: "Equipo B"
+                }
                 AdministrarPartidosScreen(
                     partido = partido,
                     viewModel = administrarViewModel,
@@ -289,7 +295,9 @@ fun NavGraph(
                     equipoAId = partido.equipoAId,
                     equipoBId = partido.equipoBId,
                     jugadoresEquipoA = jugadoresEquipoA,
-                    jugadoresEquipoB = jugadoresEquipoB
+                    jugadoresEquipoB = jugadoresEquipoB,
+                    nombreEquipoA = nombreEquipoA,
+                    nombreEquipoB = nombreEquipoB
                 )
             }
         }
