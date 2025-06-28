@@ -32,8 +32,6 @@ data class VisualizarPartidoUiState(
     val golesEquipoB: Int = 0
 )
 
-
-
 class VisualizarPartidoViewModel(
     private val partidoId: Long,
     private val partidoRepository: PartidoRepository,
@@ -51,7 +49,7 @@ class VisualizarPartidoViewModel(
     private val _comentariosEncuestasState = MutableStateFlow(VisualizarPartidoComentariosEncuestasUiState())
     val comentariosEncuestasState: StateFlow<VisualizarPartidoComentariosEncuestasUiState> = _comentariosEncuestasState
 
-    fun cargarDatos() {
+    fun cargarDatos(usuarioId: Long? = null) {
         viewModelScope.launch {
             val partido = partidoRepository.getPartidoById(partidoId)
             if (partido != null) {
@@ -84,10 +82,9 @@ class VisualizarPartidoViewModel(
                     golesEquipoB = partido.golesEquipoB
                 )
             }
-            cargarComentariosEncuestas()
+            cargarComentariosEncuestas(usuarioId)
         }
     }
-
 
     suspend fun getVotoUsuarioEncuesta(encuestaId: Long, usuarioId: Long): Int? {
         return encuestaRepository.getVotoUsuario(encuestaId, usuarioId)
@@ -96,13 +93,24 @@ class VisualizarPartidoViewModel(
     fun votarUnicoEnEncuesta(encuestaId: Long, opcionIndex: Int, usuarioId: Long) {
         viewModelScope.launch {
             encuestaRepository.votarUnico(encuestaId, opcionIndex, usuarioId)
-            cargarComentariosEncuestas()
+            cargarComentariosEncuestas(usuarioId)
         }
     }
 
-    fun cargarComentariosEncuestas() {
+    fun cargarComentariosEncuestas(usuarioId: Long? = null) {
         viewModelScope.launch {
             val comentarios = comentarioRepository.obtenerComentarios(partidoId)
+            val comentariosConVotos = comentarios.map { comentario ->
+                val likes = comentarioRepository.getLikes(comentario.id)
+                val dislikes = comentarioRepository.getDislikes(comentario.id)
+                val miVoto = usuarioId?.let { comentarioRepository.getVotoUsuario(comentario.id, it)?.tipo }
+                ComentarioConVotos(
+                    comentario = comentario,
+                    likes = likes,
+                    dislikes = dislikes,
+                    miVoto = miVoto
+                )
+            }
             val encuestas = encuestaRepository.obtenerEncuestas(partidoId)
             val encuestasConResultados = encuestas.map { encuesta ->
                 val votosPorOpcion = encuestaRepository.votosPorOpcion(encuesta.id)
@@ -112,13 +120,13 @@ class VisualizarPartidoViewModel(
                 EncuestaConResultados(encuesta, votosList)
             }
             _comentariosEncuestasState.value = VisualizarPartidoComentariosEncuestasUiState(
-                comentarios = comentarios,
+                comentarios = comentariosConVotos,
                 encuestas = encuestasConResultados
             )
         }
     }
 
-    fun agregarComentario(usuarioNombre: String, texto: String) {
+    fun agregarComentario(usuarioNombre: String, texto: String, usuarioId: Long? = null) {
         viewModelScope.launch {
             val fechaHora = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             val comentario = ComentarioEntity(
@@ -128,11 +136,18 @@ class VisualizarPartidoViewModel(
                 fechaHora = fechaHora
             )
             comentarioRepository.agregarComentario(comentario)
-            cargarComentariosEncuestas()
+            cargarComentariosEncuestas(usuarioId)
         }
     }
 
-    fun agregarEncuesta(pregunta: String, opciones: List<String>) {
+    fun votarComentario(comentarioId: Long, usuarioId: Long, tipo: Int) {
+        viewModelScope.launch {
+            comentarioRepository.votarComentario(comentarioId, usuarioId, tipo)
+            cargarComentariosEncuestas(usuarioId)
+        }
+    }
+
+    fun agregarEncuesta(pregunta: String, opciones: List<String>, usuarioId: Long? = null) {
         if (opciones.isEmpty() || opciones.size > 5) return
         viewModelScope.launch {
             val encuesta = EncuestaEntity(
@@ -141,16 +156,9 @@ class VisualizarPartidoViewModel(
                 opciones = opciones.joinToString("|")
             )
             encuestaRepository.agregarEncuesta(encuesta)
-            cargarComentariosEncuestas()
+            cargarComentariosEncuestas(usuarioId)
         }
     }
-
-//    fun votarEnEncuesta(encuestaId: Long, opcionIndex: Int) {
-//        viewModelScope.launch {
-//            encuestaRepository.votar(encuestaId, opcionIndex)
-//            cargarComentariosEncuestas()
-//        }
-//    }
 
     fun eliminarPartido() {
         viewModelScope.launch {

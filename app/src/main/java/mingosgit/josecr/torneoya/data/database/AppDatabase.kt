@@ -6,9 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import mingosgit.josecr.torneoya.data.dao.*
 import mingosgit.josecr.torneoya.data.entities.*
-import mingosgit.josecr.torneoya.data.entities.GoleadorEntity
-import mingosgit.josecr.torneoya.data.dao.GoleadorDao
-
 
 @Database(
     entities = [
@@ -21,9 +18,10 @@ import mingosgit.josecr.torneoya.data.dao.GoleadorDao
         EncuestaEntity::class,
         EncuestaVotoEntity::class,
         GoleadorEntity::class,
-        EventoEntity::class
+        EventoEntity::class,
+        ComentarioVotoEntity::class // <--- AGREGADO
     ],
-    version = 9 // sube versión si modificaste, ej. de 8 a 9
+    version = 10 // <--- SUBE VERSION SIEMPRE
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun equipoDao(): EquipoDao
@@ -32,9 +30,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun partidoEquipoJugadorDao(): PartidoEquipoJugadorDao
     abstract fun usuarioLocalDao(): UsuarioLocalDao
     abstract fun comentarioDao(): ComentarioDao
+    abstract fun comentarioVotoDao(): ComentarioVotoDao // <--- AGREGADO
     abstract fun encuestaDao(): EncuestaDao
     abstract fun encuestaVotoDao(): EncuestaVotoDao
-    abstract fun goleadorDao(): GoleadorDao // <-- DEBE IR AQUÍ
+    abstract fun goleadorDao(): GoleadorDao
     abstract fun eventoDao(): EventoDao
     abstract fun estadisticasDao(): EstadisticasDao
 

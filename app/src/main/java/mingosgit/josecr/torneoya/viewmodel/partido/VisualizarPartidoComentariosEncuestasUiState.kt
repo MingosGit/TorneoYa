@@ -1,14 +1,15 @@
 package mingosgit.josecr.torneoya.viewmodel.partido
 
 import mingosgit.josecr.torneoya.data.entities.ComentarioEntity
-import mingosgit.josecr.torneoya.data.entities.EncuestaEntity
 
-data class VisualizarPartidoComentariosEncuestasUiState(
-    val comentarios: List<ComentarioEntity> = emptyList(),
-    val encuestas: List<EncuestaConResultados> = emptyList()
+data class ComentarioConVotos(
+    val comentario: ComentarioEntity,
+    val likes: Int,
+    val dislikes: Int,
+    val miVoto: Int? // 1=like, -1=dislike, null=sin voto
 )
 
-data class EncuestaConResultados(
-    val encuesta: EncuestaEntity,
-    val votos: List<Int>
+data class VisualizarPartidoComentariosEncuestasUiState(
+    val comentarios: List<ComentarioConVotos> = emptyList(),
+    val encuestas: List<EncuestaConResultados> = emptyList()
 )

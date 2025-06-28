@@ -40,7 +40,10 @@ fun NavGraph(
     val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
     val jugadorRepositoryInst = JugadorRepository(db.jugadorDao())
     val relacionRepositoryInst = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
-    val comentarioRepository = ComentarioRepository(db.comentarioDao())
+    val comentarioRepository = ComentarioRepository(
+        comentarioDao = db.comentarioDao(),
+        comentarioVotoDao = db.comentarioVotoDao() // <-- AGREGA ESTO
+    )
     val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
     val goleadorRepository = GoleadorRepository(db.goleadorDao())
     val eventoRepository = EventoRepository(db.eventoDao())

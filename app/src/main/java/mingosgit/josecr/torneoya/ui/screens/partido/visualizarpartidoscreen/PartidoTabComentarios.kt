@@ -5,6 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoViewModel
 
 @Composable
-fun PartidoTabComentarios(vm: VisualizarPartidoViewModel) {
+fun PartidoTabComentarios(vm: VisualizarPartidoViewModel, usuarioId: Long) {
     val state by vm.comentariosEncuestasState.collectAsState()
     var textoComentario by remember { mutableStateOf("") }
     val usuarioNombre = "Tú"
@@ -35,6 +38,8 @@ fun PartidoTabComentarios(vm: VisualizarPartidoViewModel) {
                 if (textoComentario.isNotBlank()) {
                     vm.agregarComentario(usuarioNombre, textoComentario)
                     textoComentario = ""
+                    // Recargar comentarios con usuarioId para mostrar el voto actualizado
+                    vm.cargarComentariosEncuestas(usuarioId)
                 }
             })
         )
@@ -43,6 +48,7 @@ fun PartidoTabComentarios(vm: VisualizarPartidoViewModel) {
                 if (textoComentario.isNotBlank()) {
                     vm.agregarComentario(usuarioNombre, textoComentario)
                     textoComentario = ""
+                    vm.cargarComentariosEncuestas(usuarioId)
                 }
             },
             modifier = Modifier.align(Alignment.End).padding(end = 8.dp)
@@ -50,26 +56,60 @@ fun PartidoTabComentarios(vm: VisualizarPartidoViewModel) {
             Text("Enviar")
         }
         LazyColumn(modifier = Modifier.fillMaxHeight()) {
-            items(state.comentarios) { comentario ->
+            items(state.comentarios) { comentarioConVotos ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp, horizontal = 8.dp)
                 ) {
                     Text(
-                        text = comentario.usuarioNombre,
+                        text = comentarioConVotos.comentario.usuarioNombre,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
                     Text(
-                        text = comentario.texto,
+                        text = comentarioConVotos.comentario.texto,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = comentario.fechaHora,
+                        text = comentarioConVotos.comentario.fechaHora,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        IconButton(
+                            onClick = {
+                                if (comentarioConVotos.miVoto != 1) {
+                                    vm.votarComentario(comentarioConVotos.comentario.id, usuarioId, 1)
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ThumbUp,
+                                contentDescription = "Like",
+                                tint = if (comentarioConVotos.miVoto == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Text(text = comentarioConVotos.likes.toString())
+                        Spacer(modifier = Modifier.width(16.dp))
+                        IconButton(
+                            onClick = {
+                                if (comentarioConVotos.miVoto != -1) {
+                                    vm.votarComentario(comentarioConVotos.comentario.id, usuarioId, -1)
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ThumbDown,
+                                contentDescription = "Dislike",
+                                tint = if (comentarioConVotos.miVoto == -1) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Text(text = comentarioConVotos.dislikes.toString())
+                    }
                 }
                 Divider()
             }

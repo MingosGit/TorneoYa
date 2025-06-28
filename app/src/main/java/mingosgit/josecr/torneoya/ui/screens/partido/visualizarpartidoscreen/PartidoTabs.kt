@@ -1,7 +1,11 @@
 package mingosgit.josecr.torneoya.ui.screens.partido.visualizarpartidoscreen
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -48,7 +52,7 @@ fun PartidoTabs(
             jugadorRepository = jugadorRepository,
             equipoRepository = equipoRepository
         )
-        2 -> PartidoTabComentarios(vm)
+        2 -> PartidoTabComentarios(vm, usuarioId)
         3 -> PartidoTabEncuestas(vm, usuarioId)
     }
 }
