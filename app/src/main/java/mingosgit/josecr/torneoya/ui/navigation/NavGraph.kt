@@ -51,6 +51,7 @@ fun NavGraph(
     val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
     val goleadorRepository = GoleadorRepository(db.goleadorDao())
     val eventoRepository = EventoRepository(db.eventoDao())
+    val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
 
     val usuarioId = runBlocking {
         usuarioLocalRepository.getUsuario()?.id ?: 0L
@@ -76,13 +77,24 @@ fun NavGraph(
                 viewModelStoreOwner = owner,
                 factory = CreatePartidoViewModelFactory(partidoRepository, equipoRepositoryInst)
             )
+            val equiposPredefinidosVM = viewModel<EquiposPredefinidosViewModel>(
+                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return EquiposPredefinidosViewModel(
+                            equipoPredefinidoRepository
+                        ) as T
+                    }
+                }
+            )
             CreatePartidoScreen(
                 navController = navController,
-                createPartidoViewModel = createPartidoViewModel
+                createPartidoViewModel = createPartidoViewModel,
+                equiposPredefinidosViewModel = equiposPredefinidosVM
             )
         }
         composable("mis_jugadores") {
-            val misJugadoresViewModel: MisJugadoresViewModel = viewModel(
+            val misJugadoresViewModel = viewModel<MisJugadoresViewModel>(
                 modelClass = MisJugadoresViewModel::class.java,
                 viewModelStoreOwner = owner,
                 factory = object : androidx.lifecycle.ViewModelProvider.Factory {
@@ -170,7 +182,7 @@ fun NavGraph(
             )
         }
         composable(
-            route = "asignar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&numeroJugadores={numeroJugadores}",
+            route = "asignar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&tiempoDescanso={tiempoDescanso}&numeroJugadores={numeroJugadores}&equipoAPredefinidoId={equipoAPredefinidoId}&equipoBPredefinidoId={equipoBPredefinidoId}",
             arguments = listOf(
                 navArgument("partidoId") { type = NavType.LongType },
                 navArgument("equipoAId") { type = NavType.LongType; defaultValue = -1L },
@@ -179,13 +191,18 @@ fun NavGraph(
                 navArgument("horaInicio") { defaultValue = "" },
                 navArgument("numeroPartes") { defaultValue = "2" },
                 navArgument("tiempoPorParte") { defaultValue = "25" },
-                navArgument("numeroJugadores") { defaultValue = "5" }
+                navArgument("tiempoDescanso") { defaultValue = "5" },
+                navArgument("numeroJugadores") { defaultValue = "5" },
+                navArgument("equipoAPredefinidoId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("equipoBPredefinidoId") { type = NavType.LongType; defaultValue = -1L }
             )
         ) { backStackEntry ->
             val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
             val equipoAId = backStackEntry.arguments?.getLong("equipoAId") ?: -1L
             val equipoBId = backStackEntry.arguments?.getLong("equipoBId") ?: -1L
             val numJugadores = backStackEntry.arguments?.getString("numeroJugadores")?.toIntOrNull() ?: 5
+            val equipoAPredefinidoId = backStackEntry.arguments?.getLong("equipoAPredefinidoId")?.takeIf { it > 0 }
+            val equipoBPredefinidoId = backStackEntry.arguments?.getLong("equipoBPredefinidoId")?.takeIf { it > 0 }
             val vm = viewModel(
                 modelClass = AsignarJugadoresViewModel::class.java,
                 viewModelStoreOwner = owner,
@@ -196,7 +213,10 @@ fun NavGraph(
                     equipoBId,
                     jugadorRepositoryInst,
                     partidoRepository,
-                    relacionRepositoryInst
+                    relacionRepositoryInst,
+                    equipoPredefinidoRepository,
+                    equipoAPredefinidoId,
+                    equipoBPredefinidoId
                 ),
                 key = "asignar_jugadores_${partidoId}"
             )
@@ -238,7 +258,7 @@ fun NavGraph(
             )
         }
         composable("partidos_lista_busqueda") {
-            val administrarViewModel: AdministrarPartidosViewModel = viewModel(
+            val administrarViewModel = viewModel<AdministrarPartidosViewModel>(
                 modelClass = AdministrarPartidosViewModel::class.java,
                 viewModelStoreOwner = owner,
                 factory = AdministrarPartidosViewModel.Factory(
@@ -257,7 +277,7 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
-            val administrarViewModel: AdministrarPartidosViewModel = viewModel(
+            val administrarViewModel = viewModel<AdministrarPartidosViewModel>(
                 modelClass = AdministrarPartidosViewModel::class.java,
                 viewModelStoreOwner = owner,
                 factory = AdministrarPartidosViewModel.Factory(
@@ -307,12 +327,12 @@ fun NavGraph(
             }
         }
         composable("equipos_predefinidos") {
-            val equiposPredefinidosVM: EquiposPredefinidosViewModel = viewModel(
+            val equiposPredefinidosVM = viewModel<EquiposPredefinidosViewModel>(
                 factory = object : androidx.lifecycle.ViewModelProvider.Factory {
                     override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
                         return EquiposPredefinidosViewModel(
-                            EquipoPredefinidoRepository(db.equipoPredefinidoDao())
+                            equipoPredefinidoRepository
                         ) as T
                     }
                 }
@@ -322,19 +342,17 @@ fun NavGraph(
                 viewModel = equiposPredefinidosVM
             )
         }
-        // NUEVO: Pantalla crear equipo predefinido
         composable("crear_equipo_predefinido") {
-            val crearEquipoPredefinidoVM = viewModel<mingosgit.josecr.torneoya.viewmodel.usuario.CrearEquipoPredefinidoViewModel>(
-                factory = mingosgit.josecr.torneoya.viewmodel.usuario.CrearEquipoPredefinidoViewModel.Factory(
-                    mingosgit.josecr.torneoya.repository.EquipoPredefinidoRepository(db.equipoPredefinidoDao()),
-                    mingosgit.josecr.torneoya.repository.JugadorRepository(db.jugadorDao())
+            val crearEquipoPredefinidoVM = viewModel<CrearEquipoPredefinidoViewModel>(
+                factory = CrearEquipoPredefinidoViewModel.Factory(
+                    equipoPredefinidoRepository,
+                    jugadorRepositoryInst
                 )
             )
-            mingosgit.josecr.torneoya.ui.screens.equipopredefinido.CrearEquipoPredefinidoScreen(
+            CrearEquipoPredefinidoScreen(
                 navController = navController,
                 viewModel = crearEquipoPredefinidoVM
             )
         }
-
     }
 }

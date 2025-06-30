@@ -10,16 +10,20 @@ import mingosgit.josecr.torneoya.data.entities.JugadorEntity
 import mingosgit.josecr.torneoya.repository.JugadorRepository
 import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
 import mingosgit.josecr.torneoya.repository.PartidoRepository
+import mingosgit.josecr.torneoya.repository.EquipoPredefinidoRepository
 import kotlin.random.Random
 
 class AsignarJugadoresViewModel(
     private val partidoId: Long,
-    val numJugadores: Int,
+    val numJugadores: Int, // IGNORADO
     val equipoAId: Long,
     val equipoBId: Long,
     private val jugadorRepository: JugadorRepository,
     private val partidoRepository: PartidoRepository,
-    private val relacionRepository: PartidoEquipoJugadorRepository
+    private val relacionRepository: PartidoEquipoJugadorRepository,
+    private val equipoPredefinidoRepository: EquipoPredefinidoRepository,
+    private val equipoAPredefinidoId: Long?,
+    private val equipoBPredefinidoId: Long?
 ) : ViewModel() {
 
     var equipoAJugadores = mutableStateListOf<String>()
@@ -32,32 +36,33 @@ class AsignarJugadoresViewModel(
         private set
 
     init {
-        setNumJugadoresPorEquipo(numJugadores)
+        setNumJugadoresPorEquipo()
         cargarJugadoresExistentes()
+        cargarPredefinidosSiAplica()
     }
 
-    fun setNumJugadoresPorEquipo(num: Int) {
+    fun setNumJugadoresPorEquipo() {
         equipoAJugadores.clear()
         equipoBJugadores.clear()
         listaNombres.clear()
+        // NO AGREGUES CAMPOS VACÍOS
     }
 
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
 
     fun repartirAleatoriamente(nombres: List<String>) {
         val nombresLimpios = nombres.filter { it.isNotBlank() }.shuffled(Random(System.currentTimeMillis()))
-        val total = nombresLimpios.size
-        val mitad = total / 2
+        val mitad = nombresLimpios.size / 2
 
         equipoAJugadores.clear()
         equipoBJugadores.clear()
 
-        if (total % 2 == 0) {
+        if (nombresLimpios.size % 2 == 0) {
             equipoAJugadores.addAll(nombresLimpios.take(mitad))
             equipoBJugadores.addAll(nombresLimpios.drop(mitad))
         } else {
-            val equipoConExtra = if (Random.nextBoolean()) "A" else "B"
-            if (equipoConExtra == "A") {
+            val extraA = Random.nextBoolean()
+            if (extraA) {
                 equipoAJugadores.addAll(nombresLimpios.take(mitad + 1))
                 equipoBJugadores.addAll(nombresLimpios.drop(mitad + 1))
             } else {
@@ -65,8 +70,7 @@ class AsignarJugadoresViewModel(
                 equipoBJugadores.addAll(nombresLimpios.drop(mitad))
             }
         }
-        while (equipoAJugadores.size < numJugadores) equipoAJugadores.add("")
-        while (equipoBJugadores.size < numJugadores) equipoBJugadores.add("")
+        // NO RELLENES MÁS CAMPOS, SOLO LOS QUE TOCAN
     }
 
     fun guardarEnBD(onFinish: () -> Unit) {
@@ -104,7 +108,21 @@ class AsignarJugadoresViewModel(
         }
     }
 
-    // Para manual: quita los jugadores usados en ambos equipos excepto el del campo actual
+    fun cargarPredefinidosSiAplica() {
+        viewModelScope.launch {
+            if (equipoAPredefinidoId != null) {
+                val eqA = equipoPredefinidoRepository.getEquipoConJugadores(equipoAPredefinidoId)
+                equipoAJugadores.clear()
+                if (eqA != null) equipoAJugadores.addAll(eqA.jugadores.map { it.nombre })
+            }
+            if (equipoBPredefinidoId != null) {
+                val eqB = equipoPredefinidoRepository.getEquipoConJugadores(equipoBPredefinidoId)
+                equipoBJugadores.clear()
+                if (eqB != null) equipoBJugadores.addAll(eqB.jugadores.map { it.nombre })
+            }
+        }
+    }
+
     fun jugadoresDisponiblesManual(equipo: String, idx: Int): List<JugadorEntity> {
         val (jugadoresActuales, jugadoresOtroEquipo) = if (equipo == "A") {
             equipoAJugadores to equipoBJugadores
@@ -118,7 +136,6 @@ class AsignarJugadoresViewModel(
         }
     }
 
-    // Para aleatorio: los jugadores que no están ya usados en otros campos
     fun jugadoresDisponiblesAleatorio(idx: Int): List<JugadorEntity> {
         val yaElegidos = listaNombres.withIndex().filter { it.index != idx }.map { it.value }
         return jugadoresExistentes.filter { jugador -> jugador.nombre !in yaElegidos }
@@ -127,12 +144,15 @@ class AsignarJugadoresViewModel(
 
 class AsignarJugadoresViewModelFactory(
     private val partidoId: Long,
-    private val numJugadores: Int,
+    private val numJugadores: Int, // SE IGNORA
     private val equipoAId: Long,
     private val equipoBId: Long,
     private val jugadorRepository: JugadorRepository,
     private val partidoRepository: PartidoRepository,
-    private val relacionRepository: PartidoEquipoJugadorRepository
+    private val relacionRepository: PartidoEquipoJugadorRepository,
+    private val equipoPredefinidoRepository: EquipoPredefinidoRepository,
+    private val equipoAPredefinidoId: Long?,
+    private val equipoBPredefinidoId: Long?
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AsignarJugadoresViewModel::class.java)) {
@@ -144,7 +164,10 @@ class AsignarJugadoresViewModelFactory(
                 equipoBId,
                 jugadorRepository,
                 partidoRepository,
-                relacionRepository
+                relacionRepository,
+                equipoPredefinidoRepository,
+                equipoAPredefinidoId,
+                equipoBPredefinidoId
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

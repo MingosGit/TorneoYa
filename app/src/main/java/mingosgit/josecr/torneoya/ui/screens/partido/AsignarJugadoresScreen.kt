@@ -21,11 +21,7 @@ fun AsignarJugadoresScreen(
     navController: NavController,
     vm: AsignarJugadoresViewModel
 ) {
-    LaunchedEffect(vm.numJugadores) {
-        vm.setNumJugadoresPorEquipo(vm.numJugadores)
-    }
-
-    // Carga solo una vez los jugadores existentes
+    // SOLO CARGA JUGADORES EXISTENTES UNA VEZ
     LaunchedEffect(Unit) {
         vm.cargarJugadoresExistentes()
     }
@@ -139,7 +135,6 @@ fun AsignarJugadoresScreen(
                         ) {
                             Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir jugador")
                         }
-                        // Desplegable
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },

@@ -4,6 +4,8 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,28 +20,40 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partido.CreatePartidoViewModel
-import java.util.Calendar
+import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
+import mingosgit.josecr.torneoya.data.dao.EquipoPredefinidoConJugadores
+import mingosgit.josecr.torneoya.data.entities.EquipoPredefinidoEntity
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun CreatePartidoScreen(
     navController: NavController,
-    createPartidoViewModel: CreatePartidoViewModel
+    createPartidoViewModel: CreatePartidoViewModel,
+    equiposPredefinidosViewModel: EquiposPredefinidosViewModel
 ) {
     val context = LocalContext.current
 
+    // Carga de equipos predefinidos
+    val equiposPredefinidos by equiposPredefinidosViewModel.equipos.collectAsState()
+
+    var equipoAPredefinido: EquipoPredefinidoConJugadores? by remember { mutableStateOf(null) }
+    var equipoBPredefinido: EquipoPredefinidoConJugadores? by remember { mutableStateOf(null) }
     var equipoA by rememberSaveable { mutableStateOf("") }
     var equipoB by rememberSaveable { mutableStateOf("") }
+    var showDropdownA by remember { mutableStateOf(false) }
+    var showDropdownB by remember { mutableStateOf(false) }
+
     var fecha by rememberSaveable { mutableStateOf("") }
     var horaInicio by rememberSaveable { mutableStateOf("") }
     var numeroPartes by rememberSaveable { mutableStateOf("2") }
     var tiempoPorParte by rememberSaveable { mutableStateOf("25") }
-    var tiempoDescanso by rememberSaveable { mutableStateOf("5") } // Nuevo campo
+    var tiempoDescanso by rememberSaveable { mutableStateOf("5") }
     var numeroJugadores by rememberSaveable { mutableStateOf("5") }
 
     var camposError by rememberSaveable { mutableStateOf(mapOf<String, Boolean>()) }
     var mostrarErrores by rememberSaveable { mutableStateOf(false) }
 
-    val calendar = remember { Calendar.getInstance() }
+    val calendar = remember { java.util.Calendar.getInstance() }
     val scope = rememberCoroutineScope()
     var guardando by remember { mutableStateOf(false) }
 
@@ -49,9 +63,9 @@ fun CreatePartidoScreen(
             { _, year, month, dayOfMonth ->
                 fecha = "%02d-%02d-%04d".format(dayOfMonth, month + 1, year)
             },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
+            calendar.get(java.util.Calendar.YEAR),
+            calendar.get(java.util.Calendar.MONTH),
+            calendar.get(java.util.Calendar.DAY_OF_MONTH)
         )
     }
 
@@ -61,15 +75,14 @@ fun CreatePartidoScreen(
             { _, hourOfDay, minute ->
                 horaInicio = "%02d:%02d".format(hourOfDay, minute)
             },
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
+            calendar.get(java.util.Calendar.HOUR_OF_DAY),
+            calendar.get(java.util.Calendar.MINUTE),
             true
         )
     }
 
     fun validarCampos(): Boolean {
         val errores = mutableMapOf<String, Boolean>()
-
         errores["equipoA"] = equipoA.isBlank()
         errores["equipoB"] = equipoB.isBlank()
         errores["fecha"] = fecha.isBlank()
@@ -78,7 +91,6 @@ fun CreatePartidoScreen(
         errores["tiempoPorParte"] = tiempoPorParte.isBlank() || tiempoPorParte.toIntOrNull() == null
         errores["tiempoDescanso"] = tiempoDescanso.isBlank() || tiempoDescanso.toIntOrNull() == null
         errores["numeroJugadores"] = numeroJugadores.isBlank() || numeroJugadores.toIntOrNull() == null
-
         camposError = errores
         return !errores.values.any { it }
     }
@@ -96,35 +108,105 @@ fun CreatePartidoScreen(
         ) {
             Text("Crear Partido", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
 
-            OutlinedTextField(
-                value = equipoA,
-                onValueChange = { equipoA = it },
-                label = { Text("Nombre Equipo A") },
-                singleLine = true,
-                isError = mostrarErrores && camposError["equipoA"] == true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        if (mostrarErrores && camposError["equipoA"] == true) Color(0xFFFFCDD2) else Color.Transparent
+            // ---- Equipo A
+            Box(Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = equipoA,
+                    onValueChange = {
+                        equipoA = it
+                        equipoAPredefinido = null
+                    },
+                    label = { Text("Nombre Equipo A") },
+                    singleLine = true,
+                    isError = mostrarErrores && camposError["equipoA"] == true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (mostrarErrores && camposError["equipoA"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        )
+                )
+                IconButton(
+                    onClick = { showDropdownA = true },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir equipo predefinido")
+                }
+                DropdownMenu(
+                    expanded = showDropdownA,
+                    onDismissRequest = { showDropdownA = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nuevo equipo") },
+                        onClick = {
+                            equipoAPredefinido = null
+                            equipoA = ""
+                            showDropdownA = false
+                        }
                     )
-            )
+                    equiposPredefinidos.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it.equipo.nombre) },
+                            onClick = {
+                                equipoAPredefinido = it
+                                equipoA = it.equipo.nombre
+                                showDropdownA = false
+                            }
+                        )
+                    }
+                }
+            }
             if (mostrarErrores && camposError["equipoA"] == true) {
                 Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
             }
 
-            OutlinedTextField(
-                value = equipoB,
-                onValueChange = { equipoB = it },
-                label = { Text("Nombre Equipo B") },
-                singleLine = true,
-                isError = mostrarErrores && camposError["equipoB"] == true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .background(
-                        if (mostrarErrores && camposError["equipoB"] == true) Color(0xFFFFCDD2) else Color.Transparent
+            // ---- Equipo B
+            Spacer(Modifier.height(8.dp))
+            Box(Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = equipoB,
+                    onValueChange = {
+                        equipoB = it
+                        equipoBPredefinido = null
+                    },
+                    label = { Text("Nombre Equipo B") },
+                    singleLine = true,
+                    isError = mostrarErrores && camposError["equipoB"] == true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (mostrarErrores && camposError["equipoB"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        )
+                )
+                IconButton(
+                    onClick = { showDropdownB = true },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir equipo predefinido")
+                }
+                DropdownMenu(
+                    expanded = showDropdownB,
+                    onDismissRequest = { showDropdownB = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nuevo equipo") },
+                        onClick = {
+                            equipoBPredefinido = null
+                            equipoB = ""
+                            showDropdownB = false
+                        }
                     )
-            )
+                    equiposPredefinidos.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it.equipo.nombre) },
+                            onClick = {
+                                equipoBPredefinido = it
+                                equipoB = it.equipo.nombre
+                                showDropdownB = false
+                            }
+                        )
+                    }
+                }
+            }
             if (mostrarErrores && camposError["equipoB"] == true) {
                 Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
             }
@@ -178,7 +260,6 @@ fun CreatePartidoScreen(
                 }
             }
 
-            // Agrupa numero de partes, minutos por parte y descanso en un solo Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -292,8 +373,13 @@ fun CreatePartidoScreen(
                                 tiempoDescanso = tiempoDescanso.toInt(),
                                 numeroJugadores = numeroJugadores.toInt()
                             ) { partidoId, equipoAId, equipoBId ->
+                                // -- PASAR IDS DE EQUIPO PREDEFINIDO (si hay)
+                                val extraNav = buildString {
+                                    if (equipoAPredefinido != null) append("&equipoAPredefinidoId=${equipoAPredefinido!!.equipo.id}")
+                                    if (equipoBPredefinido != null) append("&equipoBPredefinidoId=${equipoBPredefinido!!.equipo.id}")
+                                }
                                 navController.navigate(
-                                    "asignar_jugadores/$partidoId?equipoAId=$equipoAId&equipoBId=$equipoBId&fecha=$fecha&horaInicio=$horaInicio&numeroPartes=$numeroPartes&tiempoPorParte=$tiempoPorParte&tiempoDescanso=$tiempoDescanso&numeroJugadores=$numeroJugadores"
+                                    "asignar_jugadores/$partidoId?equipoAId=$equipoAId&equipoBId=$equipoBId&fecha=$fecha&horaInicio=$horaInicio&numeroPartes=$numeroPartes&tiempoPorParte=$tiempoPorParte&tiempoDescanso=$tiempoDescanso&numeroJugadores=$numeroJugadores$extraNav"
                                 )
                             }
                             guardando = false
