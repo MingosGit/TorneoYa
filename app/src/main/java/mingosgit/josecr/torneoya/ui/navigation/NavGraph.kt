@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.*
 import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
+import mingosgit.josecr.torneoya.ui.screens.home.HomeViewModel
 import mingosgit.josecr.torneoya.ui.screens.partido.*
 import mingosgit.josecr.torneoya.ui.screens.usuario.*
 import mingosgit.josecr.torneoya.ui.screens.equipopredefinido.EquiposPredefinidosScreen
@@ -59,7 +60,15 @@ fun NavGraph(
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
-            HomeScreen()
+            val homeViewModel = viewModel<HomeViewModel>(
+                factory = HomeViewModel.Factory(
+                    usuarioLocalRepository,
+                    partidoRepository,
+                    equipoRepositoryInst,
+                    jugadorRepositoryInst
+                )
+            )
+            HomeScreen(viewModel = homeViewModel)
         }
         composable(BottomNavItem.Partido.route) {
             PartidoScreen(
