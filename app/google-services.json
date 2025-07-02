@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "635869768287",
+    "project_id": "torneoya",
+    "storage_bucket": "torneoya.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635869768287:android:2446f5e4428b10b2cb49ea",
+        "android_client_info": {
+          "package_name": "mingosgit.josecr.torneoya"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5KV9CwqkZ0tvoaJD62izB_CvlcOJ3lCw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
