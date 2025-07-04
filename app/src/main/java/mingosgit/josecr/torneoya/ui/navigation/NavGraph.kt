@@ -26,6 +26,10 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.CrearEquipoPredefinidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 
+// IMPORTA LOS VM DE LOGIN/REGISTER
+import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
+
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -79,6 +83,29 @@ fun NavGraph(
         }
         composable(BottomNavItem.Usuario.route) {
             UsuarioScreen(usuarioLocalViewModel, navController)
+        }
+        // LOGIN SCREEN
+        composable("login") {
+            val loginViewModel = viewModel<LoginViewModel>(
+                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return LoginViewModel(UsuarioAuthRepository()) as T
+                    }
+                }
+            )
+            LoginScreen(navController, loginViewModel)
+        }
+        composable("register") {
+            val registerViewModel = viewModel<RegisterViewModel>(
+                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return RegisterViewModel(UsuarioAuthRepository()) as T
+                    }
+                }
+            )
+            RegisterScreen(navController, registerViewModel)
         }
         composable("crear_partido") {
             val createPartidoViewModel = viewModel(

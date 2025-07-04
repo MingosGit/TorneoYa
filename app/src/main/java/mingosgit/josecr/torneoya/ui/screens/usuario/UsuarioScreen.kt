@@ -27,16 +27,24 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
+import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import java.io.File
 
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.navigation.NavController
+
+import androidx.lifecycle.viewmodel.compose.viewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
+import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 
 @Composable
 fun UsuarioScreen(
     usuarioLocalViewModel: UsuarioLocalViewModel,
     navController: NavController
 ) {
+    // Cargar usuario local
     LaunchedEffect(Unit) {
         usuarioLocalViewModel.cargarUsuario()
     }
@@ -102,6 +110,34 @@ fun UsuarioScreen(
         )
     }
 
+    // LOGIN ONLINE CON NOMBRE DE USUARIO ÚNICO
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var showLoginScreen by remember { mutableStateOf(false) }
+    var showRegisterScreen by remember { mutableStateOf(false) }
+
+    // Almacenar datos del usuario ONLINE tras login (en memoria sólo)
+    var usuarioOnline by remember { mutableStateOf<UsuarioFirebaseEntity?>(null) }
+
+    // LoginViewModel para traer el nombre de usuario online
+    val loginViewModel = viewModel<LoginViewModel>(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return LoginViewModel(UsuarioAuthRepository()) as T
+            }
+        }
+    )
+    val loginState by loginViewModel.loginState.collectAsState()
+
+    // Cuando login OK, guardar usuario online localmente (en variable y para mostrarlo)
+    LaunchedEffect(loginState) {
+        if (loginState is LoginState.Success) {
+            usuarioOnline = (loginState as LoginState.Success).usuario
+            showLoginScreen = false
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -160,9 +196,28 @@ fun UsuarioScreen(
             }
             Spacer(modifier = Modifier.height(28.dp))
 
+            // Botones LOGIN y REGISTRO
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = { navController.navigate("login") }, // <-- CAMBIO A NAVEGAR LOGIN
+                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                ) {
+                    Text("Inicia sesión")
+                }
+                Button(
+                    onClick = { navController.navigate("register") },
+                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                ) {
+                    Text("Crear cuenta")
+                }
+            }
+
             if (!editando) {
                 Text(
-                    text = "Bienvenido $nombreActual",
+                    text = "Bienvenido $nombreActual / ${usuarioOnline?.nombreUsuario ?: "---"}",
                     fontSize = 24.sp,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
