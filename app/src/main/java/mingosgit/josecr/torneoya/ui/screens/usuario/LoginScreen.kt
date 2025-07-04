@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
+import mingosgit.josecr.torneoya.viewmodel.usuario.ResetPasswordState
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 @Composable
@@ -20,6 +21,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val loginState by loginViewModel.loginState.collectAsState()
+    val resetPasswordState by loginViewModel.resetPasswordState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -60,6 +62,13 @@ fun LoginScreen(
         ) {
             Text("¿No tienes cuenta? Regístrate")
         }
+        Spacer(modifier = Modifier.height(4.dp))
+        TextButton(
+            onClick = { loginViewModel.enviarCorreoRestablecerPassword(email) },
+            enabled = email.isNotBlank() && resetPasswordState != ResetPasswordState.Loading
+        ) {
+            Text("¿Olvidaste tu contraseña?")
+        }
 
         when (loginState) {
             is LoginState.Error -> {
@@ -85,6 +94,27 @@ fun LoginScreen(
             }
             LoginState.Loading -> {
                 CircularProgressIndicator(modifier = Modifier.padding(top = 12.dp))
+            }
+            else -> Unit
+        }
+
+        when (resetPasswordState) {
+            is ResetPasswordState.Success -> {
+                Text(
+                    text = "Correo de recuperación enviado. Revisa tu email.",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            is ResetPasswordState.Error -> {
+                Text(
+                    text = (resetPasswordState as ResetPasswordState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            ResetPasswordState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.padding(top = 8.dp))
             }
             else -> Unit
         }

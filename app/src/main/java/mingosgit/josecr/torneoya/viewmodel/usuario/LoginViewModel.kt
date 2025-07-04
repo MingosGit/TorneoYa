@@ -15,6 +15,9 @@ class LoginViewModel(
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Empty)
     val loginState: StateFlow<LoginState> = _loginState
 
+    private val _resetPasswordState = MutableStateFlow<ResetPasswordState>(ResetPasswordState.Empty)
+    val resetPasswordState: StateFlow<ResetPasswordState> = _resetPasswordState
+
     fun login(email: String, password: String) {
         _loginState.value = LoginState.Loading
         viewModelScope.launch {
@@ -27,8 +30,21 @@ class LoginViewModel(
         }
     }
 
+    fun enviarCorreoRestablecerPassword(email: String) {
+        _resetPasswordState.value = ResetPasswordState.Loading
+        viewModelScope.launch {
+            val result = repository.enviarCorreoRestablecerPassword(email)
+            _resetPasswordState.value = if (result.isSuccess) {
+                ResetPasswordState.Success
+            } else {
+                ResetPasswordState.Error(result.exceptionOrNull()?.message ?: "Error desconocido")
+            }
+        }
+    }
+
     fun clearState() {
         _loginState.value = LoginState.Empty
+        _resetPasswordState.value = ResetPasswordState.Empty
     }
 }
 
@@ -37,4 +53,11 @@ sealed class LoginState {
     object Loading : LoginState()
     data class Success(val usuario: UsuarioFirebaseEntity) : LoginState()
     data class Error(val message: String) : LoginState()
+}
+
+sealed class ResetPasswordState {
+    object Empty : ResetPasswordState()
+    object Loading : ResetPasswordState()
+    object Success : ResetPasswordState()
+    data class Error(val message: String) : ResetPasswordState()
 }
