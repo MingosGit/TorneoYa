@@ -80,7 +80,6 @@ fun RegisterScreen(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 12.dp)
                 )
-                // Navega directo a login
                 LaunchedEffect(Unit) {
                     navController.navigate("login") {
                         popUpTo("register") { inclusive = true }

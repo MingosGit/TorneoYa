@@ -18,7 +18,7 @@ class UsuarioAuthRepository(
         return query.isEmpty
     }
 
-    suspend fun register(email: String, password: String, nombreUsuario: String): Result<UsuarioFirebaseEntity> {
+    suspend fun register(email: String, password: String, nombreUsuario: String): Result<Unit> {
         return try {
             if (!isNombreUsuarioDisponible(nombreUsuario)) {
                 return Result.failure(Exception("El nombre de usuario ya existe"))
@@ -27,8 +27,9 @@ class UsuarioAuthRepository(
             val uid = authResult.user?.uid ?: throw Exception("No UID encontrado")
             val usuario = UsuarioFirebaseEntity(uid, email, nombreUsuario)
             firestore.collection("usuarios").document(uid).set(usuario).await()
-            Result.success(usuario)
+            Result.success(Unit)
         } catch (e: Exception) {
+            println("Register ERROR: ${e.message}")
             Result.failure(e)
         }
     }
@@ -42,19 +43,8 @@ class UsuarioAuthRepository(
                 ?: throw Exception("No se encontró el usuario en Firestore")
             Result.success(usuario)
         } catch (e: Exception) {
+            println("Login ERROR: ${e.message}")
             Result.failure(e)
         }
-    }
-
-    fun logout() {
-        auth.signOut()
-    }
-
-    fun isUserLoggedIn(): Boolean {
-        return auth.currentUser != null
-    }
-
-    fun getCurrentUserUid(): String? {
-        return auth.currentUser?.uid
     }
 }
