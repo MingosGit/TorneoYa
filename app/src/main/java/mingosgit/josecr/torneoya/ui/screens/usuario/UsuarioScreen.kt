@@ -48,10 +48,12 @@ fun UsuarioScreen(
     val usuario by usuarioLocalViewModel.usuario.collectAsState()
     val nombreActual = usuario?.nombre ?: "Usuario1"
     val nombreUsuarioOnline by globalUserViewModel.nombreUsuarioOnline.collectAsState()
+    val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState(initial = false)
 
     var editando by remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf(TextFieldValue(nombreActual)) }
     var showDialog by remember { mutableStateOf(false) }
+    var showCerrarSesionDialog by remember { mutableStateOf(false) }
     var cropUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current
@@ -91,6 +93,31 @@ fun UsuarioScreen(
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
                     Text("No")
+                }
+            }
+        )
+    }
+
+    if (showCerrarSesionDialog) {
+        AlertDialog(
+            onDismissRequest = { showCerrarSesionDialog = false },
+            title = { Text("Cerrar sesión") },
+            text = { Text("¿Estás seguro que quieres cerrar sesión?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        globalUserViewModel.cerrarSesionOnline()
+                        showCerrarSesionDialog = false
+                    }
+                ) {
+                    Text("Sí, cerrar sesión")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showCerrarSesionDialog = false }
+                ) {
+                    Text("Cancelar")
                 }
             }
         )
@@ -165,25 +192,38 @@ fun UsuarioScreen(
             }
             Spacer(modifier = Modifier.height(28.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(
-                    onClick = { navController.navigate("login") },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 4.dp)
+            if (!sesionOnlineActiva) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text("Inicia sesión")
+                    Button(
+                        onClick = { navController.navigate("login") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp)
+                    ) {
+                        Text("Inicia sesión")
+                    }
+                    Button(
+                        onClick = { navController.navigate("register") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp)
+                    ) {
+                        Text("Crear cuenta")
+                    }
                 }
+            } else {
                 Button(
-                    onClick = { navController.navigate("register") },
+                    onClick = {
+                        showCerrarSesionDialog = true
+                    },
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 30.dp)
                 ) {
-                    Text("Crear cuenta")
+                    Text("Cerrar sesión")
                 }
             }
 

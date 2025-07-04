@@ -14,6 +14,9 @@ class GlobalUserViewModel : ViewModel() {
     private val _nombreUsuarioOnline = MutableStateFlow<String?>(null)
     val nombreUsuarioOnline: StateFlow<String?> = _nombreUsuarioOnline
 
+    private val _sesionOnlineActiva = MutableStateFlow(false)
+    val sesionOnlineActiva: StateFlow<Boolean> = _sesionOnlineActiva
+
     fun setNombreUsuarioOnline(nombre: String) {
         _nombreUsuarioOnline.value = nombre
     }
@@ -21,6 +24,7 @@ class GlobalUserViewModel : ViewModel() {
     fun cargarNombreUsuarioOnlineSiSesionActiva() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
+            _sesionOnlineActiva.value = true
             viewModelScope.launch {
                 val db = FirebaseFirestore.getInstance()
                 val usuarioSnap = db.collection("usuarios").document(user.uid).get().await()
@@ -29,6 +33,13 @@ class GlobalUserViewModel : ViewModel() {
             }
         } else {
             _nombreUsuarioOnline.value = null
+            _sesionOnlineActiva.value = false
         }
+    }
+
+    fun cerrarSesionOnline() {
+        FirebaseAuth.getInstance().signOut()
+        _nombreUsuarioOnline.value = null
+        _sesionOnlineActiva.value = false
     }
 }
