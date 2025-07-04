@@ -42,6 +42,7 @@ fun UsuarioScreen(
 ) {
     LaunchedEffect(Unit) {
         usuarioLocalViewModel.cargarUsuario()
+        globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva()
     }
 
     val usuario by usuarioLocalViewModel.usuario.collectAsState()
