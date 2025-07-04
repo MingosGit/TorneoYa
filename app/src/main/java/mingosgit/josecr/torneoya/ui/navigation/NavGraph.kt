@@ -26,9 +26,9 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.CrearEquipoPredefinidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 
-// IMPORTA LOS VM DE LOGIN/REGISTER
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 @Composable
 fun NavGraph(
@@ -36,7 +36,8 @@ fun NavGraph(
     usuarioLocalViewModel: UsuarioLocalViewModel,
     partidoViewModel: PartidoViewModel,
     partidoRepository: mingosgit.josecr.torneoya.repository.PartidoRepository,
-    equipoRepository: EquipoRepository
+    equipoRepository: EquipoRepository,
+    globalUserViewModel: GlobalUserViewModel = viewModel()
 ) {
     val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
     val context = LocalContext.current
@@ -82,9 +83,8 @@ fun NavGraph(
             )
         }
         composable(BottomNavItem.Usuario.route) {
-            UsuarioScreen(usuarioLocalViewModel, navController)
+            UsuarioScreen(usuarioLocalViewModel, navController, globalUserViewModel)
         }
-        // LOGIN SCREEN
         composable("login") {
             val loginViewModel = viewModel<LoginViewModel>(
                 factory = object : androidx.lifecycle.ViewModelProvider.Factory {
@@ -94,7 +94,7 @@ fun NavGraph(
                     }
                 }
             )
-            LoginScreen(navController, loginViewModel)
+            LoginScreen(navController, loginViewModel, globalUserViewModel)
         }
         composable("register") {
             val registerViewModel = viewModel<RegisterViewModel>(

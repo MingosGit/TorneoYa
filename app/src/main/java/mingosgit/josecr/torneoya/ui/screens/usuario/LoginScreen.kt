@@ -9,11 +9,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    globalUserViewModel: GlobalUserViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -73,8 +75,9 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 12.dp)
                 )
-                // Navega directo a usuario
+                val nombreUsuarioOnline = (loginState as LoginState.Success).usuario.nombreUsuario
                 LaunchedEffect(Unit) {
+                    globalUserViewModel.setNombreUsuarioOnline(nombreUsuarioOnline)
                     navController.navigate("usuario") {
                         popUpTo("login") { inclusive = true }
                     }
