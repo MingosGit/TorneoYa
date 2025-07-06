@@ -107,6 +107,17 @@ fun NavGraph(
             )
             RegisterScreen(navController, registerViewModel)
         }
+        composable(
+            route = "confirmar_correo/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            ConfirmarCorreoScreen(navController, correoElectronico = email) {
+                navController.navigate("usuario") {
+                    popUpTo("register") { inclusive = true }
+                }
+            }
+        }
         composable("crear_partido") {
             val createPartidoViewModel = viewModel(
                 modelClass = CreatePartidoViewModel::class.java,

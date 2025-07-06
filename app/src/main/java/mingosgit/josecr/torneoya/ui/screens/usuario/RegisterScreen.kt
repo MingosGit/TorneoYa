@@ -20,6 +20,24 @@ fun RegisterScreen(
     var nombreUsuario by remember { mutableStateOf("") }
     val registerState by registerViewModel.registerState.collectAsState()
 
+    // Nuevo estado para controlar navegación a ConfirmarCorreoScreen
+    var navegarAConfirmarCorreo by remember { mutableStateOf(false) }
+
+    if (navegarAConfirmarCorreo) {
+        ConfirmarCorreoScreen(
+            navController = navController,
+            correoElectronico = email,
+            onVerificado = {
+                // Loguear automáticamente tras verificar y volver a UsuarioScreen
+                registerViewModel.clearState()
+                navController.navigate("usuario") {
+                    popUpTo("register") { inclusive = true }
+                }
+            }
+        )
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -75,15 +93,9 @@ fun RegisterScreen(
                 )
             }
             is RegisterState.Success -> {
-                Text(
-                    text = "¡Cuenta creada correctamente!",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 12.dp)
-                )
+                // NO mostrar mensaje de cuenta creada, sino navegar a la nueva pantalla de confirmación
                 LaunchedEffect(Unit) {
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
-                    }
+                    navegarAConfirmarCorreo = true
                 }
             }
             RegisterState.Loading -> {
