@@ -1,5 +1,6 @@
 package mingosgit.josecr.torneoya.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
@@ -13,6 +14,7 @@ import androidx.navigation.navArgument
 import kotlinx.coroutines.runBlocking
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.*
+import mingosgit.josecr.torneoya.ui.screens.amigos.AmigosScreen
 import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
 import mingosgit.josecr.torneoya.ui.screens.home.HomeViewModel
 import mingosgit.josecr.torneoya.ui.screens.partido.*
@@ -81,6 +83,15 @@ fun NavGraph(
                 partidoViewModel = partidoViewModel,
                 equipoRepository = equipoRepositoryInst
             )
+        }
+        composable(BottomNavItem.Amigos.route) { // <-- NUEVO
+            BackHandler { // <-- NUEVO: manejar botón atrás
+                navController.navigate(BottomNavItem.Home.route) {
+                    popUpTo(BottomNavItem.Home.route) { inclusive = false } // <-- NUEVO
+                    launchSingleTop = true // <-- NUEVO
+                }
+            }
+            AmigosScreen() // <-- NUEVO
         }
         composable(BottomNavItem.Usuario.route) {
             UsuarioScreen(usuarioLocalViewModel, navController, globalUserViewModel)
