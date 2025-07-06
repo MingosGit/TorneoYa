@@ -23,7 +23,7 @@ class GlobalUserViewModel : ViewModel() {
 
     fun cargarNombreUsuarioOnlineSiSesionActiva() {
         val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
+        if (user != null && user.isEmailVerified) { // <--- CAMBIO CRÍTICO AQUÍ
             _sesionOnlineActiva.value = true
             viewModelScope.launch {
                 val db = FirebaseFirestore.getInstance()
