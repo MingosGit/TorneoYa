@@ -31,6 +31,7 @@ import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidos
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import mingosgit.josecr.torneoya.ui.screens.amigos.SolicitudesPendientesScreen
 
 @Composable
 fun NavGraph(
@@ -84,14 +85,17 @@ fun NavGraph(
                 equipoRepository = equipoRepositoryInst
             )
         }
-        composable(BottomNavItem.Amigos.route) { // <-- NUEVO
-            BackHandler { // <-- NUEVO: manejar botón atrás
+        composable(BottomNavItem.Amigos.route) {
+            BackHandler {
                 navController.navigate(BottomNavItem.Home.route) {
-                    popUpTo(BottomNavItem.Home.route) { inclusive = false } // <-- NUEVO
-                    launchSingleTop = true // <-- NUEVO
+                    popUpTo(BottomNavItem.Home.route) { inclusive = false }
+                    launchSingleTop = true
                 }
             }
-            AmigosScreen() // <-- NUEVO
+            AmigosScreen(navController = navController)
+        }
+        composable("solicitudes_pendientes") {
+            SolicitudesPendientesScreen(navController = navController)
         }
         composable(BottomNavItem.Usuario.route) {
             UsuarioScreen(usuarioLocalViewModel, navController, globalUserViewModel)

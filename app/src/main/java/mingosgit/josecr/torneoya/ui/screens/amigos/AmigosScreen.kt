@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
@@ -21,14 +21,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
-import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
+import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AmigosScreen(
+    navController: NavController,
     amigosViewModel: AmigosViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = AmigosViewModel.Factory()
     ),
@@ -48,46 +48,62 @@ fun AmigosScreen(
     val clipboard = LocalClipboardManager.current
 
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().padding(16.dp)) {
-            if (!mensaje.isNullOrBlank()) {
-                Snackbar(
-                    modifier = Modifier.padding(bottom = 10.dp),
-                    action = {
-                        IconButton(onClick = { amigosViewModel.cargarAmigosYSolicitudes() }) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar")
+        Column(Modifier.fillMaxSize()) {
+            // TopBar personalizada con icono de solicitudes pendientes SIEMPRE visible
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Amigos",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // SIEMPRE visible
+                if (solicitudes.isNotEmpty()) {
+                    BadgedBox(
+                        badge = {
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = Color.White
+                            ) {
+                                Text("${solicitudes.size}")
+                            }
+                        }
+                    ) {
+                        IconButton(onClick = { navController.navigate("solicitudes_pendientes") }) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Solicitudes de amistad"
+                            )
                         }
                     }
-                ) { Text(mensaje!!) }
-            }
-
-            Text("Solicitudes de amistad", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(6.dp))
-            if (solicitudes.isEmpty()) {
-                Text("No tienes solicitudes pendientes", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
-            } else {
-                LazyColumn(
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 180.dp)
-                ) {
-                    items(solicitudes) { solicitud ->
-                        SolicitudItem(
-                            usuario = solicitud,
-                            onAceptar = { amigosViewModel.aceptarSolicitud(solicitud) },
-                            onRechazar = { amigosViewModel.rechazarSolicitud(solicitud.uid) }
+                } else {
+                    // Sin badge si no hay solicitudes
+                    IconButton(onClick = { navController.navigate("solicitudes_pendientes") }) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Solicitudes de amistad"
                         )
-                        Divider()
                     }
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
-            Text("Tus amigos", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(6.dp))
+            Text("Tus amigos", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
             Spacer(Modifier.height(6.dp))
             if (amigos.isEmpty()) {
-                Text("No tienes amigos todavía", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "No tienes amigos todavía",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             } else {
-                LazyColumn(Modifier.fillMaxWidth()) {
+                LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
                     items(amigos) { amigo ->
                         Row(
                             Modifier
@@ -248,33 +264,5 @@ fun AmigosScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun SolicitudItem(
-    usuario: UsuarioFirebaseEntity,
-    onAceptar: () -> Unit,
-    onRechazar: () -> Unit
-) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(usuario.nombreUsuario, style = MaterialTheme.typography.bodyLarge)
-            Text(usuario.email, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-        }
-        Button(
-            onClick = onAceptar,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF27ae60)),
-            modifier = Modifier.padding(end = 4.dp)
-        ) { Text("Aceptar") }
-        Button(
-            onClick = onRechazar,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFc0392b))
-        ) { Text("Rechazar") }
     }
 }
