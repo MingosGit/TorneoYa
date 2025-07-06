@@ -92,8 +92,13 @@ fun NavGraph(
                     launchSingleTop = true
                 }
             }
-            AmigosScreen(navController = navController)
+            val globalUserViewModel: GlobalUserViewModel = viewModel()
+            AmigosScreen(
+                navController = navController,
+                globalUserViewModel = globalUserViewModel
+            )
         }
+
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)
         }

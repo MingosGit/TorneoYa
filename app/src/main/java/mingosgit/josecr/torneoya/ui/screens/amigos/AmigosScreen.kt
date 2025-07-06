@@ -24,6 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,8 +37,53 @@ fun AmigosScreen(
     ),
     agregarAmigoViewModel: AgregarAmigoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = AgregarAmigoViewModel.Factory()
-    )
+    ),
+    globalUserViewModel: GlobalUserViewModel = viewModel() // <-- Usa tu singleton/global!
 ) {
+    // Añadido: recolectamos el estado de sesión online
+    val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
+
+    // Si el estado aún no fue comprobado en este Composable, cargarlo
+    LaunchedEffect(Unit) {
+        globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva()
+    }
+
+    // Si NO hay sesión online, mostrar solo mensaje y botones
+    if (!sesionOnlineActiva) {
+        Box(
+            Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Text(
+                    "Necesitas iniciar sesión para acceder a tus amigos",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+                Button(
+                    onClick = { navController.navigate("login") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Iniciar sesión")
+                }
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = { navController.navigate("register") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Crear cuenta")
+                }
+            }
+        }
+        return // IMPORTANTE: detenemos el Composable aquí si no hay sesión
+    }
+
+    // ----------- ORIGINAL UI PARA USUARIOS LOGUEADOS ONLINE ------------
     val amigos by amigosViewModel.amigos.collectAsState()
     val solicitudes by amigosViewModel.solicitudes.collectAsState()
     val mensaje by amigosViewModel.mensaje.collectAsState()
