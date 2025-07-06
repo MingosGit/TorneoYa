@@ -1,11 +1,14 @@
 package mingosgit.josecr.torneoya.ui.screens.partido
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -13,6 +16,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -72,11 +79,9 @@ fun PartidoScreen(
     var estadoSeleccionado by remember { mutableStateOf(EstadoPartido.TODOS) }
     var expandedEstado by remember { mutableStateOf(false) }
 
-    // BottomSheet para duplicar/eliminar
     var showOptionsSheet by remember { mutableStateOf(false) }
     var partidoSeleccionado by remember { mutableStateOf<mingosgit.josecr.torneoya.viewmodel.partido.PartidoConNombres?>(null) }
 
-    // Dialog para confirmar eliminación
     var showConfirmDialog by remember { mutableStateOf(false) }
 
     fun parseFecha(fecha: String): LocalDate? {
@@ -160,15 +165,23 @@ fun PartidoScreen(
     if (showOptionsSheet && partidoSeleccionado != null) {
         ModalBottomSheet(
             onDismissRequest = { showOptionsSheet = false },
-            dragHandle = null
+            dragHandle = null,
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
         ) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 16.dp, horizontal = 24.dp)
             ) {
                 ListItem(
-                    headlineContent = { Text("Duplicar") },
+                    headlineContent = { Text("Duplicar", fontWeight = FontWeight.Medium) },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowUpward,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
@@ -179,7 +192,14 @@ fun PartidoScreen(
                         }
                 )
                 ListItem(
-                    headlineContent = { Text("Eliminar") },
+                    headlineContent = { Text("Eliminar", fontWeight = FontWeight.Medium, color = Color.Red) },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDownward,
+                            contentDescription = null,
+                            tint = Color.Red
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
@@ -195,20 +215,23 @@ fun PartidoScreen(
     if (showConfirmDialog && partidoSeleccionado != null) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text("¿Eliminar partido?") },
+            title = { Text("¿Eliminar partido?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Estás seguro que deseas eliminar el partido \"${partidoSeleccionado!!.nombreEquipoA} vs ${partidoSeleccionado!!.nombreEquipoB}\"?") },
             confirmButton = {
-                Button(onClick = {
-                    showConfirmDialog = false
-                    scope.launch {
-                        partidoViewModel.eliminarPartido(partidoSeleccionado!!.id, equipoRepository)
+                Button(
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    onClick = {
+                        showConfirmDialog = false
+                        scope.launch {
+                            partidoViewModel.eliminarPartido(partidoSeleccionado!!.id, equipoRepository)
+                        }
                     }
-                }) {
-                    Text("Eliminar")
+                ) {
+                    Text("Eliminar", color = Color.White)
                 }
             },
             dismissButton = {
-                Button(onClick = { showConfirmDialog = false }) {
+                OutlinedButton(onClick = { showConfirmDialog = false }) {
                     Text("Cancelar")
                 }
             }
@@ -216,11 +239,16 @@ fun PartidoScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                navController.navigate("crear_partido")
-            }) {
-                Text("+")
+            FloatingActionButton(
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary,
+                onClick = {
+                    navController.navigate("crear_partido")
+                }
+            ) {
+                Icon(Icons.Default.ArrowUpward, contentDescription = "Agregar", tint = Color.White)
             }
         }
     ) { innerPadding ->
@@ -232,84 +260,96 @@ fun PartidoScreen(
         ) {
             Text(
                 text = "Partidos",
-                fontSize = 24.sp,
-                modifier = Modifier.padding(bottom = 10.dp)
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 18.dp)
             )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            Card(
+                elevation = CardDefaults.cardElevation(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 10.dp)
+                    .padding(bottom = 14.dp)
             ) {
-                Text("Estado: ", fontSize = 15.sp)
-                Box {
-                    Button(
-                        onClick = { expandedEstado = true },
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(estadoSeleccionado.display)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Text("Estado: ", fontSize = 15.sp)
+                    Box {
+                        OutlinedButton(
+                            shape = RoundedCornerShape(16.dp),
+                            onClick = { expandedEstado = true },
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(estadoSeleccionado.display)
+                        }
+                        DropdownMenu(
+                            expanded = expandedEstado,
+                            onDismissRequest = { expandedEstado = false }
+                        ) {
+                            EstadoPartido.values().forEach { estado ->
+                                DropdownMenuItem(
+                                    text = { Text(estado.display) },
+                                    onClick = {
+                                        estadoSeleccionado = estado
+                                        expandedEstado = false
+                                    }
+                                )
+                            }
+                        }
                     }
-                    DropdownMenu(
-                        expanded = expandedEstado,
-                        onDismissRequest = { expandedEstado = false }
-                    ) {
-                        EstadoPartido.values().forEach { estado ->
+                    Spacer(modifier = Modifier.width(20.dp))
+                    Text("Ordenar: ", fontSize = 15.sp)
+                    Box {
+                        OutlinedButton(
+                            shape = RoundedCornerShape(16.dp),
+                            onClick = { expanded = true },
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(sortOption)
+                            Icon(
+                                imageVector = if (ascending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
                             DropdownMenuItem(
-                                text = { Text(estado.display) },
+                                text = { Text("Nombre") },
                                 onClick = {
-                                    estadoSeleccionado = estado
-                                    expandedEstado = false
+                                    sortOption = "Nombre"
+                                    expanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Fecha") },
+                                onClick = {
+                                    sortOption = "Fecha"
+                                    expanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(if (ascending) "Descendente" else "Ascendente") },
+                                onClick = {
+                                    ascending = !ascending
+                                    expanded = false
                                 }
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text("Ordenar por: ", fontSize = 15.sp)
-                Box {
-                    Button(
-                        onClick = { expanded = true },
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(sortOption)
-                        Icon(
-                            imageVector = if (ascending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Nombre") },
-                            onClick = {
-                                sortOption = "Nombre"
-                                expanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Fecha") },
-                            onClick = {
-                                sortOption = "Fecha"
-                                expanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(if (ascending) "Descendente" else "Ascendente") },
-                            onClick = {
-                                ascending = !ascending
-                                expanded = false
-                            }
-                        )
-                    }
-                }
             }
             LazyColumn {
                 items(sortedPartidos) { partido ->
-                    Column(
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(2.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
@@ -323,16 +363,71 @@ fun PartidoScreen(
                                 }
                             )
                     ) {
-                        Text(
-                            text = "${partido.nombreEquipoA} vs ${partido.nombreEquipoB}",
-                            fontSize = 18.sp
-                        )
-                        Text(
-                            text = "Fecha: ${partido.fecha} - Inicio: ${partido.horaInicio} - Fin: ${partido.horaFin}",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Divider(modifier = Modifier.padding(vertical = 4.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                            Color.Transparent
+                                        )
+                                    )
+                                )
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = "${partido.nombreEquipoA}  vs  ${partido.nombreEquipoB}",
+                                    fontSize = 19.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Fecha: ${partido.fecha}  -  Inicio: ${partido.horaInicio}  -  Fin: ${partido.horaFin}",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                val estado = obtenerEstadoPartido(partido)
+                                AssistChip(
+                                    onClick = { },
+                                    label = {
+                                        Text(
+                                            when (estado) {
+                                                EstadoPartido.PREVIA -> "Previa"
+                                                EstadoPartido.JUGANDO -> "En juego"
+                                                EstadoPartido.FINALIZADO -> "Finalizado"
+                                                EstadoPartido.TODOS -> ""
+                                            },
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 12.sp
+                                        )
+                                    },
+                                    colors = when (estado) {
+                                        EstadoPartido.PREVIA -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFF81C784))
+                                        EstadoPartido.JUGANDO -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFFFFF176))
+                                        EstadoPartido.FINALIZADO -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFFE57373))
+                                        else -> AssistChipDefaults.assistChipColors()
+                                    },
+                                    modifier = Modifier
+                                        .padding(top = 2.dp)
+                                        .height(26.dp)
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.ArrowUpward,
+                                contentDescription = "Ver",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .padding(start = 8.dp)
+                            )
+                        }
                     }
                 }
             }

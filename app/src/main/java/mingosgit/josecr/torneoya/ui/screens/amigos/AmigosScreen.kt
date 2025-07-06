@@ -47,7 +47,9 @@ fun AmigosScreen(
     LaunchedEffect(Unit) {
         globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva()
     }
-
+    LaunchedEffect(Unit) {
+        amigosViewModel.cargarAmigosYSolicitudes()
+    }
     // Si NO hay sesión online, mostrar solo mensaje y botones
     if (!sesionOnlineActiva) {
         Box(
