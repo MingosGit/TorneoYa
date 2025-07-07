@@ -2,6 +2,7 @@ package mingosgit.josecr.torneoya.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -28,6 +29,9 @@ import mingosgit.josecr.torneoya.ui.screens.amigos.SolicitudesPendientesScreen
 import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
+import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
 
 @Composable
 fun NavGraph(
@@ -59,6 +63,7 @@ fun NavGraph(
     val goleadorRepository = GoleadorRepository(db.goleadorDao())
     val eventoRepository = EventoRepository(db.eventoDao())
     val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
+    val partidoFirebaseRepository = remember { PartidoFirebaseRepository() }
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
@@ -84,7 +89,22 @@ fun NavGraph(
             SolicitudesPendientesScreen(navController = navController)
         }
         composable(BottomNavItem.Online.route) {
-            mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidosOnlineScreen()
+            val partidoOnlineViewModel = viewModel(
+                modelClass = PartidoOnlineViewModel::class.java,
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return PartidoOnlineViewModel(
+                            partidoRepo = partidoFirebaseRepository,
+                            equipoRepo = partidoFirebaseRepository
+                        ) as T
+                    }
+                }
+            )
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen(
+                navController = navController,
+                partidoViewModel = partidoOnlineViewModel
+            )
         }
 
 
@@ -246,6 +266,25 @@ fun NavGraph(
             AsignarJugadoresScreen(
                 navController = navController,
                 vm = vm
+            )
+        }
+        composable(BottomNavItem.Online.route) {
+            // Instancia el ViewModel para online, puedes usar factory si necesitas inyectar otros repos
+            val partidoOnlineViewModel = viewModel(
+                modelClass = PartidoOnlineViewModel::class.java,
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return PartidoOnlineViewModel(
+                            partidoRepo = partidoFirebaseRepository,
+                            equipoRepo = partidoFirebaseRepository
+                        ) as T
+                    }
+                }
+            )
+            PartidoOnlineScreen(
+                navController = navController,
+                partidoViewModel = partidoOnlineViewModel
             )
         }
         composable(

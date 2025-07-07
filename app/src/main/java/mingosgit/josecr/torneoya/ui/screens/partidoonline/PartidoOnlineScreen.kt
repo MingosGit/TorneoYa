@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.partido
+package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
-import mingosgit.josecr.torneoya.repository.EquipoRepository
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoConNombresOnline
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -38,15 +38,14 @@ enum class EstadoPartido(val display: String) {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PartidoScreen(
+fun PartidoOnlineScreen(
     navController: NavController,
-    partidoViewModel: PartidoViewModel,
-    equipoRepository: EquipoRepository
+    partidoViewModel: PartidoOnlineViewModel
 ) {
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        partidoViewModel.cargarPartidosConNombres(equipoRepository)
+        partidoViewModel.cargarPartidosConNombres()
     }
 
     val partidos by partidoViewModel.partidosConNombres.collectAsState()
@@ -55,7 +54,7 @@ fun PartidoScreen(
     LaunchedEffect(navController) {
         navController.addOnDestinationChangedListener { controller, destination, _ ->
             val entry = controller.previousBackStackEntry
-            if (destination.route == "partido" &&
+            if (destination.route == "partido_online" &&
                 entry?.arguments?.containsKey("reload_partidos") == true
             ) {
                 needReload.value = true
@@ -66,7 +65,7 @@ fun PartidoScreen(
 
     LaunchedEffect(needReload.value) {
         if (needReload.value) {
-            partidoViewModel.cargarPartidosConNombres(equipoRepository)
+            partidoViewModel.cargarPartidosConNombres()
             needReload.value = false
         }
     }
@@ -75,11 +74,11 @@ fun PartidoScreen(
     var ascending by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
 
-    var estadoSeleccionado by remember { mutableStateOf(mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.TODOS) }
+    var estadoSeleccionado by remember { mutableStateOf(EstadoPartido.TODOS) }
     var expandedEstado by remember { mutableStateOf(false) }
 
     var showOptionsSheet by remember { mutableStateOf(false) }
-    var partidoSeleccionado by remember { mutableStateOf<mingosgit.josecr.torneoya.viewmodel.partido.PartidoConNombres?>(null) }
+    var partidoSeleccionado by remember { mutableStateOf<PartidoConNombresOnline?>(null) }
 
     var showConfirmDialog by remember { mutableStateOf(false) }
 
@@ -105,7 +104,7 @@ fun PartidoScreen(
         return null
     }
 
-    fun obtenerEstadoPartido(partido: mingosgit.josecr.torneoya.viewmodel.partido.PartidoConNombres): mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido {
+    fun obtenerEstadoPartido(partido: PartidoConNombresOnline): EstadoPartido {
         val hoy = LocalDate.now()
         val ahora = LocalTime.now()
         val fecha = parseFecha(partido.fecha)
@@ -113,24 +112,24 @@ fun PartidoScreen(
         val horaFin = parseHora(partido.horaFin)
 
         if (fecha == null || horaInicio == null || horaFin == null) {
-            return mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.PREVIA
+            return EstadoPartido.PREVIA
         }
 
         return when {
-            fecha.isBefore(hoy) -> mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.FINALIZADO
-            fecha.isAfter(hoy) -> mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.PREVIA
+            fecha.isBefore(hoy) -> EstadoPartido.FINALIZADO
+            fecha.isAfter(hoy) -> EstadoPartido.PREVIA
             else -> {
                 when {
-                    ahora.isBefore(horaInicio) -> mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.PREVIA
-                    (ahora == horaInicio || (ahora.isAfter(horaInicio) && ahora.isBefore(horaFin))) -> mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.JUGANDO
-                    else -> mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.FINALIZADO
+                    ahora.isBefore(horaInicio) -> EstadoPartido.PREVIA
+                    (ahora == horaInicio || (ahora.isAfter(horaInicio) && ahora.isBefore(horaFin))) -> EstadoPartido.JUGANDO
+                    else -> EstadoPartido.FINALIZADO
                 }
             }
         }
     }
 
     val partidosFiltrados = remember(partidos, estadoSeleccionado) {
-        if (estadoSeleccionado == mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.TODOS) {
+        if (estadoSeleccionado == EstadoPartido.TODOS) {
             partidos
         } else {
             partidos.filter { partido ->
@@ -186,7 +185,7 @@ fun PartidoScreen(
                         .clickable {
                             showOptionsSheet = false
                             scope.launch {
-                                partidoViewModel.duplicarPartido(partidoSeleccionado!!.id, equipoRepository)
+                                partidoViewModel.duplicarPartido(partidoSeleccionado!!.uid)
                             }
                         }
                 )
@@ -222,7 +221,7 @@ fun PartidoScreen(
                     onClick = {
                         showConfirmDialog = false
                         scope.launch {
-                            partidoViewModel.eliminarPartido(partidoSeleccionado!!.id, equipoRepository)
+                            partidoViewModel.eliminarPartido(partidoSeleccionado!!.uid)
                         }
                     }
                 ) {
@@ -244,7 +243,7 @@ fun PartidoScreen(
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.primary,
                 onClick = {
-                    navController.navigate("crear_partido")
+                    navController.navigate("crear_partido_online")
                 }
             ) {
                 Icon(Icons.Default.ArrowUpward, contentDescription = "Agregar", tint = Color.White)
@@ -258,7 +257,7 @@ fun PartidoScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Partidos",
+                text = "Partidos Online",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -289,7 +288,7 @@ fun PartidoScreen(
                             expanded = expandedEstado,
                             onDismissRequest = { expandedEstado = false }
                         ) {
-                            mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.values().forEach { estado ->
+                            EstadoPartido.values().forEach { estado ->
                                 DropdownMenuItem(
                                     text = { Text(estado.display) },
                                     onClick = {
@@ -354,7 +353,7 @@ fun PartidoScreen(
                             .padding(vertical = 8.dp)
                             .combinedClickable(
                                 onClick = {
-                                    navController.navigate("visualizar_partido/${partido.id}")
+                                    navController.navigate("visualizar_partido_online/${partido.uid}")
                                 },
                                 onLongClick = {
                                     partidoSeleccionado = partido
@@ -398,19 +397,19 @@ fun PartidoScreen(
                                     label = {
                                         Text(
                                             when (estado) {
-                                                mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.PREVIA -> "Previa"
-                                                mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.JUGANDO -> "En juego"
-                                                mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.FINALIZADO -> "Finalizado"
-                                                mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.TODOS -> ""
+                                                EstadoPartido.PREVIA -> "Previa"
+                                                EstadoPartido.JUGANDO -> "En juego"
+                                                EstadoPartido.FINALIZADO -> "Finalizado"
+                                                EstadoPartido.TODOS -> ""
                                             },
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 12.sp
                                         )
                                     },
                                     colors = when (estado) {
-                                        mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.PREVIA -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFF81C784))
-                                        mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.JUGANDO -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFFFFF176))
-                                        mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.FINALIZADO -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFFE57373))
+                                        EstadoPartido.PREVIA -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFF81C784))
+                                        EstadoPartido.JUGANDO -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFFFFF176))
+                                        EstadoPartido.FINALIZADO -> AssistChipDefaults.assistChipColors(containerColor = Color(0xFFE57373))
                                         else -> AssistChipDefaults.assistChipColors()
                                     },
                                     modifier = Modifier
