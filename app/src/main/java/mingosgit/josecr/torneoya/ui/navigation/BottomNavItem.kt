@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SportsSoccer
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class BottomNavItem(
@@ -14,5 +15,6 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", "Home", Icons.Filled.Home)
     object Partido : BottomNavItem("partido", "Partido", Icons.Filled.SportsSoccer)
+    object Online : BottomNavItem("partidos_online", "Online", Icons.Filled.LiveTv)
     object Usuario : BottomNavItem("usuario", "Usuario", Icons.Filled.Person)
 }

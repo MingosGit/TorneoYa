@@ -83,6 +83,10 @@ fun NavGraph(
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)
         }
+        composable(BottomNavItem.Online.route) {
+            mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidosOnlineScreen()
+        }
+
 
         // Modularizado
         addUsuarioModuleNavGraph(
