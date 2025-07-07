@@ -1,6 +1,5 @@
 package mingosgit.josecr.torneoya.ui.screens.usuario
 
-import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,11 +25,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
-import java.io.File
 
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 @Composable
@@ -130,7 +127,8 @@ fun UsuarioScreen(
             onCropDone = { croppedPath ->
                 usuarioLocalViewModel.cambiarFotoPerfil(croppedPath)
                 cropUri = null
-            }
+            },
+            navController = navController as NavHostController
         )
     }
 

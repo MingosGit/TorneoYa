@@ -28,15 +28,16 @@ import androidx.compose.ui.unit.dp
 import java.io.File
 import android.graphics.BitmapFactory
 import androidx.compose.ui.unit.Dp
+import androidx.navigation.NavHostController
 import kotlin.math.roundToInt
 import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun CropImageDialog(
     uri: Uri,
     onDismiss: () -> Unit,
-    onCropDone: (croppedPath: String) -> Unit
+    onCropDone: (croppedPath: String) -> Unit,
+    navController: NavHostController
 ) {
     val context = LocalContext.current
 
