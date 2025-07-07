@@ -1,18 +1,20 @@
 package mingosgit.josecr.torneoya.ui.screens.amigos
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,7 +34,7 @@ import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AmigosScreen(
     navController: NavController,
@@ -105,6 +107,9 @@ fun AmigosScreen(
     var showSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
+
+    // Controla el menú desplegable para cada amigo
+    var expandedUid by remember { mutableStateOf<String?>(null) }
 
     Box(
         Modifier
@@ -198,7 +203,13 @@ fun AmigosScreen(
                                 Card(
                                     Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
+                                        .padding(vertical = 4.dp)
+                                        .combinedClickable(
+                                            onClick = {},
+                                            onLongClick = {
+                                                expandedUid = amigo.uid
+                                            }
+                                        ),
                                     shape = RoundedCornerShape(14.dp),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                                 ) {
@@ -246,15 +257,43 @@ fun AmigosScreen(
                                                 overflow = TextOverflow.Ellipsis
                                             )
                                         }
-                                        IconButton(
-                                            onClick = { amigosViewModel.eliminarAmigo(amigo.uid) },
-                                            modifier = Modifier.size(32.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Eliminar amigo",
-                                                tint = MaterialTheme.colorScheme.error
-                                            )
+                                        // Menú de tres puntos
+                                        Box {
+                                            IconButton(
+                                                onClick = { expandedUid = amigo.uid }
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.MoreHoriz,
+                                                    contentDescription = "Opciones"
+                                                )
+                                            }
+                                            DropdownMenu(
+                                                expanded = expandedUid == amigo.uid,
+                                                onDismissRequest = { expandedUid = null }
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text("Copiar código de amigo") },
+                                                    onClick = {
+                                                        clipboard.setText(androidx.compose.ui.text.AnnotatedString(amigo.uid))
+                                                        Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
+                                                        expandedUid = null
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(Icons.Default.ContentCopy, contentDescription = null)
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text("Eliminar amigo") },
+                                                    onClick = {
+                                                        amigosViewModel.eliminarAmigo(amigo.uid)
+                                                        expandedUid = null
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(Icons.Default.Delete, contentDescription = null)
+                                                    }
+                                                )
+
+                                            }
                                         }
                                     }
                                 }
@@ -395,7 +434,7 @@ fun AmigosScreen(
                         }
                         is AgregarAmigoViewModel.UiState.Error -> {
                             Spacer(Modifier.height(18.dp))
-                             Text(
+                            Text(
                                 (agregarUiState as AgregarAmigoViewModel.UiState.Error).mensaje,
                                 color = Color.Red,
                                 style = MaterialTheme.typography.bodyMedium
