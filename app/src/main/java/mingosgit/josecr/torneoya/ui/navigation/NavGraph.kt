@@ -92,7 +92,6 @@ fun NavGraph(
                     launchSingleTop = true
                 }
             }
-            val globalUserViewModel: GlobalUserViewModel = viewModel()
             AmigosScreen(
                 navController = navController,
                 globalUserViewModel = globalUserViewModel
