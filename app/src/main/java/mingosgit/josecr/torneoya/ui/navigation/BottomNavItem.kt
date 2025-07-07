@@ -14,6 +14,5 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", "Home", Icons.Filled.Home)
     object Partido : BottomNavItem("partido", "Partido", Icons.Filled.SportsSoccer)
-    object Amigos : BottomNavItem("amigos", "Amigos", Icons.Filled.Group)
     object Usuario : BottomNavItem("usuario", "Usuario", Icons.Filled.Person)
 }

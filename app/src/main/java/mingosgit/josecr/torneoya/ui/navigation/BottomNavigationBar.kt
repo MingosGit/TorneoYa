@@ -13,7 +13,6 @@ fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Partido,
-        BottomNavItem.Amigos,    // <-- agregado aquí
         BottomNavItem.Usuario
     )
     NavigationBar {

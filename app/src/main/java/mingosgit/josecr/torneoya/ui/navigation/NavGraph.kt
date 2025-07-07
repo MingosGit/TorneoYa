@@ -2,12 +2,17 @@ package mingosgit.josecr.torneoya.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import kotlinx.coroutines.runBlocking
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.*
@@ -20,15 +25,20 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 import mingosgit.josecr.torneoya.ui.screens.amigos.SolicitudesPendientesScreen
+import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
+import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
+import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
     usuarioLocalViewModel: UsuarioLocalViewModel,
     partidoViewModel: PartidoViewModel,
-    partidoRepository: mingosgit.josecr.torneoya.repository.PartidoRepository,
+    partidoRepository: PartidoRepository,
     equipoRepository: EquipoRepository,
-    globalUserViewModel: GlobalUserViewModel = viewModel()
+    globalUserViewModel: GlobalUserViewModel = viewModel(),
+    amigosViewModel: AmigosViewModel = viewModel(),
+    agregarAmigoViewModel: AgregarAmigoViewModel = viewModel()
 ) {
     val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
     val context = LocalContext.current
@@ -69,18 +79,7 @@ fun NavGraph(
                 equipoRepository = equipoRepositoryInst
             )
         }
-        composable(BottomNavItem.Amigos.route) {
-            BackHandler {
-                navController.navigate(BottomNavItem.Home.route) {
-                    popUpTo(BottomNavItem.Home.route) { inclusive = false }
-                    launchSingleTop = true
-                }
-            }
-            AmigosScreen(
-                navController = navController,
-                globalUserViewModel = globalUserViewModel
-            )
-        }
+
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)
         }
@@ -110,11 +109,11 @@ fun NavGraph(
                 viewModelStoreOwner = owner,
                 factory = CreatePartidoViewModelFactory(partidoRepository, equipoRepositoryInst)
             )
-            val equiposPredefinidosVM = viewModel<mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel>(
-                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            val equiposPredefinidosVM = viewModel<EquiposPredefinidosViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
-                        return mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel(
+                        return EquiposPredefinidosViewModel(
                             equipoPredefinidoRepository
                         ) as T
                     }
@@ -128,7 +127,7 @@ fun NavGraph(
         }
         composable(
             "visualizar_partido/{partidoId}",
-            arguments = listOf(androidx.navigation.navArgument("partidoId") { type = androidx.navigation.NavType.LongType })
+            arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
 
@@ -158,9 +157,19 @@ fun NavGraph(
                 equipoRepository = equipoRepositoryInst
             )
         }
+        composable("amigos") {
+            AmigosScreen(
+                navController = navController,
+                globalUserViewModel = globalUserViewModel,
+                amigosViewModel = amigosViewModel,
+                agregarAmigoViewModel = agregarAmigoViewModel,
+                modifier = Modifier
+            )
+        }
+
         composable(
             "editar_partido/{partidoId}",
-            arguments = listOf(androidx.navigation.navArgument("partidoId") { type = androidx.navigation.NavType.LongType })
+            arguments = listOf(navArgument("partidoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
             val uniqueKey = "editar_partido_${id}_${System.currentTimeMillis()}"
@@ -194,17 +203,17 @@ fun NavGraph(
         composable(
             route = "asignar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}&fecha={fecha}&horaInicio={horaInicio}&numeroPartes={numeroPartes}&tiempoPorParte={tiempoPorParte}&tiempoDescanso={tiempoDescanso}&numeroJugadores={numeroJugadores}&equipoAPredefinidoId={equipoAPredefinidoId}&equipoBPredefinidoId={equipoBPredefinidoId}",
             arguments = listOf(
-                androidx.navigation.navArgument("partidoId") { type = androidx.navigation.NavType.LongType },
-                androidx.navigation.navArgument("equipoAId") { type = androidx.navigation.NavType.LongType; defaultValue = -1L },
-                androidx.navigation.navArgument("equipoBId") { type = androidx.navigation.NavType.LongType; defaultValue = -1L },
-                androidx.navigation.navArgument("fecha") { defaultValue = "" },
-                androidx.navigation.navArgument("horaInicio") { defaultValue = "" },
-                androidx.navigation.navArgument("numeroPartes") { defaultValue = "2" },
-                androidx.navigation.navArgument("tiempoPorParte") { defaultValue = "25" },
-                androidx.navigation.navArgument("tiempoDescanso") { defaultValue = "5" },
-                androidx.navigation.navArgument("numeroJugadores") { defaultValue = "5" },
-                androidx.navigation.navArgument("equipoAPredefinidoId") { type = androidx.navigation.NavType.LongType; defaultValue = -1L },
-                androidx.navigation.navArgument("equipoBPredefinidoId") { type = androidx.navigation.NavType.LongType; defaultValue = -1L }
+                navArgument("partidoId") { type = NavType.LongType },
+                navArgument("equipoAId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("equipoBId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("fecha") { defaultValue = "" },
+                navArgument("horaInicio") { defaultValue = "" },
+                navArgument("numeroPartes") { defaultValue = "2" },
+                navArgument("tiempoPorParte") { defaultValue = "25" },
+                navArgument("tiempoDescanso") { defaultValue = "5" },
+                navArgument("numeroJugadores") { defaultValue = "5" },
+                navArgument("equipoAPredefinidoId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("equipoBPredefinidoId") { type = NavType.LongType; defaultValue = -1L }
             )
         ) { backStackEntry ->
             val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable
@@ -238,9 +247,9 @@ fun NavGraph(
         composable(
             route = "editar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}",
             arguments = listOf(
-                androidx.navigation.navArgument("partidoId") { type = androidx.navigation.NavType.LongType },
-                androidx.navigation.navArgument("equipoAId") { type = androidx.navigation.NavType.LongType; defaultValue = -1L },
-                androidx.navigation.navArgument("equipoBId") { type = androidx.navigation.NavType.LongType; defaultValue = -1L }
+                navArgument("partidoId") { type = NavType.LongType },
+                navArgument("equipoAId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("equipoBId") { type = NavType.LongType; defaultValue = -1L }
             )
         ) { backStackEntry ->
             val partidoId = backStackEntry.arguments?.getLong("partidoId") ?: return@composable

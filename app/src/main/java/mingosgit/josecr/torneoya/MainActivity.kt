@@ -80,7 +80,6 @@ class MainActivity : ComponentActivity() {
                 val showBottomBar = when (navBackStackEntry.value?.destination?.route) {
                     BottomNavItem.Home.route,
                     BottomNavItem.Partido.route,
-                    BottomNavItem.Amigos.route,
                     BottomNavItem.Usuario.route -> true
                     else -> false
                 }

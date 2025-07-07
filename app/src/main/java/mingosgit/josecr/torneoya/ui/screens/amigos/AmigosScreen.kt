@@ -39,12 +39,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun AmigosScreen(
     navController: NavController,
     globalUserViewModel: GlobalUserViewModel,
-    amigosViewModel: AmigosViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+    amigosViewModel: AmigosViewModel = viewModel(
         factory = AmigosViewModel.Factory()
     ),
-    agregarAmigoViewModel: AgregarAmigoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+    agregarAmigoViewModel: AgregarAmigoViewModel = viewModel(
         factory = AgregarAmigoViewModel.Factory()
     ),
+    modifier: Modifier,
 ) {
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
     LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() }
