@@ -78,10 +78,9 @@ fun NavGraph(
     val eventoRepository = EventoRepository(db.eventoDao())
     val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
     val partidoFirebaseRepository = remember { PartidoFirebaseRepository() }
-    val usuarioUid = when (val state = loginViewModel.loginState.collectAsState().value) {
-        is LoginState.Success -> state.usuario.uid
-        else -> ""
-    }
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
@@ -273,7 +272,7 @@ fun NavGraph(
                         return mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel(
                             partidoRepo = partidoFirebaseRepository,
                             equipoRepo = partidoFirebaseRepository,
-                            usuarioUid = usuarioUid
+                            usuarioUid = userUid
                         ) as T
                     }
                 }
@@ -307,7 +306,7 @@ fun NavGraph(
                 partidoUid = partidoUid,
                 navController = navController,
                 vm = vm,
-                usuarioUid = usuarioUid
+                usuarioUid = userUid
             )
         }
 
@@ -389,6 +388,8 @@ fun NavGraph(
             )
         }
         composable(BottomNavItem.Online.route) {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val userUid = currentUser?.uid ?: ""
             val partidoOnlineViewModel = viewModel(
                 modelClass = PartidoOnlineViewModel::class.java,
                 factory = object : ViewModelProvider.Factory {
@@ -397,23 +398,18 @@ fun NavGraph(
                         return PartidoOnlineViewModel(
                             partidoRepo = partidoFirebaseRepository,
                             equipoRepo = partidoFirebaseRepository,
-                            usuarioUid = usuarioUid
+                            usuarioUid = userUid // <-- AQUÍ
                         ) as T
                     }
                 }
             )
-            // NAVIGATION OVERRIDE: Home al pulsar atrás en partido_online
-            BackHandler(enabled = true) {
-                navController.navigate(BottomNavItem.Home.route) {
-                    popUpTo(0) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
+            // resto igual...
             PartidoOnlineScreen(
                 navController = navController,
                 partidoViewModel = partidoOnlineViewModel
             )
         }
+
         composable(
             route = "editar_jugadores/{partidoId}?equipoAId={equipoAId}&equipoBId={equipoBId}",
             arguments = listOf(

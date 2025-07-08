@@ -15,24 +15,23 @@ class PartidoFirebaseRepository {
         }
     }
 
-    // NUEVO: LISTAR SOLO PARTIDOS CREADOS O DONDE TENGO ACCESO
+    // LISTA SOLO PARTIDOS CREADOS O DONDE TENGO ACCESO Y QUE ESTÁN EN PREVIA
     suspend fun listarPartidosPorUsuario(uid: String): List<PartidoFirebase> {
-        val partidosCreados = db.collection("partidos")
-            .whereEqualTo("creadorUid", uid)
-            .get().await()
-            .documents.mapNotNull {
-                it.toObject(PartidoFirebase::class.java)?.copy(uid = it.id)
-            }
-
-        val partidosAcceso = db.collection("partidos")
-            .whereArrayContains("usuariosConAcceso", uid)
-            .get().await()
-            .documents.mapNotNull {
-                it.toObject(PartidoFirebase::class.java)?.copy(uid = it.id)
-            }
-
-        return (partidosCreados + partidosAcceso).distinctBy { it.uid }
+        val res = db.collection("partidos").get().await()
+        val list = res.documents.mapNotNull {
+            val partido = it.toObject(PartidoFirebase::class.java)?.copy(uid = it.id)
+            if (partido != null) {
+                android.util.Log.d("FIRE_PARTIDO", "creadorUid='${partido.creadorUid}' usuariosConAcceso=${partido.usuariosConAcceso}  (tu uid='$uid')")
+                val creadorOK = partido.creadorUid == uid
+                val accesoOK = partido.usuariosConAcceso.any { user -> user == uid }
+                if (creadorOK || accesoOK) partido else null
+            } else null
+        }
+        android.util.Log.d("FIRE_PARTIDO", "TOTAL ENCONTRADOS: ${list.size}")
+        return list
     }
+
+
 
     suspend fun crearEquipo(equipo: EquipoFirebase): String {
         val datos = hashMapOf(
@@ -59,9 +58,9 @@ class PartidoFirebaseRepository {
             "jugadoresEquipoB" to partido.jugadoresEquipoB,
             "nombresManualEquipoA" to partido.nombresManualEquipoA,
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
-            "creadorUid" to partido.creadorUid, // <--- SIEMPRE VA
+            "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic,
-            "usuariosConAcceso" to partido.usuariosConAcceso // <--- SIEMPRE VA
+            "usuariosConAcceso" to partido.usuariosConAcceso
         )
         db.collection("partidos").add(datos).await()
     }
@@ -83,9 +82,9 @@ class PartidoFirebaseRepository {
             "jugadoresEquipoB" to partido.jugadoresEquipoB,
             "nombresManualEquipoA" to partido.nombresManualEquipoA,
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
-            "creadorUid" to partido.creadorUid, // <--- SIEMPRE VA
+            "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic,
-            "usuariosConAcceso" to partido.usuariosConAcceso // <--- SIEMPRE VA
+            "usuariosConAcceso" to partido.usuariosConAcceso
         )
         val doc = db.collection("partidos").add(datos).await()
         return doc.id
@@ -132,7 +131,7 @@ class PartidoFirebaseRepository {
             .await()
     }
 
-    // NUEVO: Añadir usuario a acceso del partido
+    // Añadir usuario a acceso del partido
     suspend fun agregarUsuarioAAcceso(partidoUid: String, userUid: String) {
         val partidoRef = db.collection("partidos").document(partidoUid)
         partidoRef.update("usuariosConAcceso", com.google.firebase.firestore.FieldValue.arrayUnion(userUid)).await()

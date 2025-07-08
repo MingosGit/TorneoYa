@@ -33,14 +33,12 @@ class PartidoOnlineViewModel(
 
     fun cargarPartidos() {
         viewModelScope.launch {
-            // SOLO muestra los partidos del usuario
             _partidos.value = partidoRepo.listarPartidosPorUsuario(usuarioUid)
         }
     }
 
     fun cargarPartidosConNombres() {
         viewModelScope.launch {
-            // SOLO carga los partidos donde soy creador o tengo acceso
             val partidos = partidoRepo.listarPartidosPorUsuario(usuarioUid)
             val equipos = mutableMapOf<String, EquipoFirebase>()
             val equipoUids = partidos.flatMap { listOf(it.equipoAId, it.equipoBId) }.distinct()
@@ -74,8 +72,11 @@ class PartidoOnlineViewModel(
 
     suspend fun buscarPartidoPorUid(uid: String): PartidoConNombresOnline? {
         val partido = partidoRepo.obtenerPartido(uid) ?: return null
-        // Solo deja buscar partidos a los que tiene acceso el usuario
-        if (partido.creadorUid != usuarioUid && !partido.usuariosConAcceso.contains(usuarioUid)) return null
+
+        // Permite buscar SIEMPRE que esté en PREVIA, seas creador O NO TENGAS acceso (para poder añadirte)
+        if (partido.estado != "PREVIA") return null
+
+        // Si ya tienes acceso no pasa nada, pero NO bloquees si no lo tienes, porque justo quieres añadirte
         val equipoA = partido.equipoAId.takeIf { it.isNotBlank() }?.let { equipoRepo.obtenerEquipo(it) }
         val equipoB = partido.equipoBId.takeIf { it.isNotBlank() }?.let { equipoRepo.obtenerEquipo(it) }
         return PartidoConNombresOnline(
@@ -95,9 +96,7 @@ class PartidoOnlineViewModel(
 
     fun agregarPartidoALista(partido: PartidoConNombresOnline) {
         viewModelScope.launch {
-            // Primero, añade al usuario actual al array usuariosConAcceso (en Firestore)
             partidoRepo.agregarUsuarioAAcceso(partido.uid, usuarioUid)
-            // Luego, refresca SOLO la lista filtrada
             cargarPartidosConNombres()
         }
     }
