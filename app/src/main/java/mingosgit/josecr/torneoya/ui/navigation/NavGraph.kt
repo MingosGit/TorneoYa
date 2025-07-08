@@ -78,7 +78,6 @@ fun NavGraph(
     val eventoRepository = EventoRepository(db.eventoDao())
     val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
     val partidoFirebaseRepository = remember { PartidoFirebaseRepository() }
-    // OBTENER UID DEL USUARIO LOGUEADO
     val usuarioUid = when (val state = loginViewModel.loginState.collectAsState().value) {
         is LoginState.Success -> state.usuario.uid
         else -> ""
@@ -193,10 +192,9 @@ fun NavGraph(
         // Pantalla para crear partido online
 
         composable("crear_partido_online") {
-            val userUid = when (val state = loginViewModel.loginState.collectAsState().value) {
-                is LoginState.Success -> state.usuario.uid
-                else -> ""
-            }
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val userUid = currentUser?.uid ?: ""
+            if (userUid.isBlank()) error("Debes estar logueado para crear partidos online")
             val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel>(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -212,6 +210,7 @@ fun NavGraph(
                 navController = navController,
                 viewModel = vm
             )
+
         }
 
         composable(

@@ -59,9 +59,9 @@ class PartidoFirebaseRepository {
             "jugadoresEquipoB" to partido.jugadoresEquipoB,
             "nombresManualEquipoA" to partido.nombresManualEquipoA,
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
-            "creadorUid" to partido.creadorUid,
+            "creadorUid" to partido.creadorUid, // <--- SIEMPRE VA
             "isPublic" to partido.isPublic,
-            "usuariosConAcceso" to partido.usuariosConAcceso // NUEVO
+            "usuariosConAcceso" to partido.usuariosConAcceso // <--- SIEMPRE VA
         )
         db.collection("partidos").add(datos).await()
     }
@@ -83,9 +83,9 @@ class PartidoFirebaseRepository {
             "jugadoresEquipoB" to partido.jugadoresEquipoB,
             "nombresManualEquipoA" to partido.nombresManualEquipoA,
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
-            "creadorUid" to partido.creadorUid,
+            "creadorUid" to partido.creadorUid, // <--- SIEMPRE VA
             "isPublic" to partido.isPublic,
-            "usuariosConAcceso" to partido.usuariosConAcceso // NUEVO
+            "usuariosConAcceso" to partido.usuariosConAcceso // <--- SIEMPRE VA
         )
         val doc = db.collection("partidos").add(datos).await()
         return doc.id

@@ -235,35 +235,45 @@ fun PartidoOnlineScreen(
 
     // --- Confirmación para agregar por UID ---
     if (showAddConfirmDialog != null) {
-        AlertDialog(
-            onDismissRequest = { showAddConfirmDialog = null },
-            title = { Text("¿Agregar partido?", fontWeight = FontWeight.Bold) },
-            text = {
-                Text("¿Seguro que deseas agregar el partido \"${showAddConfirmDialog!!.nombreEquipoA} vs ${showAddConfirmDialog!!.nombreEquipoB}\" a tu lista?")
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        scope.launch {
-                            partidoViewModel.agregarPartidoALista(showAddConfirmDialog!!)
-                            partidoViewModel.cargarPartidosConNombres()
-                        }
-                        showAddConfirmDialog = null
-                        searchText = ""
-                        searchResults = emptyList()
-                        showSearchDropdown = false
-                    }
-                ) {
-                    Text("Agregar")
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showAddConfirmDialog = null }) {
-                    Text("Cancelar")
-                }
+        // Chequear si ya tienes acceso a ese partido
+        val yaExiste = sortedPartidos.any { it.uid == showAddConfirmDialog!!.uid }
+        if (yaExiste) {
+            // No mostrar el dialog, sino un snackbar o error. Aquí reseteamos y mostramos error.
+            LaunchedEffect(showAddConfirmDialog) {
+                showAddConfirmDialog = null
+                searchError = "Ya tienes acceso a este partido"
             }
-        )
+        } else {
+            AlertDialog(
+                onDismissRequest = { showAddConfirmDialog = null },
+                title = { Text("¿Agregar partido?", fontWeight = FontWeight.Bold) },
+                text = {
+                    Text("¿Seguro que deseas agregar el partido \"${showAddConfirmDialog!!.nombreEquipoA} vs ${showAddConfirmDialog!!.nombreEquipoB}\" a tu lista?")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                partidoViewModel.agregarPartidoALista(showAddConfirmDialog!!)
+                            }
+                            showAddConfirmDialog = null
+                            searchText = ""
+                            searchResults = emptyList()
+                            showSearchDropdown = false
+                        }
+                    ) {
+                        Text("Agregar")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showAddConfirmDialog = null }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
     }
+
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,

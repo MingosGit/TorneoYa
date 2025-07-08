@@ -33,17 +33,16 @@ class PartidoOnlineViewModel(
 
     fun cargarPartidos() {
         viewModelScope.launch {
-            // Solo carga los partidos que ha creado o tiene acceso el usuario actual
+            // SOLO muestra los partidos del usuario
             _partidos.value = partidoRepo.listarPartidosPorUsuario(usuarioUid)
         }
     }
 
     fun cargarPartidosConNombres() {
         viewModelScope.launch {
+            // SOLO carga los partidos donde soy creador o tengo acceso
             val partidos = partidoRepo.listarPartidosPorUsuario(usuarioUid)
             val equipos = mutableMapOf<String, EquipoFirebase>()
-
-            // Pre-carga todos los equipos usados en los partidos para minimizar llamadas a Firestore
             val equipoUids = partidos.flatMap { listOf(it.equipoAId, it.equipoBId) }.distinct()
             equipoUids.forEach { uid ->
                 if (uid.isNotBlank()) {
@@ -96,12 +95,10 @@ class PartidoOnlineViewModel(
 
     fun agregarPartidoALista(partido: PartidoConNombresOnline) {
         viewModelScope.launch {
-            val yaExiste = _partidosConNombres.value.any { it.uid == partido.uid }
-            if (!yaExiste) {
-                val listaActual = _partidosConNombres.value.toMutableList()
-                listaActual.add(0, partido)
-                _partidosConNombres.value = listaActual
-            }
+            // Primero, añade al usuario actual al array usuariosConAcceso (en Firestore)
+            partidoRepo.agregarUsuarioAAcceso(partido.uid, usuarioUid)
+            // Luego, refresca SOLO la lista filtrada
+            cargarPartidosConNombres()
         }
     }
 
@@ -149,7 +146,7 @@ class PartidoOnlineViewModel(
                 val nuevoPartido = it.copy(
                     uid = "",
                     creadorUid = usuarioUid,
-                    usuariosConAcceso = emptyList()
+                    usuariosConAcceso = listOf(usuarioUid)
                 )
                 partidoRepo.crearPartido(nuevoPartido)
             }

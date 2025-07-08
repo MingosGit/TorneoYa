@@ -9,7 +9,7 @@ import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 
 class CreatePartidoOnlineViewModel(
     private val partidoFirebaseRepository: PartidoFirebaseRepository,
-    private val userUid: String // <<--- PASA EL UID AQUÍ!
+    private val userUid: String
 ) : ViewModel() {
 
     fun crearPartidoOnline(
@@ -43,9 +43,9 @@ class CreatePartidoOnlineViewModel(
                 jugadoresEquipoB = emptyList(),
                 nombresManualEquipoA = emptyList(),
                 nombresManualEquipoB = emptyList(),
-                creadorUid = userUid, // AQUÍ SE PONE EL CREADOR
+                creadorUid = userUid,  // <- ESTE CAMPO SE USA Y SE GUARDA SIEMPRE
                 isPublic = isPublic,
-                usuariosConAcceso = listOf(userUid) // EL CREADOR TIENE ACCESO
+                usuariosConAcceso = listOf(userUid)  // <- ESTE CAMPO SE USA Y SE GUARDA SIEMPRE
             )
             val partidoUid = partidoFirebaseRepository.crearPartidoConRetornoUid(partido)
             onFinish(partidoUid, equipoAId, equipoBId)
