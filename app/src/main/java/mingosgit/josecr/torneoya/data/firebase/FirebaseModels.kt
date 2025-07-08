@@ -3,7 +3,6 @@ package mingosgit.josecr.torneoya.data.firebase
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 
-// Representa un partido en Firebase, con UID automático generado por Firestore
 @IgnoreExtraProperties
 data class PartidoFirebase(
     val uid: String = "",
@@ -12,18 +11,20 @@ data class PartidoFirebase(
     val numeroPartes: Int = 2,
     val tiempoPorParte: Int = 25,
     val tiempoDescanso: Int = 5,
-    val equipoAId: String = "", // <-- SIEMPRE String
-    val equipoBId: String = "", // <-- SIEMPRE String
+    val equipoAId: String = "",
+    val equipoBId: String = "",
     val numeroJugadores: Int = 5,
     val estado: String = "PREVIA",
     val golesEquipoA: Int = 0,
-    val golesEquipoB: Int = 0
+    val golesEquipoB: Int = 0,
+    val jugadoresUids: List<String> = emptyList(),
+    val creadorUid: String = "",
+    val isPublic: Boolean = true
 )
-
 
 @IgnoreExtraProperties
 data class EquipoFirebase(
-    @get:Exclude var uid: String = "", // UID auto de Firestore
+    @get:Exclude var uid: String = "",
     val nombre: String = ""
 )
 
@@ -32,7 +33,7 @@ data class JugadorFirebase(
     @get:Exclude var uid: String = "",
     val nombre: String = "",
     val email: String = "",
-    val avatarUrl: String? = null // Si tienes avatars online
+    val avatarUrl: String? = null
 )
 
 @IgnoreExtraProperties
@@ -58,7 +59,7 @@ data class EncuestaFirebase(
     @get:Exclude var uid: String = "",
     val partidoUid: String = "",
     val pregunta: String = "",
-    val opciones: List<String> = emptyList() // máx 5
+    val opciones: List<String> = emptyList()
 )
 
 @IgnoreExtraProperties
@@ -73,7 +74,7 @@ data class EncuestaVotoFirebase(
 data class EventoFirebase(
     @get:Exclude var uid: String = "",
     val partidoUid: String = "",
-    val tipo: String = "", // "GOL", etc.
+    val tipo: String = "",
     val minuto: Int? = null,
     val equipoUid: String = "",
     val jugadorUid: String = "",
@@ -98,7 +99,6 @@ data class PartidoEquipoJugadorFirebase(
     val jugadorUid: String = ""
 )
 
-// Si quieres mantener compatibilidad de usuario Firebase
 @IgnoreExtraProperties
 data class UsuarioFirebaseEntity(
     @get:Exclude var uid: String = "",

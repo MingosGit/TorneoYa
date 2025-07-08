@@ -190,6 +190,73 @@ fun NavGraph(
                 modifier = Modifier
             )
         }
+// Pantalla para crear partido online
+        composable("crear_partido_online") {
+            val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel(
+                            partidoFirebaseRepository = partidoFirebaseRepository
+                        ) as T
+                    }
+                }
+            )
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.CrearPartidoOnlineScreen(
+                navController = navController,
+                viewModel = vm
+            )
+        }
+
+// Pantalla para asignar jugadores online
+        composable(
+            route = "asignar_jugadores_online/{partidoUid}?equipoAUid={equipoAUid}&equipoBUid={equipoBUid}",
+            arguments = listOf(
+                navArgument("partidoUid") { type = NavType.StringType },
+                navArgument("equipoAUid") { type = NavType.StringType; defaultValue = "" },
+                navArgument("equipoBUid") { type = NavType.StringType; defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: ""
+            val equipoAUid = backStackEntry.arguments?.getString("equipoAUid") ?: ""
+            val equipoBUid = backStackEntry.arguments?.getString("equipoBUid") ?: ""
+            val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.AsignarJugadoresOnlineViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return mingosgit.josecr.torneoya.viewmodel.partidoonline.AsignarJugadoresOnlineViewModel(
+                            partidoUid = partidoUid,
+                            equipoAUid = equipoAUid,
+                            equipoBUid = equipoBUid,
+                            partidoFirebaseRepository = partidoFirebaseRepository
+                        ) as T
+                    }
+                }
+            )
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.AsignarJugadoresOnlineScreen(
+                navController = navController,
+                vm = vm
+            )
+        }
+
+        composable("partido_online") {
+            // Instancia el ViewModel de PartidoOnline
+            val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel(
+                            partidoRepo = partidoFirebaseRepository,
+                            equipoRepo = partidoFirebaseRepository
+                        ) as T
+                    }
+                }
+            )
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen(
+                navController = navController,
+                partidoViewModel = vm
+            )
+        }
 
         composable(
             "editar_partido/{partidoId}",
