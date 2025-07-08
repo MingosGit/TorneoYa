@@ -1,270 +1,327 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import mingosgit.josecr.torneoya.viewmodel.partidoonline.AsignarJugadoresOnlineViewModel
-import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
+import kotlinx.coroutines.launch
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel
 
 @Composable
-fun AsignarJugadoresOnlineScreen(
+fun CrearPartidoOnlineScreen(
     navController: NavController,
-    vm: AsignarJugadoresOnlineViewModel
+    viewModel: CreatePartidoOnlineViewModel
 ) {
-    LaunchedEffect(Unit) {
-        vm.cargarJugadoresExistentes()
+    val context = LocalContext.current
+
+    var equipoA by rememberSaveable { mutableStateOf("") }
+    var equipoB by rememberSaveable { mutableStateOf("") }
+    var fecha by rememberSaveable { mutableStateOf("") }
+    var horaInicio by rememberSaveable { mutableStateOf("") }
+    var numeroPartes by rememberSaveable { mutableStateOf("2") }
+    var tiempoPorParte by rememberSaveable { mutableStateOf("25") }
+    var tiempoDescanso by rememberSaveable { mutableStateOf("5") }
+    var numeroJugadores by rememberSaveable { mutableStateOf("5") }
+    var isPublic by rememberSaveable { mutableStateOf(true) }
+
+    var camposError by rememberSaveable { mutableStateOf(mapOf<String, Boolean>()) }
+    var mostrarErrores by rememberSaveable { mutableStateOf(false) }
+    var guardando by remember { mutableStateOf(false) }
+
+    val calendar = remember { java.util.Calendar.getInstance() }
+    val scope = rememberCoroutineScope()
+
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                fecha = "%02d-%02d-%04d".format(dayOfMonth, month + 1, year)
+            },
+            calendar.get(java.util.Calendar.YEAR),
+            calendar.get(java.util.Calendar.MONTH),
+            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+        )
     }
 
-    Column(
+    val timePickerDialog = remember {
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                horaInicio = "%02d:%02d".format(hourOfDay, minute)
+            },
+            calendar.get(java.util.Calendar.HOUR_OF_DAY),
+            calendar.get(java.util.Calendar.MINUTE),
+            true
+        )
+    }
+
+    fun validarCampos(): Boolean {
+        val errores = mutableMapOf<String, Boolean>()
+        errores["equipoA"] = equipoA.isBlank()
+        errores["equipoB"] = equipoB.isBlank()
+        errores["fecha"] = fecha.isBlank()
+        errores["horaInicio"] = horaInicio.isBlank()
+        errores["numeroPartes"] = numeroPartes.isBlank() || numeroPartes.toIntOrNull() == null
+        errores["tiempoPorParte"] = tiempoPorParte.isBlank() || tiempoPorParte.toIntOrNull() == null
+        errores["tiempoDescanso"] = tiempoDescanso.isBlank() || tiempoDescanso.toIntOrNull() == null
+        errores["numeroJugadores"] = numeroJugadores.isBlank() || numeroJugadores.toIntOrNull() == null
+        camposError = errores
+        return !errores.values.any { it }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp)
+            .padding(24.dp)
     ) {
-        Text(
-            "Asignar jugadores (Online)",
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = { vm.equipoSeleccionado = "A" },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (vm.equipoSeleccionado == "A") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.weight(1f)
-            ) { Text("Equipo A") }
-            Spacer(Modifier.width(10.dp))
-            Button(
-                onClick = { vm.equipoSeleccionado = "B" },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (vm.equipoSeleccionado == "B") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.weight(1f)
-            ) { Text("Equipo B") }
-        }
-
-        Row(
+        Column(
             modifier = Modifier
-                .padding(vertical = 16.dp)
-                .align(Alignment.CenterHorizontally)
+                .fillMaxSize()
+                .align(Alignment.TopCenter),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Button(
-                onClick = { vm.cambiarModo(false) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (!vm.modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.weight(1f)
-            ) { Text("Manual") }
-            Spacer(Modifier.width(10.dp))
-            Button(
-                onClick = { vm.cambiarModo(true) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (vm.modoAleatorio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.weight(1f)
-            ) { Text("Aleatorio") }
-        }
+            Text("Crear Partido Online", fontSize = 28.sp, modifier = Modifier.padding(bottom = 24.dp))
 
-        if (!vm.modoAleatorio) {
-            Text(
-                if (vm.equipoSeleccionado == "A") "Jugadores Equipo A" else "Jugadores Equipo B",
-                fontSize = 18.sp,
+            OutlinedTextField(
+                value = equipoA,
+                onValueChange = { equipoA = it },
+                label = { Text("Nombre Equipo A") },
+                singleLine = true,
+                isError = mostrarErrores && camposError["equipoA"] == true,
                 modifier = Modifier
-                    .padding(top = 12.dp, bottom = 4.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-            val jugadores =
-                if (vm.equipoSeleccionado == "A") vm.equipoAJugadores else vm.equipoBJugadores
-
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
+                    .background(
+                        if (mostrarErrores && camposError["equipoA"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                    )
+            )
+            if (mostrarErrores && camposError["equipoA"] == true) {
+                Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
+            }
+
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = equipoB,
+                onValueChange = { equipoB = it },
+                label = { Text("Nombre Equipo B") },
+                singleLine = true,
+                isError = mostrarErrores && camposError["equipoB"] == true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (mostrarErrores && camposError["equipoB"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                    )
+            )
+            if (mostrarErrores && camposError["equipoB"] == true) {
+                Text("Campo obligatorio", color = Color.Red, fontSize = 12.sp)
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                itemsIndexed(jugadores + JugadorFirebase()) { idx, value ->
-                    var expanded by remember { mutableStateOf(false) }
-                    var searchQuery by remember { mutableStateOf("") }
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = value.nombre,
-                            onValueChange = { newValue ->
-                                if (idx == jugadores.size) {
-                                    if (newValue.isNotBlank()) {
-                                        if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.add(JugadorFirebase(nombre = newValue))
-                                        else vm.equipoBJugadores.add(JugadorFirebase(nombre = newValue))
-                                    }
-                                } else {
-                                    if (newValue.isEmpty()) {
-                                        if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.removeAt(idx)
-                                        else vm.equipoBJugadores.removeAt(idx)
-                                    } else {
-                                        if (vm.equipoSeleccionado == "A") vm.equipoAJugadores[idx] = JugadorFirebase(nombre = newValue)
-                                        else vm.equipoBJugadores[idx] = JugadorFirebase(nombre = newValue)
-                                    }
-                                }
-                            },
-                            label = { Text(if (idx == jugadores.size) "Agregar un jugador nuevo" else "Jugador ${idx + 1}") },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(bottom = 4.dp)
+                OutlinedButton(
+                    onClick = { datePickerDialog.show() },
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["fecha"] == true) Color(0xFFFFCDD2) else Color.Transparent
                         )
-                        IconButton(
-                            onClick = { expanded = true }
-                        ) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir jugador")
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                        ) {
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                label = { Text("Buscar") },
-                                singleLine = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                            vm.jugadoresDisponiblesManual(vm.equipoSeleccionado, idx)
-                                .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
-                                .forEach { jugador ->
-                                    DropdownMenuItem(
-                                        text = { Text(jugador.nombre) },
-                                        onClick = {
-                                            if (idx == jugadores.size) {
-                                                if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.add(jugador)
-                                                else vm.equipoBJugadores.add(jugador)
-                                            } else {
-                                                if (vm.equipoSeleccionado == "A") vm.equipoAJugadores[idx] = jugador
-                                                else vm.equipoBJugadores[idx] = jugador
-                                            }
-                                            expanded = false
-                                            searchQuery = ""
-                                        }
-                                    )
-                                }
-                        }
-                    }
+                ) {
+                    Text(if (fecha.isBlank()) "Seleccionar fecha" else fecha)
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedButton(
+                    onClick = { timePickerDialog.show() },
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["horaInicio"] == true) Color(
+                                0xFFFFCDD2
+                            ) else Color.Transparent
+                        )
+                ) {
+                    Text(if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio)
                 }
             }
-        } else {
-            Text(
-                "Pon todos los jugadores, se asignarán aleatoriamente",
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                itemsIndexed(vm.listaNombres + JugadorFirebase()) { idx, value ->
-                    var expanded by remember { mutableStateOf(false) }
-                    var searchQuery by remember { mutableStateOf("") }
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = value.nombre,
-                            onValueChange = { newValue ->
-                                if (idx == vm.listaNombres.size) {
-                                    if (newValue.isNotBlank()) {
-                                        vm.listaNombres.add(JugadorFirebase(nombre = newValue))
-                                    }
-                                } else {
-                                    if (newValue.isEmpty()) {
-                                        vm.listaNombres.removeAt(idx)
-                                    } else {
-                                        vm.listaNombres[idx] = JugadorFirebase(nombre = newValue)
-                                    }
-                                }
-                            },
-                            label = { Text(if (idx == vm.listaNombres.size) "Agregar un jugador nuevo" else "Jugador ${idx + 1}") },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(bottom = 4.dp)
+            if (mostrarErrores && (camposError["fecha"] == true || camposError["horaInicio"] == true)) {
+                Row(Modifier.fillMaxWidth()) {
+                    if (camposError["fecha"] == true)
+                        Text(
+                            "Falta la fecha",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
                         )
-                        IconButton(
-                            onClick = { expanded = true }
-                        ) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir jugador")
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                        ) {
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                label = { Text("Buscar") },
-                                singleLine = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                            vm.jugadoresDisponiblesAleatorio(idx)
-                                .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
-                                .forEach { jugador ->
-                                    DropdownMenuItem(
-                                        text = { Text(jugador.nombre) },
-                                        onClick = {
-                                            if (idx == vm.listaNombres.size) {
-                                                vm.listaNombres.add(jugador)
-                                            } else {
-                                                vm.listaNombres[idx] = jugador
-                                            }
-                                            expanded = false
-                                            searchQuery = ""
-                                        }
-                                    )
-                                }
-                        }
-                    }
+                    if (camposError["horaInicio"] == true)
+                        Text(
+                            "Falta la hora",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
                 }
             }
-        }
 
-        Button(
-            onClick = {
-                if (vm.modoAleatorio) {
-                    val jugadoresLimpios = vm.listaNombres.filter { it.nombre.isNotBlank() }
-                    if (jugadoresLimpios.size >= 2) {
-                        vm.repartirAleatoriamente(jugadoresLimpios)
-                        vm.cambiarModo(false)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = numeroPartes,
+                    onValueChange = { numeroPartes = it.filter { c -> c.isDigit() } },
+                    label = { Text("Nº de partes") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = mostrarErrores && camposError["numeroPartes"] == true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["numeroPartes"] == true) Color(0xFFFFCDD2) else Color.Transparent
+                        )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = tiempoPorParte,
+                    onValueChange = { tiempoPorParte = it.filter { c -> c.isDigit() } },
+                    label = { Text("Min/parte") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = mostrarErrores && camposError["tiempoPorParte"] == true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["tiempoPorParte"] == true) Color(
+                                0xFFFFCDD2
+                            ) else Color.Transparent
+                        )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = tiempoDescanso,
+                    onValueChange = { tiempoDescanso = it.filter { c -> c.isDigit() } },
+                    label = { Text("Descanso (min)") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = mostrarErrores && camposError["tiempoDescanso"] == true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            if (mostrarErrores && camposError["tiempoDescanso"] == true) Color(
+                                0xFFFFCDD2
+                            ) else Color.Transparent
+                        )
+                )
+            }
+            if (mostrarErrores && (camposError["numeroPartes"] == true || camposError["tiempoPorParte"] == true || camposError["tiempoDescanso"] == true)) {
+                Row(Modifier.fillMaxWidth()) {
+                    if (camposError["numeroPartes"] == true)
+                        Text(
+                            "Obligatorio o inválido",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    if (camposError["tiempoPorParte"] == true)
+                        Text(
+                            "Obligatorio o inválido",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    if (camposError["tiempoDescanso"] == true)
+                        Text(
+                            "Obligatorio o inválido",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                }
+            }
+
+            OutlinedTextField(
+                value = numeroJugadores,
+                onValueChange = { numeroJugadores = it.filter { c -> c.isDigit() } },
+                label = { Text("Jugadores por equipo") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = mostrarErrores && camposError["numeroJugadores"] == true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .background(
+                        if (mostrarErrores && camposError["numeroJugadores"] == true) Color(
+                            0xFFFFCDD2
+                        ) else Color.Transparent
+                    )
+            )
+            if (mostrarErrores && camposError["numeroJugadores"] == true) {
+                Text("Campo obligatorio o inválido", color = Color.Red, fontSize = 12.sp)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
+            ) {
+                Checkbox(
+                    checked = isPublic,
+                    onCheckedChange = { isPublic = it }
+                )
+                Text("Partido público (compartible por link/UID)")
+            }
+
+            Button(
+                onClick = {
+                    if (validarCampos()) {
+                        guardando = true
+                        scope.launch {
+                            viewModel.crearPartidoOnline(
+                                equipoA = equipoA,
+                                equipoB = equipoB,
+                                fecha = fecha,
+                                horaInicio = horaInicio,
+                                numeroPartes = numeroPartes.toInt(),
+                                tiempoPorParte = tiempoPorParte.toInt(),
+                                tiempoDescanso = tiempoDescanso.toInt(),
+                                numeroJugadores = numeroJugadores.toInt(),
+                                isPublic = isPublic
+                            ) { partidoUid, equipoAUid, equipoBUid ->
+                                navController.navigate("asignar_jugadores_online/$partidoUid?equipoAUid=$equipoAUid&equipoBUid=$equipoBUid") {
+                                    popUpTo("partido_online") { inclusive = false }
+                                }
+                            }
+                            guardando = false
+                        }
+                        mostrarErrores = false
+                    } else {
+                        mostrarErrores = true
                     }
-                }
-                vm.guardarEnBD {
-                    navController.popBackStack()
-                    navController.navigate("partido_online")
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-        ) {
-            Text("Guardar asignación")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp),
+                enabled = !guardando
+            ) {
+                Text("Crear y asignar jugadores")
+            }
+
         }
     }
 }

@@ -90,24 +90,7 @@ fun NavGraph(
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)
         }
-        composable(BottomNavItem.Online.route) {
-            val partidoOnlineViewModel = viewModel(
-                modelClass = PartidoOnlineViewModel::class.java,
-                factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return PartidoOnlineViewModel(
-                            partidoRepo = partidoFirebaseRepository,
-                            equipoRepo = partidoFirebaseRepository
-                        ) as T
-                    }
-                }
-            )
-            mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen(
-                navController = navController,
-                partidoViewModel = partidoOnlineViewModel
-            )
-        }
+
 
 
         // Modularizado
@@ -210,7 +193,6 @@ fun NavGraph(
             )
         }
 
-// Pantalla para asignar jugadores online
         composable(
             route = "asignar_jugadores_online/{partidoUid}?equipoAUid={equipoAUid}&equipoBUid={equipoBUid}",
             arguments = listOf(
@@ -242,7 +224,6 @@ fun NavGraph(
         }
 
         composable("partido_online") {
-            // Instancia el ViewModel de PartidoOnline
             val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel>(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -254,6 +235,13 @@ fun NavGraph(
                     }
                 }
             )
+            // NAVIGATION OVERRIDE: Home al pulsar atrás en partido_online
+            BackHandler(enabled = true) {
+                navController.navigate(BottomNavItem.Home.route) {
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
             mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen(
                 navController = navController,
                 partidoViewModel = vm
@@ -264,7 +252,6 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
         ) { backStackEntry ->
             val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: return@composable
-            // Cambia esto por la lógica real para obtener el UID del usuario autenticado.
             val usuarioUid = "UID_TEMP" // TODO: Sustituir por el UID real del usuario logueado
             val vm = viewModel<VisualizarPartidoOnlineViewModel>(
                 factory = object : ViewModelProvider.Factory {
@@ -281,6 +268,7 @@ fun NavGraph(
                 usuarioUid = usuarioUid
             )
         }
+
 
 
         composable(
@@ -361,7 +349,6 @@ fun NavGraph(
             )
         }
         composable(BottomNavItem.Online.route) {
-            // Instancia el ViewModel para online, puedes usar factory si necesitas inyectar otros repos
             val partidoOnlineViewModel = viewModel(
                 modelClass = PartidoOnlineViewModel::class.java,
                 factory = object : ViewModelProvider.Factory {
@@ -374,6 +361,13 @@ fun NavGraph(
                     }
                 }
             )
+            // NAVIGATION OVERRIDE: Home al pulsar atrás en partido_online
+            BackHandler(enabled = true) {
+                navController.navigate(BottomNavItem.Home.route) {
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
             PartidoOnlineScreen(
                 navController = navController,
                 partidoViewModel = partidoOnlineViewModel

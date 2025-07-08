@@ -25,10 +25,7 @@ fun VisualizarPartidoOnlineScreen(
 
     LaunchedEffect(eliminado) {
         if (eliminado) {
-            navController.navigate("online") {
-                popUpTo("online") { inclusive = true }
-                launchSingleTop = true
-            }
+            navController.popBackStack()
         }
     }
 

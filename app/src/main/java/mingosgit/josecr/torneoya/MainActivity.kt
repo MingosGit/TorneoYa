@@ -82,6 +82,8 @@ class MainActivity : ComponentActivity() {
                     BottomNavItem.Partido.route,
                     BottomNavItem.Online.route,
                     BottomNavItem.Usuario.route -> true
+                    // Añade esto para que se vea también en partido_online aunque llegues por flujo online
+                    "partido_online" -> true
                     else -> false
                 }
 
