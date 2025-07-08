@@ -2,6 +2,7 @@ package mingosgit.josecr.torneoya.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,6 +40,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
+import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
+import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 
 @Composable
 fun NavGraph(
@@ -66,13 +69,20 @@ fun NavGraph(
         comentarioDao = db.comentarioDao(),
         comentarioVotoDao = db.comentarioVotoDao()
     )
+    val usuarioAuthRepository = remember { UsuarioAuthRepository() }
+    val loginViewModel = viewModel<LoginViewModel>(
+        factory = LoginViewModel.Factory(usuarioAuthRepository)
+    )
     val encuestaRepository = EncuestaRepository(db.encuestaDao(), db.encuestaVotoDao())
     val goleadorRepository = GoleadorRepository(db.goleadorDao())
     val eventoRepository = EventoRepository(db.eventoDao())
     val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
     val partidoFirebaseRepository = remember { PartidoFirebaseRepository() }
     // OBTENER UID DEL USUARIO LOGUEADO
-    val usuarioUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    val usuarioUid = when (val state = loginViewModel.loginState.collectAsState().value) {
+        is LoginState.Success -> state.usuario.uid
+        else -> ""
+    }
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
@@ -181,13 +191,19 @@ fun NavGraph(
             )
         }
         // Pantalla para crear partido online
+
         composable("crear_partido_online") {
+            val userUid = when (val state = loginViewModel.loginState.collectAsState().value) {
+                is LoginState.Success -> state.usuario.uid
+                else -> ""
+            }
             val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel>(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
                         return mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel(
-                            partidoFirebaseRepository = partidoFirebaseRepository
+                            partidoFirebaseRepository = partidoFirebaseRepository,
+                            userUid = userUid
                         ) as T
                     }
                 }

@@ -8,7 +8,8 @@ import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 
 class CreatePartidoOnlineViewModel(
-    private val partidoFirebaseRepository: PartidoFirebaseRepository
+    private val partidoFirebaseRepository: PartidoFirebaseRepository,
+    private val userUid: String // <<--- PASA EL UID AQUÍ!
 ) : ViewModel() {
 
     fun crearPartidoOnline(
@@ -24,10 +25,8 @@ class CreatePartidoOnlineViewModel(
         onFinish: (String, String, String) -> Unit = { _, _, _ -> }
     ) {
         viewModelScope.launch {
-            // 1. Crear equipos en Firestore (guarda y recupera sus UIDs)
             val equipoAId = partidoFirebaseRepository.crearEquipo(EquipoFirebase(nombre = equipoA))
             val equipoBId = partidoFirebaseRepository.crearEquipo(EquipoFirebase(nombre = equipoB))
-            // 2. Crear partido en Firestore
             val partido = PartidoFirebase(
                 fecha = fecha,
                 horaInicio = horaInicio,
@@ -38,10 +37,15 @@ class CreatePartidoOnlineViewModel(
                 equipoBId = equipoBId,
                 numeroJugadores = numeroJugadores,
                 estado = "PREVIA",
+                golesEquipoA = 0,
+                golesEquipoB = 0,
                 jugadoresEquipoA = emptyList(),
                 jugadoresEquipoB = emptyList(),
-                creadorUid = "", // Añade el UID correcto si tienes autenticación
-                isPublic = isPublic
+                nombresManualEquipoA = emptyList(),
+                nombresManualEquipoB = emptyList(),
+                creadorUid = userUid, // AQUÍ SE PONE EL CREADOR
+                isPublic = isPublic,
+                usuariosConAcceso = listOf(userUid) // EL CREADOR TIENE ACCESO
             )
             val partidoUid = partidoFirebaseRepository.crearPartidoConRetornoUid(partido)
             onFinish(partidoUid, equipoAId, equipoBId)

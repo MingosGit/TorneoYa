@@ -285,6 +285,5 @@ fun AsignarJugadoresOnlineScreen(
         ) {
             Text("Guardar asignación")
         }
-
     }
 }

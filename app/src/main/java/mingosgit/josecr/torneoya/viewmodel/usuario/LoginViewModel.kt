@@ -1,6 +1,7 @@
 package mingosgit.josecr.torneoya.viewmodel.usuario
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +46,18 @@ class LoginViewModel(
     fun clearState() {
         _loginState.value = LoginState.Empty
         _resetPasswordState.value = ResetPasswordState.Empty
+    }
+
+    class Factory(
+        private val repository: UsuarioAuthRepository
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return LoginViewModel(repository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }
 

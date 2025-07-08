@@ -50,34 +50,14 @@ fun PartidoOnlineScreen(
     partidoViewModel: PartidoOnlineViewModel
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
-
+    // ¡¡SOLO ESTA LINEA: fuerza la recarga SIEMPRE al entrar!!
     LaunchedEffect(Unit) {
         partidoViewModel.cargarPartidosConNombres()
     }
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
 
     val partidos by partidoViewModel.partidosConNombres.collectAsState()
-    val needReload = remember { mutableStateOf(false) }
-
-    LaunchedEffect(navController) {
-        navController.addOnDestinationChangedListener { controller, destination, _ ->
-            val entry = controller.previousBackStackEntry
-            if (destination.route == "partido_online" &&
-                entry?.arguments?.containsKey("reload_partidos") == true
-            ) {
-                needReload.value = true
-                entry.arguments?.remove("reload_partidos")
-            }
-        }
-    }
-
-    LaunchedEffect(needReload.value) {
-        if (needReload.value) {
-            partidoViewModel.cargarPartidosConNombres()
-            needReload.value = false
-        }
-    }
 
     var sortOption by remember { mutableStateOf("Nombre") }
     var ascending by remember { mutableStateOf(true) }
