@@ -31,7 +31,9 @@ import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.VisualizarPartidoOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 
 @Composable
 fun NavGraph(
@@ -257,6 +259,29 @@ fun NavGraph(
                 partidoViewModel = vm
             )
         }
+        composable(
+            "visualizar_partido_online/{partidoUid}",
+            arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: return@composable
+            // Cambia esto por la lógica real para obtener el UID del usuario autenticado.
+            val usuarioUid = "UID_TEMP" // TODO: Sustituir por el UID real del usuario logueado
+            val vm = viewModel<VisualizarPartidoOnlineViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return VisualizarPartidoOnlineViewModel(partidoUid, partidoFirebaseRepository) as T
+                    }
+                }
+            )
+            VisualizarPartidoOnlineScreen(
+                partidoUid = partidoUid,
+                navController = navController,
+                vm = vm,
+                usuarioUid = usuarioUid
+            )
+        }
+
 
         composable(
             "editar_partido/{partidoId}",
