@@ -1,5 +1,8 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,12 +15,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +50,8 @@ fun PartidoOnlineScreen(
     partidoViewModel: PartidoOnlineViewModel
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
 
     LaunchedEffect(Unit) {
         partidoViewModel.cargarPartidosConNombres()
@@ -81,6 +90,14 @@ fun PartidoOnlineScreen(
     var partidoSeleccionado by remember { mutableStateOf<PartidoConNombresOnline?>(null) }
 
     var showConfirmDialog by remember { mutableStateOf(false) }
+
+    // ---- BUSCADOR POR UID ----
+    var showSearchDropdown by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf(listOf<PartidoConNombresOnline>()) }
+    var searchLoading by remember { mutableStateOf(false) }
+    var searchError by remember { mutableStateOf<String?>(null) }
+    var showAddConfirmDialog by remember { mutableStateOf<PartidoConNombresOnline?>(null) }
 
     fun parseFecha(fecha: String): LocalDate? {
         val patronesFecha = listOf("yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yyyy")
@@ -236,6 +253,38 @@ fun PartidoOnlineScreen(
         )
     }
 
+    // --- Confirmación para agregar por UID ---
+    if (showAddConfirmDialog != null) {
+        AlertDialog(
+            onDismissRequest = { showAddConfirmDialog = null },
+            title = { Text("¿Agregar partido?", fontWeight = FontWeight.Bold) },
+            text = {
+                Text("¿Seguro que deseas agregar el partido \"${showAddConfirmDialog!!.nombreEquipoA} vs ${showAddConfirmDialog!!.nombreEquipoB}\" a tu lista?")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            partidoViewModel.agregarPartidoALista(showAddConfirmDialog!!)
+                            partidoViewModel.cargarPartidosConNombres()
+                        }
+                        showAddConfirmDialog = null
+                        searchText = ""
+                        searchResults = emptyList()
+                        showSearchDropdown = false
+                    }
+                ) {
+                    Text("Agregar")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showAddConfirmDialog = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
@@ -263,6 +312,125 @@ fun PartidoOnlineScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
+
+            // ---- BUSCADOR POR UID + BOTÓN PEGAR Y BUSCAR----
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp)
+            ) {
+                Button(
+                    onClick = { showSearchDropdown = !showSearchDropdown },
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar UID", modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Buscar por UID")
+                }
+
+                DropdownMenu(
+                    expanded = showSearchDropdown,
+                    onDismissRequest = { showSearchDropdown = false },
+                    modifier = Modifier
+                        .fillMaxWidth(0.98f)
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = searchText,
+                                onValueChange = {
+                                    searchText = it
+                                    searchError = null
+                                },
+                                label = { Text("UID del partido") },
+                                singleLine = true,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 4.dp)
+                            )
+                            IconButton(
+                                onClick = {
+                                    // Pegar desde portapapeles
+                                    val clipboardText = clipboardManager.getText()?.text
+                                    if (!clipboardText.isNullOrBlank()) {
+                                        searchText = clipboardText
+                                        searchError = null
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.ContentPaste, contentDescription = "Pegar UID")
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (searchText.isNotBlank()) {
+                                        searchLoading = true
+                                        searchError = null
+                                        scope.launch {
+                                            try {
+                                                val partido = partidoViewModel.buscarPartidoPorUid(searchText)
+                                                searchResults = if (partido != null) listOf(partido) else emptyList()
+                                                searchError = if (partido == null) "No existe ese UID" else null
+                                            } catch (e: Exception) {
+                                                searchResults = emptyList()
+                                                searchError = "Error en búsqueda"
+                                            }
+                                            searchLoading = false
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Search, contentDescription = "Buscar UID")
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        if (searchLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .size(22.dp)
+                            )
+                        }
+                        if (searchError != null) {
+                            Text(
+                                searchError ?: "",
+                                color = Color.Red,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                        if (searchResults.isNotEmpty()) {
+                            searchResults.forEach { p ->
+                                ListItem(
+                                    headlineContent = {
+                                        Text("${p.nombreEquipoA} vs ${p.nombreEquipoB}", fontWeight = FontWeight.SemiBold)
+                                    },
+                                    supportingContent = {
+                                        Text("UID: ${p.uid}", fontSize = 13.sp)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            showAddConfirmDialog = p
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            // --------- RESTO DE LOS FILTROS Y LISTADO NORMAL ----------
             Card(
                 elevation = CardDefaults.cardElevation(4.dp),
                 modifier = Modifier

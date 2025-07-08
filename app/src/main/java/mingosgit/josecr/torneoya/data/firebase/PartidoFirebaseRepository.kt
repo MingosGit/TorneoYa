@@ -15,6 +15,25 @@ class PartidoFirebaseRepository {
         }
     }
 
+    // NUEVO: LISTAR SOLO PARTIDOS CREADOS O DONDE TENGO ACCESO
+    suspend fun listarPartidosPorUsuario(uid: String): List<PartidoFirebase> {
+        val partidosCreados = db.collection("partidos")
+            .whereEqualTo("creadorUid", uid)
+            .get().await()
+            .documents.mapNotNull {
+                it.toObject(PartidoFirebase::class.java)?.copy(uid = it.id)
+            }
+
+        val partidosAcceso = db.collection("partidos")
+            .whereArrayContains("usuariosConAcceso", uid)
+            .get().await()
+            .documents.mapNotNull {
+                it.toObject(PartidoFirebase::class.java)?.copy(uid = it.id)
+            }
+
+        return (partidosCreados + partidosAcceso).distinctBy { it.uid }
+    }
+
     suspend fun crearEquipo(equipo: EquipoFirebase): String {
         val datos = hashMapOf(
             "nombre" to equipo.nombre
@@ -41,7 +60,8 @@ class PartidoFirebaseRepository {
             "nombresManualEquipoA" to partido.nombresManualEquipoA,
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
             "creadorUid" to partido.creadorUid,
-            "isPublic" to partido.isPublic
+            "isPublic" to partido.isPublic,
+            "usuariosConAcceso" to partido.usuariosConAcceso // NUEVO
         )
         db.collection("partidos").add(datos).await()
     }
@@ -64,7 +84,8 @@ class PartidoFirebaseRepository {
             "nombresManualEquipoA" to partido.nombresManualEquipoA,
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
             "creadorUid" to partido.creadorUid,
-            "isPublic" to partido.isPublic
+            "isPublic" to partido.isPublic,
+            "usuariosConAcceso" to partido.usuariosConAcceso // NUEVO
         )
         val doc = db.collection("partidos").add(datos).await()
         return doc.id
@@ -111,6 +132,12 @@ class PartidoFirebaseRepository {
             .await()
     }
 
+    // NUEVO: Añadir usuario a acceso del partido
+    suspend fun agregarUsuarioAAcceso(partidoUid: String, userUid: String) {
+        val partidoRef = db.collection("partidos").document(partidoUid)
+        partidoRef.update("usuariosConAcceso", com.google.firebase.firestore.FieldValue.arrayUnion(userUid)).await()
+    }
+
     // ====================== ONLINE =========================
 
     suspend fun obtenerComentarios(partidoUid: String): List<ComentarioFirebase> {
@@ -152,13 +179,11 @@ class PartidoFirebaseRepository {
     }
 
     suspend fun votarComentario(comentarioUid: String, usuarioUid: String, tipo: Int) {
-        // Borra voto previo del usuario para este comentario
         val prev = db.collection("comentario_votos")
             .whereEqualTo("comentarioUid", comentarioUid)
             .whereEqualTo("usuarioUid", usuarioUid)
             .get().await()
         for (d in prev.documents) db.collection("comentario_votos").document(d.id).delete().await()
-        // Añade nuevo voto
         val datos = hashMapOf(
             "comentarioUid" to comentarioUid,
             "usuarioUid" to usuarioUid,
@@ -210,13 +235,11 @@ class PartidoFirebaseRepository {
     }
 
     suspend fun votarEncuestaUnico(encuestaUid: String, opcionIndex: Int, usuarioUid: String) {
-        // Borra voto previo
         val prev = db.collection("encuesta_votos")
             .whereEqualTo("encuestaUid", encuestaUid)
             .whereEqualTo("usuarioUid", usuarioUid)
             .get().await()
         for (d in prev.documents) db.collection("encuesta_votos").document(d.id).delete().await()
-        // Añade nuevo voto
         val datos = hashMapOf(
             "encuestaUid" to encuestaUid,
             "opcionIndex" to opcionIndex,

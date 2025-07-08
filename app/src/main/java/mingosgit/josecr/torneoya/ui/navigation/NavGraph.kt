@@ -71,6 +71,9 @@ fun NavGraph(
     val eventoRepository = EventoRepository(db.eventoDao())
     val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
     val partidoFirebaseRepository = remember { PartidoFirebaseRepository() }
+    // OBTENER UID DEL USUARIO LOGUEADO
+    val usuarioUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
             val homeViewModel = viewModel<HomeViewModel>(
@@ -94,8 +97,6 @@ fun NavGraph(
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)
         }
-
-
 
         // Modularizado
         addUsuarioModuleNavGraph(
@@ -179,7 +180,7 @@ fun NavGraph(
                 modifier = Modifier
             )
         }
-// Pantalla para crear partido online
+        // Pantalla para crear partido online
         composable("crear_partido_online") {
             val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel>(
                 factory = object : ViewModelProvider.Factory {
@@ -210,7 +211,6 @@ fun NavGraph(
             val equipoBUid = backStackEntry.arguments?.getString("equipoBUid") ?: ""
 
             val usuarioAuthRepository = remember { UsuarioAuthRepository() }
-            // FUNCION DE AMIGOS COMPLETA, NADA OMITIDO:
             val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity> = {
                 val currentUid = FirebaseAuth.getInstance().currentUser?.uid
                 if (currentUid == null) {
@@ -257,7 +257,8 @@ fun NavGraph(
                         @Suppress("UNCHECKED_CAST")
                         return mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel(
                             partidoRepo = partidoFirebaseRepository,
-                            equipoRepo = partidoFirebaseRepository
+                            equipoRepo = partidoFirebaseRepository,
+                            usuarioUid = usuarioUid
                         ) as T
                     }
                 }
@@ -279,7 +280,6 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
         ) { backStackEntry ->
             val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: return@composable
-            val usuarioUid = "UID_TEMP" // TODO: Sustituir por el UID real del usuario logueado
             val vm = viewModel<VisualizarPartidoOnlineViewModel>(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -295,8 +295,6 @@ fun NavGraph(
                 usuarioUid = usuarioUid
             )
         }
-
-
 
         composable(
             "editar_partido/{partidoId}",
@@ -383,7 +381,8 @@ fun NavGraph(
                         @Suppress("UNCHECKED_CAST")
                         return PartidoOnlineViewModel(
                             partidoRepo = partidoFirebaseRepository,
-                            equipoRepo = partidoFirebaseRepository
+                            equipoRepo = partidoFirebaseRepository,
+                            usuarioUid = usuarioUid
                         ) as T
                     }
                 }

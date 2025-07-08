@@ -22,7 +22,8 @@ data class PartidoConNombresOnline(
 
 class PartidoOnlineViewModel(
     private val partidoRepo: PartidoFirebaseRepository,
-    private val equipoRepo: PartidoFirebaseRepository // Usa el mismo para equipos si tienes métodos
+    private val equipoRepo: PartidoFirebaseRepository,
+    private val usuarioUid: String
 ) : ViewModel() {
     private val _partidos = MutableStateFlow<List<PartidoFirebase>>(emptyList())
     val partidos: StateFlow<List<PartidoFirebase>> = _partidos
@@ -32,13 +33,14 @@ class PartidoOnlineViewModel(
 
     fun cargarPartidos() {
         viewModelScope.launch {
-            _partidos.value = partidoRepo.listarPartidos()
+            // Solo carga los partidos que ha creado o tiene acceso el usuario actual
+            _partidos.value = partidoRepo.listarPartidosPorUsuario(usuarioUid)
         }
     }
 
     fun cargarPartidosConNombres() {
         viewModelScope.launch {
-            val partidos = partidoRepo.listarPartidos()
+            val partidos = partidoRepo.listarPartidosPorUsuario(usuarioUid)
             val equipos = mutableMapOf<String, EquipoFirebase>()
 
             // Pre-carga todos los equipos usados en los partidos para minimizar llamadas a Firestore
@@ -68,6 +70,44 @@ class PartidoOnlineViewModel(
                 )
             }
             _partidosConNombres.value = partidosNombres
+        }
+    }
+
+    suspend fun buscarPartidoPorUid(uid: String): PartidoConNombresOnline? {
+        val partido = partidoRepo.obtenerPartido(uid) ?: return null
+        // Solo deja buscar partidos a los que tiene acceso el usuario
+        if (partido.creadorUid != usuarioUid && !partido.usuariosConAcceso.contains(usuarioUid)) return null
+        val equipoA = partido.equipoAId.takeIf { it.isNotBlank() }?.let { equipoRepo.obtenerEquipo(it) }
+        val equipoB = partido.equipoBId.takeIf { it.isNotBlank() }?.let { equipoRepo.obtenerEquipo(it) }
+        return PartidoConNombresOnline(
+            uid = partido.uid,
+            nombreEquipoA = equipoA?.nombre ?: "Equipo A",
+            nombreEquipoB = equipoB?.nombre ?: "Equipo B",
+            fecha = partido.fecha,
+            horaInicio = partido.horaInicio,
+            horaFin = calcularHoraFin(
+                partido.horaInicio,
+                partido.numeroPartes,
+                partido.tiempoPorParte,
+                partido.tiempoDescanso
+            )
+        )
+    }
+
+    fun agregarPartidoALista(partido: PartidoConNombresOnline) {
+        viewModelScope.launch {
+            val yaExiste = _partidosConNombres.value.any { it.uid == partido.uid }
+            if (!yaExiste) {
+                val listaActual = _partidosConNombres.value.toMutableList()
+                listaActual.add(0, partido)
+                _partidosConNombres.value = listaActual
+            }
+        }
+    }
+
+    fun agregarUsuarioAAccesoPartido(partidoUid: String) {
+        viewModelScope.launch {
+            partidoRepo.agregarUsuarioAAcceso(partidoUid, usuarioUid)
         }
     }
 
@@ -107,7 +147,9 @@ class PartidoOnlineViewModel(
             val partido = partidoRepo.obtenerPartido(uid)
             partido?.let {
                 val nuevoPartido = it.copy(
-                    uid = "" // Firestore lo generará nuevo
+                    uid = "",
+                    creadorUid = usuarioUid,
+                    usuariosConAcceso = emptyList()
                 )
                 partidoRepo.crearPartido(nuevoPartido)
             }
