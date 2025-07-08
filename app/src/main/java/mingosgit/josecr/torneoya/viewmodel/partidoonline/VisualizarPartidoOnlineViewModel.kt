@@ -136,11 +136,27 @@ class VisualizarPartidoOnlineViewModel(
 
     fun agregarComentario(usuarioNombre: String, texto: String, usuarioUid: String? = null) {
         viewModelScope.launch {
+            var nombreFinal = usuarioNombre
+            val uid = usuarioUid ?: ""
+
+            // Si el nombre está vacío o es "Tú", intenta buscar el nombre real del usuario
+            if (nombreFinal.isBlank() || nombreFinal.trim().lowercase() == "tú") {
+                try {
+                    if (uid.isNotBlank()) {
+                        val db = FirebaseFirestore.getInstance()
+                        val snapUsuario = db.collection("usuarios").document(uid).get().await()
+                        nombreFinal = snapUsuario.getString("nombreUsuario") ?: "Usuario"
+                    }
+                } catch (_: Exception) {
+                    nombreFinal = "Usuario"
+                }
+            }
+
             val fechaHora = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             val comentario = ComentarioFirebase(
                 partidoUid = partidoUid,
-                usuarioUid = usuarioUid ?: "",
-                usuarioNombre = usuarioNombre,
+                usuarioUid = uid,
+                usuarioNombre = nombreFinal,
                 texto = texto,
                 fechaHora = fechaHora
             )
@@ -148,6 +164,8 @@ class VisualizarPartidoOnlineViewModel(
             cargarComentariosEncuestas(usuarioUid)
         }
     }
+
+
 
     fun votarComentario(comentarioUid: String, usuarioUid: String, tipo: Int) {
         viewModelScope.launch {
