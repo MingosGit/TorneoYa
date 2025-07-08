@@ -20,8 +20,8 @@ class AsignarJugadoresOnlineViewModel(
     private val equipoAUid: String,
     private val equipoBUid: String,
     private val partidoFirebaseRepository: PartidoFirebaseRepository,
-    private val usuarioAuthRepository: UsuarioAuthRepository, // <-- Añade esto a la instancia
-    private val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity> // <-- Pásalo en el constructor si tienes repositorio de amigos
+    private val usuarioAuthRepository: UsuarioAuthRepository,
+    private val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity>
 ) : ViewModel() {
 
     var equipoAJugadores = mutableStateListOf<JugadorFirebase>()
@@ -57,8 +57,11 @@ class AsignarJugadoresOnlineViewModel(
 
     fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
-            val jugadoresUids = equipoAJugadores.map { it.uid } + equipoBJugadores.map { it.uid }
-            partidoFirebaseRepository.actualizarJugadoresPartido(partidoUid, jugadoresUids)
+            partidoFirebaseRepository.actualizarJugadoresPartido(
+                partidoUid = partidoUid,
+                jugadoresEquipoA = equipoAJugadores.map { it.uid },
+                jugadoresEquipoB = equipoBJugadores.map { it.uid }
+            )
             onFinish()
         }
     }
@@ -123,7 +126,6 @@ class AsignarJugadoresOnlineViewModel(
         return jugadoresDisponiblesTodos.filter { it.uid !in yaElegidos }
     }
 
-    // EXTRA: Por si quieres acceso rápido a tu propio usuario o amigo
     fun agregarmeComoJugador(equipo: String) {
         val yo = jugadoresDisponiblesTodos.firstOrNull { it.uid == miUsuario?.uid } ?: return
         when (equipo) {
@@ -140,7 +142,6 @@ class AsignarJugadoresOnlineViewModel(
     }
 }
 
-// EXTENSIÓN para UsuarioAuthRepository
 suspend fun UsuarioAuthRepository.getUsuarioByUid(uid: String): UsuarioFirebaseEntity? {
     val snap = this.firestore.collection("usuarios").document(uid).get().await()
     return snap.toObject(UsuarioFirebaseEntity::class.java)

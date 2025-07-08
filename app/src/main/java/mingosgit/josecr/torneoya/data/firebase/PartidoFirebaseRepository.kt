@@ -14,7 +14,13 @@ class PartidoFirebaseRepository {
             partido?.copy(uid = it.id)
         }
     }
-
+    suspend fun crearEquipo(equipo: EquipoFirebase): String {
+        val datos = hashMapOf(
+            "nombre" to equipo.nombre
+        )
+        val doc = db.collection("equipos").add(datos).await()
+        return doc.id
+    }
     suspend fun crearPartido(partido: PartidoFirebase) {
         val datos = hashMapOf(
             "fecha" to partido.fecha,
@@ -28,7 +34,8 @@ class PartidoFirebaseRepository {
             "estado" to partido.estado,
             "golesEquipoA" to partido.golesEquipoA,
             "golesEquipoB" to partido.golesEquipoB,
-            "jugadoresUids" to partido.jugadoresUids,
+            "jugadoresEquipoA" to partido.jugadoresEquipoA,
+            "jugadoresEquipoB" to partido.jugadoresEquipoB,
             "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic
         )
@@ -48,19 +55,12 @@ class PartidoFirebaseRepository {
             "estado" to partido.estado,
             "golesEquipoA" to partido.golesEquipoA,
             "golesEquipoB" to partido.golesEquipoB,
-            "jugadoresUids" to partido.jugadoresUids,
+            "jugadoresEquipoA" to partido.jugadoresEquipoA,
+            "jugadoresEquipoB" to partido.jugadoresEquipoB,
             "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic
         )
         val doc = db.collection("partidos").add(datos).await()
-        return doc.id
-    }
-
-    suspend fun crearEquipo(equipo: EquipoFirebase): String {
-        val datos = hashMapOf(
-            "nombre" to equipo.nombre
-        )
-        val doc = db.collection("equipos").add(datos).await()
         return doc.id
     }
 
@@ -86,9 +86,18 @@ class PartidoFirebaseRepository {
         }
     }
 
-    suspend fun actualizarJugadoresPartido(partidoUid: String, jugadoresUids: List<String>) {
+    suspend fun actualizarJugadoresPartido(
+        partidoUid: String,
+        jugadoresEquipoA: List<String>,
+        jugadoresEquipoB: List<String>
+    ) {
         db.collection("partidos").document(partidoUid)
-            .update("jugadoresUids", jugadoresUids)
+            .update(
+                mapOf(
+                    "jugadoresEquipoA" to jugadoresEquipoA,
+                    "jugadoresEquipoB" to jugadoresEquipoB
+                )
+            )
             .await()
     }
 

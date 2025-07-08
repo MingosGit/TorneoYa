@@ -2,9 +2,12 @@ package mingosgit.josecr.torneoya.viewmodel.partidoonline
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
@@ -63,15 +66,11 @@ class VisualizarPartidoOnlineViewModel(
             if (partido != null) {
                 val equipoA = partido.equipoAId.let { repo.obtenerEquipo(it) }
                 val equipoB = partido.equipoBId.let { repo.obtenerEquipo(it) }
-                val jugadoresAll = repo.obtenerJugadores()
-                val jugadoresA = jugadoresAll
-                    .filter { it.uid in partido.jugadoresUids && it.uid.isNotBlank() }
-                    .filter { it.uid != partido.equipoBId }
-                    .map { it.nombre }
-                val jugadoresB = jugadoresAll
-                    .filter { it.uid in partido.jugadoresUids && it.uid.isNotBlank() }
-                    .filter { it.uid != partido.equipoAId }
-                    .map { it.nombre }
+
+                // CAMBIO AQUÍ: Busca los nombres en la colección usuarios
+                val jugadoresA = obtenerNombresPorUid(partido.jugadoresEquipoA)
+                val jugadoresB = obtenerNombresPorUid(partido.jugadoresEquipoB)
+
                 val tiempo = calcularMinutoYParte(
                     partido.fecha,
                     partido.horaInicio,
@@ -95,6 +94,7 @@ class VisualizarPartidoOnlineViewModel(
             cargarComentariosEncuestas(usuarioUid)
         }
     }
+
 
     fun cargarComentariosEncuestas(usuarioUid: String? = null) {
         viewModelScope.launch {
@@ -231,7 +231,18 @@ class VisualizarPartidoOnlineViewModel(
             return InfoMinutoParte("-", "-", 0)
         }
     }
-
+    private suspend fun obtenerNombresPorUid(uids: List<String>): List<String> {
+        if (uids.isEmpty()) return emptyList()
+        val db = FirebaseFirestore.getInstance()
+        val nombres = mutableListOf<String>()
+        for (uid in uids) {
+            if (uid.isBlank()) continue
+            val snap = db.collection("usuarios").document(uid).get().await()
+            val user = snap.toObject(UsuarioFirebaseEntity::class.java)
+            nombres.add(user?.nombreUsuario ?: "Desconocido")
+        }
+        return nombres
+    }
     init {
         cargarDatos()
     }

@@ -38,6 +38,8 @@ class CreatePartidoOnlineViewModel(
                 equipoBId = equipoBId,
                 numeroJugadores = numeroJugadores,
                 estado = "PREVIA",
+                jugadoresEquipoA = emptyList(),
+                jugadoresEquipoB = emptyList(),
                 creadorUid = "", // Añade el UID correcto si tienes autenticación
                 isPublic = isPublic
             )
