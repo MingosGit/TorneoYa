@@ -104,9 +104,9 @@ fun PartidoOnlineScreen(
     fun obtenerEstadoPartido(partido: PartidoConNombresOnline): EstadoPartido {
         val hoy = LocalDate.now()
         val ahora = LocalTime.now()
-        val fecha = parseFecha(partido.fecha)
-        val horaInicio = parseHora(partido.horaInicio)
-        val horaFin = parseHora(partido.horaFin)
+        val fecha = parseFecha(partido.fecha ?: "")
+        val horaInicio = parseHora(partido.horaInicio ?: "")
+        val horaFin = parseHora(partido.horaFin ?: "")
 
         if (fecha == null || horaInicio == null || horaFin == null) {
             return EstadoPartido.PREVIA
@@ -156,7 +156,7 @@ fun PartidoOnlineScreen(
         }
     }
 
-    // --- Sheet con opciones Duplicar/Eliminar ---
+// --- Sheet con opciones Duplicar/Eliminar ---
     if (showOptionsSheet && partidoSeleccionado != null) {
         ModalBottomSheet(
             onDismissRequest = { showOptionsSheet = false },
@@ -181,8 +181,10 @@ fun PartidoOnlineScreen(
                         .fillMaxWidth()
                         .clickable {
                             showOptionsSheet = false
-                            scope.launch {
-                                partidoViewModel.duplicarPartido(partidoSeleccionado!!.uid)
+                            partidoSeleccionado?.uid?.let { uid ->
+                                scope.launch {
+                                    partidoViewModel.duplicarPartido(uid)
+                                }
                             }
                         }
                 )
@@ -208,17 +210,22 @@ fun PartidoOnlineScreen(
 
     // --- Confirmación para eliminar ---
     if (showConfirmDialog && partidoSeleccionado != null) {
+        val nombreA = partidoSeleccionado?.nombreEquipoA ?: "Equipo A"
+        val nombreB = partidoSeleccionado?.nombreEquipoB ?: "Equipo B"
+        val uid = partidoSeleccionado?.uid
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
             title = { Text("¿Eliminar partido?", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro que deseas eliminar el partido \"${partidoSeleccionado!!.nombreEquipoA} vs ${partidoSeleccionado!!.nombreEquipoB}\"?") },
+            text = { Text("¿Estás seguro que deseas eliminar el partido \"$nombreA vs $nombreB\"?") },
             confirmButton = {
                 Button(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                     onClick = {
                         showConfirmDialog = false
-                        scope.launch {
-                            partidoViewModel.eliminarPartido(partidoSeleccionado!!.uid)
+                        uid?.let {
+                            scope.launch {
+                                partidoViewModel.eliminarPartido(it)
+                            }
                         }
                     }
                 ) {
@@ -235,26 +242,29 @@ fun PartidoOnlineScreen(
 
     // --- Confirmación para agregar por UID ---
     if (showAddConfirmDialog != null) {
+        val partidoAdd = showAddConfirmDialog
+        val nombreA = partidoAdd?.nombreEquipoA ?: "Equipo A"
+        val nombreB = partidoAdd?.nombreEquipoB ?: "Equipo B"
+        val uid = partidoAdd?.uid
         // Chequear si ya tienes acceso a ese partido
-        val yaExiste = sortedPartidos.any { it.uid == showAddConfirmDialog!!.uid }
+        val yaExiste = sortedPartidos.any { it.uid == uid }
         if (yaExiste) {
-            // No mostrar el dialog, sino un snackbar o error. Aquí reseteamos y mostramos error.
             LaunchedEffect(showAddConfirmDialog) {
                 showAddConfirmDialog = null
                 searchError = "Ya tienes acceso a este partido"
             }
-        } else {
+        } else if (partidoAdd != null) {
             AlertDialog(
                 onDismissRequest = { showAddConfirmDialog = null },
                 title = { Text("¿Agregar partido?", fontWeight = FontWeight.Bold) },
                 text = {
-                    Text("¿Seguro que deseas agregar el partido \"${showAddConfirmDialog!!.nombreEquipoA} vs ${showAddConfirmDialog!!.nombreEquipoB}\" a tu lista?")
+                    Text("¿Seguro que deseas agregar el partido \"$nombreA vs $nombreB\" a tu lista?")
                 },
                 confirmButton = {
                     Button(
                         onClick = {
                             scope.launch {
-                                partidoViewModel.agregarPartidoALista(showAddConfirmDialog!!)
+                                partidoViewModel.agregarPartidoALista(partidoAdd)
                             }
                             showAddConfirmDialog = null
                             searchText = ""
@@ -503,6 +513,12 @@ fun PartidoOnlineScreen(
             }
             LazyColumn {
                 items(sortedPartidos) { partido ->
+                    val nombreA = partido.nombreEquipoA ?: "Equipo A"
+                    val nombreB = partido.nombreEquipoB ?: "Equipo B"
+                    val fecha = partido.fecha ?: "-"
+                    val horaInicio = partido.horaInicio ?: "-"
+                    val horaFin = partido.horaFin ?: "-"
+
                     Card(
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(2.dp),
@@ -537,14 +553,14 @@ fun PartidoOnlineScreen(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text(
-                                    text = "${partido.nombreEquipoA}  vs  ${partido.nombreEquipoB}",
+                                    text = "$nombreA  vs  $nombreB",
                                     fontSize = 19.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Fecha: ${partido.fecha}  -  Inicio: ${partido.horaInicio}  -  Fin: ${partido.horaFin}",
+                                    text = "Fecha: $fecha  -  Inicio: $horaInicio  -  Fin: $horaFin",
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

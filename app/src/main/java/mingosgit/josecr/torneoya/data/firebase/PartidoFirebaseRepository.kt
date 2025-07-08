@@ -134,8 +134,13 @@ class PartidoFirebaseRepository {
     // Añadir usuario a acceso del partido
     suspend fun agregarUsuarioAAcceso(partidoUid: String, userUid: String) {
         val partidoRef = db.collection("partidos").document(partidoUid)
-        partidoRef.update("usuariosConAcceso", com.google.firebase.firestore.FieldValue.arrayUnion(userUid)).await()
+        partidoRef.update(
+            mapOf(
+                "usuariosConAcceso" to com.google.firebase.firestore.FieldValue.arrayUnion(userUid)
+            )
+        ).await()
     }
+
 
     // ====================== ONLINE =========================
 
