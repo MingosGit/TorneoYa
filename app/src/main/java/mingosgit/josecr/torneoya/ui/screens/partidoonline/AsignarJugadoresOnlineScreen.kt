@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AsignarJugadoresOnlineViewModel
 import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AsignarJugadoresOnlineScreen(
@@ -25,6 +26,8 @@ fun AsignarJugadoresOnlineScreen(
     LaunchedEffect(Unit) {
         vm.cargarJugadoresExistentes()
     }
+
+    val miUid = FirebaseAuth.getInstance().currentUser?.uid
 
     Column(
         modifier = Modifier
@@ -149,7 +152,14 @@ fun AsignarJugadoresOnlineScreen(
                                 .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
                                 .forEach { jugador ->
                                     DropdownMenuItem(
-                                        text = { Text(jugador.nombre) },
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(jugador.nombre)
+                                                if (miUid != null && jugador.uid == miUid) {
+                                                    Text(" /Tú", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
+                                                }
+                                            }
+                                        },
                                         onClick = {
                                             if (idx == jugadores.size) {
                                                 if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.add(jugador)
@@ -228,7 +238,14 @@ fun AsignarJugadoresOnlineScreen(
                                 .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
                                 .forEach { jugador ->
                                     DropdownMenuItem(
-                                        text = { Text(jugador.nombre) },
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(jugador.nombre)
+                                                if (miUid != null && jugador.uid == miUid) {
+                                                    Text(" /Tú", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
+                                                }
+                                            }
+                                        },
                                         onClick = {
                                             if (idx == vm.listaNombres.size) {
                                                 vm.listaNombres.add(jugador)

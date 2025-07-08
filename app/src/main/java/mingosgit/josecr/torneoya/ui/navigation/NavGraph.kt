@@ -34,6 +34,11 @@ import mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.VisualizarPartidoOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
+import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 
 @Composable
 fun NavGraph(
@@ -66,7 +71,6 @@ fun NavGraph(
     val eventoRepository = EventoRepository(db.eventoDao())
     val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
     val partidoFirebaseRepository = remember { PartidoFirebaseRepository() }
-
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
             val homeViewModel = viewModel<HomeViewModel>(
@@ -204,6 +208,26 @@ fun NavGraph(
             val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: ""
             val equipoAUid = backStackEntry.arguments?.getString("equipoAUid") ?: ""
             val equipoBUid = backStackEntry.arguments?.getString("equipoBUid") ?: ""
+
+            val usuarioAuthRepository = remember { UsuarioAuthRepository() }
+            // FUNCION DE AMIGOS COMPLETA, NADA OMITIDO:
+            val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity> = {
+                val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUid == null) {
+                    emptyList()
+                } else {
+                    val amigosSnap = FirebaseFirestore.getInstance()
+                        .collection("usuarios")
+                        .document(currentUid)
+                        .collection("amigos")
+                        .get()
+                        .await()
+                    amigosSnap.documents.mapNotNull {
+                        it.toObject(AmigoFirebaseEntity::class.java)
+                    }
+                }
+            }
+
             val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.AsignarJugadoresOnlineViewModel>(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -212,11 +236,14 @@ fun NavGraph(
                             partidoUid = partidoUid,
                             equipoAUid = equipoAUid,
                             equipoBUid = equipoBUid,
-                            partidoFirebaseRepository = partidoFirebaseRepository
+                            partidoFirebaseRepository = partidoFirebaseRepository,
+                            usuarioAuthRepository = usuarioAuthRepository,
+                            obtenerListaAmigos = obtenerListaAmigos
                         ) as T
                     }
                 }
             )
+
             mingosgit.josecr.torneoya.ui.screens.partidoonline.AsignarJugadoresOnlineScreen(
                 navController = navController,
                 vm = vm

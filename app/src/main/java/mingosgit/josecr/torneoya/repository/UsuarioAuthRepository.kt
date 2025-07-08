@@ -6,8 +6,8 @@ import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 
 class UsuarioAuthRepository(
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
     suspend fun isNombreUsuarioDisponible(nombreUsuario: String): Boolean {
@@ -17,7 +17,10 @@ class UsuarioAuthRepository(
             .await()
         return query.isEmpty
     }
-
+    suspend fun UsuarioAuthRepository.getUsuarioByUid(uid: String): UsuarioFirebaseEntity? {
+        val snap = this.firestore.collection("usuarios").document(uid).get().await()
+        return snap.toObject(UsuarioFirebaseEntity::class.java)
+    }
     suspend fun register(email: String, password: String, nombreUsuario: String): Result<Unit> {
         return try {
             if (!isNombreUsuarioDisponible(nombreUsuario)) {

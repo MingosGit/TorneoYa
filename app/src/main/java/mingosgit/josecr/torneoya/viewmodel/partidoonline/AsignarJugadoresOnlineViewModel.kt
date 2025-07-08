@@ -7,15 +7,21 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
+import com.google.firebase.auth.FirebaseAuth
+import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
+import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
+import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-
+import kotlinx.coroutines.tasks.await
 
 class AsignarJugadoresOnlineViewModel(
     private val partidoUid: String,
     private val equipoAUid: String,
     private val equipoBUid: String,
-    private val partidoFirebaseRepository: PartidoFirebaseRepository
+    private val partidoFirebaseRepository: PartidoFirebaseRepository,
+    private val usuarioAuthRepository: UsuarioAuthRepository, // <-- Añade esto a la instancia
+    private val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity> // <-- Pásalo en el constructor si tienes repositorio de amigos
 ) : ViewModel() {
 
     var equipoAJugadores = mutableStateListOf<JugadorFirebase>()
@@ -26,6 +32,12 @@ class AsignarJugadoresOnlineViewModel(
 
     var jugadoresExistentes by mutableStateOf<List<JugadorFirebase>>(emptyList())
         private set
+
+    var jugadoresDisponiblesTodos by mutableStateOf<List<JugadorFirebase>>(emptyList())
+        private set
+
+    var miUsuario: UsuarioFirebaseEntity? by mutableStateOf(null)
+    var amigos: List<AmigoFirebaseEntity> by mutableStateOf(emptyList())
 
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
 
@@ -54,7 +66,43 @@ class AsignarJugadoresOnlineViewModel(
     fun cargarJugadoresExistentes() {
         viewModelScope.launch {
             jugadoresExistentes = partidoFirebaseRepository.obtenerJugadores()
+            cargarUsuarioYAmigos()
         }
+    }
+
+    private suspend fun cargarUsuarioYAmigos() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        // Obtén mi usuario
+        miUsuario = usuarioAuthRepository.getUsuarioByUid(uid)
+        // Obtén amigos
+        amigos = obtenerListaAmigos()
+        // Arma la lista completa de seleccionables
+        val jugadoresList = mutableListOf<JugadorFirebase>()
+        miUsuario?.let {
+            jugadoresList.add(
+                JugadorFirebase(
+                    uid = it.uid,
+                    nombre = it.nombreUsuario,
+                    email = it.email
+                )
+            )
+        }
+        amigos.forEach { amigo ->
+            jugadoresList.add(
+                JugadorFirebase(
+                    uid = amigo.uid,
+                    nombre = amigo.nombreUsuario,
+                    email = ""
+                )
+            )
+        }
+        // Agrega también los jugadores "existentes" ya disponibles en la colección jugadores
+        val uidsActuales = jugadoresList.map { it.uid }.toSet()
+        jugadoresExistentes.forEach { j ->
+            if (j.uid !in uidsActuales)
+                jugadoresList.add(j)
+        }
+        jugadoresDisponiblesTodos = jugadoresList
     }
 
     fun jugadoresDisponiblesManual(equipo: String, idx: Int): List<JugadorFirebase> {
@@ -65,13 +113,35 @@ class AsignarJugadoresOnlineViewModel(
         }
         val yaElegidosEsteEquipo = jugadoresActuales.withIndex().filter { it.index != idx }.map { it.value.uid }
         val yaElegidosOtroEquipo = jugadoresOtroEquipo.map { it.uid }
-        return jugadoresExistentes.filter {
+        return jugadoresDisponiblesTodos.filter {
             it.uid !in yaElegidosEsteEquipo && it.uid !in yaElegidosOtroEquipo
         }
     }
 
     fun jugadoresDisponiblesAleatorio(idx: Int): List<JugadorFirebase> {
         val yaElegidos = listaNombres.withIndex().filter { it.index != idx }.map { it.value.uid }
-        return jugadoresExistentes.filter { it.uid !in yaElegidos }
+        return jugadoresDisponiblesTodos.filter { it.uid !in yaElegidos }
     }
+
+    // EXTRA: Por si quieres acceso rápido a tu propio usuario o amigo
+    fun agregarmeComoJugador(equipo: String) {
+        val yo = jugadoresDisponiblesTodos.firstOrNull { it.uid == miUsuario?.uid } ?: return
+        when (equipo) {
+            "A" -> if (equipoAJugadores.none { it.uid == yo.uid }) equipoAJugadores.add(yo)
+            "B" -> if (equipoBJugadores.none { it.uid == yo.uid }) equipoBJugadores.add(yo)
+        }
+    }
+    fun asignarAmigoPorUid(uid: String, equipo: String) {
+        val amigo = jugadoresDisponiblesTodos.firstOrNull { it.uid == uid } ?: return
+        when (equipo) {
+            "A" -> if (equipoAJugadores.none { it.uid == amigo.uid }) equipoAJugadores.add(amigo)
+            "B" -> if (equipoBJugadores.none { it.uid == amigo.uid }) equipoBJugadores.add(amigo)
+        }
+    }
+}
+
+// EXTENSIÓN para UsuarioAuthRepository
+suspend fun UsuarioAuthRepository.getUsuarioByUid(uid: String): UsuarioFirebaseEntity? {
+    val snap = this.firestore.collection("usuarios").document(uid).get().await()
+    return snap.toObject(UsuarioFirebaseEntity::class.java)
 }
