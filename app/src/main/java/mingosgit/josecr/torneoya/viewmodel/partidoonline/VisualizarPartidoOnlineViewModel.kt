@@ -67,25 +67,30 @@ class VisualizarPartidoOnlineViewModel(
                 val equipoA = partido.equipoAId.let { repo.obtenerEquipo(it) }
                 val equipoB = partido.equipoBId.let { repo.obtenerEquipo(it) }
 
-                // CAMBIO AQUÍ: Busca los nombres en la colección usuarios
+                val nombresManualA = partido.nombresManualEquipoA ?: emptyList()
+                val nombresManualB = partido.nombresManualEquipoB ?: emptyList()
+
+                // *** ESTO AHORA BUSCA EN AMBAS COLECCIONES ***
                 val jugadoresA = obtenerNombresPorUid(partido.jugadoresEquipoA)
                 val jugadoresB = obtenerNombresPorUid(partido.jugadoresEquipoB)
 
-                val tiempo = calcularMinutoYParte(
-                    partido.fecha,
-                    partido.horaInicio,
-                    partido.numeroPartes,
-                    partido.tiempoPorParte,
-                    partido.tiempoDescanso
-                )
+                val listaFinalA = jugadoresA + nombresManualA
+                val listaFinalB = jugadoresB + nombresManualB
+
                 _uiState.value = VisualizarPartidoOnlineUiState(
                     nombreEquipoA = equipoA?.nombre ?: "Equipo A",
                     nombreEquipoB = equipoB?.nombre ?: "Equipo B",
-                    jugadoresEquipoA = jugadoresA,
-                    jugadoresEquipoB = jugadoresB,
-                    estado = tiempo.estadoVisible,
-                    minutoActual = tiempo.minutoVisible,
-                    parteActual = tiempo.parteActual,
+                    jugadoresEquipoA = listaFinalA,
+                    jugadoresEquipoB = listaFinalB,
+                    estado = calcularMinutoYParte(
+                        partido.fecha,
+                        partido.horaInicio,
+                        partido.numeroPartes,
+                        partido.tiempoPorParte,
+                        partido.tiempoDescanso
+                    ).estadoVisible,
+                    minutoActual = "",
+                    parteActual = 0,
                     partesTotales = partido.numeroPartes,
                     golesEquipoA = partido.golesEquipoA,
                     golesEquipoB = partido.golesEquipoB
@@ -94,6 +99,11 @@ class VisualizarPartidoOnlineViewModel(
             cargarComentariosEncuestas(usuarioUid)
         }
     }
+
+
+
+
+
 
 
     fun cargarComentariosEncuestas(usuarioUid: String? = null) {
@@ -233,17 +243,30 @@ class VisualizarPartidoOnlineViewModel(
     }
     private suspend fun obtenerNombresPorUid(uids: List<String>): List<String> {
         if (uids.isEmpty()) return emptyList()
-        val db = FirebaseFirestore.getInstance()
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         val nombres = mutableListOf<String>()
         for (uid in uids) {
             if (uid.isBlank()) continue
-            val snap = db.collection("usuarios").document(uid).get().await()
-            val user = snap.toObject(UsuarioFirebaseEntity::class.java)
-            nombres.add(user?.nombreUsuario ?: "Desconocido")
+
+            // PRIMERO busca en 'jugadores'
+            val snapJugador = db.collection("jugadores").document(uid).get().await()
+            val nombreJugador = snapJugador.getString("nombre")
+            if (!nombreJugador.isNullOrBlank()) {
+                nombres.add(nombreJugador)
+                continue
+            }
+
+            // Si no está, busca en 'usuarios'
+            val snapUsuario = db.collection("usuarios").document(uid).get().await()
+            val nombreUsuario = snapUsuario.getString("nombreUsuario")
+            if (!nombreUsuario.isNullOrBlank()) {
+                nombres.add(nombreUsuario)
+                continue
+            }
+
+            nombres.add("Desconocido")
         }
         return nombres
     }
-    init {
-        cargarDatos()
-    }
+
 }

@@ -57,14 +57,24 @@ class AsignarJugadoresOnlineViewModel(
 
     fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
-            partidoFirebaseRepository.actualizarJugadoresPartido(
+            // Separar jugadores con uid de los manuales
+            val equipoA_uids = equipoAJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
+            val equipoA_nombres = equipoAJugadores.mapNotNull { if (it.uid.isBlank() && it.nombre.isNotBlank()) it.nombre else null }
+
+            val equipoB_uids = equipoBJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
+            val equipoB_nombres = equipoBJugadores.mapNotNull { if (it.uid.isBlank() && it.nombre.isNotBlank()) it.nombre else null }
+
+            partidoFirebaseRepository.actualizarJugadoresPartidoOnline(
                 partidoUid = partidoUid,
-                jugadoresEquipoA = equipoAJugadores.map { it.uid },
-                jugadoresEquipoB = equipoBJugadores.map { it.uid }
+                jugadoresEquipoA = equipoA_uids,
+                nombresManualEquipoA = equipoA_nombres,
+                jugadoresEquipoB = equipoB_uids,
+                nombresManualEquipoB = equipoB_nombres
             )
             onFinish()
         }
     }
+
 
     fun cargarJugadoresExistentes() {
         viewModelScope.launch {

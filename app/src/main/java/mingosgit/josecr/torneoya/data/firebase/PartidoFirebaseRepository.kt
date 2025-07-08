@@ -14,6 +14,7 @@ class PartidoFirebaseRepository {
             partido?.copy(uid = it.id)
         }
     }
+
     suspend fun crearEquipo(equipo: EquipoFirebase): String {
         val datos = hashMapOf(
             "nombre" to equipo.nombre
@@ -21,6 +22,7 @@ class PartidoFirebaseRepository {
         val doc = db.collection("equipos").add(datos).await()
         return doc.id
     }
+
     suspend fun crearPartido(partido: PartidoFirebase) {
         val datos = hashMapOf(
             "fecha" to partido.fecha,
@@ -36,6 +38,8 @@ class PartidoFirebaseRepository {
             "golesEquipoB" to partido.golesEquipoB,
             "jugadoresEquipoA" to partido.jugadoresEquipoA,
             "jugadoresEquipoB" to partido.jugadoresEquipoB,
+            "nombresManualEquipoA" to partido.nombresManualEquipoA,
+            "nombresManualEquipoB" to partido.nombresManualEquipoB,
             "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic
         )
@@ -57,6 +61,8 @@ class PartidoFirebaseRepository {
             "golesEquipoB" to partido.golesEquipoB,
             "jugadoresEquipoA" to partido.jugadoresEquipoA,
             "jugadoresEquipoB" to partido.jugadoresEquipoB,
+            "nombresManualEquipoA" to partido.nombresManualEquipoA,
+            "nombresManualEquipoB" to partido.nombresManualEquipoB,
             "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic
         )
@@ -86,16 +92,20 @@ class PartidoFirebaseRepository {
         }
     }
 
-    suspend fun actualizarJugadoresPartido(
+    suspend fun actualizarJugadoresPartidoOnline(
         partidoUid: String,
         jugadoresEquipoA: List<String>,
-        jugadoresEquipoB: List<String>
+        nombresManualEquipoA: List<String>,
+        jugadoresEquipoB: List<String>,
+        nombresManualEquipoB: List<String>
     ) {
         db.collection("partidos").document(partidoUid)
             .update(
                 mapOf(
                     "jugadoresEquipoA" to jugadoresEquipoA,
-                    "jugadoresEquipoB" to jugadoresEquipoB
+                    "nombresManualEquipoA" to nombresManualEquipoA,
+                    "jugadoresEquipoB" to jugadoresEquipoB,
+                    "nombresManualEquipoB" to nombresManualEquipoB
                 )
             )
             .await()

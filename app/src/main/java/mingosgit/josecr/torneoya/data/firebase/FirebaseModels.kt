@@ -17,8 +17,10 @@ data class PartidoFirebase(
     val estado: String = "PREVIA",
     val golesEquipoA: Int = 0,
     val golesEquipoB: Int = 0,
-    val jugadoresEquipoA: List<String> = emptyList(), // <-- CAMBIO CLAVE, por equipo
-    val jugadoresEquipoB: List<String> = emptyList(),
+    val jugadoresEquipoA: List<String> = emptyList(), // UIDs
+    val jugadoresEquipoB: List<String> = emptyList(), // UIDs
+    val nombresManualEquipoA: List<String> = emptyList(), // NUEVO: nombres manuales (sin UID)
+    val nombresManualEquipoB: List<String> = emptyList(), // NUEVO: nombres manuales (sin UID)
     val creadorUid: String = "",
     val isPublic: Boolean = true
 )
