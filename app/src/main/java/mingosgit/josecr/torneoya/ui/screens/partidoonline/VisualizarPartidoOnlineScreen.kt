@@ -1,11 +1,17 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
-import androidx.compose.foundation.layout.padding
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
@@ -23,6 +29,9 @@ fun VisualizarPartidoOnlineScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val eliminado by vm.eliminado.collectAsState()
 
+    val context = LocalContext.current
+    var showCopiedMessage by remember { mutableStateOf(false) }
+
     LaunchedEffect(eliminado) {
         if (eliminado) {
             navController.popBackStack()
@@ -34,6 +43,18 @@ fun VisualizarPartidoOnlineScreen(
             TopAppBar(
                 title = { Text("Visualizar Partido Online") },
                 actions = {
+                    IconButton(onClick = {
+                        // Copiar UID al portapapeles
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("Partido UID", partidoUid)
+                        clipboard.setPrimaryClip(clip)
+                        showCopiedMessage = true
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Compartir UID"
+                        )
+                    }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -67,6 +88,16 @@ fun VisualizarPartidoOnlineScreen(
                 title = { Text("Eliminar Partido") },
                 text = { Text("¿Seguro que deseas eliminar este partido? Esta acción no se puede deshacer.") }
             )
+        }
+        if (showCopiedMessage) {
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                action = {
+                    TextButton(onClick = { showCopiedMessage = false }) {
+                        Text("OK")
+                    }
+                }
+            ) { Text("UID copiado al portapapeles") }
         }
     }
 }
