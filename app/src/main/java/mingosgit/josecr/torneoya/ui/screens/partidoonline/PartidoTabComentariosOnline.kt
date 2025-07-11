@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.*
@@ -24,24 +25,53 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val state by vm.comentariosEncuestasState.collectAsState()
     var textoComentario by remember { mutableStateOf("") }
     val usuarioNombre = "Tú"
+    var isLoading by remember { mutableStateOf(false) }
+    val comentariosSize = state.comentarios.size
+    val comentariosLoaded = remember(comentariosSize) { comentariosSize > 0 }
+
+    LaunchedEffect(Unit) {
+        isLoading = true
+        vm.cargarComentariosEncuestas(usuarioUid)
+        isLoading = false
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = textoComentario,
-            onValueChange = { textoComentario = it },
-            label = { Text("Escribe un comentario") },
-            singleLine = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
-            keyboardActions = KeyboardActions(onSend = {
-                if (textoComentario.isNotBlank()) {
-                    vm.agregarComentario(usuarioNombre, textoComentario, usuarioUid)
-                    textoComentario = ""
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = textoComentario,
+                onValueChange = { textoComentario = it },
+                label = { Text("Escribe un comentario") },
+                singleLine = false,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(onSend = {
+                    if (textoComentario.isNotBlank()) {
+                        vm.agregarComentario(usuarioNombre, textoComentario, usuarioUid)
+                        textoComentario = ""
+                        vm.cargarComentariosEncuestas(usuarioUid)
+                    }
+                })
+            )
+            IconButton(
+                onClick = {
+                    isLoading = true
                     vm.cargarComentariosEncuestas(usuarioUid)
-                }
-            })
-        )
+                    isLoading = false
+                },
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Refrescar comentarios"
+                )
+            }
+        }
         Button(
             onClick = {
                 if (textoComentario.isNotBlank()) {
@@ -54,75 +84,87 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         ) {
             Text("Enviar")
         }
-        LazyColumn(modifier = Modifier.fillMaxHeight()) {
-            items(state.comentarios) { comentarioConVotos ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp, horizontal = 8.dp)
-                ) {
-                    Text(
-                        text = comentarioConVotos.comentario.usuarioNombre,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
-                    Text(
-                        text = comentarioConVotos.comentario.texto,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = comentarioConVotos.comentario.fechaHora,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        IconButton(
-                            onClick = {
-                                if (comentarioConVotos.miVoto != 1) {
-                                    vm.votarComentario(comentarioConVotos.comentario.uid, usuarioUid, 1)
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ThumbUp,
-                                contentDescription = "Like",
-                                tint = if (comentarioConVotos.miVoto == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Text(text = comentarioConVotos.likes.toString())
-                        Spacer(modifier = Modifier.width(16.dp))
-                        IconButton(
-                            onClick = {
-                                if (comentarioConVotos.miVoto != -1) {
-                                    vm.votarComentario(comentarioConVotos.comentario.uid, usuarioUid, -1)
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ThumbDown,
-                                contentDescription = "Dislike",
-                                tint = if (comentarioConVotos.miVoto == -1) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Text(text = comentarioConVotos.dislikes.toString())
-                    }
-                }
-                Divider()
+
+        if (isLoading && !comentariosLoaded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
-            if (state.comentarios.isEmpty()) {
-                item {
-                    Text(
-                        text = "Sin comentarios",
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxHeight()) {
+                items(state.comentarios) { comentarioConVotos ->
+                    Column(
                         modifier = Modifier
-                            .padding(vertical = 32.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp, horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = comentarioConVotos.comentario.usuarioNombre,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = comentarioConVotos.comentario.texto,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = comentarioConVotos.comentario.fechaHora,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 4.dp)
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    if (comentarioConVotos.miVoto != 1) {
+                                        vm.votarComentario(comentarioConVotos.comentario.uid, usuarioUid, 1)
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ThumbUp,
+                                    contentDescription = "Like",
+                                    tint = if (comentarioConVotos.miVoto == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(text = comentarioConVotos.likes.toString())
+                            Spacer(modifier = Modifier.width(16.dp))
+                            IconButton(
+                                onClick = {
+                                    if (comentarioConVotos.miVoto != -1) {
+                                        vm.votarComentario(comentarioConVotos.comentario.uid, usuarioUid, -1)
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ThumbDown,
+                                    contentDescription = "Dislike",
+                                    tint = if (comentarioConVotos.miVoto == -1) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(text = comentarioConVotos.dislikes.toString())
+                        }
+                    }
+                    Divider()
+                }
+                if (state.comentarios.isEmpty()) {
+                    item {
+                        Text(
+                            text = "Sin comentarios",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .padding(vertical = 32.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
