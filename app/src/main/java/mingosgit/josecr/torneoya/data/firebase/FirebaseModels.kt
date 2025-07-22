@@ -23,7 +23,8 @@ data class PartidoFirebase(
     val nombresManualEquipoB: List<String> = emptyList(), // NUEVO: nombres manuales (sin UID)
     val creadorUid: String = "",
     val isPublic: Boolean = true,
-    val usuariosConAcceso: List<String> = emptyList()
+    val usuariosConAcceso: List<String> = emptyList(),
+    val administradores: List<String> = emptyList()
 )
 
 @IgnoreExtraProperties

@@ -31,8 +31,6 @@ class PartidoFirebaseRepository {
         return list
     }
 
-
-
     suspend fun crearEquipo(equipo: EquipoFirebase): String {
         val datos = hashMapOf(
             "nombre" to equipo.nombre
@@ -60,7 +58,8 @@ class PartidoFirebaseRepository {
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
             "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic,
-            "usuariosConAcceso" to partido.usuariosConAcceso
+            "usuariosConAcceso" to partido.usuariosConAcceso,
+            "administradores" to partido.administradores // NUEVO CAMPO
         )
         db.collection("partidos").add(datos).await()
     }
@@ -84,7 +83,8 @@ class PartidoFirebaseRepository {
             "nombresManualEquipoB" to partido.nombresManualEquipoB,
             "creadorUid" to partido.creadorUid,
             "isPublic" to partido.isPublic,
-            "usuariosConAcceso" to partido.usuariosConAcceso
+            "usuariosConAcceso" to partido.usuariosConAcceso,
+            "administradores" to partido.administradores // NUEVO CAMPO
         )
         val doc = db.collection("partidos").add(datos).await()
         return doc.id
@@ -141,6 +141,30 @@ class PartidoFirebaseRepository {
         ).await()
     }
 
+    // Permisos: Administradores
+
+    suspend fun agregarAdministrador(partidoUid: String, adminUid: String) {
+        val partidoRef = db.collection("partidos").document(partidoUid)
+        partidoRef.update(
+            mapOf(
+                "administradores" to com.google.firebase.firestore.FieldValue.arrayUnion(adminUid)
+            )
+        ).await()
+    }
+
+    suspend fun eliminarAdministrador(partidoUid: String, adminUid: String) {
+        val partidoRef = db.collection("partidos").document(partidoUid)
+        partidoRef.update(
+            mapOf(
+                "administradores" to com.google.firebase.firestore.FieldValue.arrayRemove(adminUid)
+            )
+        ).await()
+    }
+
+    suspend fun obtenerAdministradores(partidoUid: String): List<String> {
+        val snap = db.collection("partidos").document(partidoUid).get().await()
+        return snap.get("administradores") as? List<String> ?: emptyList()
+    }
 
     // ====================== ONLINE =========================
 
