@@ -2,7 +2,6 @@ package mingosgit.josecr.torneoya.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,7 +39,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
-import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 
 @Composable
@@ -78,9 +76,8 @@ fun NavGraph(
     val eventoRepository = EventoRepository(db.eventoDao())
     val equipoPredefinidoRepository = EquipoPredefinidoRepository(db.equipoPredefinidoDao())
     val partidoFirebaseRepository = remember { PartidoFirebaseRepository() }
-    val currentUser = FirebaseAuth.getInstance().currentUser
-    val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-
+    val userUidState = rememberFirebaseUserUid()
+    val userUid = userUidState.value ?: ""
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
@@ -387,9 +384,8 @@ fun NavGraph(
                 vm = vm
             )
         }
+
         composable(BottomNavItem.Online.route) {
-            val currentUser = FirebaseAuth.getInstance().currentUser
-            val userUid = currentUser?.uid ?: ""
             val partidoOnlineViewModel = viewModel(
                 modelClass = PartidoOnlineViewModel::class.java,
                 factory = object : ViewModelProvider.Factory {
@@ -398,12 +394,11 @@ fun NavGraph(
                         return PartidoOnlineViewModel(
                             partidoRepo = partidoFirebaseRepository,
                             equipoRepo = partidoFirebaseRepository,
-                            usuarioUid = userUid // <-- AQUÍ
+                            usuarioUid = userUid // <-- Esto ya es reactivo
                         ) as T
                     }
                 }
             )
-            // resto igual...
             PartidoOnlineScreen(
                 navController = navController,
                 partidoViewModel = partidoOnlineViewModel
