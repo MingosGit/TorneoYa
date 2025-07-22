@@ -9,10 +9,13 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
@@ -24,13 +27,14 @@ fun VisualizarPartidoOnlineScreen(
     vm: VisualizarPartidoOnlineViewModel,
     usuarioUid: String
 ) {
-    LaunchedEffect(partidoUid) { vm.cargarDatos(usuarioUid) }
-    val uiState by vm.uiState.collectAsState()
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    val eliminado by vm.eliminado.collectAsState()
-
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var showCopiedMessage by remember { mutableStateOf(false) }
+    val eliminado by vm.eliminado.collectAsState()
+    val uiState by vm.uiState.collectAsState()
+
+    LaunchedEffect(partidoUid) { vm.cargarDatos(usuarioUid) }
 
     LaunchedEffect(eliminado) {
         if (eliminado) {
@@ -44,7 +48,6 @@ fun VisualizarPartidoOnlineScreen(
                 title = { Text("Visualizar Partido Online") },
                 actions = {
                     IconButton(onClick = {
-                        // Copiar UID al portapapeles
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("Partido UID", partidoUid)
                         clipboard.setPrimaryClip(clip)
@@ -66,38 +69,51 @@ fun VisualizarPartidoOnlineScreen(
             )
         }
     ) { innerPadding ->
-        VisualizarPartidoOnlineContent(
-            modifier = Modifier.padding(innerPadding),
-            uiState = uiState,
-            vm = vm,
-            usuarioUid = usuarioUid,
-            partidoUid = partidoUid
-        )
-        if (showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDeleteDialog = false
-                        vm.eliminarPartido()
-                    }) { Text("Eliminar", color = MaterialTheme.colorScheme.error) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
-                },
-                title = { Text("Eliminar Partido") },
-                text = { Text("¿Seguro que deseas eliminar este partido? Esta acción no se puede deshacer.") }
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            VisualizarPartidoOnlineContent(
+                modifier = Modifier.fillMaxSize(),
+                uiState = uiState,
+                vm = vm,
+                usuarioUid = usuarioUid,
+                partidoUid = partidoUid
             )
-        }
-        if (showCopiedMessage) {
-            Snackbar(
-                modifier = Modifier.padding(16.dp),
-                action = {
-                    TextButton(onClick = { showCopiedMessage = false }) {
-                        Text("OK")
+
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDeleteDialog = false
+                            vm.eliminarPartido()
+                        }) {
+                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
+                    },
+                    title = { Text("Eliminar Partido") },
+                    text = { Text("¿Seguro que deseas eliminar este partido? Esta acción no se puede deshacer.") }
+                )
+            }
+
+            if (showCopiedMessage) {
+                LaunchedEffect(showCopiedMessage) {
+                    if (showCopiedMessage) {
+                        scope.launch {
+                            delay(2000)
+                            showCopiedMessage = false
+                        }
                     }
                 }
-            ) { Text("UID copiado al portapapeles") }
+                Snackbar(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.BottomCenter)
+                ) {
+                    Text("UID copiado al portapapeles")
+                }
+            }
         }
     }
 }
