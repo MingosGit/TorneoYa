@@ -92,8 +92,12 @@ fun NavGraph(
             HomeScreen(viewModel = homeViewModel)
         }
 
-        composable("administrar_partido_online") {
-            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarPartidoOnlineScreen()
+        composable(
+            route = "administrar_partido_online/{partidoUid}",
+            arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: ""
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarPartidoOnlineScreen(partidoUid)
         }
 
         composable(BottomNavItem.Partido.route) {

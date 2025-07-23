@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,10 +66,9 @@ fun VisualizarPartidoOnlineScreen(
                             val snap = firestore.collection("partidos").document(partidoUid).get().await()
                             val creadorUid = snap.getString("creadorUid") ?: ""
                             val administradores = (snap.get("administradores") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
-                            val usuariosConAcceso = (snap.get("usuariosConAcceso") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
                             val puedeEntrar = (usuarioUid == creadorUid) || administradores.contains(usuarioUid)
                             if (puedeEntrar) {
-                                navController.navigate("administrar_partido_online")
+                                navController.navigate("administrar_partido_online/$partidoUid")
                             } else {
                                 showPermisoDialog = true
                             }
