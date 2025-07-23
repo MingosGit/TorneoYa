@@ -21,7 +21,7 @@ fun PartidoTabsOnline(
     partidoUid: String
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabTitles = listOf("Jugadores", "Comentarios", "Encuestas")
+    val tabTitles = listOf("Jugadores", "Eventos", "Comentarios", "Encuestas")
 
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
@@ -40,9 +40,11 @@ fun PartidoTabsOnline(
 
     when (selectedTabIndex) {
         0 -> PartidoTabJugadoresOnline(uiState)
-        1 -> PartidoTabComentariosOnline(vm, usuarioUid)
-        2 -> PartidoTabEncuestasOnline(vm, usuarioUid)
+        1 -> PartidoTabEventosOnline(partidoUid, uiState)
+        2 -> PartidoTabComentariosOnline(vm, usuarioUid)
+        3 -> PartidoTabEncuestasOnline(vm, usuarioUid)
     }
+
 }
 
 
