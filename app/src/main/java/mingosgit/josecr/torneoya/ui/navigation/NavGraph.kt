@@ -39,6 +39,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 
 @Composable
@@ -97,7 +98,22 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
         ) { backStackEntry ->
             val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: ""
-            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarPartidoOnlineScreen(partidoUid)
+            val vm = viewModel<AdministrarPartidoOnlineViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return AdministrarPartidoOnlineViewModel(
+                            partidoUid = partidoUid,
+                            repo = partidoFirebaseRepository
+                        ) as T
+                    }
+                }
+            )
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarPartidoOnlineScreen(
+                partidoUid = partidoUid,
+                navController = navController,
+                viewModel = vm
+            )
         }
 
         composable(BottomNavItem.Partido.route) {
