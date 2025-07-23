@@ -18,6 +18,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +33,7 @@ fun VisualizarPartidoOnlineScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showCopiedMessage by remember { mutableStateOf(false) }
+    var showPermisoDialog by remember { mutableStateOf(false) }
     val eliminado by vm.eliminado.collectAsState()
     val uiState by vm.uiState.collectAsState()
 
@@ -58,7 +62,19 @@ fun VisualizarPartidoOnlineScreen(
                         )
                     }
                     IconButton(onClick = {
-                        navController.navigate("administrar_partido_online")
+                        scope.launch {
+                            val firestore = FirebaseFirestore.getInstance()
+                            val snap = firestore.collection("partidos").document(partidoUid).get().await()
+                            val creadorUid = snap.getString("creadorUid") ?: ""
+                            val administradores = (snap.get("administradores") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                            val usuariosConAcceso = (snap.get("usuariosConAcceso") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                            val puedeEntrar = (usuarioUid == creadorUid) || administradores.contains(usuarioUid)
+                            if (puedeEntrar) {
+                                navController.navigate("administrar_partido_online")
+                            } else {
+                                showPermisoDialog = true
+                            }
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
@@ -94,6 +110,19 @@ fun VisualizarPartidoOnlineScreen(
                 ) {
                     Text("UID copiado al portapapeles")
                 }
+            }
+
+            if (showPermisoDialog) {
+                AlertDialog(
+                    onDismissRequest = { showPermisoDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = { showPermisoDialog = false }) {
+                            Text("OK")
+                        }
+                    },
+                    title = { Text("Sin permisos") },
+                    text = { Text("No tienes permisos para administrar este partido.") }
+                )
             }
         }
     }
