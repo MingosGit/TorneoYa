@@ -5,7 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,7 +29,6 @@ fun VisualizarPartidoOnlineScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var showDeleteDialog by remember { mutableStateOf(false) }
     var showCopiedMessage by remember { mutableStateOf(false) }
     val eliminado by vm.eliminado.collectAsState()
     val uiState by vm.uiState.collectAsState()
@@ -58,11 +57,12 @@ fun VisualizarPartidoOnlineScreen(
                             contentDescription = "Compartir UID"
                         )
                     }
-                    IconButton(onClick = { showDeleteDialog = true }) {
+                    IconButton(onClick = {
+                        navController.navigate("administrar_partido_online")
+                    }) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Eliminar",
-                            tint = MaterialTheme.colorScheme.error
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Administrar Partido"
                         )
                     }
                 }
@@ -77,25 +77,6 @@ fun VisualizarPartidoOnlineScreen(
                 usuarioUid = usuarioUid,
                 partidoUid = partidoUid
             )
-
-            if (showDeleteDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDeleteDialog = false },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            showDeleteDialog = false
-                            vm.eliminarPartido()
-                        }) {
-                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
-                    },
-                    title = { Text("Eliminar Partido") },
-                    text = { Text("¿Seguro que deseas eliminar este partido? Esta acción no se puede deshacer.") }
-                )
-            }
 
             if (showCopiedMessage) {
                 LaunchedEffect(showCopiedMessage) {

@@ -91,6 +91,11 @@ fun NavGraph(
             )
             HomeScreen(viewModel = homeViewModel)
         }
+
+        composable("administrar_partido_online") {
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarPartidoOnlineScreen()
+        }
+
         composable(BottomNavItem.Partido.route) {
             PartidoScreen(
                 navController = navController,
