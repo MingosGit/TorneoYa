@@ -55,18 +55,48 @@ class AdministrarPartidoOnlineViewModel(
             _partido.value = p
             _equipoA.value = p?.equipoAId?.let { repo.obtenerEquipo(it) }
             _equipoB.value = p?.equipoBId?.let { repo.obtenerEquipo(it) }
-            val allJugadores = repo.obtenerJugadores()
-            _jugadoresA.value = allJugadores.filter { p?.jugadoresEquipoA?.contains(it.uid) == true }
-            _jugadoresB.value = allJugadores.filter { p?.jugadoresEquipoB?.contains(it.uid) == true }
+            _jugadoresA.value = p?.jugadoresEquipoA?.let { getJugadoresByUidList(it) } ?: emptyList()
+            _jugadoresB.value = p?.jugadoresEquipoB?.let { getJugadoresByUidList(it) } ?: emptyList()
             _goles.value = obtenerGoleadoresPartido(partidoUid)
             _nombreEquipoAEditable.value = _equipoA.value?.nombre ?: ""
             _nombreEquipoBEditable.value = _equipoB.value?.nombre ?: ""
+            // DEBUG:
+            println("DEBUG JUGADORES A: ${_jugadoresA.value.joinToString { it.nombre }}")
+            println("DEBUG JUGADORES B: ${_jugadoresB.value.joinToString { it.nombre }}")
             _loading.value = false
         }
     }
 
+    private suspend fun getJugadoresByUidList(uids: List<String>): List<JugadorFirebase> {
+        val db = FirebaseFirestore.getInstance()
+        val jugadores = mutableListOf<JugadorFirebase>()
+        for (uid in uids.map { it.trim() }) {
+            val snapJugador = db.collection("jugadores").document(uid).get().await()
+            val jugador = snapJugador.toObject(JugadorFirebase::class.java)?.copy(uid = uid)
+            if (jugador != null && jugador.nombre.isNotBlank()) {
+                jugadores.add(jugador)
+                continue
+            }
+            val snapUsuario = db.collection("usuarios").document(uid).get().await()
+            val nombreUsuario = snapUsuario.getString("nombreUsuario")
+            val email = snapUsuario.getString("email") ?: ""
+            val avatarUrl = snapUsuario.getString("avatarUrl")
+            if (!nombreUsuario.isNullOrBlank()) {
+                jugadores.add(
+                    JugadorFirebase(
+                        uid = uid,
+                        nombre = nombreUsuario,
+                        email = email,
+                        avatarUrl = avatarUrl
+                    )
+                )
+            }
+        }
+        return jugadores
+    }
+
     private suspend fun obtenerGoleadoresPartido(partidoUid: String): List<GoleadorFirebase> {
-        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val db = FirebaseFirestore.getInstance()
         val res = db.collection("goleadores")
             .whereEqualTo("partidoUid", partidoUid)
             .get().await()
