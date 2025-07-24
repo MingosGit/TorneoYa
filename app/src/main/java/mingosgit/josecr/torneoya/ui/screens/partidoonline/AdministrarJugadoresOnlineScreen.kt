@@ -5,10 +5,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -28,6 +30,7 @@ fun AdministrarJugadoresOnlineScreen(
     }
 
     val miUid = FirebaseAuth.getInstance().currentUser?.uid
+    var idxParaEliminar by remember { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier
@@ -90,7 +93,7 @@ fun AdministrarJugadoresOnlineScreen(
                                 }
                             } else {
                                 if (newValue.isEmpty()) {
-                                    vm.eliminarJugador(idx, vm.equipoSeleccionado.value)
+                                    idxParaEliminar = idx
                                 } else {
                                     vm.cambiarNombreJugador(idx, vm.equipoSeleccionado.value, newValue)
                                 }
@@ -147,11 +150,41 @@ fun AdministrarJugadoresOnlineScreen(
                     }
                     if (idx != jugadores.size) {
                         IconButton(
-                            onClick = { vm.eliminarJugador(idx, vm.equipoSeleccionado.value) }
+                            onClick = { idxParaEliminar = idx },
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = Color.Red
+                            )
                         ) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Eliminar jugador")
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar jugador",
+                                tint = Color.Red
+                            )
                         }
                     }
+                }
+
+                // Popup de confirmación para eliminar
+                if (idxParaEliminar == idx) {
+                    AlertDialog(
+                        onDismissRequest = { idxParaEliminar = null },
+                        title = { Text("¿Eliminar jugador?") },
+                        text = { Text("¿Estás seguro de que quieres eliminar a este jugador?") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                vm.eliminarJugador(idx, vm.equipoSeleccionado.value)
+                                idxParaEliminar = null
+                            }) {
+                                Text("Eliminar", color = Color.Red)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { idxParaEliminar = null }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
                 }
             }
         }
