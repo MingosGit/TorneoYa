@@ -57,13 +57,19 @@ class AsignarJugadoresOnlineViewModel(
 
     fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
-            // Separar jugadores con uid de los manuales
             val equipoA_uids = equipoAJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
             val equipoA_nombres = equipoAJugadores.mapNotNull { if (it.uid.isBlank() && it.nombre.isNotBlank()) it.nombre else null }
-
             val equipoB_uids = equipoBJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
             val equipoB_nombres = equipoBJugadores.mapNotNull { if (it.uid.isBlank() && it.nombre.isNotBlank()) it.nombre else null }
 
+            // OBTEN LOS QUE YA TIENEN ACCESO (para no machacar los admins/creador)
+            val partido = partidoFirebaseRepository.obtenerPartido(partidoUid)
+            val actuales = partido?.usuariosConAcceso ?: emptyList()
+
+            // Junta todos (sin repetir)
+            val nuevosAccesos = (actuales + equipoA_uids + equipoB_uids).distinct()
+
+            // Guarda jugadores Y actualiza accesos
             partidoFirebaseRepository.actualizarJugadoresPartidoOnline(
                 partidoUid = partidoUid,
                 jugadoresEquipoA = equipoA_uids,
@@ -71,9 +77,18 @@ class AsignarJugadoresOnlineViewModel(
                 jugadoresEquipoB = equipoB_uids,
                 nombresManualEquipoB = equipoB_nombres
             )
+
+            // Actualiza accesos en el documento del partido
+            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("partidos")
+                .document(partidoUid)
+                .update("usuariosConAcceso", nuevosAccesos)
+                .await()
+
             onFinish()
         }
     }
+
 
 
     fun cargarJugadoresExistentes() {
