@@ -41,6 +41,8 @@ import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOnlineScreen
 
 @Composable
 fun NavGraph(
@@ -115,7 +117,57 @@ fun NavGraph(
                 viewModel = vm
             )
         }
+        composable(
+            route = "administrar_jugadores_online/{partidoUid}/{equipoAUid}/{equipoBUid}",
+            arguments = listOf(
+                navArgument("partidoUid") { type = NavType.StringType },
+                navArgument("equipoAUid") { type = NavType.StringType },
+                navArgument("equipoBUid") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: ""
+            val equipoAUid = backStackEntry.arguments?.getString("equipoAUid") ?: ""
+            val equipoBUid = backStackEntry.arguments?.getString("equipoBUid") ?: ""
 
+            val usuarioAuthRepository = remember { UsuarioAuthRepository() }
+            val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity> = {
+                val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUid == null) {
+                    emptyList()
+                } else {
+                    val amigosSnap = FirebaseFirestore.getInstance()
+                        .collection("usuarios")
+                        .document(currentUid)
+                        .collection("amigos")
+                        .get()
+                        .await()
+                    amigosSnap.documents.mapNotNull {
+                        it.toObject(AmigoFirebaseEntity::class.java)
+                    }
+                }
+            }
+
+            val vm = viewModel<AdministrarJugadoresOnlineViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return AdministrarJugadoresOnlineViewModel(
+                            partidoUid = partidoUid,
+                            equipoAUid = equipoAUid,
+                            equipoBUid = equipoBUid,
+                            partidoFirebaseRepository = partidoFirebaseRepository,
+                            usuarioAuthRepository = usuarioAuthRepository,
+                            obtenerListaAmigos = obtenerListaAmigos
+                        ) as T
+                    }
+                }
+            )
+
+            AdministrarJugadoresOnlineScreen(
+                navController = navController,
+                vm = vm
+            )
+        }
         composable(BottomNavItem.Partido.route) {
             PartidoScreen(
                 navController = navController,

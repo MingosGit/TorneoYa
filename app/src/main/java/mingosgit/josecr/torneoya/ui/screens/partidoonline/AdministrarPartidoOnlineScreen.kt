@@ -461,7 +461,7 @@ fun AdministrarPartidoOnlineScreen(
 
             item {
                 Button(
-                    onClick = { /* No hace nada todavía */ },
+                    onClick = { navController?.navigate("administrar_jugadores_online/$partidoUid/${equipoA?.uid}/${equipoB?.uid}") },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Editar jugadores")
