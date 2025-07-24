@@ -1,5 +1,7 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import android.app.TimePickerDialog
+import android.widget.NumberPicker
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.data.firebase.*
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +25,7 @@ fun AdministrarPartidoOnlineScreen(
     partidoUid: String,
     navController: NavController? = null,
     viewModel: AdministrarPartidoOnlineViewModel
+
 ) {
     val loading by viewModel.loading.collectAsState()
     val partido by viewModel.partido.collectAsState()
@@ -32,6 +37,13 @@ fun AdministrarPartidoOnlineScreen(
     val nombreEquipoAEditable by viewModel.nombreEquipoAEditable.collectAsState()
     val nombreEquipoBEditable by viewModel.nombreEquipoBEditable.collectAsState()
 
+    // NUEVO - Campos editables
+    val fechaEditable by viewModel.fechaEditable.collectAsState()
+    val horaEditable by viewModel.horaEditable.collectAsState()
+    val numeroPartesEditable by viewModel.numeroPartesEditable.collectAsState()
+    val tiempoPorParteEditable by viewModel.tiempoPorParteEditable.collectAsState()
+    val tiempoDescansoEditable by viewModel.tiempoDescansoEditable.collectAsState()
+
     var showDialog by remember { mutableStateOf(false) }
     var equipoSeleccionado by remember { mutableStateOf("A") }
     var jugadorSeleccionado by remember { mutableStateOf<JugadorFirebase?>(null) }
@@ -40,6 +52,14 @@ fun AdministrarPartidoOnlineScreen(
     var expandedEquipo by remember { mutableStateOf(false) }
     var expandedJugador by remember { mutableStateOf(false) }
     var expandedAsistente by remember { mutableStateOf(false) }
+
+    // --- PICKERS STATE ---
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val calendar = Calendar.getInstance()
+
+    var pickedDate by remember { mutableStateOf(fechaEditable) }
+    var pickedHour by remember { mutableStateOf(horaEditable) }
 
     LaunchedEffect(partidoUid) {
         viewModel.recargarTodo()
@@ -77,6 +97,115 @@ fun AdministrarPartidoOnlineScreen(
         ) {
             item {
                 Text(text = "UID: $partidoUid | Fecha: $fecha", style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            item {
+                Column(Modifier.fillMaxWidth()) {
+
+                    // --- FECHA ---
+                    var datePickerState = rememberDatePickerState()
+                    Button(
+                        onClick = { showDatePicker = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Seleccionar fecha: $fechaEditable") }
+
+                    if (showDatePicker) {
+                        DatePickerDialog(
+                            onDismissRequest = { showDatePicker = false },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        val selMillis = datePickerState.selectedDateMillis
+                                        if (selMillis != null) {
+                                            calendar.timeInMillis = selMillis
+                                            val day = calendar.get(Calendar.DAY_OF_MONTH)
+                                            val month = calendar.get(Calendar.MONTH) + 1
+                                            val year = calendar.get(Calendar.YEAR)
+                                            val fecha = "%02d-%02d-%04d".format(day, month, year)
+                                            viewModel.setFechaEditable(fecha)
+                                        }
+                                        showDatePicker = false
+                                    }
+                                ) { Text("OK") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                            }
+                        ) {
+                            DatePicker(state = datePickerState)
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    // --- HORA ---
+                    val context = LocalContext.current
+                    Button(
+                        onClick = { showTimePicker = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Seleccionar hora: $horaEditable") }
+
+                    if (showTimePicker) {
+                        val horaActual = horaEditable.split(":").getOrNull(0)?.toIntOrNull() ?: calendar.get(Calendar.HOUR_OF_DAY)
+                        val minutoActual = horaEditable.split(":").getOrNull(1)?.toIntOrNull() ?: calendar.get(Calendar.MINUTE)
+
+                        // Solo ejecuta una vez al abrir el picker
+                        LaunchedEffect(showTimePicker) {
+                            if (showTimePicker) {
+                                TimePickerDialog(
+                                    context,
+                                    { _, hour: Int, minute: Int ->
+                                        val sel = "%02d:%02d".format(hour, minute)
+                                        viewModel.setHoraEditable(sel)
+                                        showTimePicker = false
+                                    },
+                                    horaActual,
+                                    minutoActual,
+                                    true
+                                ).show()
+                            }
+                        }
+                    }
+
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Nº PARTES
+                    OutlinedTextField(
+                        value = numeroPartesEditable.toString(),
+                        onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setNumeroPartesEditable(it) } },
+                        label = { Text("Nº Partes") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    // Minutos por parte
+                    OutlinedTextField(
+                        value = tiempoPorParteEditable.toString(),
+                        onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoPorParteEditable(it) } },
+                        label = { Text("Minutos por parte") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    // Minutos descanso
+                    OutlinedTextField(
+                        value = tiempoDescansoEditable.toString(),
+                        onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoDescansoEditable(it) } },
+                        label = { Text("Minutos descanso") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = { viewModel.actualizarDatosPartido() },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Guardar cambios")
+                    }
+                }
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -359,6 +488,22 @@ fun AdministrarPartidoOnlineScreen(
                     )
                 }
             }
+
         }
     }
+
 }
+
+@Composable
+fun SimpleNumberPicker(value: Int, range: IntRange, onValueChange: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(
+            onClick = { if (value > range.first) onValueChange(value - 1) }
+        ) { Text("-") }
+        Text("%02d".format(value), modifier = Modifier.padding(horizontal = 8.dp))
+        IconButton(
+            onClick = { if (value < range.last) onValueChange(value + 1) }
+        ) { Text("+") }
+    }
+}
+

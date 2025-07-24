@@ -40,13 +40,25 @@ class AdministrarPartidoOnlineViewModel(
     private val _nombreEquipoBEditable = MutableStateFlow("")
     val nombreEquipoBEditable: StateFlow<String> = _nombreEquipoBEditable.asStateFlow()
 
-    fun setNombreEquipoAEditable(valor: String) {
-        _nombreEquipoAEditable.value = valor
-    }
+    // NUEVO: Campos editables para fecha/hora/duración/partes/descanso
+    private val _fechaEditable = MutableStateFlow("")
+    val fechaEditable: StateFlow<String> = _fechaEditable.asStateFlow()
+    private val _horaEditable = MutableStateFlow("")
+    val horaEditable: StateFlow<String> = _horaEditable.asStateFlow()
+    private val _numeroPartesEditable = MutableStateFlow(2)
+    val numeroPartesEditable: StateFlow<Int> = _numeroPartesEditable.asStateFlow()
+    private val _tiempoPorParteEditable = MutableStateFlow(25)
+    val tiempoPorParteEditable: StateFlow<Int> = _tiempoPorParteEditable.asStateFlow()
+    private val _tiempoDescansoEditable = MutableStateFlow(5)
+    val tiempoDescansoEditable: StateFlow<Int> = _tiempoDescansoEditable.asStateFlow()
 
-    fun setNombreEquipoBEditable(valor: String) {
-        _nombreEquipoBEditable.value = valor
-    }
+    fun setNombreEquipoAEditable(valor: String) { _nombreEquipoAEditable.value = valor }
+    fun setNombreEquipoBEditable(valor: String) { _nombreEquipoBEditable.value = valor }
+    fun setFechaEditable(valor: String) { _fechaEditable.value = valor }
+    fun setHoraEditable(valor: String) { _horaEditable.value = valor }
+    fun setNumeroPartesEditable(valor: Int) { _numeroPartesEditable.value = valor }
+    fun setTiempoPorParteEditable(valor: Int) { _tiempoPorParteEditable.value = valor }
+    fun setTiempoDescansoEditable(valor: Int) { _tiempoDescansoEditable.value = valor }
 
     fun recargarTodo() {
         viewModelScope.launch {
@@ -60,9 +72,12 @@ class AdministrarPartidoOnlineViewModel(
             _goles.value = obtenerGoleadoresPartido(partidoUid)
             _nombreEquipoAEditable.value = _equipoA.value?.nombre ?: ""
             _nombreEquipoBEditable.value = _equipoB.value?.nombre ?: ""
-            // DEBUG:
-            println("DEBUG JUGADORES A: ${_jugadoresA.value.joinToString { it.nombre }}")
-            println("DEBUG JUGADORES B: ${_jugadoresB.value.joinToString { it.nombre }}")
+            // NUEVO: cargar campos editables partido
+            _fechaEditable.value = p?.fecha ?: ""
+            _horaEditable.value = p?.horaInicio ?: ""
+            _numeroPartesEditable.value = p?.numeroPartes ?: 2
+            _tiempoPorParteEditable.value = p?.tiempoPorParte ?: 25
+            _tiempoDescansoEditable.value = p?.tiempoDescanso ?: 5
             _loading.value = false
         }
     }
@@ -185,6 +200,30 @@ class AdministrarPartidoOnlineViewModel(
                     .await()
                 recargarTodo()
             }
+        }
+    }
+
+    // -------- NUEVO: ACTUALIZAR PARTIDO ---------
+    fun actualizarDatosPartido() {
+        val fecha = _fechaEditable.value.trim()
+        val hora = _horaEditable.value.trim()
+        val numPartes = _numeroPartesEditable.value
+        val tiempoPorParte = _tiempoPorParteEditable.value
+        val tiempoDescanso = _tiempoDescansoEditable.value
+
+        viewModelScope.launch {
+            FirebaseFirestore.getInstance().collection("partidos")
+                .document(partidoUid)
+                .update(
+                    mapOf(
+                        "fecha" to fecha,
+                        "horaInicio" to hora,
+                        "numeroPartes" to numPartes,
+                        "tiempoPorParte" to tiempoPorParte,
+                        "tiempoDescanso" to tiempoDescanso
+                    )
+                ).await()
+            recargarTodo()
         }
     }
 }
