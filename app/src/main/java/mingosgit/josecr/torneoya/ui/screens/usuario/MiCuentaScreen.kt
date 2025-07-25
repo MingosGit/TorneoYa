@@ -20,18 +20,26 @@ fun MiCuentaScreen(
     val nombreUsuario by viewModel.nombreUsuario.collectAsState()
     val confirmarCerrarSesion by viewModel.confirmarCerrarSesion.collectAsState()
     val confirmarEliminarCuenta by viewModel.confirmarEliminarCuenta.collectAsState()
+    val errorNombre by viewModel.errorCambioNombre.collectAsState()
+    val cambioExitoso by viewModel.cambioNombreExitoso.collectAsState()
 
+    var editandoNombre by remember { mutableStateOf(false) }
     var nuevoNombre by remember { mutableStateOf(TextFieldValue("")) }
 
-    // ⚠️ Cargar datos SOLO UNA VEZ
     LaunchedEffect(Unit) {
         viewModel.cargarDatos()
     }
 
-    // ⚠️ Sincronizar TextField con nombre de usuario cuando esté listo
     LaunchedEffect(nombreUsuario) {
-        if (nombreUsuario.isNotBlank()) {
+        if (!editandoNombre && nombreUsuario.isNotBlank()) {
             nuevoNombre = TextFieldValue(nombreUsuario)
+        }
+    }
+
+    LaunchedEffect(cambioExitoso) {
+        if (cambioExitoso) {
+            editandoNombre = false
+            viewModel.resetCambioNombreExitoso()
         }
     }
 
@@ -49,18 +57,53 @@ fun MiCuentaScreen(
         ) {
             Text("Email: $email", fontSize = 16.sp)
 
-            OutlinedTextField(
-                value = nuevoNombre,
-                onValueChange = { nuevoNombre = it },
-                label = { Text("Nombre de usuario") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Button(
-                onClick = { viewModel.cambiarNombreUsuario(nuevoNombre.text) },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Cambiar nombre")
+            if (!editandoNombre) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Nombre de usuario: $nombreUsuario", fontSize = 16.sp)
+                    TextButton(onClick = {
+                        editandoNombre = true
+                        nuevoNombre = TextFieldValue(nombreUsuario)
+                    }) {
+                        Text("Cambiar")
+                    }
+                }
+            } else {
+                OutlinedTextField(
+                    value = nuevoNombre,
+                    onValueChange = { nuevoNombre = it },
+                    label = { Text("Nuevo nombre de usuario") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (!errorNombre.isNullOrBlank()) {
+                    Text(
+                        text = errorNombre ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    TextButton(onClick = {
+                        editandoNombre = false
+                        viewModel.resetErrorCambioNombre()
+                    }) {
+                        Text("Cancelar")
+                    }
+                    Button(onClick = {
+                        viewModel.cambiarNombreUsuario(nuevoNombre.text)
+                    }) {
+                        Text("Guardar")
+                    }
+                }
             }
 
             Divider()

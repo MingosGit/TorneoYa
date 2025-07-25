@@ -33,6 +33,9 @@ class MiCuentaViewModel : ViewModel() {
     private val _errorCambioNombre = MutableStateFlow<String?>(null)
     val errorCambioNombre: StateFlow<String?> = _errorCambioNombre
 
+    private val _cambioNombreExitoso = MutableStateFlow(false)
+    val cambioNombreExitoso: StateFlow<Boolean> = _cambioNombreExitoso
+
     fun cargarDatos() {
         val user = auth.currentUser ?: return
         _email.value = user.email ?: ""
@@ -47,13 +50,23 @@ class MiCuentaViewModel : ViewModel() {
         viewModelScope.launch {
             if (!usuarioAuthRepo.isNombreUsuarioDisponible(nuevoNombre)) {
                 _errorCambioNombre.value = "El nombre de usuario ya está en uso"
+                _cambioNombreExitoso.value = false
                 return@launch
             }
             firestore.collection("usuarios").document(uid)
                 .update("nombreUsuario", nuevoNombre).await()
             _nombreUsuario.value = nuevoNombre
             _errorCambioNombre.value = null
+            _cambioNombreExitoso.value = true
         }
+    }
+
+    fun resetErrorCambioNombre() {
+        _errorCambioNombre.value = null
+    }
+
+    fun resetCambioNombreExitoso() {
+        _cambioNombreExitoso.value = false
     }
 
     fun cerrarSesion() {
@@ -72,10 +85,8 @@ class MiCuentaViewModel : ViewModel() {
         val user = auth.currentUser ?: return
         val uid = user.uid
         viewModelScope.launch {
-            // BORRAR PARTIDOS CREADOS POR EL USUARIO
             val creados = partidoRepo.listarPartidosPorUsuario(uid).filter { it.creadorUid == uid }
             for (p in creados) {
-                // Borrar comentarios del partido
                 val comentarios = firestore.collection("comentarios")
                     .whereEqualTo("partidoUid", p.uid)
                     .get().await()
@@ -83,7 +94,6 @@ class MiCuentaViewModel : ViewModel() {
                     firestore.collection("comentarios").document(doc.id).delete().await()
                 }
 
-                // Borrar votos a comentarios
                 val votosComentarios = firestore.collection("comentario_votos")
                     .whereEqualTo("partidoUid", p.uid)
                     .get().await()
@@ -91,7 +101,6 @@ class MiCuentaViewModel : ViewModel() {
                     firestore.collection("comentario_votos").document(doc.id).delete().await()
                 }
 
-                // Borrar encuestas
                 val encuestas = firestore.collection("encuestas")
                     .whereEqualTo("partidoUid", p.uid)
                     .get().await()
@@ -99,7 +108,6 @@ class MiCuentaViewModel : ViewModel() {
                     val encuestaId = encuestaDoc.id
                     firestore.collection("encuestas").document(encuestaId).delete().await()
 
-                    // Borrar votos de encuesta
                     val votosEncuesta = firestore.collection("encuesta_votos")
                         .whereEqualTo("encuestaUid", encuestaId)
                         .get().await()
@@ -108,11 +116,9 @@ class MiCuentaViewModel : ViewModel() {
                     }
                 }
 
-                // Borrar el partido
                 partidoRepo.borrarPartido(p.uid)
             }
 
-            // BORRAR COMENTARIOS SUELTOS DEL USUARIO
             val comentariosUsuario = firestore.collection("comentarios")
                 .whereEqualTo("usuarioUid", uid)
                 .get().await()
@@ -120,7 +126,6 @@ class MiCuentaViewModel : ViewModel() {
                 firestore.collection("comentarios").document(doc.id).delete().await()
             }
 
-            // BORRAR VOTOS DEL USUARIO
             val votosUsuario = firestore.collection("comentario_votos")
                 .whereEqualTo("usuarioUid", uid)
                 .get().await()
@@ -135,10 +140,7 @@ class MiCuentaViewModel : ViewModel() {
                 firestore.collection("encuesta_votos").document(doc.id).delete().await()
             }
 
-            // BORRAR USUARIO EN FIRESTORE
             firestore.collection("usuarios").document(uid).delete().await()
-
-            // BORRAR CUENTA EN AUTH
             user.delete().await()
         }
     }
