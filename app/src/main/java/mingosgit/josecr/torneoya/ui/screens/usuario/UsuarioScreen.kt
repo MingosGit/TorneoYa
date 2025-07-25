@@ -17,18 +17,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
-import mingosgit.josecr.torneoya.ui.screens.amigos.AmigosScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UsuarioScreen(
     usuarioLocalViewModel: UsuarioLocalViewModel,
@@ -116,33 +116,32 @@ fun UsuarioScreen(
         )
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 8.dp, end = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            IconButton(onClick = { navController.navigate("ajustes") }) {
-                Icon(Icons.Default.Settings, contentDescription = "Ajustes")
-            }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Perfil", fontSize = 20.sp) },
+                actions = {
+                    IconButton(onClick = { navController.navigate("ajustes") }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Ajustes")
+                    }
+                }
+            )
         }
-
+    ) { padding ->
         Column(
             modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 24.dp),
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
             Box(
                 modifier = Modifier
-                    .size(110.dp)
+                    .size(120.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFDADADA))
+                    .background(Color(0xFFE0E0E0))
                     .clickable { showDialog = true },
                 contentAlignment = Alignment.Center
             ) {
@@ -154,87 +153,111 @@ fun UsuarioScreen(
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = "Foto de perfil",
                             modifier = Modifier
-                                .size(110.dp)
+                                .size(120.dp)
                                 .clip(CircleShape)
                         )
                     } else {
-                        Text(text = "👤", fontSize = 48.sp)
+                        Text("👤", fontSize = 50.sp)
                     }
                 } else {
-                    Text(text = "👤", fontSize = 48.sp)
+                    Text("👤", fontSize = 50.sp)
                 }
             }
-            Spacer(modifier = Modifier.height(28.dp))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (sesionOnlineActiva) {
+                Text(
+                    text = "Hola, $nombreUsuarioOnline",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            } else {
+                Text(
+                    text = "Bienvenido",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             if (!sesionOnlineActiva) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
                         onClick = { navController.navigate("login") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp)
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Inicia sesión")
+                        Text("Iniciar sesión")
                     }
                     Button(
                         onClick = { navController.navigate("register") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 4.dp)
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text("Crear cuenta")
                     }
                 }
             } else {
                 Button(
-                    onClick = {
-                        showCerrarSesionDialog = true
-                    },
+                    onClick = { showCerrarSesionDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 30.dp)
+                        .padding(horizontal = 20.dp)
                 ) {
                     Text("Cerrar sesión")
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = { navController.navigate("mis_jugadores") },
-                modifier = Modifier.padding(top = 10.dp)
+            Divider()
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Mis Jugadores")
+                PerfilOpcionItem("Mis Jugadores") { navController.navigate("mis_jugadores") }
+                PerfilOpcionItem("Administrar Partidos") { navController.navigate("partidos_lista_busqueda") }
+                PerfilOpcionItem("Equipos Predefinidos") { navController.navigate("equipos_predefinidos") }
+                PerfilOpcionItem("Amigos", showIcon = true) { navController.navigate("amigos") }
             }
+        }
+    }
+}
 
-            Button(
-                onClick = { navController.navigate("partidos_lista_busqueda") },
-                modifier = Modifier.padding(top = 10.dp)
-            ) {
-                Text("Administrar partidos")
-            }
-
-            Button(
-                onClick = { navController.navigate("equipos_predefinidos") },
-                modifier = Modifier.padding(top = 10.dp)
-            ) {
-                Text("Equipos predefinidos")
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            Button(
-                onClick = { navController.navigate("amigos") },
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
-            ) {
-                Icon(Icons.Default.Group, contentDescription = "Amigos", modifier = Modifier.padding(end = 8.dp))
-                Text("Amigos")
+@Composable
+private fun PerfilOpcionItem(
+    texto: String,
+    showIcon: Boolean = false,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        tonalElevation = 1.dp,
+        shadowElevation = 2.dp,
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = texto,
+                modifier = Modifier.weight(1f),
+                fontSize = 16.sp
+            )
+            if (showIcon) {
+                Icon(
+                    imageVector = Icons.Default.Group,
+                    contentDescription = "Ir",
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
