@@ -1,27 +1,23 @@
 package mingosgit.josecr.torneoya.ui.screens.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.foundation.Image
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,134 +28,124 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(Unit) {
+        viewModel.recargarDatos()
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFFF8FFFD), Color(0xFFE9F2FF), Color(0xFFD3E2FF))
+                    colors = listOf(Color(0xFF1A2980), Color(0xFF26D0CE))
                 )
             )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 18.dp)
+                .padding(horizontal = 22.dp, vertical = 28.dp)
         ) {
+            // Avatar y bienvenida
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp, bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    modifier = Modifier.size(50.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+                    color = Color.White.copy(alpha = 0.2f),
+                    modifier = Modifier.size(56.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "Bienvenida",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(10.dp)
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Perfil",
+                        tint = Color(0xFFFFC300),
+                        modifier = Modifier.padding(12.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "¡Hola,",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2E4A5A)
+                        text = "¡Hola, ${uiState.nombreUsuario}!",
+                        fontSize = 27.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = uiState.nombreUsuario + "!",
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        text = "Resumen de tu actividad",
+                        fontSize = 16.sp,
+                        color = Color(0xFFEEEEEE),
+                        fontWeight = FontWeight.Normal
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(30.dp))
 
-            Text(
-                text = "Resumen general",
-                fontSize = 17.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
+            // Stats PRO
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                HomeStatCard(
+                StatCircle(
                     icon = Icons.Filled.SportsSoccer,
                     label = "Partidos",
-                    value = uiState.partidosTotales.toString(),
-                    color = Color(0xFF02C39A),
-                    background = Brush.horizontalGradient(listOf(Color(0xFFCBF3F0), Color(0xFFD7FFF1)))
+                    value = uiState.partidosTotales,
+                    color = Color(0xFF00B894)
                 )
-                HomeStatCard(
+                StatCircle(
                     icon = Icons.Filled.Group,
                     label = "Equipos",
-                    value = uiState.equiposTotales.toString(),
-                    color = Color(0xFF4361EE),
-                    background = Brush.horizontalGradient(listOf(Color(0xFFE0E8FF), Color(0xFFD4F1F9)))
+                    value = uiState.equiposTotales,
+                    color = Color(0xFF0984E3)
                 )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                HomeStatCard(
+                StatCircle(
                     icon = Icons.Filled.Person,
                     label = "Jugadores",
-                    value = uiState.jugadoresTotales.toString(),
-                    color = Color(0xFFFFB300),
-                    background = Brush.horizontalGradient(listOf(Color(0xFFFFE29A), Color(0xFFFFF6E0)))
+                    value = uiState.jugadoresTotales,
+                    color = Color(0xFFFFB300)
+                )
+                StatCircle(
+                    icon = Icons.Filled.Star,
+                    label = "Amigos",
+                    value = uiState.amigosTotales,
+                    color = Color(0xFFFF7675)
                 )
             }
 
-            Spacer(modifier = Modifier.height(34.dp))
+            Spacer(Modifier.height(34.dp))
 
+            // Tarjeta con sombra sutil
             AnimatedVisibility(
                 visible = true,
-                enter = fadeIn()
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut()
             ) {
                 Card(
-                    shape = RoundedCornerShape(22.dp),
+                    shape = RoundedCornerShape(26.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(3.dp, RoundedCornerShape(22.dp)),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFEEF7FE)
-                    )
+                        .shadow(8.dp, RoundedCornerShape(26.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFBF6F6))
                 ) {
                     Column(
-                        modifier = Modifier
-                            .padding(26.dp)
+                        Modifier
+                            .padding(30.dp)
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "¡Listo para disfrutar el torneo!",
+                            "¡Bienvenido a TorneoYa!",
+                            color = Color(0xFF2D3436),
                             style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(Modifier.height(14.dp))
                         Text(
-                            text = "Consulta tus partidos, equipos y jugadores usando el menú inferior.",
+                            "Gestiona tus partidos, equipos y amigos desde este panel. Explora todas las opciones en el menú inferior.",
+                            color = Color(0xFF636E72),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF3C4858)
+                            fontWeight = FontWeight.Normal
                         )
                     }
                 }
@@ -169,65 +155,38 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeStatCard(
+fun StatCircle(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    value: String,
-    color: Color,
-    background: Brush
+    value: Int,
+    color: Color
 ) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(160.dp)
-            .height(100.dp)
-            .padding(end = 10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
+            .width(84.dp)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(brush = background, shape = RoundedCornerShape(20.dp)),
+            Modifier
+                .size(54.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(14.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = color.copy(alpha = 0.15f)
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = label,
-                        tint = color,
-                        modifier = Modifier
-                            .size(38.dp)
-                            .padding(8.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(14.dp))
-                Column(
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = value,
-                        fontSize = 22.sp,
-                        color = color,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Text(
-                        text = label,
-                        fontSize = 13.sp,
-                        color = Color.DarkGray,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+            Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(30.dp))
         }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = value.toString(),
+            fontSize = 21.sp,
+            color = color,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Medium
+        )
     }
 }

@@ -2,68 +2,126 @@ package mingosgit.josecr.torneoya.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.repository.PartidoRepository
-import mingosgit.josecr.torneoya.repository.EquipoRepository
-import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
-import mingosgit.josecr.torneoya.repository.JugadorRepository
+import kotlinx.coroutines.tasks.await
 
 data class HomeUiState(
     val nombreUsuario: String = "",
     val partidosTotales: Int = 0,
     val equiposTotales: Int = 0,
-    val jugadoresTotales: Int = 0
+    val jugadoresTotales: Int = 0,
+    val amigosTotales: Int = 0
 )
 
-class HomeViewModel(
-    private val usuarioLocalRepository: UsuarioLocalRepository,
-    private val partidoRepository: PartidoRepository,
-    private val equipoRepository: EquipoRepository,
-    private val jugadorRepository: JugadorRepository
-) : ViewModel() {
+class HomeViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
-        cargarDatos()
+        cargarDatosOnline()
     }
 
-    private fun cargarDatos() {
+    fun recargarDatos() {
         viewModelScope.launch {
-            val usuario = usuarioLocalRepository.getUsuario()
-            val partidos = partidoRepository.getAllPartidos()
-            val equipos = equipoRepository.getAll()
-            val jugadores = jugadorRepository.getAll()
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user == null) {
+                _uiState.value = HomeUiState()
+                return@launch
+            }
+            val uid = user.uid
+            val firestore = FirebaseFirestore.getInstance()
+
+            // Nombre usuario
+            val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
+            val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: "Usuario"
+
+            // PARTIDOS: solo donde es creador o tiene acceso
+            val partidosSnap = firestore.collection("partidos").get().await()
+            val partidosPropios = partidosSnap.documents.filter { doc ->
+                (doc.getString("creadorUid") == uid)
+                        || ((doc.get("usuariosConAcceso") as? List<*>)?.contains(uid) == true)
+            }
+            val partidosTotales = partidosPropios.size
+
+            // EQUIPOS (ejemplo: solo equipos donde sales en "miembros", ajusta esto a tu modelo)
+            val equiposSnap = firestore.collection("equipos").get().await()
+            val equiposPropios = equiposSnap.documents.filter { doc ->
+                (doc.get("miembros") as? List<*>)?.contains(uid) == true
+            }
+            val equiposTotales = equiposPropios.size
+
+            // JUGADORES (solo los tuyos)
+            val jugadoresSnap = firestore.collection("jugadores")
+                .whereEqualTo("usuarioUid", uid).get().await()
+            val jugadoresTotales = jugadoresSnap.size()
+
+            // AMIGOS (los que tienes en tu subcolección amigos)
+            val amigosSnap = firestore.collection("usuarios").document(uid)
+                .collection("amigos").get().await()
+            val amigosTotales = amigosSnap.size()
 
             _uiState.value = HomeUiState(
-                nombreUsuario = usuario?.nombre ?: "Usuario",
-                partidosTotales = partidos.size,
-                equiposTotales = equipos.size,
-                jugadoresTotales = jugadores.size
+                nombreUsuario = nombreUsuario,
+                partidosTotales = partidosTotales,
+                equiposTotales = equiposTotales,
+                jugadoresTotales = jugadoresTotales,
+                amigosTotales = amigosTotales
             )
         }
     }
+    private fun cargarDatosOnline() {
+        viewModelScope.launch {
+            val auth = FirebaseAuth.getInstance()
+            val firestore = FirebaseFirestore.getInstance()
+            val uid = auth.currentUser?.uid
 
-    companion object {
-        fun Factory(
-            usuarioLocalRepository: UsuarioLocalRepository,
-            partidoRepository: PartidoRepository,
-            equipoRepository: EquipoRepository,
-            jugadorRepository: JugadorRepository
-        ) = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                @Suppress("UNCHECKED_CAST")
-                return HomeViewModel(
-                    usuarioLocalRepository,
-                    partidoRepository,
-                    equipoRepository,
-                    jugadorRepository
-                ) as T
+            if (uid == null) {
+                _uiState.value = HomeUiState(nombreUsuario = "Usuario")
+                return@launch
             }
+
+            // Nombre de usuario
+            val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
+            val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: "Usuario"
+
+            // Partidos (donde tiene acceso o creador)
+            val partidosSnap = firestore.collection("partidos")
+                .whereArrayContains("usuariosConAcceso", uid)
+                .get().await()
+            val partidosCreadosSnap = firestore.collection("partidos")
+                .whereEqualTo("creadorUid", uid)
+                .get().await()
+            val partidosTotales = (partidosSnap.size() + partidosCreadosSnap.size())
+
+            // Equipos (puedes personalizar según la app)
+            val equiposSnap = firestore.collection("equipos")
+                .get().await()
+            val equiposTotales = equiposSnap.size()
+
+            // Jugadores (puedes personalizar según la app)
+            val jugadoresSnap = firestore.collection("jugadores")
+                .get().await()
+            val jugadoresTotales = jugadoresSnap.size()
+
+            // Amigos
+            val amigosSnap = firestore.collection("usuarios")
+                .document(uid)
+                .collection("amigos")
+                .get().await()
+            val amigosTotales = amigosSnap.size()
+
+            _uiState.value = HomeUiState(
+                nombreUsuario = nombreUsuario,
+                partidosTotales = partidosTotales,
+                equiposTotales = equiposTotales,
+                jugadoresTotales = jugadoresTotales,
+                amigosTotales = amigosTotales
+            )
         }
     }
 }

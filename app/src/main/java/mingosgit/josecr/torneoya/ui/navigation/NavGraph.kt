@@ -87,14 +87,7 @@ fun NavGraph(
 
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
-            val homeViewModel = viewModel<HomeViewModel>(
-                factory = HomeViewModel.Factory(
-                    usuarioLocalRepository,
-                    partidoRepository,
-                    equipoRepositoryInst,
-                    jugadorRepositoryInst
-                )
-            )
+            val homeViewModel = viewModel<HomeViewModel>()
             HomeScreen(viewModel = homeViewModel)
         }
 
@@ -172,8 +165,12 @@ fun NavGraph(
             )
         }
         composable("ajustes") {
-            AjustesScreen(navController)
+            AjustesScreen(
+                navController = navController,
+                globalUserViewModel = globalUserViewModel
+            )
         }
+
         composable("mi_cuenta") {
             val miCuentaVM = viewModel<MiCuentaViewModel>()
             MiCuentaScreen(viewModel = miCuentaVM)
