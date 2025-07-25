@@ -72,11 +72,73 @@ class MiCuentaViewModel : ViewModel() {
         val user = auth.currentUser ?: return
         val uid = user.uid
         viewModelScope.launch {
+            // BORRAR PARTIDOS CREADOS POR EL USUARIO
             val creados = partidoRepo.listarPartidosPorUsuario(uid).filter { it.creadorUid == uid }
             for (p in creados) {
+                // Borrar comentarios del partido
+                val comentarios = firestore.collection("comentarios")
+                    .whereEqualTo("partidoUid", p.uid)
+                    .get().await()
+                for (doc in comentarios.documents) {
+                    firestore.collection("comentarios").document(doc.id).delete().await()
+                }
+
+                // Borrar votos a comentarios
+                val votosComentarios = firestore.collection("comentario_votos")
+                    .whereEqualTo("partidoUid", p.uid)
+                    .get().await()
+                for (doc in votosComentarios.documents) {
+                    firestore.collection("comentario_votos").document(doc.id).delete().await()
+                }
+
+                // Borrar encuestas
+                val encuestas = firestore.collection("encuestas")
+                    .whereEqualTo("partidoUid", p.uid)
+                    .get().await()
+                for (encuestaDoc in encuestas.documents) {
+                    val encuestaId = encuestaDoc.id
+                    firestore.collection("encuestas").document(encuestaId).delete().await()
+
+                    // Borrar votos de encuesta
+                    val votosEncuesta = firestore.collection("encuesta_votos")
+                        .whereEqualTo("encuestaUid", encuestaId)
+                        .get().await()
+                    for (doc in votosEncuesta.documents) {
+                        firestore.collection("encuesta_votos").document(doc.id).delete().await()
+                    }
+                }
+
+                // Borrar el partido
                 partidoRepo.borrarPartido(p.uid)
             }
+
+            // BORRAR COMENTARIOS SUELTOS DEL USUARIO
+            val comentariosUsuario = firestore.collection("comentarios")
+                .whereEqualTo("usuarioUid", uid)
+                .get().await()
+            for (doc in comentariosUsuario.documents) {
+                firestore.collection("comentarios").document(doc.id).delete().await()
+            }
+
+            // BORRAR VOTOS DEL USUARIO
+            val votosUsuario = firestore.collection("comentario_votos")
+                .whereEqualTo("usuarioUid", uid)
+                .get().await()
+            for (doc in votosUsuario.documents) {
+                firestore.collection("comentario_votos").document(doc.id).delete().await()
+            }
+
+            val votosEncuestasUsuario = firestore.collection("encuesta_votos")
+                .whereEqualTo("usuarioUid", uid)
+                .get().await()
+            for (doc in votosEncuestasUsuario.documents) {
+                firestore.collection("encuesta_votos").document(doc.id).delete().await()
+            }
+
+            // BORRAR USUARIO EN FIRESTORE
             firestore.collection("usuarios").document(uid).delete().await()
+
+            // BORRAR CUENTA EN AUTH
             user.delete().await()
         }
     }
