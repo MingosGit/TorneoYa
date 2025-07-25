@@ -10,10 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AjustesScreen() {
+fun AjustesScreen(navController: NavController) {
     val opciones = listOf(
         "Mi cuenta",
         "Mi cuenta local",
@@ -44,7 +45,12 @@ fun AjustesScreen() {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { /* Acción futura */ },
+                        .clickable {
+                            when (opcion) {
+                                "Mi cuenta" -> navController.navigate("mi_cuenta")
+                                // Agrega más rutas si lo deseas
+                            }
+                        },
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Box(

@@ -40,10 +40,12 @@ import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import mingosgit.josecr.torneoya.ui.screens.ajustes.AjustesScreen
+import mingosgit.josecr.torneoya.ui.screens.ajustes.MiCuentaScreen
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOnlineScreen
+import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 
 @Composable
 fun NavGraph(
@@ -170,7 +172,11 @@ fun NavGraph(
             )
         }
         composable("ajustes") {
-            AjustesScreen()
+            AjustesScreen(navController)
+        }
+        composable("mi_cuenta") {
+            val miCuentaVM = viewModel<MiCuentaViewModel>()
+            MiCuentaScreen(viewModel = miCuentaVM)
         }
 
         composable(BottomNavItem.Partido.route) {
