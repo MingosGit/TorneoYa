@@ -46,6 +46,7 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
+import androidx.activity.ComponentActivity // <--- añade este import arriba
 
 @Composable
 fun NavGraph(
@@ -197,7 +198,8 @@ fun NavGraph(
         }
 
         composable("mi_cuenta") {
-            val miCuentaVM = viewModel<MiCuentaViewModel>()
+            val activity = LocalContext.current as ComponentActivity
+            val miCuentaVM = viewModel<MiCuentaViewModel>(activity)
             MiCuentaScreen(viewModel = miCuentaVM)
         }
 

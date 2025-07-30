@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 
@@ -35,6 +37,15 @@ class MiCuentaViewModel : ViewModel() {
 
     private val _cambioNombreExitoso = MutableStateFlow(false)
     val cambioNombreExitoso: StateFlow<Boolean> = _cambioNombreExitoso
+
+    // ----------- NUEVO: PASSWORD RESET ---------------
+    private val _showMensajeReset = MutableStateFlow(false)
+    val showMensajeReset: StateFlow<Boolean> = _showMensajeReset
+
+    private val _resetTimer = MutableStateFlow(0)
+    val resetTimer: StateFlow<Int> = _resetTimer
+
+    private var timerJob: Job? = null
 
     fun cargarDatos() {
         val user = auth.currentUser ?: return
@@ -142,6 +153,30 @@ class MiCuentaViewModel : ViewModel() {
 
             firestore.collection("usuarios").document(uid).delete().await()
             user.delete().await()
+        }
+    }
+
+    // --------------- RESTABLECER CONTRASEÑA -------------------
+    fun enviarCorreoResetPassword() {
+        val correo = _email.value
+        if (correo.isBlank() || _resetTimer.value > 0) return
+
+        viewModelScope.launch {
+            usuarioAuthRepo.enviarCorreoRestablecerPassword(correo)
+            _showMensajeReset.value = true
+            startResetTimer()
+        }
+    }
+
+    private fun startResetTimer() {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            _resetTimer.value = 60
+            while (_resetTimer.value > 0) {
+                delay(1000L)
+                _resetTimer.value = _resetTimer.value - 1
+            }
+            _showMensajeReset.value = false
         }
     }
 }

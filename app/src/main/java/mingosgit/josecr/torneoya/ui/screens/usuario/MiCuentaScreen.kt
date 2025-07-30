@@ -34,6 +34,8 @@ fun MiCuentaScreen(
     val confirmarEliminarCuenta by viewModel.confirmarEliminarCuenta.collectAsState()
     val errorNombre by viewModel.errorCambioNombre.collectAsState()
     val cambioExitoso by viewModel.cambioNombreExitoso.collectAsState()
+    val resetTimer by viewModel.resetTimer.collectAsState()
+    val showMensajeReset by viewModel.showMensajeReset.collectAsState()
 
     var editandoNombre by remember { mutableStateOf(false) }
     var nuevoNombre by remember { mutableStateOf(TextFieldValue("")) }
@@ -198,15 +200,38 @@ fun MiCuentaScreen(
 
                 // BOTÓN: RESTABLECER PASSWORD
                 Button(
-                    onClick = { /* Sin funcionalidad aún */ },
+                    onClick = { viewModel.enviarCorreoResetPassword() },
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = resetTimer == 0,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4767C3)),
                     shape = MaterialTheme.shapes.small
                 ) {
+                    if (resetTimer > 0) {
+                        Text(
+                            "Restablecer contraseña (${resetTimer}s)",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    } else {
+                        Text(
+                            "Restablecer contraseña",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                // Mensaje de éxito
+                AnimatedVisibility(
+                    visible = showMensajeReset,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
                     Text(
-                        "Restablecer contraseña",
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold
+                        "Correo de restablecimiento de contraseña enviado.",
+                        color = Color(0xFF207A39),
+                        fontSize = 15.sp,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
 
