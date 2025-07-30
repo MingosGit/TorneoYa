@@ -104,6 +104,12 @@ class VisualizarPartidoOnlineViewModel(
 
 
 
+    fun dejarDeVerPartido(usuarioUid: String, onFinish: () -> Unit) {
+        viewModelScope.launch {
+            repo.quitarUsuarioDeAcceso(partidoUid, usuarioUid)
+            onFinish()
+        }
+    }
 
 
     fun cargarComentariosEncuestas(usuarioUid: String? = null) {

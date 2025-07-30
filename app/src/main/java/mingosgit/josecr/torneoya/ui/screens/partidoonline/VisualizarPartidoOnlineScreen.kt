@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -33,8 +34,19 @@ fun VisualizarPartidoOnlineScreen(
     val scope = rememberCoroutineScope()
     var showCopiedMessage by remember { mutableStateOf(false) }
     var showPermisoDialog by remember { mutableStateOf(false) }
+    var showDejarDeVerDialog by remember { mutableStateOf(false) }
     val eliminado by vm.eliminado.collectAsState()
     val uiState by vm.uiState.collectAsState()
+
+    var esCreador by remember { mutableStateOf(false) }
+
+    // Obtiene si es creador
+    LaunchedEffect(partidoUid, usuarioUid) {
+        val firestore = FirebaseFirestore.getInstance()
+        val snap = firestore.collection("partidos").document(partidoUid).get().await()
+        val creadorUid = snap.getString("creadorUid") ?: ""
+        esCreador = usuarioUid == creadorUid
+    }
 
     LaunchedEffect(partidoUid) { vm.cargarDatos(usuarioUid) }
 
@@ -79,6 +91,14 @@ fun VisualizarPartidoOnlineScreen(
                             contentDescription = "Administrar Partido"
                         )
                     }
+                    if (!esCreador) {
+                        IconButton(onClick = { showDejarDeVerDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.ExitToApp,
+                                contentDescription = "Dejar de visualizar"
+                            )
+                        }
+                    }
                 }
             )
         }
@@ -120,6 +140,29 @@ fun VisualizarPartidoOnlineScreen(
                     },
                     title = { Text("Sin permisos") },
                     text = { Text("No tienes permisos para administrar este partido.") }
+                )
+            }
+
+            if (showDejarDeVerDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDejarDeVerDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            vm.dejarDeVerPartido(usuarioUid) {
+                                showDejarDeVerDialog = false
+                                navController.popBackStack()
+                            }
+                        }) {
+                            Text("Sí, dejar de visualizar")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDejarDeVerDialog = false }) {
+                            Text("Cancelar")
+                        }
+                    },
+                    title = { Text("¿Dejar de visualizar este partido?") },
+                    text = { Text("Ya no podrás visualizar este partido. Podrás volver a verlo buscándolo por su UID.") }
                 )
             }
         }

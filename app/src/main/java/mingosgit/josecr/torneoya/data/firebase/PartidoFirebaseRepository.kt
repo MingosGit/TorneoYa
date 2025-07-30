@@ -63,6 +63,11 @@ class PartidoFirebaseRepository {
         )
         db.collection("partidos").add(datos).await()
     }
+    suspend fun quitarUsuarioDeAcceso(partidoUid: String, usuarioUid: String) {
+        db.collection("partidos").document(partidoUid)
+            .update("usuariosConAcceso", com.google.firebase.firestore.FieldValue.arrayRemove(usuarioUid))
+            .await()
+    }
 
     suspend fun crearPartidoConRetornoUid(partido: PartidoFirebase): String {
         val datos = hashMapOf(
