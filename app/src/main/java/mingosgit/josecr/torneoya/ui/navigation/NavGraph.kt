@@ -119,11 +119,24 @@ fun NavGraph(
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
         ) { backStackEntry ->
             val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: ""
+            val vm = viewModel<mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarRolesOnlineViewModel>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarRolesOnlineViewModel(
+                            partidoUid = partidoUid,
+                            repo = partidoFirebaseRepository
+                        ) as T
+                    }
+                }
+            )
             mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarRolesOnlineScreen(
                 partidoUid = partidoUid,
-                navController = navController
+                navController = navController,
+                vm = vm
             )
         }
+
 
         composable(
             route = "administrar_jugadores_online/{partidoUid}/{equipoAUid}/{equipoBUid}",
