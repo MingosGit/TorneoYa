@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,14 +19,16 @@ import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.data.firebase.*
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import java.util.Calendar
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdministrarPartidoOnlineScreen(
     partidoUid: String,
     navController: NavController? = null,
-    viewModel: AdministrarPartidoOnlineViewModel
-
+    viewModel: AdministrarPartidoOnlineViewModel,
+    usuarioUid: String
 ) {
     val loading by viewModel.loading.collectAsState()
     val partido by viewModel.partido.collectAsState()
@@ -37,7 +40,6 @@ fun AdministrarPartidoOnlineScreen(
     val nombreEquipoAEditable by viewModel.nombreEquipoAEditable.collectAsState()
     val nombreEquipoBEditable by viewModel.nombreEquipoBEditable.collectAsState()
 
-    // NUEVO - Campos editables
     val fechaEditable by viewModel.fechaEditable.collectAsState()
     val horaEditable by viewModel.horaEditable.collectAsState()
     val numeroPartesEditable by viewModel.numeroPartesEditable.collectAsState()
@@ -53,13 +55,22 @@ fun AdministrarPartidoOnlineScreen(
     var expandedJugador by remember { mutableStateOf(false) }
     var expandedAsistente by remember { mutableStateOf(false) }
 
-    // --- PICKERS STATE ---
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     val calendar = Calendar.getInstance()
 
     var pickedDate by remember { mutableStateOf(fechaEditable) }
     var pickedHour by remember { mutableStateOf(horaEditable) }
+
+    var esCreador by remember { mutableStateOf(false) }
+
+    // --- Detectar si es creador ---
+    LaunchedEffect(partidoUid, usuarioUid) {
+        val firestore = FirebaseFirestore.getInstance()
+        val snap = firestore.collection("partidos").document(partidoUid).get().await()
+        val creadorUid = snap.getString("creadorUid") ?: ""
+        esCreador = usuarioUid == creadorUid
+    }
 
     LaunchedEffect(partidoUid) {
         viewModel.recargarTodo()
@@ -82,6 +93,15 @@ fun AdministrarPartidoOnlineScreen(
                     if (navController != null) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Filled.Remove, contentDescription = "Volver")
+                        }
+                    }
+                },
+                actions = {
+                    if (esCreador) {
+                        IconButton(onClick = {
+                            navController?.navigate("administrar_roles_online/$partidoUid")
+                        }) {
+                            Icon(Icons.Default.Person, contentDescription = "Administrar Roles")
                         }
                     }
                 }
@@ -149,7 +169,6 @@ fun AdministrarPartidoOnlineScreen(
                         val horaActual = horaEditable.split(":").getOrNull(0)?.toIntOrNull() ?: calendar.get(Calendar.HOUR_OF_DAY)
                         val minutoActual = horaEditable.split(":").getOrNull(1)?.toIntOrNull() ?: calendar.get(Calendar.MINUTE)
 
-                        // Solo ejecuta una vez al abrir el picker
                         LaunchedEffect(showTimePicker) {
                             if (showTimePicker) {
                                 TimePickerDialog(
@@ -506,4 +525,3 @@ fun SimpleNumberPicker(value: Int, range: IntRange, onValueChange: (Int) -> Unit
         ) { Text("+") }
     }
 }
-

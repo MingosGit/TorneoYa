@@ -110,9 +110,21 @@ fun NavGraph(
             mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarPartidoOnlineScreen(
                 partidoUid = partidoUid,
                 navController = navController,
-                viewModel = vm
+                viewModel = vm,
+                usuarioUid = userUid
             )
         }
+        composable(
+            route = "administrar_roles_online/{partidoUid}",
+            arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val partidoUid = backStackEntry.arguments?.getString("partidoUid") ?: ""
+            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarRolesOnlineScreen(
+                partidoUid = partidoUid,
+                navController = navController
+            )
+        }
+
         composable(
             route = "administrar_jugadores_online/{partidoUid}/{equipoAUid}/{equipoBUid}",
             arguments = listOf(
