@@ -16,21 +16,26 @@ fun VisualizarPartidoOnlineContent(
     usuarioUid: String,
     partidoUid: String
 ) {
+    var golesReloadKey by remember { mutableStateOf(0) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Puedes reutilizar tus componentes de header y banner pero adaptados a los datos online
         PartidoEquiposHeaderOnline(uiState)
-        PartidoGolesHeaderOnline(uiState)
+        PartidoGolesHeaderOnline(
+            uiState = uiState,
+            onRecargarGoles = { golesReloadKey++ }
+        )
         PartidoEstadoBannerOnline(uiState)
         Spacer(modifier = Modifier.height(16.dp))
         PartidoTabsOnline(
             uiState = uiState,
             vm = vm,
             usuarioUid = usuarioUid,
-            partidoUid = partidoUid
+            partidoUid = partidoUid,
+            golesReloadKey = golesReloadKey
         )
     }
 }

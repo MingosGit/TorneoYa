@@ -1,6 +1,8 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,7 +17,8 @@ import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
 @Composable
 fun PartidoTabEventosOnline(
     partidoUid: String,
-    uiState: mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
+    uiState: mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState,
+    reloadKey: Int = 0
 ) {
     val scope = rememberCoroutineScope()
     var eventos by remember { mutableStateOf<List<GolEvento>>(emptyList()) }
@@ -23,8 +26,13 @@ fun PartidoTabEventosOnline(
     var equipoBUid by remember { mutableStateOf<String?>(null) }
     var nombreA by remember { mutableStateOf(uiState.nombreEquipoA) }
     var nombreB by remember { mutableStateOf(uiState.nombreEquipoB) }
+    var isLoading by remember { mutableStateOf(true) }
+    var triggerReload by remember { mutableStateOf(0) }
 
-    LaunchedEffect(partidoUid) {
+    fun recargar() { triggerReload++ }
+
+    LaunchedEffect(partidoUid, reloadKey, triggerReload) {
+        isLoading = true
         scope.launch {
             val db = FirebaseFirestore.getInstance()
             // Obtener partido (solo los uids de equipos)
@@ -75,11 +83,31 @@ fun PartidoTabEventosOnline(
                         asistente = gol.asistenciaJugadorUid?.let { nombresMap[it] },
                     )
                 }
+            isLoading = false
         }
     }
 
     // UI
     Column(Modifier.fillMaxWidth().padding(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(
+                onClick = { recargar() }
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = "Recargar goles")
+            }
+        }
+
+        if (isLoading) {
+            Box(
+                Modifier.fillMaxWidth().padding(top = 32.dp),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
+            return@Column
+        }
+
         if (eventos.isEmpty()) {
             Text("Sin eventos registrados", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.align(Alignment.CenterHorizontally))
             return@Column

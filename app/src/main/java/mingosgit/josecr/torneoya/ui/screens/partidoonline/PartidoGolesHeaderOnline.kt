@@ -1,7 +1,9 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,7 +14,10 @@ import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
 @Composable
-fun PartidoGolesHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
+fun PartidoGolesHeaderOnline(
+    uiState: VisualizarPartidoOnlineUiState,
+    onRecargarGoles: (() -> Unit)? = null
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,5 +46,18 @@ fun PartidoGolesHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center
         )
+        if (onRecargarGoles != null) {
+            IconButton(
+                onClick = { onRecargarGoles() },
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(38.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Recargar goles"
+                )
+            }
+        }
     }
 }
