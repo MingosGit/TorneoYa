@@ -203,13 +203,6 @@ fun NavGraph(
             MiCuentaScreen(viewModel = miCuentaVM)
         }
 
-        composable(BottomNavItem.Partido.route) {
-            PartidoScreen(
-                navController = navController,
-                partidoViewModel = partidoViewModel,
-                equipoRepository = equipoRepositoryInst
-            )
-        }
 
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)

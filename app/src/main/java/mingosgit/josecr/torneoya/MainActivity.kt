@@ -39,7 +39,8 @@ class MainActivity : ComponentActivity() {
         window.statusBarColor = AndroidColor.BLACK
 
         // ICONOS DE LA BARRA SIEMPRE BLANCOS (APARIENCIA OSCURA)
-        WindowCompat.getInsetsController(window, window.decorView)?.isAppearanceLightStatusBars = false
+        WindowCompat.getInsetsController(window, window.decorView)?.isAppearanceLightStatusBars =
+            false
 
         WindowCompat.setDecorFitsSystemWindows(window, true)
 
@@ -52,7 +53,8 @@ class MainActivity : ComponentActivity() {
                 val db = AppDatabase.getInstance(context)
                 val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
                 val jugadorRepository = JugadorRepository(db.jugadorDao())
-                val partidoEquipoJugadorRepository = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
+                val partidoEquipoJugadorRepository =
+                    PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
 
                 val partidoRepository = PartidoRepository(
                     db.partidoDao(),
@@ -79,9 +81,9 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry = navController.currentBackStackEntryAsState()
                 val showBottomBar = when (navBackStackEntry.value?.destination?.route) {
                     BottomNavItem.Home.route,
-                    BottomNavItem.Partido.route,
                     BottomNavItem.Online.route,
                     BottomNavItem.Usuario.route -> true
+
                     "partido_online" -> true
                     // AÑADE ESTO:
                     "visualizar_partido_online/{partidoUid}" -> false
