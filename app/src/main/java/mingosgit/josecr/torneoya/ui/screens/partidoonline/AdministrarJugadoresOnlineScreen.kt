@@ -1,8 +1,12 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
@@ -10,8 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,169 +32,206 @@ fun AdministrarJugadoresOnlineScreen(
     navController: NavController,
     vm: AdministrarJugadoresOnlineViewModel
 ) {
-    LaunchedEffect(Unit) {
-        vm.cargarJugadoresExistentes()
-    }
-
+    LaunchedEffect(Unit) { vm.cargarJugadoresExistentes() }
     val miUid = FirebaseAuth.getInstance().currentUser?.uid
     var idxParaEliminar by remember { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp)
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF181B26), Color(0xFF1C2030))
+                )
+            )
     ) {
         Text(
             "Administrar jugadores",
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            fontSize = 25.sp,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            modifier = Modifier
+                .padding(top = 22.dp, bottom = 10.dp)
+                .align(Alignment.CenterHorizontally)
         )
-        Spacer(Modifier.height(8.dp))
 
         Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = 20.dp)
+                .height(40.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(
-                onClick = { vm.equipoSeleccionado.value = "A" },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (vm.equipoSeleccionado.value == "A") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.weight(1f)
-            ) { Text("Equipo A") }
-            Spacer(Modifier.width(10.dp))
-            Button(
-                onClick = { vm.equipoSeleccionado.value = "B" },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (vm.equipoSeleccionado.value == "B") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.weight(1f)
-            ) { Text("Equipo B") }
+            EquipoChip(
+                text = "Equipo A",
+                selected = vm.equipoSeleccionado.value == "A",
+                onClick = { vm.equipoSeleccionado.value = "A" }
+            )
+            Spacer(Modifier.width(12.dp))
+            EquipoChip(
+                text = "Equipo B",
+                selected = vm.equipoSeleccionado.value == "B",
+                onClick = { vm.equipoSeleccionado.value = "B" }
+            )
         }
 
-        Spacer(Modifier.height(10.dp))
+        val jugadores = if (vm.equipoSeleccionado.value == "A") vm.equipoAJugadores else vm.equipoBJugadores
+
         Text(
             if (vm.equipoSeleccionado.value == "A") "Jugadores Equipo A" else "Jugadores Equipo B",
             fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
-                .padding(top = 12.dp, bottom = 4.dp)
-                .align(Alignment.CenterHorizontally)
+                .padding(top = 22.dp, bottom = 6.dp, start = 24.dp)
         )
-        val jugadores = if (vm.equipoSeleccionado.value == "A") vm.equipoAJugadores else vm.equipoBJugadores
 
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.92f))
         ) {
-            itemsIndexed(jugadores + listOf(JugadorFirebase())) { idx, value ->
-                var expanded by remember { mutableStateOf(false) }
-                var searchQuery by remember { mutableStateOf("") }
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = value.nombre,
-                        onValueChange = { newValue ->
-                            if (idx == jugadores.size) {
-                                if (newValue.isNotBlank()) {
-                                    vm.agregarJugador(JugadorFirebase(nombre = newValue), vm.equipoSeleccionado.value)
-                                }
-                            } else {
-                                if (newValue.isEmpty()) {
-                                    idxParaEliminar = idx
-                                } else {
-                                    vm.cambiarNombreJugador(idx, vm.equipoSeleccionado.value, newValue)
-                                }
-                            }
-                        },
-                        label = { Text(if (idx == jugadores.size) "Agregar un jugador nuevo" else "Jugador ${idx + 1}") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 8.dp, bottom = 8.dp)
+            ) {
+                itemsIndexed(jugadores + listOf(JugadorFirebase())) { idx, value ->
+                    var expanded by remember { mutableStateOf(false) }
+                    var searchQuery by remember { mutableStateOf("") }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(bottom = 4.dp)
-                    )
-                    IconButton(
-                        onClick = { expanded = true }
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp, horizontal = 8.dp)
                     ) {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir jugador")
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                    ) {
+                        // TEXTFIELD AJUSTADO PARA QUE SIEMPRE SE VEA Y NO CORTADO
                         OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            label = { Text("Buscar") },
-                            singleLine = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                        vm.jugadoresDisponiblesManual(vm.equipoSeleccionado.value, idx)
-                            .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
-                            .forEach { jugador ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(jugador.nombre)
-                                            if (miUid != null && jugador.uid == miUid) {
-                                                Text(" /Tú", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
-                                            }
-                                        }
-                                    },
-                                    onClick = {
-                                        if (idx == jugadores.size) {
-                                            vm.agregarJugador(jugador, vm.equipoSeleccionado.value)
-                                        } else {
-                                            vm.cambiarNombreJugador(idx, vm.equipoSeleccionado.value, jugador.nombre)
-                                        }
-                                        expanded = false
-                                        searchQuery = ""
+                            value = value.nombre,
+                            onValueChange = { newValue ->
+                                if (idx == jugadores.size) {
+                                    if (newValue.isNotBlank()) {
+                                        vm.agregarJugador(JugadorFirebase(nombre = newValue), vm.equipoSeleccionado.value)
                                     }
-                                )
-                            }
-                    }
-                    if (idx != jugadores.size) {
+                                } else {
+                                    if (newValue.isEmpty()) {
+                                        idxParaEliminar = idx
+                                    } else {
+                                        vm.cambiarNombreJugador(idx, vm.equipoSeleccionado.value, newValue)
+                                    }
+                                }
+                            },
+                            label = {
+                                if (idx == jugadores.size) Text("Agregar nuevo jugador")
+                                else Text("Jugador ${idx + 1}")
+                            },
+                            singleLine = false, // Permite crecer en altura
+                            minLines = 1,
+                            maxLines = 2,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(bottom = 2.dp)
+                                .heightIn(min = 54.dp) // Altura mínima REAL y cómoda
+                                .defaultMinSize(minHeight = 54.dp),
+                            textStyle = LocalTextStyle.current.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 17.sp,
+                                lineHeight = 22.sp
+                            ),
+                            enabled = true
+                        )
                         IconButton(
-                            onClick = { idxParaEliminar = idx },
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = Color.Red
-                            )
+                            onClick = { expanded = true },
+                            modifier = Modifier.size(38.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar jugador",
-                                tint = Color.Red
+                                Icons.Default.ArrowDropDown,
+                                contentDescription = "Elegir jugador",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                    }
-                }
-
-                // Popup de confirmación para eliminar
-                if (idxParaEliminar == idx) {
-                    AlertDialog(
-                        onDismissRequest = { idxParaEliminar = null },
-                        title = { Text("¿Eliminar jugador?") },
-                        text = { Text("¿Estás seguro de que quieres eliminar a este jugador?") },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                vm.eliminarJugador(idx, vm.equipoSeleccionado.value)
-                                idxParaEliminar = null
-                            }) {
-                                Text("Eliminar", color = Color.Red)
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { idxParaEliminar = null }) {
-                                Text("Cancelar")
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                        ) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                label = { Text("Buscar") },
+                                singleLine = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                            vm.jugadoresDisponiblesManual(vm.equipoSeleccionado.value, idx)
+                                .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
+                                .forEach { jugador ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(jugador.nombre, color = MaterialTheme.colorScheme.onSurface)
+                                                if (miUid != null && jugador.uid == miUid) {
+                                                    Text(
+                                                        " /Tú",
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        fontSize = 13.sp,
+                                                        modifier = Modifier.padding(start = 3.dp)
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onClick = {
+                                            if (idx == jugadores.size) {
+                                                vm.agregarJugador(jugador, vm.equipoSeleccionado.value)
+                                            } else {
+                                                vm.cambiarNombreJugador(idx, vm.equipoSeleccionado.value, jugador.nombre)
+                                            }
+                                            expanded = false
+                                            searchQuery = ""
+                                        }
+                                    )
+                                }
+                        }
+                        if (idx != jugadores.size) {
+                            IconButton(
+                                onClick = { idxParaEliminar = idx },
+                                modifier = Modifier.size(38.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Eliminar jugador",
+                                    tint = Color(0xFFF25A6D)
+                                )
                             }
                         }
-                    )
+                    }
+
+                    if (idxParaEliminar == idx) {
+                        AlertDialog(
+                            onDismissRequest = { idxParaEliminar = null },
+                            title = { Text("¿Eliminar jugador?") },
+                            text = { Text("¿Estás seguro de que quieres eliminar a este jugador?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    vm.eliminarJugador(idx, vm.equipoSeleccionado.value)
+                                    idxParaEliminar = null
+                                }) { Text("Eliminar", color = Color(0xFFF25A6D)) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { idxParaEliminar = null }) {
+                                    Text("Cancelar")
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
+
+        Spacer(Modifier.height(16.dp))
 
         Button(
             onClick = {
@@ -195,11 +239,59 @@ fun AdministrarJugadoresOnlineScreen(
                     navController.popBackStack()
                 }
             },
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp)
+                .height(48.dp)
+                .padding(horizontal = 8.dp)
         ) {
-            Text("Guardar y volver")
+            Text("Guardar y volver", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, fontSize = 18.sp)
+        }
+        Spacer(Modifier.height(18.dp))
+    }
+}
+
+@Composable
+fun EquipoChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val background = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val content = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = background,
+        shadowElevation = if (selected) 5.dp else 0.dp,
+        modifier = Modifier
+            .defaultMinSize(minWidth = 0.dp)
+            .height(36.dp)
+            .wrapContentWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickableNoRipple { onClick() }
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text,
+                color = content,
+                fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Medium,
+                fontSize = 16.sp
+            )
         }
     }
 }
+
+@Composable
+fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier =
+    composed {
+        this.then(Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { onClick() })
+        })
+    }
