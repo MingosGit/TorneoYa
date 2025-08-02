@@ -85,6 +85,9 @@ fun AjustesScreen(
                                         mostrarAlerta = true
                                     }
                                 }
+                                "Mi cuenta local" -> {
+                                    navController.navigate("cuenta_local")
+                                }
                                 // otros casos futuros
                             }
                         },
