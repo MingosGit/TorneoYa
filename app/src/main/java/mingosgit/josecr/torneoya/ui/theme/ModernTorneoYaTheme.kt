@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.sp
 private val Blue = Color(0xFF296DFF)
 private val Violet = Color(0xFF8F5CFF)
 private val Accent = Color(0xFFFFB531)
+private val Yellow = Color(0xFFFFB531) // Nuevo nombre explícito
 private val BackgroundDark = Color(0xFF181B26)
 private val BackgroundLight = Color(0xFFF4F6FF)
 private val CardDark = Color(0xFF22263B)
@@ -35,9 +36,8 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = CardDark,
     onSurfaceVariant = MutedText,
     outline = MutedText,
-    tertiary = Accent,
+    tertiary = Accent, // también se puede llamar Yellow
 )
-
 
 @Composable
 fun ModernTorneoYaTheme(
@@ -69,6 +69,7 @@ object TorneoYaPalette {
     val blue get() = Blue
     val violet get() = Violet
     val accent get() = Accent
+    val yellow get() = Yellow         // <-- Nuevo acceso directo
     val chipBgDark get() = ChipBgDark
     val chipBgLight get() = ChipBgLight
     val textLight get() = TextLight
