@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,8 +33,12 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
     val encuestasSize = state.encuestas.size
     val encuestasLoaded = remember(encuestasSize) { encuestasSize > 0 }
 
+    // PRIMERA CARGA
     LaunchedEffect(Unit) {
         isLoading = true
+        // yield y delay para forzar la animación en Compose (NO QUITES ESTO)
+        kotlinx.coroutines.yield()
+        delay(150) // <- ESTA LINEA ES CLAVE PARA QUE SALGA EL LOADER
         vm.cargarComentariosEncuestas(usuarioUid)
         isLoading = false
     }
@@ -45,9 +50,13 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
         ) {
             IconButton(
                 onClick = {
-                    isLoading = true
-                    vm.cargarComentariosEncuestas(usuarioUid)
-                    isLoading = false
+                    scope.launch {
+                        isLoading = true
+                        kotlinx.coroutines.yield()
+                        delay(150) // <- OTRA VEZ: PARA QUE SALGA EL LOADER
+                        vm.cargarComentariosEncuestas(usuarioUid)
+                        isLoading = false
+                    }
                 },
                 modifier = Modifier.padding(8.dp)
             ) {
@@ -68,7 +77,6 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                 CircularProgressIndicator()
             }
         } else {
-            // Encuestas existentes
             Box(modifier = Modifier.weight(1f)) {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(state.encuestas) { encuestaConResultados ->
@@ -133,7 +141,6 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                     }
                 }
             }
-            // Card para crear encuesta
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -201,10 +208,17 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         opciones.all { it.isNotBlank() } &&
                                         opciones.size in 2..5
                                     ) {
-                                        vm.agregarEncuesta(pregunta, opciones)
-                                        pregunta = ""
-                                        opciones.clear(); opciones.addAll(listOf("", ""))
-                                        expandedCrear = false
+                                        scope.launch {
+                                            vm.agregarEncuesta(pregunta, opciones)
+                                            pregunta = ""
+                                            opciones.clear(); opciones.addAll(listOf("", ""))
+                                            expandedCrear = false
+                                            isLoading = true
+                                            kotlinx.coroutines.yield()
+                                            delay(150)
+                                            vm.cargarComentariosEncuestas(usuarioUid)
+                                            isLoading = false
+                                        }
                                     }
                                 },
                                 modifier = Modifier

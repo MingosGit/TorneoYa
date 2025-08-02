@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 
 @Composable
@@ -28,11 +29,15 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     var isLoading by remember { mutableStateOf(false) }
     val comentariosSize = state.comentarios.size
     val comentariosLoaded = remember(comentariosSize) { comentariosSize > 0 }
+    val scope = rememberCoroutineScope()
 
+    // PRIMERA CARGA
     LaunchedEffect(Unit) {
         isLoading = true
-        vm.cargarComentariosEncuestas(usuarioUid)
-        isLoading = false
+        scope.launch {
+            vm.cargarComentariosEncuestas(usuarioUid)
+            isLoading = false
+        }
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -52,17 +57,23 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
                     if (textoComentario.isNotBlank()) {
-                        vm.agregarComentario(usuarioNombre, textoComentario, usuarioUid)
-                        textoComentario = ""
-                        vm.cargarComentariosEncuestas(usuarioUid)
+                        scope.launch {
+                            isLoading = true
+                            vm.agregarComentario(usuarioNombre, textoComentario, usuarioUid)
+                            textoComentario = ""
+                            vm.cargarComentariosEncuestas(usuarioUid)
+                            isLoading = false
+                        }
                     }
                 })
             )
             IconButton(
                 onClick = {
-                    isLoading = true
-                    vm.cargarComentariosEncuestas(usuarioUid)
-                    isLoading = false
+                    scope.launch {
+                        isLoading = true
+                        vm.cargarComentariosEncuestas(usuarioUid)
+                        isLoading = false
+                    }
                 },
                 modifier = Modifier.padding(end = 8.dp)
             ) {
@@ -75,9 +86,13 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         Button(
             onClick = {
                 if (textoComentario.isNotBlank()) {
-                    vm.agregarComentario(usuarioNombre, textoComentario, usuarioUid)
-                    textoComentario = ""
-                    vm.cargarComentariosEncuestas(usuarioUid)
+                    scope.launch {
+                        isLoading = true
+                        vm.agregarComentario(usuarioNombre, textoComentario, usuarioUid)
+                        textoComentario = ""
+                        vm.cargarComentariosEncuestas(usuarioUid)
+                        isLoading = false
+                    }
                 }
             },
             modifier = Modifier.align(Alignment.End).padding(end = 8.dp)
@@ -95,8 +110,11 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 CircularProgressIndicator()
             }
         } else {
+            // ORDENAR DE MÁS NUEVO A MÁS VIEJO
+            val comentariosOrdenados = state.comentarios.sortedByDescending { it.comentario.fechaHora }
+
             LazyColumn(modifier = Modifier.fillMaxHeight()) {
-                items(state.comentarios) { comentarioConVotos ->
+                items(comentariosOrdenados) { comentarioConVotos ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -153,7 +171,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                     }
                     Divider()
                 }
-                if (state.comentarios.isEmpty()) {
+                if (comentariosOrdenados.isEmpty()) {
                     item {
                         Text(
                             text = "Sin comentarios",
