@@ -47,6 +47,7 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnl
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import androidx.activity.ComponentActivity // <--- añade este import arriba
+import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
 
 @Composable
 fun NavGraph(
@@ -207,6 +208,10 @@ fun NavGraph(
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)
         }
+        composable("cuenta_local") {
+            CuentaLocalScreen(navController = navController)
+        }
+
         composable("partido") {
             PartidoScreen(
                 navController = navController,
