@@ -3,11 +3,14 @@ package mingosgit.josecr.torneoya.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
+import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
+import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 
 data class HomeUiState(
     val nombreUsuario: String = "",
@@ -17,16 +20,31 @@ data class HomeUiState(
     val amigosTotales: Int = 0
 )
 
-class HomeViewModel : ViewModel() {
+
+class HomeViewModel(
+    private val partidoRepo: PartidoFirebaseRepository = PartidoFirebaseRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = _uiState
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private val _proximoPartidoUi = MutableStateFlow<HomeProximoPartidoUi?>(null)
+    val proximoPartidoUi: StateFlow<HomeProximoPartidoUi?> = _proximoPartidoUi.asStateFlow()
+
+    private val _cargandoProx = MutableStateFlow(true)
+    val cargandoProx: StateFlow<Boolean> = _cargandoProx.asStateFlow()
 
     init {
         cargarDatosOnline()
+        cargarProximoPartido()
     }
 
     fun recargarDatos() {
+        cargarDatosOnline()
+        cargarProximoPartido()
+    }
+
+    private fun cargarDatosOnline() {
         viewModelScope.launch {
             val user = FirebaseAuth.getInstance().currentUser
             if (user == null) {
@@ -34,7 +52,7 @@ class HomeViewModel : ViewModel() {
                 return@launch
             }
             val uid = user.uid
-            val firestore = FirebaseFirestore.getInstance()
+            val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
 
             // Nombre usuario
             val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
@@ -74,54 +92,47 @@ class HomeViewModel : ViewModel() {
             )
         }
     }
-    private fun cargarDatosOnline() {
+
+    private fun cargarProximoPartido() {
         viewModelScope.launch {
-            val auth = FirebaseAuth.getInstance()
-            val firestore = FirebaseFirestore.getInstance()
-            val uid = auth.currentUser?.uid
-
-            if (uid == null) {
-                _uiState.value = HomeUiState(nombreUsuario = "Usuario")
-                return@launch
+            _cargandoProx.value = true
+            val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            var partidoUi: HomeProximoPartidoUi? = null
+            if (userUid.isNotBlank()) {
+                val partidos = partidoRepo
+                    .listarPartidosPorUsuario(userUid)
+                    .filter { it.estado == "PREVIA" }
+                    .sortedBy { it.fecha + " " + it.horaInicio }
+                val proximoPartido = partidos.firstOrNull()
+                if (proximoPartido != null) {
+                    // Conseguir nombres de los equipos (IDs pueden estar vacíos)
+                    val nombreEquipoA = when {
+                        proximoPartido.nombresManualEquipoA.any { it.isNotBlank() } ->
+                            proximoPartido.nombresManualEquipoA.filter { it.isNotBlank() }.joinToString(" / ")
+                        proximoPartido.equipoAId.isNotBlank() -> {
+                            val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoAId)
+                            eq?.nombre ?: "Equipo A"
+                        }
+                        else -> "Equipo A"
+                    }
+                    val nombreEquipoB = when {
+                        proximoPartido.nombresManualEquipoB.any { it.isNotBlank() } ->
+                            proximoPartido.nombresManualEquipoB.filter { it.isNotBlank() }.joinToString(" / ")
+                        proximoPartido.equipoBId.isNotBlank() -> {
+                            val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoBId)
+                            eq?.nombre ?: "Equipo B"
+                        }
+                        else -> "Equipo B"
+                    }
+                    partidoUi = HomeProximoPartidoUi(
+                        partido = proximoPartido,
+                        nombreEquipoA = nombreEquipoA,
+                        nombreEquipoB = nombreEquipoB
+                    )
+                }
             }
-
-            // Nombre de usuario
-            val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
-            val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: "Usuario"
-
-            // Partidos (donde tiene acceso o creador)
-            val partidosSnap = firestore.collection("partidos")
-                .whereArrayContains("usuariosConAcceso", uid)
-                .get().await()
-            val partidosCreadosSnap = firestore.collection("partidos")
-                .whereEqualTo("creadorUid", uid)
-                .get().await()
-            val partidosTotales = (partidosSnap.size() + partidosCreadosSnap.size())
-
-            // Equipos (puedes personalizar según la app)
-            val equiposSnap = firestore.collection("equipos")
-                .get().await()
-            val equiposTotales = equiposSnap.size()
-
-            // Jugadores (puedes personalizar según la app)
-            val jugadoresSnap = firestore.collection("jugadores")
-                .get().await()
-            val jugadoresTotales = jugadoresSnap.size()
-
-            // Amigos
-            val amigosSnap = firestore.collection("usuarios")
-                .document(uid)
-                .collection("amigos")
-                .get().await()
-            val amigosTotales = amigosSnap.size()
-
-            _uiState.value = HomeUiState(
-                nombreUsuario = nombreUsuario,
-                partidosTotales = partidosTotales,
-                equiposTotales = equiposTotales,
-                jugadoresTotales = jugadoresTotales,
-                amigosTotales = amigosTotales
-            )
+            _proximoPartidoUi.value = partidoUi
+            _cargandoProx.value = false
         }
     }
 }

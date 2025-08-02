@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -24,34 +23,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
-import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
-import com.google.firebase.auth.FirebaseAuth
+
+data class HomeProximoPartidoUi(
+    val partido: PartidoFirebase,
+    val nombreEquipoA: String,
+    val nombreEquipoB: String
+)
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
-    navController: NavController,
-    partidoRepo: PartidoFirebaseRepository = remember { PartidoFirebaseRepository() }
+    navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scope = rememberCoroutineScope()
-    val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-    var proximoPartido by remember { mutableStateOf<PartidoFirebase?>(null) }
-    var cargandoProx by remember { mutableStateOf(true) }
-
-    // Cargar próximo partido online al entrar (si hay usuario logueado)
-    LaunchedEffect(userUid) {
-        cargandoProx = true
-        if (userUid.isNotBlank()) {
-            val partidos = partidoRepo.listarPartidosPorUsuario(userUid)
-                .filter { it.estado == "PREVIA" }
-                .sortedBy { it.fecha + " " + it.horaInicio }
-            proximoPartido = partidos.firstOrNull()
-        }
-        cargandoProx = false
-    }
+    val proximoPartidoUi by viewModel.proximoPartidoUi.collectAsState()
+    val cargandoProx by viewModel.cargandoProx.collectAsState()
 
     val modernBackground = Brush.verticalGradient(
         0.0f to Color(0xFF181B26),
@@ -133,20 +120,22 @@ fun HomeScreen(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally)
+                horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally)
             ) {
                 QuickAccessButton(
                     icon = Icons.Filled.Person,
-                    label = "Mi perfil"
+                    label = "Mi perfil",
+                    modifier = Modifier.weight(1f)
                 ) { navController.navigate("usuario") }
 
                 QuickAccessButton(
                     icon = Icons.Filled.SportsSoccer,
-                    label = "Partidos Online"
+                    label = "Partidos Online",
+                    modifier = Modifier.weight(1f)
                 ) { navController.navigate("partido_online") }
             }
 
-            Spacer(Modifier.height(29.dp))
+            Spacer(Modifier.height(32.dp))
 
             // Próximo partido online
             if (cargandoProx) {
@@ -156,15 +145,21 @@ fun HomeScreen(
                         .padding(vertical = 22.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = Color(0xFF296DFF), strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color(0xFF296DFF),
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             } else {
-                proximoPartido?.let { partido ->
+                proximoPartidoUi?.let { partidoUi ->
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(7.dp, RoundedCornerShape(18.dp)),
-                        color = Color(0xFF20243B),
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color(0xFF20243B)),
+                        color = Color.Transparent,
+                        shadowElevation = 0.dp,
                         shape = RoundedCornerShape(18.dp)
                     ) {
                         Column(
@@ -180,71 +175,68 @@ fun HomeScreen(
                             )
                             Spacer(Modifier.height(7.dp))
                             Text(
-                                text = "${partido.fecha}  |  ${partido.horaInicio}",
+                                text = "${partidoUi.partido.fecha}  |  ${partidoUi.partido.horaInicio}",
                                 color = Color(0xFFF7F7FF),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = "${partido.nombresManualEquipoA.joinToString(" / ")}  VS  ${partido.nombresManualEquipoB.joinToString(" / ")}",
-                                color = Color(0xFFB7B7D1),
-                                fontSize = 15.sp,
-                                maxLines = 1
-                            )
                             Spacer(Modifier.height(7.dp))
-                            Button(
-                                onClick = {
-                                    navController.navigate("visualizar_partido_online/${partido.uid}")
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF)),
-                                shape = RoundedCornerShape(13.dp),
-                                modifier = Modifier.height(37.dp)
+
+                            // Mostrar nombres de los equipos desde el ViewModel
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Text("Ver partido", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = partidoUi.nombreEquipoA,
+                                    color = Color(0xFFB7B7D1),
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = "   VS   ",
+                                    color = Color(0xFF8F5CFF),
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = partidoUi.nombreEquipoB,
+                                    color = Color(0xFFB7B7D1),
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
+                            Spacer(Modifier.height(13.dp))
+
+                            // Botón totalmente personalizado con estilo plano (flat)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF23273D))
+                                    .clickable {
+                                        navController.navigate("visualizar_partido_online/${partidoUi.partido.uid}")
+                                    }
+                                    .height(39.dp)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "Ver partido",
+                                    color = Color(0xFF8F5CFF),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                )
                             }
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(29.dp))
-
-            // Tarjeta bienvenida
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut()
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = Color(0xFF20243B),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(9.dp, RoundedCornerShape(24.dp))
-                ) {
-                    Column(
-                        Modifier
-                            .padding(28.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            "¡Bienvenido a TorneoYa!",
-                            color = Color(0xFFF7F7FF),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(14.dp))
-                        Text(
-                            "Gestiona tus partidos y amigos desde este panel. Explora todas las opciones en el menú inferior.",
-                            color = Color(0xFFB7B7D1),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Normal
-                        )
-                    }
-                }
-            }
+            Spacer(Modifier.height(30.dp))
         }
     }
 }
@@ -253,19 +245,25 @@ fun HomeScreen(
 fun QuickAccessButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clip(RoundedCornerShape(15.dp))
+    Box(
+        modifier = modifier
+            .height(90.dp)
+            .clip(RoundedCornerShape(17.dp))
             .background(Color(0xFF23273D))
             .clickable { onClick() }
-            .padding(horizontal = 19.dp, vertical = 13.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription = label, tint = Color(0xFF296DFF), modifier = Modifier.size(28.dp))
-        Spacer(Modifier.height(6.dp))
-        Text(label, color = Color(0xFFB7B7D1), fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(icon, contentDescription = label, tint = Color(0xFF296DFF), modifier = Modifier.size(30.dp))
+            Spacer(Modifier.height(8.dp))
+            Text(label, color = Color(0xFFB7B7D1), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        }
     }
 }
 
