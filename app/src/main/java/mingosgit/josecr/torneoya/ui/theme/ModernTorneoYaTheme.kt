@@ -38,20 +38,6 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Accent,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Blue,
-    onPrimary = Color.White,
-    secondary = Violet,
-    onSecondary = Color.White,
-    background = BackgroundLight,
-    onBackground = TextDark,
-    surface = SurfaceLight,
-    onSurface = TextDark,
-    surfaceVariant = CardLight,
-    onSurfaceVariant = MutedText,
-    outline = MutedText,
-    tertiary = Accent,
-)
 
 @Composable
 fun ModernTorneoYaTheme(
@@ -59,7 +45,7 @@ fun ModernTorneoYaTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = if (useDarkTheme) DarkColorScheme else LightColorScheme,
+        colorScheme = DarkColorScheme,
         typography = Typography(
             displayLarge = MaterialTheme.typography.displayLarge.copy(letterSpacing = 0.5.sp),
             titleLarge = MaterialTheme.typography.titleLarge.copy(letterSpacing = 0.15.sp),
