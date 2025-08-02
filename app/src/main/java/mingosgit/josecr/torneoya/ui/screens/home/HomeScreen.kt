@@ -47,11 +47,87 @@ fun HomeScreen(
         1.0f to Color(0xFF161622)
     )
 
+    val sesionActiva = uiState.nombreUsuario.isNotBlank() && uiState.nombreUsuario != "Usuario"
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(brush = modernBackground)
     ) {
+        if (!sesionActiva) {
+            // PANTALLA DE BIENVENIDA PARA USUARIO SIN SESIÓN
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 26.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFF296DFF).copy(alpha = 0.15f),
+                    shadowElevation = 0.dp,
+                    modifier = Modifier.size(85.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Logo",
+                        tint = Color(0xFF296DFF),
+                        modifier = Modifier.padding(22.dp)
+                    )
+                }
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    text = "Bienvenido a TorneoYa",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Desde aquí podrás crear y gestionar partidos con tus amigos.\n\nPara ello deberás iniciar sesión o crearte una cuenta.",
+                    fontSize = 16.sp,
+                    color = Color(0xFFB7B7D1),
+                    lineHeight = 22.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    fontWeight = FontWeight.Normal
+                )
+                Spacer(Modifier.height(32.dp))
+                Button(
+                    onClick = { navController.navigate("login") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(49.dp),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF))
+                ) {
+                    Text("Iniciar sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+                Spacer(Modifier.height(11.dp))
+                OutlinedButton(
+                    onClick = { navController.navigate("register") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(49.dp),
+                    shape = RoundedCornerShape(15.dp),
+                ) {
+                    Text("Crear cuenta", color = Color(0xFF296DFF), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
+                Spacer(Modifier.height(26.dp))
+                Text(
+                    text = "¿No quieres una cuenta online?\nPuedes acceder a tu cuenta local desde ajustes de Usuario.",
+                    fontSize = 14.sp,
+                    color = Color(0xFFB7B7D1),
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 18.dp),
+                    lineHeight = 19.sp
+                )
+            }
+            return
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -137,7 +213,7 @@ fun HomeScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            // Próximo partido online
+            // Próximo partido online o mensaje motivador
             if (cargandoProx) {
                 Box(
                     Modifier
@@ -152,94 +228,147 @@ fun HomeScreen(
                     )
                 }
             } else {
-                proximoPartidoUi?.let { partidoUi ->
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(Color(0xFF20243B)),
-                        color = Color.Transparent,
-                        shadowElevation = 0.dp,
-                        shape = RoundedCornerShape(18.dp)
-                    ) {
-                        Column(
-                            Modifier
-                                .padding(vertical = 21.dp, horizontal = 20.dp),
-                            horizontalAlignment = Alignment.Start
+                AnimatedVisibility(
+                    visible = proximoPartidoUi != null,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    proximoPartidoUi?.let { partidoUi ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(Color(0xFF20243B)),
+                            color = Color.Transparent,
+                            shadowElevation = 0.dp,
+                            shape = RoundedCornerShape(18.dp)
                         ) {
-                            Text(
-                                text = "Próximo partido online",
-                                color = Color(0xFF8F5CFF),
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 15.sp
-                            )
-                            Spacer(Modifier.height(7.dp))
-                            Text(
-                                text = "${partidoUi.partido.fecha}  |  ${partidoUi.partido.horaInicio}",
-                                color = Color(0xFFF7F7FF),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(Modifier.height(7.dp))
-
-                            // Mostrar nombres de los equipos desde el ViewModel
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                            Column(
+                                Modifier
+                                    .padding(vertical = 21.dp, horizontal = 20.dp),
+                                horizontalAlignment = Alignment.Start
                             ) {
                                 Text(
-                                    text = partidoUi.nombreEquipoA,
-                                    color = Color(0xFFB7B7D1),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = "   VS   ",
+                                    text = "Próximo partido online",
                                     color = Color(0xFF8F5CFF),
-                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 15.sp
+                                )
+                                Spacer(Modifier.height(7.dp))
+                                Text(
+                                    text = "${partidoUi.partido.fecha}  |  ${partidoUi.partido.horaInicio}",
+                                    color = Color(0xFFF7F7FF),
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                Text(
-                                    text = partidoUi.nombreEquipoB,
-                                    color = Color(0xFFB7B7D1),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.weight(1f)
-                                )
+                                Spacer(Modifier.height(7.dp))
+
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = partidoUi.nombreEquipoA,
+                                        color = Color(0xFFB7B7D1),
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = "   VS   ",
+                                        color = Color(0xFF8F5CFF),
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = partidoUi.nombreEquipoB,
+                                        color = Color(0xFFB7B7D1),
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+
+                                Spacer(Modifier.height(13.dp))
+
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFF23273D))
+                                        .clickable {
+                                            navController.navigate("visualizar_partido_online/${partidoUi.partido.uid}")
+                                        }
+                                        .height(39.dp)
+                                        .fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "Ver partido",
+                                        color = Color(0xFF8F5CFF),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                    )
+                                }
                             }
-
-                            Spacer(Modifier.height(13.dp))
-
-                            // Botón totalmente personalizado con estilo plano (flat)
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF23273D))
-                                    .clickable {
-                                        navController.navigate("visualizar_partido_online/${partidoUi.partido.uid}")
-                                    }
-                                    .height(39.dp)
-                                    .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
+                        }
+                    }
+                }
+                AnimatedVisibility(
+                    visible = proximoPartidoUi == null,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color(0xFF20243B))
+                            .padding(vertical = 28.dp, horizontal = 18.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "¡Sin próximos partidos online!",
+                            color = Color(0xFFB7B7D1),
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Crea uno o únete a una partida para no perderte ningún gol.",
+                            color = Color(0xFF8F5CFF),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Spacer(Modifier.height(20.dp))
+                        Row {
+                            Button(
+                                onClick = { navController.navigate("partido_online") },
+                                shape = RoundedCornerShape(11.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF)),
+                                modifier = Modifier.weight(1f)
                             ) {
-                                Text(
-                                    "Ver partido",
-                                    color = Color(0xFF8F5CFF),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                )
+                                Text("Buscar partidos", color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(Modifier.width(16.dp))
+                            OutlinedButton(
+                                onClick = { navController.navigate("crear_partido_online") },
+                                shape = RoundedCornerShape(11.dp),
+                                border = ButtonDefaults.outlinedButtonBorder,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Crear uno", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
                 }
             }
-
             Spacer(Modifier.height(30.dp))
         }
     }
 }
+
+// --------- COMPONENTES --------
 
 @Composable
 fun QuickAccessButton(
