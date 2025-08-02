@@ -2,6 +2,7 @@ package mingosgit.josecr.torneoya.ui.screens.home
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,24 +23,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import kotlinx.coroutines.launch
+import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
+import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    navController: NavController,
+    partidoRepo: PartidoFirebaseRepository = remember { PartidoFirebaseRepository() }
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    LaunchedEffect(Unit) {
-        viewModel.recargarDatos()
+    val scope = rememberCoroutineScope()
+    val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var proximoPartido by remember { mutableStateOf<PartidoFirebase?>(null) }
+    var cargandoProx by remember { mutableStateOf(true) }
+
+    // Cargar próximo partido online al entrar (si hay usuario logueado)
+    LaunchedEffect(userUid) {
+        cargandoProx = true
+        if (userUid.isNotBlank()) {
+            val partidos = partidoRepo.listarPartidosPorUsuario(userUid)
+                .filter { it.estado == "PREVIA" }
+                .sortedBy { it.fecha + " " + it.horaInicio }
+            proximoPartido = partidos.firstOrNull()
+        }
+        cargandoProx = false
     }
+
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF181B26),
+        0.25f to Color(0xFF22263B),
+        0.6f to Color(0xFF1A1E29),
+        1.0f to Color(0xFF161622)
+    )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1A2980), Color(0xFF26D0CE))
-                )
-            )
+            .background(brush = modernBackground)
     ) {
         Column(
             modifier = Modifier
@@ -53,60 +77,49 @@ fun HomeScreen(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.2f),
-                    modifier = Modifier.size(56.dp)
+                    color = Color(0xFF2A2A3A),
+                    shadowElevation = 10.dp,
+                    modifier = Modifier.size(54.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Perfil",
-                        tint = Color(0xFFFFC300),
-                        modifier = Modifier.padding(12.dp)
+                        tint = Color(0xFFFFB531),
+                        modifier = Modifier.padding(13.dp)
                     )
                 }
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(14.dp))
                 Column {
                     Text(
                         text = "¡Hola, ${uiState.nombreUsuario}!",
-                        fontSize = 27.sp,
-                        color = Color.White,
+                        fontSize = 26.sp,
+                        color = Color(0xFFF7F7FF),
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Resumen de tu actividad",
-                        fontSize = 16.sp,
-                        color = Color(0xFFEEEEEE),
+                        fontSize = 15.sp,
+                        color = Color(0xFFB7B7D1),
                         fontWeight = FontWeight.Normal
                     )
                 }
             }
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(32.dp))
 
-            // Stats PRO
+            // Stats SOLO: Partidos y Amigos
             Row(
                 Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 StatCircle(
                     icon = Icons.Filled.SportsSoccer,
                     label = "Partidos",
                     value = uiState.partidosTotales,
-                    color = Color(0xFF00B894)
+                    color = Color(0xFF296DFF)
                 )
                 StatCircle(
                     icon = Icons.Filled.Group,
-                    label = "Equipos",
-                    value = uiState.equiposTotales,
-                    color = Color(0xFF0984E3)
-                )
-                StatCircle(
-                    icon = Icons.Filled.Person,
-                    label = "Jugadores",
-                    value = uiState.jugadoresTotales,
-                    color = Color(0xFFFFB300)
-                )
-                StatCircle(
-                    icon = Icons.Filled.Star,
                     label = "Amigos",
                     value = uiState.amigosTotales,
                     color = Color(0xFFFF7675)
@@ -115,42 +128,144 @@ fun HomeScreen(
 
             Spacer(Modifier.height(34.dp))
 
-            // Tarjeta con sombra sutil
+            // Accesos rápidos
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally)
+            ) {
+                QuickAccessButton(
+                    icon = Icons.Filled.Person,
+                    label = "Mi perfil"
+                ) { navController.navigate("usuario") }
+
+                QuickAccessButton(
+                    icon = Icons.Filled.SportsSoccer,
+                    label = "Partidos Online"
+                ) { navController.navigate("partido_online") }
+            }
+
+            Spacer(Modifier.height(29.dp))
+
+            // Próximo partido online
+            if (cargandoProx) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 22.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF296DFF), strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                }
+            } else {
+                proximoPartido?.let { partido ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(7.dp, RoundedCornerShape(18.dp)),
+                        color = Color(0xFF20243B),
+                        shape = RoundedCornerShape(18.dp)
+                    ) {
+                        Column(
+                            Modifier
+                                .padding(vertical = 21.dp, horizontal = 20.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                text = "Próximo partido online",
+                                color = Color(0xFF8F5CFF),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp
+                            )
+                            Spacer(Modifier.height(7.dp))
+                            Text(
+                                text = "${partido.fecha}  |  ${partido.horaInicio}",
+                                color = Color(0xFFF7F7FF),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "${partido.nombresManualEquipoA.joinToString(" / ")}  VS  ${partido.nombresManualEquipoB.joinToString(" / ")}",
+                                color = Color(0xFFB7B7D1),
+                                fontSize = 15.sp,
+                                maxLines = 1
+                            )
+                            Spacer(Modifier.height(7.dp))
+                            Button(
+                                onClick = {
+                                    navController.navigate("visualizar_partido_online/${partido.uid}")
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF)),
+                                shape = RoundedCornerShape(13.dp),
+                                modifier = Modifier.height(37.dp)
+                            ) {
+                                Text("Ver partido", color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(29.dp))
+
+            // Tarjeta bienvenida
             AnimatedVisibility(
                 visible = true,
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut()
             ) {
-                Card(
-                    shape = RoundedCornerShape(26.dp),
+                Surface(
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color(0xFF20243B),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(8.dp, RoundedCornerShape(26.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFBF6F6))
+                        .shadow(9.dp, RoundedCornerShape(24.dp))
                 ) {
                     Column(
                         Modifier
-                            .padding(30.dp)
+                            .padding(28.dp)
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             "¡Bienvenido a TorneoYa!",
-                            color = Color(0xFF2D3436),
-                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFFF7F7FF),
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(14.dp))
                         Text(
-                            "Gestiona tus partidos, equipos y amigos desde este panel. Explora todas las opciones en el menú inferior.",
-                            color = Color(0xFF636E72),
-                            style = MaterialTheme.typography.bodyMedium,
+                            "Gestiona tus partidos y amigos desde este panel. Explora todas las opciones en el menú inferior.",
+                            color = Color(0xFFB7B7D1),
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Normal
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun QuickAccessButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clip(RoundedCornerShape(15.dp))
+            .background(Color(0xFF23273D))
+            .clickable { onClick() }
+            .padding(horizontal = 19.dp, vertical = 13.dp)
+    ) {
+        Icon(icon, contentDescription = label, tint = Color(0xFF296DFF), modifier = Modifier.size(28.dp))
+        Spacer(Modifier.height(6.dp))
+        Text(label, color = Color(0xFFB7B7D1), fontSize = 13.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -164,28 +279,28 @@ fun StatCircle(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(84.dp)
+            .width(104.dp)
     ) {
         Box(
             Modifier
-                .size(54.dp)
+                .size(56.dp)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.12f)),
+                .background(color.copy(alpha = 0.19f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(30.dp))
+            Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(31.dp))
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(9.dp))
         Text(
             text = value.toString(),
-            fontSize = 21.sp,
+            fontSize = 23.sp,
             color = color,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = label,
-            fontSize = 13.sp,
-            color = Color.White,
+            fontSize = 14.sp,
+            color = Color(0xFFF7F7FF),
             fontWeight = FontWeight.Medium
         )
     }

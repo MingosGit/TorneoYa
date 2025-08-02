@@ -92,7 +92,10 @@ fun NavGraph(
     NavHost(navController, startDestination = BottomNavItem.Home.route) {
         composable(BottomNavItem.Home.route) {
             val homeViewModel = viewModel<HomeViewModel>()
-            HomeScreen(viewModel = homeViewModel)
+            HomeScreen(
+                viewModel = homeViewModel,
+                navController = navController
+            )
         }
 
         composable(
