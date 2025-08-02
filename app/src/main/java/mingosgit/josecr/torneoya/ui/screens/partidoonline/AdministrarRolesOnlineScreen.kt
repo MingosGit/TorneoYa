@@ -1,8 +1,11 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -11,7 +14,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarRolesOnlineViewModel
 
@@ -31,11 +39,8 @@ fun AdministrarRolesOnlineScreen(
 ) {
     val administradores by vm.administradores.collectAsState()
     val usuariosConAcceso by vm.usuariosConAcceso.collectAsState()
-
-    // Para la confirmación de borrado
     var showConfirmDialog by remember { mutableStateOf(false) }
     var usuarioABorrar: Pair<String, Boolean>? by remember { mutableStateOf(null) }
-    // (uid, esAdmin)
 
     Scaffold(
         topBar = {
@@ -53,76 +58,59 @@ fun AdministrarRolesOnlineScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-        ) {
-            // ----- ADMINISTRADORES ARRIBA -----
-            item {
-                Text(
-                    text = "Administradores",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF181B26),
+                            Color(0xFF1F2233)
+                        )
+                    )
                 )
+        ) {
+            // ADMINISTRADORES
+            item {
+                SectionHeader("Administradores")
             }
             items(administradores, key = { it.uid }) { usuario ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp)
-                ) {
-                    Text(usuario.nombre, modifier = Modifier.weight(1f))
-                    IconButton(
-                        onClick = { vm.quitarRolAdministrador(usuario.uid) }
-                    ) {
-                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Quitar rol admin")
-                    }
-                    IconButton(
-                        onClick = {
-                            usuarioABorrar = usuario.uid to true
-                            showConfirmDialog = true
-                        }
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar usuario completamente")
-                    }
-                }
-                HorizontalDivider()
-            }
-
-            // ----- USUARIOS CON ACCESO ABAJO -----
-            item {
-                Text(
-                    text = "Usuarios con acceso",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp)
+                UsuarioCard(
+                    nombre = usuario.nombre,
+                    colorBadge = Color(0xFF296DFF),
+                    iconMain = Icons.Default.KeyboardArrowDown,
+                    iconMainDesc = "Quitar admin",
+                    onMainClick = { vm.quitarRolAdministrador(usuario.uid) },
+                    iconDel = Icons.Default.Delete,
+                    iconDelDesc = "Eliminar usuario completamente",
+                    onDeleteClick = {
+                        usuarioABorrar = usuario.uid to true
+                        showConfirmDialog = true
+                    },
+                    admin = true
                 )
             }
+
+            // USUARIOS CON ACCESO
+            item {
+                SectionHeader("Usuarios con acceso")
+            }
             items(usuariosConAcceso, key = { it.uid }) { usuario ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp)
-                ) {
-                    Text(usuario.nombre, modifier = Modifier.weight(1f))
-                    IconButton(
-                        onClick = { vm.darRolAdministrador(usuario.uid) }
-                    ) {
-                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Dar rol administrador")
-                    }
-                    IconButton(
-                        onClick = {
-                            usuarioABorrar = usuario.uid to false
-                            showConfirmDialog = true
-                        }
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Quitar acceso")
-                    }
-                }
-                HorizontalDivider()
+                UsuarioCard(
+                    nombre = usuario.nombre,
+                    colorBadge = Color(0xFFFFB531),
+                    iconMain = Icons.Default.KeyboardArrowUp,
+                    iconMainDesc = "Dar rol admin",
+                    onMainClick = { vm.darRolAdministrador(usuario.uid) },
+                    iconDel = Icons.Default.Delete,
+                    iconDelDesc = "Quitar acceso",
+                    onDeleteClick = {
+                        usuarioABorrar = usuario.uid to false
+                        showConfirmDialog = true
+                    },
+                    admin = false
+                )
             }
         }
     }
 
-    // Diálogo de confirmación para borrar usuarios
     if (showConfirmDialog && usuarioABorrar != null) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
@@ -162,5 +150,66 @@ fun AdministrarRolesOnlineScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFFB7B7D1),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    )
+}
+
+@Composable
+private fun UsuarioCard(
+    nombre: String,
+    colorBadge: Color,
+    iconMain: androidx.compose.ui.graphics.vector.ImageVector,
+    iconMainDesc: String,
+    onMainClick: () -> Unit,
+    iconDel: androidx.compose.ui.graphics.vector.ImageVector,
+    iconDelDesc: String,
+    onDeleteClick: () -> Unit,
+    admin: Boolean
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(13.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+    ) {
+        // Nombre y badge
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp, 28.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(colorBadge)
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                nombre,
+                fontSize = 16.sp,
+                fontWeight = if (admin) FontWeight.Bold else FontWeight.Medium,
+                color = if (admin) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            )
+        }
+        IconButton(onClick = onMainClick) {
+            Icon(iconMain, contentDescription = iconMainDesc, tint = colorBadge)
+        }
+        IconButton(onClick = onDeleteClick) {
+            Icon(iconDel, contentDescription = iconDelDesc, tint = Color.Red)
+        }
     }
 }
