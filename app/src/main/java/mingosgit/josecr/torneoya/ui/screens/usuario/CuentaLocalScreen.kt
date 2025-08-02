@@ -19,26 +19,33 @@ fun CuentaLocalScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
-            onClick = { navController.navigate("partidos_locales") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            onClick = { navController.navigate("partido") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         ) {
             Text("Partidos Locales")
         }
         Button(
             onClick = { navController.navigate("mis_jugadores") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         ) {
             Text("Mis jugadores")
         }
         Button(
             onClick = { navController.navigate("equipos_predefinidos") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         ) {
             Text("Equipos Predefinidos")
         }
         Button(
             onClick = { navController.navigate("administrar_partidos") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
             Text("Administrar Partidos")
         }

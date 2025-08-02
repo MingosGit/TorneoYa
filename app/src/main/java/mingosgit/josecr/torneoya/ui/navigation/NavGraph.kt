@@ -207,7 +207,13 @@ fun NavGraph(
         composable("solicitudes_pendientes") {
             SolicitudesPendientesScreen(navController = navController)
         }
-
+        composable("partido") {
+            PartidoScreen(
+                navController = navController,
+                partidoViewModel = partidoViewModel,
+                equipoRepository = equipoRepository
+            )
+        }
         // Modularizado
         addUsuarioModuleNavGraph(
             navController = navController,
