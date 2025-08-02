@@ -1,7 +1,9 @@
 package mingosgit.josecr.torneoya.viewmodel.partidoonline
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -25,7 +27,6 @@ class AdministrarJugadoresOnlineViewModel(
     var equipoAJugadores = mutableStateListOf<JugadorFirebase>()
     var equipoBJugadores = mutableStateListOf<JugadorFirebase>()
 
-    // NO uses by, solo .value y .value= en ViewModel
     var jugadoresExistentes = mutableStateOf<List<JugadorFirebase>>(emptyList())
         private set
     var jugadoresDisponiblesTodos = mutableStateOf<List<JugadorFirebase>>(emptyList())
@@ -34,11 +35,32 @@ class AdministrarJugadoresOnlineViewModel(
     var amigos = mutableStateOf<List<AmigoFirebaseEntity>>(emptyList())
     var equipoSeleccionado = mutableStateOf("A")
 
+    // NUEVO: nombre de los equipos
+    var equipoANombre by mutableStateOf("Equipo A")
+    var equipoBNombre by mutableStateOf("Equipo B")
+
     fun cargarJugadoresExistentes() {
         viewModelScope.launch {
             jugadoresExistentes.value = partidoFirebaseRepository.obtenerJugadores()
+            cargarNombresEquipos() // ← CARGA NOMBRES REALES
             cargarUsuarioYAmigos()
             cargarJugadoresPartido()
+        }
+    }
+
+    private suspend fun cargarNombresEquipos() {
+        val partido = partidoFirebaseRepository.obtenerPartido(partidoUid)
+        equipoANombre = "Equipo A"
+        equipoBNombre = "Equipo B"
+        if (partido?.equipoAId?.isNotEmpty() == true) {
+            partidoFirebaseRepository.obtenerEquipo(partido.equipoAId)?.let {
+                equipoANombre = it.nombre.ifBlank { "Equipo A" }
+            }
+        }
+        if (partido?.equipoBId?.isNotEmpty() == true) {
+            partidoFirebaseRepository.obtenerEquipo(partido.equipoBId)?.let {
+                equipoBNombre = it.nombre.ifBlank { "Equipo B" }
+            }
         }
     }
 
@@ -132,12 +154,10 @@ class AdministrarJugadoresOnlineViewModel(
             val equipoB_uids = equipoBJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
             val equipoB_nombres = equipoBJugadores.mapNotNull { if (it.uid.isBlank() && it.nombre.isNotBlank()) it.nombre else null }
 
-            // Accesos actuales
             val partido = partidoFirebaseRepository.obtenerPartido(partidoUid)
             val actuales = partido?.usuariosConAcceso ?: emptyList()
             val nuevosAccesos = (actuales + equipoA_uids + equipoB_uids).distinct()
 
-            // Guarda jugadores
             partidoFirebaseRepository.actualizarJugadoresPartidoOnline(
                 partidoUid = partidoUid,
                 jugadoresEquipoA = equipoA_uids,
@@ -145,7 +165,6 @@ class AdministrarJugadoresOnlineViewModel(
                 jugadoresEquipoB = equipoB_uids,
                 nombresManualEquipoB = equipoB_nombres
             )
-            // Solo agrega nuevos accesos. No elimina
             com.google.firebase.firestore.FirebaseFirestore.getInstance()
                 .collection("partidos")
                 .document(partidoUid)

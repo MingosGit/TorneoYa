@@ -36,6 +36,10 @@ fun AdministrarJugadoresOnlineScreen(
     val miUid = FirebaseAuth.getInstance().currentUser?.uid
     var idxParaEliminar by remember { mutableStateOf<Int?>(null) }
 
+    // ASÍ VALE SIEMPRE: usa getValue (importa androidx.compose.runtime.getValue)
+    val equipoANombre by remember { derivedStateOf { vm.equipoANombre } }
+    val equipoBNombre by remember { derivedStateOf { vm.equipoBNombre } }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -63,13 +67,13 @@ fun AdministrarJugadoresOnlineScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             EquipoChip(
-                text = "Equipo A",
+                text = equipoANombre,
                 selected = vm.equipoSeleccionado.value == "A",
                 onClick = { vm.equipoSeleccionado.value = "A" }
             )
             Spacer(Modifier.width(12.dp))
             EquipoChip(
-                text = "Equipo B",
+                text = equipoBNombre,
                 selected = vm.equipoSeleccionado.value == "B",
                 onClick = { vm.equipoSeleccionado.value = "B" }
             )
@@ -78,7 +82,7 @@ fun AdministrarJugadoresOnlineScreen(
         val jugadores = if (vm.equipoSeleccionado.value == "A") vm.equipoAJugadores else vm.equipoBJugadores
 
         Text(
-            if (vm.equipoSeleccionado.value == "A") "Jugadores Equipo A" else "Jugadores Equipo B",
+            if (vm.equipoSeleccionado.value == "A") "Jugadores $equipoANombre" else "Jugadores $equipoBNombre",
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
@@ -107,7 +111,6 @@ fun AdministrarJugadoresOnlineScreen(
                             .fillMaxWidth()
                             .padding(vertical = 2.dp, horizontal = 8.dp)
                     ) {
-                        // TEXTFIELD AJUSTADO PARA QUE SIEMPRE SE VEA Y NO CORTADO
                         OutlinedTextField(
                             value = value.nombre,
                             onValueChange = { newValue ->
@@ -127,14 +130,14 @@ fun AdministrarJugadoresOnlineScreen(
                                 if (idx == jugadores.size) Text("Agregar nuevo jugador")
                                 else Text("Jugador ${idx + 1}")
                             },
-                            singleLine = false, // Permite crecer en altura
+                            singleLine = false,
                             minLines = 1,
                             maxLines = 2,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(bottom = 2.dp)
-                                .heightIn(min = 54.dp) // Altura mínima REAL y cómoda
+                                .heightIn(min = 54.dp)
                                 .defaultMinSize(minHeight = 54.dp),
                             textStyle = LocalTextStyle.current.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
