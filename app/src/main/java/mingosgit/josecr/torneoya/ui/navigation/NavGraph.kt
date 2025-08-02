@@ -48,6 +48,8 @@ import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOn
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import androidx.activity.ComponentActivity // <--- añade este import arriba
 import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
+import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 
 @Composable
 fun NavGraph(
@@ -116,6 +118,22 @@ fun NavGraph(
                 usuarioUid = userUid
             )
         }
+        composable("administrar_partidos") {
+            val administrarViewModel = viewModel<AdministrarPartidosViewModel>(
+                modelClass = AdministrarPartidosViewModel::class.java,
+                viewModelStoreOwner = owner,
+                factory = AdministrarPartidosViewModel.Factory(
+                    partidoRepository,
+                    goleadorRepository,
+                    eventoRepository
+                )
+            )
+            PartidosListaBusquedaScreen(
+                viewModel = administrarViewModel,
+                navController = navController
+            )
+        }
+
         composable(
             route = "administrar_roles_online/{partidoUid}",
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })

@@ -29,6 +29,7 @@ import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModelFactory
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import mingosgit.josecr.torneoya.ui.theme.ModernTorneoYaTheme
 import android.graphics.Color as AndroidColor
 
 class MainActivity : ComponentActivity() {
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, true)
 
         setContent {
-            TorneoYaTheme {
+            ModernTorneoYaTheme {
                 val navController = rememberNavController()
                 val context = this@MainActivity
                 val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
