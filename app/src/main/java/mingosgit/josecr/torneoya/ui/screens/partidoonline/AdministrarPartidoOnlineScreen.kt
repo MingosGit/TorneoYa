@@ -1,10 +1,10 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import android.app.TimePickerDialog
-import android.widget.NumberPicker
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Person
@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -21,6 +22,14 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlin
 import java.util.Calendar
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+
+// Colores para botones MODERNOS y LIMPIOS (ignora theme global)
+private val BtnMain = Color(0xFF22263B)
+private val BtnMainPressed = Color(0xFF2E3151)
+private val BtnMainText = Color(0xFFF7F7FF)
+private val BtnOutline = Color(0xFF161B24)
+private val BtnOutlineText = Color(0xFF296DFF)
+private val BtnOutlineBorder = Color(0xFF296DFF)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,10 +131,9 @@ fun AdministrarPartidoOnlineScreen(
 
             item {
                 Column(Modifier.fillMaxWidth()) {
-
                     // --- FECHA ---
                     var datePickerState = rememberDatePickerState()
-                    Button(
+                    ModernMainButton(
                         onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Seleccionar fecha: $fechaEditable") }
@@ -160,7 +168,7 @@ fun AdministrarPartidoOnlineScreen(
 
                     // --- HORA ---
                     val context = LocalContext.current
-                    Button(
+                    ModernMainButton(
                         onClick = { showTimePicker = true },
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Seleccionar hora: $horaEditable") }
@@ -186,9 +194,7 @@ fun AdministrarPartidoOnlineScreen(
                         }
                     }
 
-
                     Spacer(Modifier.height(8.dp))
-
                     // Nº PARTES
                     OutlinedTextField(
                         value = numeroPartesEditable.toString(),
@@ -218,7 +224,7 @@ fun AdministrarPartidoOnlineScreen(
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                     )
                     Spacer(Modifier.height(8.dp))
-                    Button(
+                    ModernMainButton(
                         onClick = { viewModel.actualizarDatosPartido() },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -241,7 +247,7 @@ fun AdministrarPartidoOnlineScreen(
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Button(
+                    ModernMainButton(
                         onClick = { viewModel.actualizarNombreEquipoA() },
                         enabled = nombreEquipoAEditable.isNotBlank() && nombreEquipoAEditable != nombreEquipoA
                     ) {
@@ -264,7 +270,7 @@ fun AdministrarPartidoOnlineScreen(
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Button(
+                    ModernMainButton(
                         onClick = { viewModel.actualizarNombreEquipoB() },
                         enabled = nombreEquipoBEditable.isNotBlank() && nombreEquipoBEditable != nombreEquipoB
                     ) {
@@ -445,7 +451,7 @@ fun AdministrarPartidoOnlineScreen(
             }
 
             item {
-                Button(
+                ModernMainButton(
                     onClick = {
                         val equipoUid = if (equipoSeleccionado == "A") equipoA?.uid else equipoB?.uid
                         if (equipoUid != null && jugadorSeleccionado != null) {
@@ -469,7 +475,7 @@ fun AdministrarPartidoOnlineScreen(
             }
 
             item {
-                Button(
+                ModernMainButton(
                     onClick = { showDialog = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -479,7 +485,7 @@ fun AdministrarPartidoOnlineScreen(
             }
 
             item {
-                Button(
+                ModernOutlineButton(
                     onClick = { navController?.navigate("administrar_jugadores_online/$partidoUid/${equipoA?.uid}/${equipoB?.uid}") },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -507,21 +513,58 @@ fun AdministrarPartidoOnlineScreen(
                     )
                 }
             }
-
         }
     }
+}
 
+// -------- BOTONES MODERNOS --------
+
+@Composable
+fun ModernMainButton(
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.height(45.dp),
+        shape = RoundedCornerShape(10.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = BtnMain,
+            contentColor = BtnMainText,
+            disabledContainerColor = BtnMain.copy(alpha = 0.45f),
+            disabledContentColor = BtnMainText.copy(alpha = 0.4f)
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
+    ) {
+        content()
+    }
 }
 
 @Composable
-fun SimpleNumberPicker(value: Int, range: IntRange, onValueChange: (Int) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(
-            onClick = { if (value > range.first) onValueChange(value - 1) }
-        ) { Text("-") }
-        Text("%02d".format(value), modifier = Modifier.padding(horizontal = 8.dp))
-        IconButton(
-            onClick = { if (value < range.last) onValueChange(value + 1) }
-        ) { Text("+") }
+fun ModernOutlineButton(
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.height(45.dp),
+        shape = RoundedCornerShape(10.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = BtnOutlineText,
+            disabledContentColor = BtnOutlineText.copy(alpha = 0.5f)
+        ),
+        border = ButtonDefaults.outlinedButtonBorder.copy(
+            width = 1.4.dp,
+        ),
+        elevation = null
+    ) {
+        content()
     }
 }
