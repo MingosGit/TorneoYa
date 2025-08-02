@@ -20,7 +20,6 @@ data class HomeUiState(
     val amigosTotales: Int = 0
 )
 
-
 class HomeViewModel(
     private val partidoRepo: PartidoFirebaseRepository = PartidoFirebaseRepository()
 ) : ViewModel() {
@@ -105,24 +104,18 @@ class HomeViewModel(
                     .sortedBy { it.fecha + " " + it.horaInicio }
                 val proximoPartido = partidos.firstOrNull()
                 if (proximoPartido != null) {
-                    // Conseguir nombres de los equipos (IDs pueden estar vacíos)
-                    val nombreEquipoA = when {
-                        proximoPartido.nombresManualEquipoA.any { it.isNotBlank() } ->
-                            proximoPartido.nombresManualEquipoA.filter { it.isNotBlank() }.joinToString(" / ")
-                        proximoPartido.equipoAId.isNotBlank() -> {
-                            val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoAId)
-                            eq?.nombre ?: "Equipo A"
-                        }
-                        else -> "Equipo A"
+                    // SIEMPRE nombre de la colección equipos, no jugadores sueltos
+                    val nombreEquipoA = if (proximoPartido.equipoAId.isNotBlank()) {
+                        val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoAId)
+                        eq?.nombre ?: "Equipo A"
+                    } else {
+                        "Equipo A"
                     }
-                    val nombreEquipoB = when {
-                        proximoPartido.nombresManualEquipoB.any { it.isNotBlank() } ->
-                            proximoPartido.nombresManualEquipoB.filter { it.isNotBlank() }.joinToString(" / ")
-                        proximoPartido.equipoBId.isNotBlank() -> {
-                            val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoBId)
-                            eq?.nombre ?: "Equipo B"
-                        }
-                        else -> "Equipo B"
+                    val nombreEquipoB = if (proximoPartido.equipoBId.isNotBlank()) {
+                        val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoBId)
+                        eq?.nombre ?: "Equipo B"
+                    } else {
+                        "Equipo B"
                     }
                     partidoUi = HomeProximoPartidoUi(
                         partido = proximoPartido,
