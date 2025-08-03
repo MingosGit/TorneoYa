@@ -64,7 +64,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 6.dp)
-                    .height(48.dp),
+                    .defaultMinSize(minHeight = 48.dp), // <--- CAMBIO CLAVE: defaultMinSize
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
                     if (textoComentario.isNotBlank()) {
