@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SportsSoccer
@@ -57,6 +58,42 @@ fun HomeScreen(
             .fillMaxSize()
             .background(brush = modernBackground)
     ) {
+        // ----------- BOTON NOTIFICACIONES -----------
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 18.dp, end = 18.dp)
+                .align(Alignment.TopEnd)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .align(Alignment.TopEnd)
+                    .clip(CircleShape)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(
+                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                        ),
+                        shape = CircleShape
+                    )
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                        )
+                    )
+                    .clickable { navController.navigate("notificaciones") },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Email,
+                    contentDescription = "Notificaciones",
+                    tint = Color(0xFF8F5CFF),
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+        }
+
         if (!sesionActiva) {
             // PANTALLA DE BIENVENIDA PARA USUARIO SIN SESIÓN
             Column(
@@ -249,7 +286,6 @@ fun HomeScreen(
                                     ),
                                     shape = RoundedCornerShape(17.dp)
                                 )
-                                .graphicsLayer { shadowElevation = 8f }
                                 .background(Color(0xFF1B1E2E)),
                             color = Color.Transparent,
                             shadowElevation = 0.dp,

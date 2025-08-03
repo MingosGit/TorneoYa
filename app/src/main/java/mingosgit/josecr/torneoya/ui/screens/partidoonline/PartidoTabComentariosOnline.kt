@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -41,6 +42,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val comentariosSize = state.comentarios.size
     val comentariosLoaded = remember(comentariosSize) { comentariosSize > 0 }
     val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
 
     // PRIMERA CARGA
     LaunchedEffect(Unit) {
@@ -49,6 +51,16 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
             vm.cargarComentariosEncuestas(usuarioUid)
             isLoading = false
         }
+    }
+
+    // AUTO SCROLL AL AGREGAR NUEVO COMENTARIO
+    val oldComentariosSize = remember { mutableStateOf(0) }
+    LaunchedEffect(comentariosSize) {
+        if (comentariosSize > oldComentariosSize.value) {
+            // Scroll al último comentario (el más nuevo está arriba si sortedByDescending, abajo si sortedBy)
+            listState.animateScrollToItem(0)
+        }
+        oldComentariosSize.value = comentariosSize
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -130,7 +142,9 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 modifier = Modifier
                     .fillMaxHeight()
                     .padding(bottom = 8.dp),
-                contentPadding = PaddingValues(bottom = 20.dp)
+                contentPadding = PaddingValues(bottom = 20.dp),
+                state = listState,
+                reverseLayout = false
             ) {
                 items(comentariosOrdenados) { comentarioConVotos ->
                     val votoColor = when {

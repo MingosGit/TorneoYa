@@ -253,7 +253,8 @@ class PartidoFirebaseRepository {
         val datos = hashMapOf(
             "partidoUid" to encuesta.partidoUid,
             "pregunta" to encuesta.pregunta,
-            "opciones" to encuesta.opciones
+            "opciones" to encuesta.opciones,
+            "creadorNombre" to encuesta.creadorNombre
         )
         db.collection("encuestas").add(datos).await()
     }

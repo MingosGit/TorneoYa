@@ -3,6 +3,9 @@ package mingosgit.josecr.torneoya.ui.screens.partidoonline
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -37,6 +40,7 @@ fun PartidoTabEventosOnline(
     var nombreB by remember { mutableStateOf(uiState.nombreEquipoB) }
     var isLoading by remember { mutableStateOf(true) }
     var triggerReload by remember { mutableStateOf(0) }
+    val listState = rememberLazyListState()
 
     fun recargar() { triggerReload++ }
 
@@ -64,7 +68,6 @@ fun PartidoTabEventosOnline(
 
             val goles = golesDocs.mapNotNull { it.toObject(GoleadorFirebase::class.java)?.copy(uid = it.id) }
 
-            // Recolección de nombres de jugadores y asistentes (ONLINE y MANUAL)
             val jugadorUids = goles.mapNotNull { it.jugadorUid.takeIf { u -> !u.isNullOrBlank() } } +
                     goles.mapNotNull { it.asistenciaJugadorUid.takeIf { u -> !u.isNullOrBlank() } }
             val jugadoresDocs = jugadorUids.distinct()
@@ -81,15 +84,12 @@ fun PartidoTabEventosOnline(
             val nombresMap = (jugadoresDocs + usuariosDocs).toMap()
 
             eventos = goles
-                .sortedBy { it.minuto ?: Int.MAX_VALUE }
+                .sortedBy { it.minuto ?: Int.MIN_VALUE }
                 .map { gol ->
                     val nombreJugador = when {
                         !gol.jugadorUid.isNullOrBlank() -> {
-                            // Busca primero nombre por UID en 'jugadores' o 'usuarios'
                             nombresMap[gol.jugadorUid]
-                            // si no existe nombre y hay nombre manual, usa ese
                                 ?: gol.jugadorNombreManual
-                                // si tampoco, busca en datos firestore viejos
                                 ?: golesDocs.find { d -> d.id == gol.uid }?.getString("jugadorManual")
                                 ?: "Desconocido"
                         }
@@ -115,6 +115,16 @@ fun PartidoTabEventosOnline(
                 }
             isLoading = false
         }
+    }
+
+    // Auto-scroll al final cuando cambian los eventos (siempre ver el último)
+    val eventosSize = eventos.size
+    val oldEventosSize = remember { mutableStateOf(0) }
+    LaunchedEffect(eventosSize) {
+        if (eventosSize > oldEventosSize.value) {
+            listState.animateScrollToItem(0)
+        }
+        oldEventosSize.value = eventosSize
     }
 
     // UI
@@ -154,74 +164,153 @@ fun PartidoTabEventosOnline(
             return@Column
         }
 
-        eventos.forEach { evento ->
-            val isEquipoA = evento.equipoUid == equipoAUid
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = if (isEquipoA) Arrangement.Start else Arrangement.End
-            ) {
-                Box(
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp),
+            state = listState
+        ) {
+            items(eventos) { evento ->
+                val isEquipoA = evento.equipoUid == equipoAUid
+                // --- NUEVO: Minuto siempre en el centro ---
+                Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            brush = if (isEquipoA)
-                                Brush.horizontalGradient(listOf(TorneoYaPalette.blue.copy(alpha = 0.18f), Color.Transparent))
-                            else
-                                Brush.horizontalGradient(listOf(Color.Transparent, TorneoYaPalette.violet.copy(alpha = 0.18f))),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .border(
-                            width = 2.dp,
-                            brush = if (isEquipoA)
-                                Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet))
-                            else
-                                Brush.horizontalGradient(listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(vertical = 11.dp, horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "⚽",
-                                fontSize = 20.sp,
-                                modifier = Modifier.padding(end = 6.dp)
-                            )
-                            Text(
-                                text = evento.jugador,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isEquipoA) TorneoYaPalette.blue else TorneoYaPalette.violet,
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(end = 4.dp)
-                            )
-                            evento.minuto?.let {
-                                Text(
-                                    text = "${it}'",
-                                    color = TorneoYaPalette.mutedText,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(start = 2.dp)
+                    // Lado izquierdo (Equipo A)
+                    if (isEquipoA) {
+                        Box(
+                            modifier = Modifier
+                                .weight(4f)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue.copy(alpha = 0.18f), Color.Transparent)),
+                                    shape = RoundedCornerShape(16.dp)
                                 )
-                            }
-                        }
-                        if (!evento.asistente.isNullOrBlank()) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(top = 2.dp)
+                                .border(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .padding(vertical = 11.dp, horizontal = 16.dp)
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.Start
                             ) {
-                                Text("🅰️", fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
-                                Text(
-                                    text = evento.asistente!!,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = TorneoYaPalette.accent
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "⚽",
+                                        fontSize = 20.sp,
+                                        modifier = Modifier.padding(end = 6.dp)
+                                    )
+                                    Text(
+                                        text = evento.jugador,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TorneoYaPalette.blue,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    )
+                                }
+                                if (!evento.asistente.isNullOrBlank()) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(top = 2.dp)
+                                    ) {
+                                        Text("🅰️", fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
+                                        Text(
+                                            text = evento.asistente!!,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = TorneoYaPalette.accent
+                                        )
+                                    }
+                                }
                             }
                         }
+                    } else {
+                        Spacer(modifier = Modifier.weight(4f))
+                    }
+
+                    // Centro: Minuto
+                    Box(
+                        modifier = Modifier
+                            .weight(2f)
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        evento.minuto?.let {
+                            Text(
+                                text = "${it}'",
+                                color = TorneoYaPalette.mutedText,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp,
+                                modifier = Modifier
+                                    .background(
+                                        color = Color(0x1A3B4252),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 7.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    // Lado derecho (Equipo B)
+                    if (!isEquipoA) {
+                        Box(
+                            modifier = Modifier
+                                .weight(4f)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    brush = Brush.horizontalGradient(listOf(Color.Transparent, TorneoYaPalette.violet.copy(alpha = 0.18f))),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .border(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .padding(vertical = 11.dp, horizontal = 16.dp)
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.End
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = evento.jugador,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TorneoYaPalette.violet,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    )
+                                    Text(
+                                        text = "⚽",
+                                        fontSize = 20.sp,
+                                        modifier = Modifier.padding(start = 6.dp)
+                                    )
+                                }
+                                if (!evento.asistente.isNullOrBlank()) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.End,
+                                        modifier = Modifier
+                                            .padding(top = 2.dp)
+                                            .fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = evento.asistente!!,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = TorneoYaPalette.accent
+                                        )
+                                        Text("🅰️", fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.weight(4f))
                     }
                 }
             }

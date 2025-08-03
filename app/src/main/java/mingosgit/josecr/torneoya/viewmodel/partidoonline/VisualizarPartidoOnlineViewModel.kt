@@ -183,10 +183,20 @@ class VisualizarPartidoOnlineViewModel(
     fun agregarEncuesta(pregunta: String, opciones: List<String>, usuarioUid: String? = null) {
         if (opciones.isEmpty() || opciones.size > 5) return
         viewModelScope.launch {
+            var creadorNombre = "Anónimo"
+            val uid = usuarioUid ?: ""
+            if (uid.isNotBlank()) {
+                try {
+                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    val snapUsuario = db.collection("usuarios").document(uid).get().await()
+                    creadorNombre = snapUsuario.getString("nombreUsuario") ?: "Usuario"
+                } catch (_: Exception) { creadorNombre = "Usuario" }
+            }
             val encuesta = EncuestaFirebase(
                 partidoUid = partidoUid,
                 pregunta = pregunta,
-                opciones = opciones
+                opciones = opciones,
+                creadorNombre = creadorNombre
             )
             repo.agregarEncuesta(encuesta)
             cargarComentariosEncuestas(usuarioUid)

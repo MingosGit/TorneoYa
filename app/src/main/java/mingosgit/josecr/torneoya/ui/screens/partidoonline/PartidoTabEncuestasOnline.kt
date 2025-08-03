@@ -178,7 +178,8 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                     else Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF23273D))),
                                                     shape = RoundedCornerShape(10.dp)
                                                 )
-                                                .background(if (seleccionado) Color(0x1F8F5CFF) else Color(0xFF23273D))
+                                                // SOLO BORDE CON GRADIENTE CUANDO ESTÁ SELECCIONADO, EL FONDO SIEMPRE IGUAL, NUNCA SUBRAYADO NI FONDO MORADO
+                                                .background(Color(0xFF23273D))
                                                 .clickable {
                                                     if (seleccionada != idx) {
                                                         vm.votarUnicoEnEncuesta(encuesta.uid, idx, usuarioUid)

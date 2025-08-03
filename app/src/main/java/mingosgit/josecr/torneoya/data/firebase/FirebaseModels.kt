@@ -64,7 +64,18 @@ data class EncuestaFirebase(
     @get:Exclude var uid: String = "",
     val partidoUid: String = "",
     val pregunta: String = "",
-    val opciones: List<String> = emptyList()
+    val opciones: List<String> = emptyList(),
+    val creadorNombre: String = ""
+)
+
+@IgnoreExtraProperties
+data class NotificacionFirebase(
+    @get:Exclude var uid: String = "",
+    val tipo: String = "", // "parche" o "infraccion"
+    val titulo: String = "",
+    val mensaje: String = "",
+    val fechaHora: String = "", // ISO 8601
+    val usuarioUid: String? = null // si es para un usuario específico, si es null es global
 )
 
 @IgnoreExtraProperties
