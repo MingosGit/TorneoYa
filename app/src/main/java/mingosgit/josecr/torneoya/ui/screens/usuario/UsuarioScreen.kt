@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -63,11 +65,18 @@ fun UsuarioScreen(
         }
     }
 
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
+    )
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
     val accent = TorneoYaPalette.accent
     val lightText = TorneoYaPalette.textLight
     val mutedText = TorneoYaPalette.mutedText
+    val rojo = Color(0xFFFF2D55)
 
     if (showDialog) {
         AlertDialog(
@@ -98,6 +107,8 @@ fun UsuarioScreen(
             },
             onDismiss = { showCerrarSesionDialog = false },
             blue = blue,
+            violet = violet,
+            rojo = rojo,
             accent = accent,
             background = Color(0xFF191A23),
             lightText = lightText,
@@ -117,67 +128,105 @@ fun UsuarioScreen(
         )
     }
 
-    // SIN topBar en Scaffold, header va dentro del Column
     Scaffold(
         containerColor = Color.Transparent
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
+                .background(modernBackground)
                 .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // HEADER IDENTICO AL DE AMIGOS
-            Surface(
-                tonalElevation = 3.dp,
-                shadowElevation = 0.dp,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                Text(
+                    "Perfil",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 18.dp, vertical = 16.dp),                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Perfil",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-                        color = MaterialTheme.colorScheme.primary,
+                        .weight(1f)
+                        .padding(start = 6.dp)
+                )
+                if (sesionOnlineActiva) {
+                    Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 18.dp) // SOLO padding interno, igual que el texto de amigos
-                    )
-                    IconButton(
-                        onClick = { navController.navigate("ajustes") },
-                        modifier = Modifier.padding(end = 6.dp)
+                            .height(42.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(listOf(rojo, violet)),
+                                shape = CircleShape
+                            )
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                )
+                            )
+                            .clickable { showCerrarSesionDialog = true }
+                            .padding(horizontal = 20.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Ajustes",
-                            tint = MaterialTheme.colorScheme.primary
+                        Text(
+                            text = "Cerrar sesión",
+                            color = rojo,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(horizontal = 0.dp)
                         )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
-
-
-
+                IconButton(
+                    onClick = { navController.navigate("ajustes") },
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(blue, violet)
+                            ),
+                            shape = CircleShape
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Ajustes",
+                        tint = Color(0xFF8F5CFF),
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // AVATAR SIMPLE REDONDO, FONDO LISO
             Box(
                 modifier = Modifier
                     .size(118.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF22243A))
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(
+                            listOf(blue, violet)
+                        ),
+                        shape = CircleShape
+                    )
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                        )
+                    )
                     .clickable { showDialog = true },
                 contentAlignment = Alignment.Center
             ) {
@@ -191,7 +240,6 @@ fun UsuarioScreen(
                             modifier = Modifier
                                 .size(110.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF22243A))
                         )
                     } else {
                         Text("👤", fontSize = 52.sp)
@@ -201,38 +249,21 @@ fun UsuarioScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // USUARIO INFO LIMPIO
             if (sesionOnlineActiva) {
                 Text(
                     text = if (!nombreUsuarioOnline.isNullOrBlank()) "Hola, $nombreUsuarioOnline" else "Hola",
                     fontSize = 25.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = lightText,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
                 )
-                Spacer(Modifier.height(5.dp))
-                // Badge azul institucional
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(TorneoYaPalette.blue)
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Sesión online activa",
-                        fontSize = 13.sp,
-                        color = TorneoYaPalette.textLight,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.6.sp,
-                    )
-                }
             } else {
                 Text(
                     text = "Bienvenido",
                     fontSize = 25.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = lightText,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
                 )
                 Spacer(Modifier.height(5.dp))
                 Box(
@@ -252,43 +283,24 @@ fun UsuarioScreen(
 
             Spacer(modifier = Modifier.height(26.dp))
 
-            // BOTÓN ACCIÓN PRINCIPAL, SIN SOMBRAS
             if (!sesionOnlineActiva) {
                 Button(
                     onClick = { navController.navigate("login") },
                     modifier = Modifier
                         .widthIn(max = 400.dp)
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = blue),
-                    shape = RoundedCornerShape(13.dp)
+                        .height(50.dp)
+                        .graphicsLayer { shadowElevation = 6f },
+                    shape = RoundedCornerShape(15.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = blue)
                 ) {
-                    Text("Iniciar sesión o Crear cuenta", color = lightText, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
-            } else {
-                OutlinedButton(
-                    onClick = { showCerrarSesionDialog = true },
-                    modifier = Modifier
-                        .widthIn(max = 400.dp)
-                        .height(50.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = accent
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 1.5.dp,
-                        brush = Brush.horizontalGradient(listOf(accent, violet))
-                    ),
-                    shape = RoundedCornerShape(13.dp)
-                ) {
-                    Text("Cerrar sesión", color = accent, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("Iniciar sesión o Crear cuenta", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(26.dp))
 
-            // OPCIÓN AMIGOS SÓLIDA, SIMPLE
             PerfilOpcionAmigos(
-                modifier = Modifier.widthIn(max = 400.dp) // Limita el ancho
+                modifier = Modifier.widthIn(max = 400.dp)
             ) {
                 navController.navigate("amigos")
             }
@@ -302,10 +314,20 @@ private fun PerfilOpcionAmigos(
     onClick: () -> Unit
 ) {
     val blue = TorneoYaPalette.blue
+    val violet = TorneoYaPalette.violet
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(11.dp))
-            .background(Color(0xFF23253A))
+            .clip(RoundedCornerShape(15.dp))
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(listOf(blue, violet)),
+                shape = RoundedCornerShape(15.dp)
+            )
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                )
+            )
             .clickable { onClick() }
             .padding(horizontal = 19.dp, vertical = 17.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -313,7 +335,7 @@ private fun PerfilOpcionAmigos(
         Icon(
             imageVector = Icons.Default.Group,
             contentDescription = "Amigos",
-            modifier = Modifier.size(25.dp),
+            modifier = Modifier.size(29.dp),
             tint = blue
         )
         Spacer(Modifier.width(15.dp))
@@ -321,7 +343,7 @@ private fun PerfilOpcionAmigos(
             Text(
                 text = "Amigos",
                 fontSize = 17.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             Text(
@@ -333,26 +355,30 @@ private fun PerfilOpcionAmigos(
     }
 }
 
-
 @Composable
 private fun CustomCerrarSesionDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     blue: Color,
+    violet: Color,
+    rojo: Color,
     accent: Color,
     background: Color,
     lightText: Color,
     mutedText: Color
 ) {
     Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = background,
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp)
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(listOf(blue, violet)),
+                    shape = RoundedCornerShape(18.dp)
+                )
+                .clip(RoundedCornerShape(18.dp))
+                .background(background)
         ) {
             Column(
                 Modifier
@@ -376,22 +402,36 @@ private fun CustomCerrarSesionDialog(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(
+                    OutlinedButton(
                         onClick = onConfirm,
-                        colors = ButtonDefaults.buttonColors(containerColor = accent),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(rojo, violet))
+                        ),
                         shape = RoundedCornerShape(11.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Sí, cerrar sesión", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Text(
+                            "SI",
+                            color = rojo,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                     Spacer(Modifier.width(14.dp))
                     OutlinedButton(
                         onClick = onDismiss,
-                        border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp, brush = Brush.horizontalGradient(listOf(blue, Color.White.copy(alpha = 0.22f)))),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(blue, violet))
+                        ),
                         shape = RoundedCornerShape(11.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancelar", color = blue, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "Cancelar",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
