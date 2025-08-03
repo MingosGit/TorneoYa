@@ -69,58 +69,112 @@ fun AmigosScreen(
                 .background(modernBackground),
             contentAlignment = Alignment.Center
         ) {
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                shadowElevation = 12.dp,
-                color = Color(0xFF212442).copy(alpha = 0.94f),
-                modifier = Modifier.padding(32.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(34.dp)
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFF296DFF).copy(alpha = 0.13f),
+                    shadowElevation = 0.dp,
+                    modifier = Modifier.size(85.dp)
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = Color(0xFF296DFF).copy(alpha = 0.16f),
-                        modifier = Modifier.size(75.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.PersonAdd,
-                            contentDescription = null,
-                            tint = Color(0xFF8F5CFF),
-                            modifier = Modifier.padding(18.dp)
-                        )
-                    }
-                    Spacer(Modifier.height(18.dp))
-                    Text(
-                        "Inicia sesión para acceder a tus amigos",
-                        fontSize = 21.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
-                        modifier = Modifier.padding(bottom = 18.dp),
-                        lineHeight = 28.sp
+                    Icon(
+                        Icons.Default.PersonAdd,
+                        contentDescription = "Icono amigos",
+                        tint = Color(0xFF296DFF),
+                        modifier = Modifier.padding(22.dp)
                     )
-                    Button(
-                        onClick = { navController.navigate("login") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(15.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF))
-                    ) {
-                        Text("Iniciar sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    }
-                    Spacer(Modifier.height(10.dp))
-                    OutlinedButton(
-                        onClick = { navController.navigate("register") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(15.dp),
-                    ) {
-                        Text("Crear cuenta", color = Color(0xFF296DFF), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    }
                 }
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    text = "Acceso a Amigos",
+                    fontSize = 27.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+                Text(
+                    text = "Inicia sesión para acceder a tu lista de amigos, enviar solicitudes y gestionar contactos.",
+                    fontSize = 16.sp,
+                    color = Color(0xFFB7B7D1),
+                    lineHeight = 22.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    fontWeight = FontWeight.Normal,
+                )
+                Spacer(Modifier.height(32.dp))
+
+                // Botón Iniciar sesión con borde gradiente y fondo acorde
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .clickable { navController.navigate("login") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Iniciar sesión",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+                Spacer(Modifier.height(11.dp))
+
+                // Botón Crear cuenta con borde gradiente y fondo acorde
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .clickable { navController.navigate("register") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Crear cuenta",
+                        color = TorneoYaPalette.blue,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Spacer(Modifier.height(26.dp))
+
+                Text(
+                    text = "¿Prefieres usar una cuenta local?\nPuedes configurarla en Ajustes de Usuario.",
+                    fontSize = 14.sp,
+                    color = Color(0xFFB7B7D1),
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
         return

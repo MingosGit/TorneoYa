@@ -94,6 +94,8 @@ fun HomeScreen(
             }
         }
 
+        // Reemplaza el bloque con los botones "Iniciar sesión" y "Crear cuenta" por este:
+
         if (!sesionActiva) {
             // PANTALLA DE BIENVENIDA PARA USUARIO SIN SESIÓN
             Column(
@@ -133,27 +135,67 @@ fun HomeScreen(
                     fontWeight = FontWeight.Normal
                 )
                 Spacer(Modifier.height(32.dp))
-                Button(
-                    onClick = { navController.navigate("login") },
+
+                // BOTÓN INICIAR SESIÓN con borde gradiente igual al resto
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
-                        .graphicsLayer { shadowElevation = 6f },
-                    shape = RoundedCornerShape(15.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF))
+                        .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .clickable { navController.navigate("login") },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Iniciar sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        "Iniciar sesión",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                 }
+
                 Spacer(Modifier.height(11.dp))
-                OutlinedButton(
-                    onClick = { navController.navigate("register") },
+
+                // BOTÓN CREAR CUENTA con borde gradiente igual al resto
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(15.dp),
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .clickable { navController.navigate("register") },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Crear cuenta", color = Color(0xFF296DFF), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                    Text(
+                        "Crear cuenta",
+                        color = TorneoYaPalette.blue,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp
+                    )
                 }
+
                 Spacer(Modifier.height(26.dp))
                 Text(
                     text = "¿Prefieres una cuenta local?\nAccede desde ajustes de Usuario.",
@@ -168,6 +210,7 @@ fun HomeScreen(
             }
             return
         }
+
 
         Column(
             modifier = Modifier

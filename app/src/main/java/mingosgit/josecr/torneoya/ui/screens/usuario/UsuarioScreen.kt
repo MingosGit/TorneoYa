@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+import mingosgit.josecr.torneoya.ui.screens.usuario.CropImageDialog
 
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -180,7 +180,6 @@ fun UsuarioScreen(
                             modifier = Modifier.padding(horizontal = 0.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
                 }
                 IconButton(
                     onClick = { navController.navigate("ajustes") },
