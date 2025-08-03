@@ -83,15 +83,13 @@ class MainActivity : ComponentActivity() {
                 val showBottomBar = when (navBackStackEntry.value?.destination?.route) {
                     BottomNavItem.Home.route,
                     BottomNavItem.Online.route,
+                    BottomNavItem.Amigos.route, // <-- AGREGA ESTA LINEA
                     BottomNavItem.Usuario.route -> true
 
                     "partido_online" -> true
-                    // AÑADE ESTO:
                     "visualizar_partido_online/{partidoUid}" -> false
-                    // o simplemente ignora esa ruta para ocultar navbar
                     else -> false
                 }
-
 
                 Scaffold(
                     bottomBar = {

@@ -15,5 +15,6 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", "Home", Icons.Filled.Home)
     object Online : BottomNavItem("partidos_online", "Partidos", Icons.Filled.LiveTv)
+    object Amigos : BottomNavItem("amigos", "Amigos", Icons.Filled.Group) // AGREGADO
     object Usuario : BottomNavItem("usuario", "Usuario", Icons.Filled.Person)
 }

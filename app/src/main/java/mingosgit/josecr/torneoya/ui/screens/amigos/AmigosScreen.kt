@@ -3,6 +3,7 @@ package mingosgit.josecr.torneoya.ui.screens.amigos
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +36,17 @@ import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import kotlin.math.abs
+
+// --- Generador determinista de color desde string ---
+fun randomColorFromString(str: String): Color {
+    val hash = abs(str.hashCode())
+    // Solo para que sea vivo, forzamos valores decentes
+    val r = 120 + (hash % 110)
+    val g = 60 + ((hash / 2) % 130)
+    val b = 150 + ((hash / 3) % 80)
+    return Color(r, g, b)
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -178,7 +190,6 @@ fun AmigosScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            // Lista de amigos simple, SIN caja "Tus amigos"
             if (amigos.isEmpty()) {
                 Box(
                     Modifier
@@ -200,10 +211,20 @@ fun AmigosScreen(
                         .padding(horizontal = 10.dp)
                 ) {
                     items(amigos) { amigo ->
+                        // Color aleatorio a la izquierda, morado a la derecha
+                        val leftColor = remember(amigo.uid) { randomColorFromString(amigo.uid) }
+                        val rightColor = TorneoYaPalette.violet
                         Card(
                             Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp, horizontal = 6.dp)
+                                .border(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(
+                                        listOf(leftColor, rightColor)
+                                    ),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
                                 .combinedClickable(
                                     onClick = {},
                                     onLongClick = {
@@ -257,7 +278,6 @@ fun AmigosScreen(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
-                                // Menú de tres puntos
                                 Box {
                                     IconButton(
                                         onClick = { expandedUid = amigo.uid }
@@ -301,7 +321,6 @@ fun AmigosScreen(
             }
         }
 
-        // BOTÓN AÑADIR AMIGO ESTILO PARTIDOS (plano, rectangular, amarillo, icono PersonAdd, menos redondeo)
         OutlinedButton(
             onClick = { showSheet = true },
             modifier = Modifier

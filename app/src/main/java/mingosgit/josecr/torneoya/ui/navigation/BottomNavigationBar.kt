@@ -21,6 +21,7 @@ fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Online,
+        BottomNavItem.Amigos, // AGREGADO
         BottomNavItem.Usuario
     )
     val navBackStackEntry = navController.currentBackStackEntryAsState()
@@ -76,7 +77,6 @@ fun BottomNavigationBar(navController: NavController) {
                         style = if (selected) MaterialTheme.typography.labelLarge else MaterialTheme.typography.labelMedium,
                         modifier = Modifier.padding(top = 2.dp)
                     )
-                    // Underline effect only when selected
                     Box(
                         modifier = Modifier
                             .padding(top = 3.dp)
