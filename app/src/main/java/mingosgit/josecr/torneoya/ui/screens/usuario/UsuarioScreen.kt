@@ -283,26 +283,71 @@ fun UsuarioScreen(
             Spacer(modifier = Modifier.height(26.dp))
 
             if (!sesionOnlineActiva) {
-                Button(
-                    onClick = { navController.navigate("login") },
+                Column(
                     modifier = Modifier
-                        .widthIn(max = 400.dp)
-                        .height(50.dp)
-                        .graphicsLayer { shadowElevation = 6f },
-                    shape = RoundedCornerShape(15.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = blue)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .widthIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(11.dp)
                 ) {
-                    Text("Iniciar sesión o Crear cuenta", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                ),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                )
+                            )
+                            .clickable { navController.navigate("login") },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Iniciar sesión",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                ),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                )
+                            )
+                            .clickable { navController.navigate("register") },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Crear cuenta",
+                            color = TorneoYaPalette.blue,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(26.dp))
-
-            PerfilOpcionAmigos(
-                modifier = Modifier.widthIn(max = 400.dp)
-            ) {
-                navController.navigate("amigos")
-            }
         }
     }
 }
