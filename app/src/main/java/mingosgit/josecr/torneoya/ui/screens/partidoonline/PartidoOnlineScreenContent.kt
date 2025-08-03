@@ -167,16 +167,6 @@ fun PartidoOnlineScreenContent(
                             partidoSeleccionado?.uid?.let { uid -> scope.launch { partidoViewModel.duplicarPartido(uid) } }
                         }
                 )
-                ListItem(
-                    headlineContent = { Text("Eliminar", fontWeight = FontWeight.Medium, color = Color.Red) },
-                    leadingContent = { Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = Color.Red) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            showOptionsSheet = false
-                            showConfirmDialog = true
-                        }
-                )
             }
         }
     }

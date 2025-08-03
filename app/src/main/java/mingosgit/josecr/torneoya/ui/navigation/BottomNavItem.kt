@@ -14,6 +14,6 @@ sealed class BottomNavItem(
     val icon: ImageVector
 ) {
     object Home : BottomNavItem("home", "Home", Icons.Filled.Home)
-    object Online : BottomNavItem("partidos_online", "Online", Icons.Filled.LiveTv)
+    object Online : BottomNavItem("partidos_online", "Partidos", Icons.Filled.LiveTv)
     object Usuario : BottomNavItem("usuario", "Usuario", Icons.Filled.Person)
 }

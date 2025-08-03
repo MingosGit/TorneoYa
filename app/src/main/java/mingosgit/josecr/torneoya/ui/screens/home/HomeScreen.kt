@@ -2,6 +2,7 @@ package mingosgit.josecr.torneoya.ui.screens.home
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -18,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 data class HomeProximoPartidoUi(
     val partido: PartidoFirebase,
@@ -41,10 +44,10 @@ fun HomeScreen(
     val cargandoProx by viewModel.cargandoProx.collectAsState()
 
     val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF181B26),
-        0.25f to Color(0xFF22263B),
-        0.6f to Color(0xFF1A1E29),
-        1.0f to Color(0xFF161622)
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
     )
 
     val sesionActiva = uiState.nombreUsuario.isNotBlank() && uiState.nombreUsuario != "Usuario"
@@ -65,7 +68,7 @@ fun HomeScreen(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFF296DFF).copy(alpha = 0.15f),
+                    color = Color(0xFF296DFF).copy(alpha = 0.13f),
                     shadowElevation = 0.dp,
                     modifier = Modifier.size(85.dp)
                 ) {
@@ -79,13 +82,13 @@ fun HomeScreen(
                 Spacer(Modifier.height(18.dp))
                 Text(
                     text = "Bienvenido a TorneoYa",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 27.sp,
+                    fontWeight = FontWeight.Black,
                     color = Color.White
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "Desde aquí podrás crear y gestionar partidos con tus amigos.\n\nPara ello deberás iniciar sesión o crearte una cuenta.",
+                    text = "Organiza y disfruta tus partidos.\n\nInicia sesión o crea tu cuenta para empezar.",
                     fontSize = 16.sp,
                     color = Color(0xFFB7B7D1),
                     lineHeight = 22.sp,
@@ -97,7 +100,8 @@ fun HomeScreen(
                     onClick = { navController.navigate("login") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(49.dp),
+                        .height(50.dp)
+                        .graphicsLayer { shadowElevation = 6f },
                     shape = RoundedCornerShape(15.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF))
                 ) {
@@ -108,14 +112,14 @@ fun HomeScreen(
                     onClick = { navController.navigate("register") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(49.dp),
+                        .height(50.dp),
                     shape = RoundedCornerShape(15.dp),
                 ) {
                     Text("Crear cuenta", color = Color(0xFF296DFF), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 }
                 Spacer(Modifier.height(26.dp))
                 Text(
-                    text = "¿No quieres una cuenta online?\nPuedes acceder a tu cuenta local desde ajustes de Usuario.",
+                    text = "¿Prefieres una cuenta local?\nAccede desde ajustes de Usuario.",
                     fontSize = 14.sp,
                     color = Color(0xFFB7B7D1),
                     fontWeight = FontWeight.Normal,
@@ -131,7 +135,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 22.dp, vertical = 28.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             // Avatar y bienvenida
             Row(
@@ -140,24 +144,24 @@ fun HomeScreen(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFF2A2A3A),
-                    shadowElevation = 10.dp,
-                    modifier = Modifier.size(54.dp)
+                    color = Color(0xFF22243A),
+                    shadowElevation = 14.dp,
+                    modifier = Modifier.size(56.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Perfil",
                         tint = Color(0xFFFFB531),
-                        modifier = Modifier.padding(13.dp)
+                        modifier = Modifier.padding(14.dp)
                     )
                 }
                 Spacer(Modifier.width(14.dp))
                 Column {
                     Text(
                         text = "¡Hola, ${uiState.nombreUsuario}!",
-                        fontSize = 26.sp,
+                        fontSize = 27.sp,
                         color = Color(0xFFF7F7FF),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Black
                     )
                     Text(
                         text = "Resumen de tu actividad",
@@ -168,7 +172,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(29.dp))
 
             // Stats SOLO: Partidos y Amigos
             Row(
@@ -189,14 +193,14 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(Modifier.height(34.dp))
+            Spacer(Modifier.height(31.dp))
 
             // Accesos rápidos
             Row(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally)
+                horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally)
             ) {
                 QuickAccessButton(
                     icon = Icons.Filled.Person,
@@ -211,20 +215,20 @@ fun HomeScreen(
                 ) { navController.navigate("partido_online") }
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(27.dp))
 
             // Próximo partido online o mensaje motivador
             if (cargandoProx) {
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 22.dp),
+                        .padding(vertical = 20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
                         color = Color(0xFF296DFF),
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(24.dp)
+                        strokeWidth = 2.2.dp,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             } else {
@@ -237,24 +241,32 @@ fun HomeScreen(
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(Color(0xFF20243B)),
+                                .clip(RoundedCornerShape(17.dp))
+                                .border(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(
+                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                    ),
+                                    shape = RoundedCornerShape(17.dp)
+                                )
+                                .graphicsLayer { shadowElevation = 8f }
+                                .background(Color(0xFF1B1E2E)),
                             color = Color.Transparent,
                             shadowElevation = 0.dp,
-                            shape = RoundedCornerShape(18.dp)
+                            shape = RoundedCornerShape(17.dp)
                         ) {
                             Column(
                                 Modifier
-                                    .padding(vertical = 21.dp, horizontal = 20.dp),
+                                    .padding(vertical = 18.dp, horizontal = 19.dp),
                                 horizontalAlignment = Alignment.Start
                             ) {
                                 Text(
                                     text = "Próximo partido online",
                                     color = Color(0xFF8F5CFF),
-                                    fontWeight = FontWeight.SemiBold,
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
                                 )
-                                Spacer(Modifier.height(7.dp))
+                                Spacer(Modifier.height(5.dp))
                                 Text(
                                     text = "${partidoUi.partido.fecha}  |  ${partidoUi.partido.horaInicio}",
                                     color = Color(0xFFF7F7FF),
@@ -290,16 +302,27 @@ fun HomeScreen(
                                     )
                                 }
 
-                                Spacer(Modifier.height(13.dp))
+                                Spacer(Modifier.height(12.dp))
 
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(Color(0xFF23273D))
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .border(
+                                            width = 2.dp,
+                                            brush = Brush.horizontalGradient(
+                                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                            ),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                            )
+                                        )
                                         .clickable {
                                             navController.navigate("visualizar_partido_online/${partidoUi.partido.uid}")
                                         }
-                                        .height(39.dp)
+                                        .height(38.dp)
                                         .fillMaxWidth(),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -322,9 +345,16 @@ fun HomeScreen(
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
+                            .clip(RoundedCornerShape(17.dp))
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
+                                ),
+                                shape = RoundedCornerShape(17.dp)
+                            )
                             .background(Color(0xFF20243B))
-                            .padding(vertical = 28.dp, horizontal = 18.dp),
+                            .padding(vertical = 24.dp, horizontal = 15.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
@@ -333,27 +363,27 @@ fun HomeScreen(
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                         )
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(7.dp))
                         Text(
                             text = "Crea uno o únete a una partida para no perderte ningún gol.",
                             color = Color(0xFF8F5CFF),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium,
                         )
-                        Spacer(Modifier.height(20.dp))
+                        Spacer(Modifier.height(17.dp))
                         Row {
                             Button(
                                 onClick = { navController.navigate("partido_online") },
-                                shape = RoundedCornerShape(11.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF)),
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text("Buscar partidos", color = Color.White, fontWeight = FontWeight.Bold)
                             }
-                            Spacer(Modifier.width(16.dp))
+                            Spacer(Modifier.width(15.dp))
                             OutlinedButton(
                                 onClick = { navController.navigate("crear_partido_online") },
-                                shape = RoundedCornerShape(11.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 border = ButtonDefaults.outlinedButtonBorder,
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -363,7 +393,7 @@ fun HomeScreen(
                     }
                 }
             }
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(20.dp))
         }
     }
 }
@@ -381,7 +411,18 @@ fun QuickAccessButton(
         modifier = modifier
             .height(90.dp)
             .clip(RoundedCornerShape(17.dp))
-            .background(Color(0xFF23273D))
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(Color(0xFF296DFF), TorneoYaPalette.violet)
+                ),
+                shape = RoundedCornerShape(17.dp)
+            )
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                )
+            )
             .clickable { onClick() }
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -412,7 +453,22 @@ fun StatCircle(
             Modifier
                 .size(56.dp)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.19f)),
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(
+                        if (label == "Partidos")
+                            listOf(Color(0xFF296DFF), TorneoYaPalette.violet)
+                        else
+                            listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
+                    ),
+                    shape = CircleShape
+                )
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(color.copy(alpha = 0.22f), Color.Transparent),
+                        radius = 46f
+                    )
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(31.dp))
