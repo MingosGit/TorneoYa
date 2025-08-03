@@ -1,18 +1,22 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
@@ -26,127 +30,92 @@ fun PartidoOnlineScreen(
     val currentUser = FirebaseAuth.getInstance().currentUser
 
     if (currentUser == null) {
-        LoginOrRegisterPrompt(
-            navController = navController
+        val modernBackground = Brush.verticalGradient(
+            0.0f to Color(0xFF1B1D29),
+            0.28f to Color(0xFF212442),
+            0.58f to Color(0xFF191A23),
+            1.0f to Color(0xFF14151B)
         )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(brush = modernBackground)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 26.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFF296DFF).copy(alpha = 0.13f),
+                    shadowElevation = 0.dp,
+                    modifier = Modifier.size(85.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Logo",
+                        tint = Color(0xFF296DFF),
+                        modifier = Modifier.padding(22.dp)
+                    )
+                }
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    text = "Acceso a Partidos Online",
+                    fontSize = 27.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Inicia sesión o crea tu cuenta para ver y organizar partidos online.",
+                    fontSize = 16.sp,
+                    color = Color(0xFFB7B7D1),
+                    lineHeight = 22.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    fontWeight = FontWeight.Normal
+                )
+                Spacer(Modifier.height(32.dp))
+                Button(
+                    onClick = { navController.navigate("login") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .graphicsLayer { shadowElevation = 6f },
+                    shape = RoundedCornerShape(15.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF))
+                ) {
+                    Text("Iniciar sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+                Spacer(Modifier.height(11.dp))
+                OutlinedButton(
+                    onClick = { navController.navigate("register") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(15.dp),
+                ) {
+                    Text("Crear cuenta", color = Color(0xFF296DFF), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
+                Spacer(Modifier.height(26.dp))
+                Text(
+                    text = "¿Prefieres una cuenta local?\nAccede desde ajustes de Usuario.",
+                    fontSize = 14.sp,
+                    color = Color(0xFFB7B7D1),
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 18.dp),
+                    lineHeight = 19.sp
+                )
+            }
+        }
     } else {
         PartidoOnlineScreenContent(
             navController = navController,
             partidoViewModel = partidoViewModel
         )
-    }
-}
-
-@Composable
-private fun LoginOrRegisterPrompt(
-    navController: NavController
-) {
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
-                .padding(innerPadding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Debes iniciar sesión o crear una cuenta para ver los partidos online.",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(
-                    onClick = { navController.navigate("login") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(11.dp) // Menos redondeado
-                ) {
-                    Text("Iniciar sesión")
-                }
-                OutlinedButton(
-                    onClick = { navController.navigate("register") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(11.dp) // Menos redondeado
-                ) {
-                    Text("Crear cuenta")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun BuscarPorUidButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // Botón menos redondo, border más marcado y color llamativo
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier
-            .height(42.dp)
-            .clip(RoundedCornerShape(8.dp)),
-        shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = TorneoYaPalette.yellow
-        ),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            width = 1.5.dp,
-            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                listOf(TorneoYaPalette.yellow, TorneoYaPalette.violet)
-            )
-        )
-    ) {
-        Text("Buscar por UID", color = TorneoYaPalette.yellow, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-    }
-}
-
-@Composable
-fun EstadoPartidoChip(
-    estado: String,
-    modifier: Modifier = Modifier
-) {
-    val (bgColor, borderColor, textColor) = when (estado) {
-        "PREVIA" -> Triple(Color(0x22FFD84C), TorneoYaPalette.yellow, TorneoYaPalette.yellow)
-        "EN_CURSO" -> Triple(Color(0x22296DFF), TorneoYaPalette.blue, TorneoYaPalette.blue)
-        "FINALIZADO" -> Triple(Color(0x22B7B7D1), Color(0xFFB7B7D1), Color(0xFFB7B7D1))
-        else -> Triple(Color.Transparent, TorneoYaPalette.mutedText, TorneoYaPalette.mutedText)
-    }
-
-    Surface(
-        color = bgColor,
-        contentColor = textColor,
-        shape = RoundedCornerShape(7.dp),
-        border = BorderStroke(1.4.dp, borderColor),
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = when (estado) {
-                    "PREVIA" -> "PREVIA"
-                    "EN_CURSO" -> "EN CURSO"
-                    "FINALIZADO" -> "FINALIZADO"
-                    else -> estado
-                },
-                color = textColor,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                fontSize = MaterialTheme.typography.labelLarge.fontSize
-            )
-        }
     }
 }
