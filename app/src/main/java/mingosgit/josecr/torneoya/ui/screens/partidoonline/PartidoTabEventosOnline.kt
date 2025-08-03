@@ -57,12 +57,16 @@ fun PartidoTabEventosOnline(
                 if (equipoB?.nombre?.isNotBlank() == true) nombreB = equipoB.nombre
             }
 
-            val goles = db.collection("goleadores")
+            val golesDocs = db.collection("goleadores")
                 .whereEqualTo("partidoUid", partidoUid)
                 .get().await()
-                .documents.mapNotNull { it.toObject(GoleadorFirebase::class.java)?.copy(uid = it.id) }
+                .documents
 
-            val jugadorUids = goles.map { it.jugadorUid } + goles.mapNotNull { it.asistenciaJugadorUid }
+            val goles = golesDocs.mapNotNull { it.toObject(GoleadorFirebase::class.java)?.copy(uid = it.id) }
+
+            // Recolección de nombres de jugadores y asistentes (ONLINE y MANUAL)
+            val jugadorUids = goles.mapNotNull { it.jugadorUid.takeIf { u -> !u.isNullOrBlank() } } +
+                    goles.mapNotNull { it.asistenciaJugadorUid.takeIf { u -> !u.isNullOrBlank() } }
             val jugadoresDocs = jugadorUids.distinct()
                 .filter { it.isNotBlank() }
                 .mapNotNull { uid ->
@@ -79,22 +83,36 @@ fun PartidoTabEventosOnline(
             eventos = goles
                 .sortedBy { it.minuto ?: Int.MAX_VALUE }
                 .map { gol ->
+                    val nombreJugador = when {
+                        !gol.jugadorUid.isNullOrBlank() -> {
+                            // Busca primero nombre por UID en 'jugadores' o 'usuarios'
+                            nombresMap[gol.jugadorUid]
+                            // si no existe nombre y hay nombre manual, usa ese
+                                ?: gol.jugadorNombreManual
+                                // si tampoco, busca en datos firestore viejos
+                                ?: golesDocs.find { d -> d.id == gol.uid }?.getString("jugadorManual")
+                                ?: "Desconocido"
+                        }
+                        !gol.jugadorNombreManual.isNullOrBlank() -> gol.jugadorNombreManual
+                        else -> golesDocs.find { d -> d.id == gol.uid }?.getString("jugadorManual") ?: "Desconocido"
+                    }
+                    val nombreAsistente = when {
+                        !gol.asistenciaJugadorUid.isNullOrBlank() -> {
+                            nombresMap[gol.asistenciaJugadorUid]
+                                ?: gol.asistenciaNombreManual
+                                ?: golesDocs.find { d -> d.id == gol.uid }?.getString("asistenciaManual")
+                                ?: "Desconocido"
+                        }
+                        !gol.asistenciaNombreManual.isNullOrBlank() -> gol.asistenciaNombreManual
+                        else -> golesDocs.find { d -> d.id == gol.uid }?.getString("asistenciaManual")
+                    }
                     GolEvento(
                         equipoUid = gol.equipoUid,
-                        jugador = if (!gol.jugadorUid.isNullOrBlank()) {
-                            nombresMap[gol.jugadorUid] ?: gol.jugadorNombreManual ?: "Desconocido"
-                        } else {
-                            gol.jugadorNombreManual ?: "Desconocido"
-                        },
+                        jugador = nombreJugador ?: "Desconocido",
                         minuto = gol.minuto,
-                        asistente = when {
-                            !gol.asistenciaJugadorUid.isNullOrBlank() -> nombresMap[gol.asistenciaJugadorUid] ?: gol.asistenciaNombreManual ?: "Desconocido"
-                            !gol.asistenciaNombreManual.isNullOrBlank() -> gol.asistenciaNombreManual
-                            else -> null
-                        }
+                        asistente = if (!nombreAsistente.isNullOrBlank()) nombreAsistente else null
                     )
                 }
-
             isLoading = false
         }
     }
