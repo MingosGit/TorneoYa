@@ -1,7 +1,3 @@
-// Cambios:
-// - El botón "Buscar por UID" ahora es plano, rectangular, más elegante y menos redondeado, con icono amarillo
-// - El chip de estado usa colores modernos (verde, amarillo, rojo) y texto/borde oscuros según fondo (no blanco nunca)
-
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import android.content.ClipData
@@ -17,9 +13,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,6 +40,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.draw.shadow
 
 enum class EstadoPartido(val display: String) {
     TODOS("Todos"),
@@ -64,7 +64,7 @@ fun PartidoOnlineScreenContent(
 
     var sortOption by remember { mutableStateOf("Nombre") }
     var ascending by remember { mutableStateOf(true) }
-    var expanded by remember { mutableStateOf(false) }
+    var expandedSort by remember { mutableStateOf(false) }
 
     var estadoSeleccionado by remember { mutableStateOf(EstadoPartido.TODOS) }
     var expandedEstado by remember { mutableStateOf(false) }
@@ -237,13 +237,21 @@ fun PartidoOnlineScreenContent(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            FloatingActionButton(
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary,
-                onClick = { navController.navigate("crear_partido_online") }
-            ) {
-                Icon(Icons.Default.ArrowUpward, contentDescription = "Agregar", tint = Color.White)
-            }
+            ExtendedFloatingActionButton(
+                onClick = { navController.navigate("crear_partido_online") },
+                icon = {
+                    Icon(Icons.Default.AddCircle, contentDescription = "Crear partido", tint = TorneoYaPalette.accent, modifier = Modifier.size(28.dp))
+                },
+                text = {
+                    Text("Crear partido", fontWeight = FontWeight.Bold, color = TorneoYaPalette.accent, fontSize = 18.sp)
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = TorneoYaPalette.accent,
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .padding(bottom = 8.dp, end = 4.dp)
+                    .shadow(7.dp, RoundedCornerShape(18.dp))
+            )
         }
     ) { innerPadding ->
         Column(
@@ -266,7 +274,6 @@ fun PartidoOnlineScreenContent(
                     .fillMaxWidth()
                     .padding(bottom = 14.dp)
             ) {
-                // Botón rectangular, flat, con amarillo y azul
                 OutlinedButton(
                     onClick = { showSearchDropdown = !showSearchDropdown },
                     shape = RoundedCornerShape(7.dp),
@@ -381,85 +388,133 @@ fun PartidoOnlineScreenContent(
                 }
             }
 
-            // --------- RESTO DE LOS FILTROS Y LISTADO NORMAL ----------
-            Card(
-                elevation = CardDefaults.cardElevation(4.dp),
+            // --------- FILTROS MEJORADOS ----------
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(18.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 14.dp)
+                    .padding(bottom = 16.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
-                ) {
-                    Text("Estado: ", fontSize = 15.sp)
-                    Box {
-                        OutlinedButton(
-                            shape = RoundedCornerShape(12.dp),
-                            onClick = { expandedEstado = true },
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                        ) { Text(estadoSeleccionado.display) }
-                        DropdownMenu(
-                            expanded = expandedEstado,
-                            onDismissRequest = { expandedEstado = false }
-                        ) {
-                            EstadoPartido.values().forEach { estado ->
-                                DropdownMenuItem(
-                                    text = { Text(estado.display) },
-                                    onClick = {
-                                        estadoSeleccionado = estado
-                                        expandedEstado = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Text("Ordenar: ", fontSize = 15.sp)
-                    Box {
-                        OutlinedButton(
-                            shape = RoundedCornerShape(12.dp),
-                            onClick = { expanded = true },
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(sortOption)
+                // Estado
+                FilterChip(
+                    selected = true,
+                    onClick = { expandedEstado = true },
+                    enabled = true,
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = if (ascending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                Icons.Default.FilterList,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Nombre") },
-                                onClick = {
-                                    sortOption = "Nombre"
-                                    expanded = false
+                                modifier = Modifier.size(19.dp),
+                                tint = when (estadoSeleccionado) {
+                                    EstadoPartido.TODOS -> TorneoYaPalette.mutedText
+                                    EstadoPartido.PREVIA -> Color(0xFF97E993)
+                                    EstadoPartido.JUGANDO -> Color(0xFFFFB531)
+                                    EstadoPartido.FINALIZADO -> Color(0xFFF97373)
                                 }
                             )
-                            DropdownMenuItem(
-                                text = { Text("Fecha") },
-                                onClick = {
-                                    sortOption = "Fecha"
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(if (ascending) "Descendente" else "Ascendente") },
-                                onClick = {
-                                    ascending = !ascending
-                                    expanded = false
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                when (estadoSeleccionado) {
+                                    EstadoPartido.TODOS -> "Todos"
+                                    else -> estadoSeleccionado.display
+                                },
+                                fontWeight = FontWeight.Bold,
+                                color = when (estadoSeleccionado) {
+                                    EstadoPartido.TODOS -> TorneoYaPalette.mutedText
+                                    EstadoPartido.PREVIA -> Color(0xFF97E993)
+                                    EstadoPartido.JUGANDO -> Color(0xFFFFB531)
+                                    EstadoPartido.FINALIZADO -> Color(0xFFF97373)
                                 }
                             )
                         }
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    border = BorderStroke(1.2.dp, when (estadoSeleccionado) {
+                        EstadoPartido.TODOS -> TorneoYaPalette.mutedText
+                        EstadoPartido.PREVIA -> Color(0xFF97E993)
+                        EstadoPartido.JUGANDO -> Color(0xFFFFB531)
+                        EstadoPartido.FINALIZADO -> Color(0xFFF97373)
+                    }),
+                    modifier = Modifier.height(38.dp)
+                )
+                DropdownMenu(
+                    expanded = expandedEstado,
+                    onDismissRequest = { expandedEstado = false }
+                ) {
+                    EstadoPartido.values().forEach { estado ->
+                        DropdownMenuItem(
+                            text = { Text(estado.display) },
+                            onClick = {
+                                estadoSeleccionado = estado
+                                expandedEstado = false
+                            }
+                        )
                     }
                 }
+
+                // Ordenar
+                FilterChip(
+                    selected = true,
+                    onClick = { expandedSort = true },
+                    enabled = true,
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Sort,
+                                contentDescription = null,
+                                modifier = Modifier.size(19.dp),
+                                tint = TorneoYaPalette.blue
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "${sortOption} ${if (ascending) "↑" else "↓"}",
+                                fontWeight = FontWeight.Bold,
+                                color = TorneoYaPalette.blue
+                            )
+                        }
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    border = BorderStroke(1.2.dp, TorneoYaPalette.blue),
+                    modifier = Modifier.height(38.dp)
+                )
+                DropdownMenu(
+                    expanded = expandedSort,
+                    onDismissRequest = { expandedSort = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nombre") },
+                        onClick = {
+                            sortOption = "Nombre"
+                            expandedSort = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Fecha") },
+                        onClick = {
+                            sortOption = "Fecha"
+                            expandedSort = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(if (ascending) "Descendente" else "Ascendente") },
+                        onClick = {
+                            ascending = !ascending
+                            expandedSort = false
+                        }
+                    )
+                }
             }
+
 
             LazyColumn {
                 items(sortedPartidos) { partido ->
@@ -564,3 +619,6 @@ fun PartidoOnlineScreenContent(
         }
     }
 }
+
+
+
