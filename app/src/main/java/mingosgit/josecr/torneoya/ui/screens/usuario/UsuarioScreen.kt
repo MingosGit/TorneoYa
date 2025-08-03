@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -30,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
@@ -63,18 +63,11 @@ fun UsuarioScreen(
         }
     }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF181B26),
-        0.25f to Color(0xFF22263B),
-        0.6f to Color(0xFF1A1E29),
-        1.0f to Color(0xFF161622)
-    )
-    val blue = Color(0xFF296DFF)
-    val violet = Color(0xFF8F5CFF)
-    val accent = Color(0xFFFFB531)
-    val lightText = Color(0xFFF7F7FF)
-    val mutedText = Color(0xFFB7B7D1)
-    val chipBg = Color(0xFF24294A)
+    val blue = TorneoYaPalette.blue
+    val violet = TorneoYaPalette.violet
+    val accent = TorneoYaPalette.accent
+    val lightText = TorneoYaPalette.textLight
+    val mutedText = TorneoYaPalette.mutedText
 
     if (showDialog) {
         AlertDialog(
@@ -106,7 +99,7 @@ fun UsuarioScreen(
             onDismiss = { showCerrarSesionDialog = false },
             blue = blue,
             accent = accent,
-            background = Color(0xFF232A3A),
+            background = Color(0xFF191A23),
             lightText = lightText,
             mutedText = mutedText
         )
@@ -124,47 +117,68 @@ fun UsuarioScreen(
         )
     }
 
+    // SIN topBar en Scaffold, header va dentro del Column
     Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("Perfil", fontSize = 20.sp, color = lightText, fontWeight = FontWeight.Bold)
-                },
-                actions = {
-                    IconButton(onClick = { navController.navigate("ajustes") }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = blue)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
-                )
-            )
-        }
+        containerColor = Color.Transparent
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(modernBackground)
-                .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .size(132.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(violet.copy(alpha = 0.20f), blue.copy(alpha = 0.24f), Color.Transparent),
-                            radius = 220f
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                            MaterialTheme.colorScheme.background
                         )
                     )
-                    .clickable { showDialog = true }
-                    .shadow(12.dp, CircleShape),
+                )
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // HEADER IDENTICO AL DE AMIGOS
+            Surface(
+                tonalElevation = 3.dp,
+                shadowElevation = 0.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 16.dp),                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Perfil",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 18.dp) // SOLO padding interno, igual que el texto de amigos
+                    )
+                    IconButton(
+                        onClick = { navController.navigate("ajustes") },
+                        modifier = Modifier.padding(end = 6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Ajustes",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+
+
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // AVATAR SIMPLE REDONDO, FONDO LISO
+            Box(
+                modifier = Modifier
+                    .size(118.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF22243A))
+                    .clickable { showDialog = true },
                 contentAlignment = Alignment.Center
             ) {
                 val fotoPerfilPath = usuario?.fotoPerfilPath
@@ -175,98 +189,108 @@ fun UsuarioScreen(
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = "Foto de perfil",
                             modifier = Modifier
-                                .size(128.dp)
+                                .size(110.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF2A2B3B))
+                                .background(Color(0xFF22243A))
                         )
                     } else {
-                        Text("👤", fontSize = 56.sp)
+                        Text("👤", fontSize = 52.sp)
                     }
                 } else {
-                    Text("👤", fontSize = 56.sp)
+                    Text("👤", fontSize = 52.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            // USUARIO INFO LIMPIO
             if (sesionOnlineActiva) {
                 Text(
                     text = if (!nombreUsuarioOnline.isNullOrBlank()) "Hola, $nombreUsuarioOnline" else "Hola",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        color = lightText,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    modifier = Modifier.padding(bottom = 2.dp)
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = lightText,
                 )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = "Sesión online activa",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = accent.copy(alpha = 0.9f)
+                Spacer(Modifier.height(5.dp))
+                // Badge azul institucional
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(TorneoYaPalette.blue)
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Sesión online activa",
+                        fontSize = 13.sp,
+                        color = TorneoYaPalette.textLight,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.6.sp,
                     )
-                )
+                }
             } else {
                 Text(
                     text = "Bienvenido",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        color = lightText,
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = lightText,
+                )
+                Spacer(Modifier.height(5.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFF22243A))
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Sin sesión online",
+                        fontSize = 13.sp,
+                        color = mutedText,
                         fontWeight = FontWeight.SemiBold
                     )
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = "Sin sesión online",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = mutedText
-                    )
-                )
+                }
             }
 
             Spacer(modifier = Modifier.height(26.dp))
 
+            // BOTÓN ACCIÓN PRINCIPAL, SIN SOMBRAS
             if (!sesionOnlineActiva) {
                 Button(
                     onClick = { navController.navigate("login") },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
+                        .widthIn(max = 400.dp)
+                        .height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = blue),
-                    shape = RoundedCornerShape(15.dp)
+                    shape = RoundedCornerShape(13.dp)
                 ) {
-                    Text("Iniciar sesión o Crear cuenta", color = lightText, fontWeight = FontWeight.Bold)
+                    Text("Iniciar sesión o Crear cuenta", color = lightText, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             } else {
-                Button(
+                OutlinedButton(
                     onClick = { showCerrarSesionDialog = true },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF292E3E)),
-                    shape = RoundedCornerShape(15.dp)
+                        .widthIn(max = 400.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = accent
+                    ),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        width = 1.5.dp,
+                        brush = Brush.horizontalGradient(listOf(accent, violet))
+                    ),
+                    shape = RoundedCornerShape(13.dp)
                 ) {
-                    Text("Cerrar sesión", color = accent, fontWeight = FontWeight.Bold)
+                    Text("Cerrar sesión", color = accent, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(26.dp))
 
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(5.dp, RoundedCornerShape(14.dp))
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF181B2F)),
-                tonalElevation = 0.dp,
-                color = Color(0xFF181B2F)
+            // OPCIÓN AMIGOS SÓLIDA, SIMPLE
+            PerfilOpcionAmigos(
+                modifier = Modifier.widthIn(max = 400.dp) // Limita el ancho
             ) {
-                Column(
-                    Modifier
-                        .padding(horizontal = 0.dp, vertical = 2.dp)
-                ) {
-                    PerfilOpcionAmigos {
-                        navController.navigate("amigos")
-                    }
-                }
+                navController.navigate("amigos")
             }
         }
     }
@@ -274,38 +298,41 @@ fun UsuarioScreen(
 
 @Composable
 private fun PerfilOpcionAmigos(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val blue = Color(0xFF296DFF)
+    val blue = TorneoYaPalette.blue
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
+            .clip(RoundedCornerShape(11.dp))
+            .background(Color(0xFF23253A))
             .clickable { onClick() }
-            .padding(horizontal = 22.dp, vertical = 20.dp),
+            .padding(horizontal = 19.dp, vertical = 17.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.Group,
             contentDescription = "Amigos",
-            modifier = Modifier.size(27.dp),
+            modifier = Modifier.size(25.dp),
             tint = blue
         )
-        Spacer(Modifier.width(18.dp))
+        Spacer(Modifier.width(15.dp))
         Column {
             Text(
                 text = "Amigos",
-                fontSize = 18.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White
             )
             Text(
                 text = "Gestiona tus amigos y añade nuevos contactos",
-                fontSize = 14.sp,
-                color = Color(0xFFB7B7D1)
+                fontSize = 13.sp,
+                color = TorneoYaPalette.mutedText
             )
         }
     }
 }
+
 
 @Composable
 private fun CustomCerrarSesionDialog(
@@ -319,17 +346,17 @@ private fun CustomCerrarSesionDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(19.dp),
+            shape = RoundedCornerShape(16.dp),
             color = background,
             tonalElevation = 0.dp,
-            shadowElevation = 12.dp,
+            shadowElevation = 0.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp)
         ) {
             Column(
                 Modifier
-                    .padding(horizontal = 26.dp, vertical = 28.dp),
+                    .padding(horizontal = 22.dp, vertical = 26.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -338,13 +365,13 @@ private fun CustomCerrarSesionDialog(
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(11.dp))
                 Text(
                     text = "¿Estás seguro que quieres cerrar sesión?",
                     color = mutedText,
                     fontSize = 15.sp
                 )
-                Spacer(Modifier.height(28.dp))
+                Spacer(Modifier.height(25.dp))
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -357,7 +384,7 @@ private fun CustomCerrarSesionDialog(
                     ) {
                         Text("Sí, cerrar sesión", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
-                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(14.dp))
                     OutlinedButton(
                         onClick = onDismiss,
                         border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp, brush = Brush.horizontalGradient(listOf(blue, Color.White.copy(alpha = 0.22f)))),

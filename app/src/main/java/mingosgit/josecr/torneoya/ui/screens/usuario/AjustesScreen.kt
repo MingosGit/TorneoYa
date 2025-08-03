@@ -1,10 +1,11 @@
 package mingosgit.josecr.torneoya.ui.screens.ajustes
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +21,22 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+
+private val cardShape = RoundedCornerShape(16.dp)
+
+// Paleta ordenada para las opciones
+private val leftColors = listOf(
+    Color(0xFF2ecc71), // Verde
+    Color(0xFF3498db), // Azul
+    Color(0xFFf1c40f), // Amarillo
+    Color(0xFFe67e22), // Naranja
+    Color(0xFF9b59b6), // Violeta
+    Color(0xFF34495e), // Azul oscuro
+    Color(0xFF16a085), // Verde azulado
+    Color(0xFFe74c3c), // Rojo
+    Color(0xFFf39c12), // Amarillo naranja
+)
+private val rightColor = Color(0xFF8F5CFF) // Violeta institucional
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,19 +59,10 @@ fun AjustesScreen(
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
     var mostrarAlerta by remember { mutableStateOf(false) }
 
-    // Paleta oscura moderna
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF181B26),
-        0.25f to Color(0xFF22263B),
-        0.6f to Color(0xFF1A1E29),
-        1.0f to Color(0xFF161622)
-    )
-    val blue = Color(0xFF296DFF)
-    val violet = Color(0xFF8F5CFF)
     val lightText = Color(0xFFF7F7FF)
     val mutedText = Color(0xFFB7B7D1)
     val cardBg = Color(0xFF22243B)
-    val cardShape = RoundedCornerShape(16.dp)
+    val blue = Color(0xFF296DFF)
 
     if (mostrarAlerta) {
         CustomAjustesAlertDialog(
@@ -88,7 +96,14 @@ fun AjustesScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(modernBackground)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
                 .padding(innerPadding)
         ) {
             LazyColumn(
@@ -97,13 +112,19 @@ fun AjustesScreen(
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(opciones) { opcion ->
+                itemsIndexed(opciones) { i, opcion ->
+                    val leftColor = leftColors[i % leftColors.size]
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .shadow(4.dp, cardShape)
                             .clip(cardShape)
                             .background(cardBg)
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(listOf(leftColor, rightColor)),
+                                shape = cardShape
+                            )
                             .clickable {
                                 when (opcion) {
                                     "Mi cuenta" -> {

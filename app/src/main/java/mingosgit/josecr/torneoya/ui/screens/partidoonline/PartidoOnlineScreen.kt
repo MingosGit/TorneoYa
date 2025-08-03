@@ -1,6 +1,7 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -11,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.ui.graphics.Brush
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
@@ -43,6 +45,14 @@ private fun LoginOrRegisterPrompt(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
                 .padding(innerPadding)
                 .padding(24.dp),
             verticalArrangement = Arrangement.Center,

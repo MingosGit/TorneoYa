@@ -153,6 +153,14 @@ fun PartidoOnlineScreenContent(
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
+                    )
                     .padding(vertical = 16.dp, horizontal = 24.dp)
             ) {
                 ListItem(
@@ -247,6 +255,14 @@ fun PartidoOnlineScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
@@ -262,6 +278,7 @@ fun PartidoOnlineScreenContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+
                     .padding(bottom = 14.dp)
             ) {
                 OutlinedButton(

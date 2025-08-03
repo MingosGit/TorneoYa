@@ -72,7 +72,14 @@ fun MiCuentaScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(modernBackground)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.background
+                    )
+                )
+            )
     ) {
         Column(
             modifier = Modifier

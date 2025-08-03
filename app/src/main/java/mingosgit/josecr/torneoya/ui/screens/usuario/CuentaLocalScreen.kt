@@ -25,6 +25,14 @@ fun CuentaLocalScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.background
+                    )
+                )
+            )
             .padding(32.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
