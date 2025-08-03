@@ -20,10 +20,12 @@ import mingosgit.josecr.torneoya.data.entities.*
         GoleadorEntity::class,
         EventoEntity::class,
         ComentarioVotoEntity::class,
-        EquipoPredefinidoEntity::class, // NUEVO
-        EquipoPredefinidoJugadorCrossRef::class // NUEVO
+        EquipoPredefinidoEntity::class,
+        NotificacionArchivadaEntity::class,
+        EquipoPredefinidoJugadorCrossRef::class,
+        NotificacionBorradaEntity::class
     ],
-    version = 11 // SUBE VERSION SIEMPRE
+    version = 13 // SUBE VERSION SIEMPRE
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun equipoDao(): EquipoDao
@@ -38,9 +40,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun goleadorDao(): GoleadorDao
     abstract fun eventoDao(): EventoDao
     abstract fun estadisticasDao(): EstadisticasDao
-
-    // NUEVO:
+    abstract fun notificacionArchivadaDao(): NotificacionArchivadaDao
     abstract fun equipoPredefinidoDao(): EquipoPredefinidoDao
+    abstract fun notificacionBorradaDao(): NotificacionBorradaDao
 
     companion object {
         @Volatile
