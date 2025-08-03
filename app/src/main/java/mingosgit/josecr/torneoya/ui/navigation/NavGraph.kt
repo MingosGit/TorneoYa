@@ -48,6 +48,7 @@ import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOn
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import androidx.activity.ComponentActivity // <--- añade este import arriba
 import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
+import mingosgit.josecr.torneoya.ui.screens.home.NotificacionesScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 
@@ -136,7 +137,11 @@ fun NavGraph(
                 navController = navController
             )
         }
-
+        composable("notificaciones") {
+            NotificacionesScreen(
+                usuarioUid = userUid
+            )
+        }
         composable(
             route = "administrar_roles_online/{partidoUid}",
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
