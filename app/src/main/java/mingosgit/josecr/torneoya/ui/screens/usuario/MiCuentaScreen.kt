@@ -3,8 +3,11 @@ package mingosgit.josecr.torneoya.ui.screens.ajustes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Logout
@@ -18,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,6 +44,18 @@ fun MiCuentaScreen(
     var editandoNombre by remember { mutableStateOf(false) }
     var nuevoNombre by remember { mutableStateOf(TextFieldValue("")) }
 
+    // Colores y fondo igual que en AjustesScreen
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF181B26),
+        0.25f to Color(0xFF22263B),
+        0.6f to Color(0xFF1A1E29),
+        1.0f to Color(0xFF161622)
+    )
+    val blue = Color(0xFF296DFF)
+    val violet = Color(0xFF8F5CFF)
+    val lightText = Color(0xFFF7F7FF)
+    val mutedText = Color(0xFFB7B7D1)
+
     LaunchedEffect(Unit) { viewModel.cargarDatos() }
     LaunchedEffect(nombreUsuario) {
         if (!editandoNombre && nombreUsuario.isNotBlank()) {
@@ -56,260 +72,348 @@ fun MiCuentaScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFFF5F7FA), Color(0xFFEEF2F6))
-                )
-            )
+            .background(modernBackground)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 0.dp, vertical = 0.dp)
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // HEADER
-            Box(
+            Text(
+                text = "Mi Cuenta",
+                fontSize = 29.sp,
+                color = lightText,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier
+                    .padding(bottom = 32.dp, top = 18.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            OutlinedButton(
+                onClick = {},
+                enabled = false,
+                shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Transparent)
-                    .padding(top = 34.dp, start = 22.dp, end = 22.dp, bottom = 10.dp)
+                    .height(94.dp),
+                border = BorderStroke(2.dp, blue),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = blue
+                ),
+                elevation = null
             ) {
-                Column {
-                    Text(
-                        "MI CUENTA",
-                        color = Color(0xFF20222E),
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Divider(color = Color(0xFFD5D9E0), thickness = 1.dp)
-                }
-            }
-
-            Spacer(Modifier.height(10.dp))
-
-            // DATOS
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 22.dp)
-            ) {
-                // MAIL
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 6.dp)
+                    Modifier
+                        .fillMaxSize()
+                        .padding(start = 8.dp, end = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Filled.Email,
-                        contentDescription = "Email",
-                        tint = Color(0xFF3677E0),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(7.dp))
-                    Text(
-                        email,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-                        color = Color(0xFF384358)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // USUARIO
-                AnimatedVisibility(
-                    visible = !editandoNombre,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .background(
+                                brush = Brush.linearGradient(listOf(blue, violet)),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "Nombre de usuario:",
-                            fontSize = 15.sp,
-                            color = Color(0xFF7D8591)
+                            text = if (nombreUsuario.isNotEmpty()) nombreUsuario.take(1).uppercase() else "",
+                            color = Color.White,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                        Spacer(Modifier.width(7.dp))
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column(Modifier.weight(1f)) {
                         Text(
                             nombreUsuario,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp,
-                            color = Color(0xFF1B2333)
+                            fontSize = 20.sp,
+                            color = blue,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                        Spacer(Modifier.weight(1f))
-                        TextButton(
-                            onClick = {
-                                editandoNombre = true
-                                nuevoNombre = TextFieldValue(nombreUsuario)
-                            },
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
-                        ) {
-                            Icon(Icons.Filled.Edit, contentDescription = "Editar", modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(3.dp))
-                            Text("Cambiar", fontSize = 14.sp)
-                        }
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = editandoNombre,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Column(Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = nuevoNombre,
-                            onValueChange = { nuevoNombre = it },
-                            label = { Text("Nuevo nombre de usuario") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        if (!errorNombre.isNullOrBlank()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.Email,
+                                contentDescription = "Email",
+                                tint = blue,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = errorNombre ?: "",
-                                color = MaterialTheme.colorScheme.error,
+                                email,
+                                fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
-                                modifier = Modifier.padding(top = 2.dp, start = 2.dp)
+                                color = blue.copy(alpha = 0.73f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
+                    }
+                }
+            }
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.align(Alignment.End).padding(top = 8.dp)
-                        ) {
-                            TextButton(onClick = {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            AnimatedVisibility(
+                visible = !editandoNombre,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        editandoNombre = true
+                        nuevoNombre = TextFieldValue(nombreUsuario)
+                    },
+                    shape = RoundedCornerShape(18.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp),
+                    border = BorderStroke(2.dp, blue),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = blue
+                    ),
+                    elevation = null
+                ) {
+                    Row(
+                        Modifier.fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.Edit, contentDescription = "Editar", modifier = Modifier.size(26.dp), tint = blue)
+                        Spacer(Modifier.width(16.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Nombre de usuario", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = blue)
+                            Text(
+                                text = nombreUsuario,
+                                fontSize = 14.sp,
+                                color = blue.copy(alpha = 0.80f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text("Cambiar", fontSize = 15.sp, color = blue, fontWeight = FontWeight.Medium)
+                    }
+                }
+            }
+            AnimatedVisibility(
+                visible = editandoNombre,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = nuevoNombre,
+                        onValueChange = { nuevoNombre = it },
+                        label = { Text("Nuevo nombre de usuario", color = mutedText) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            containerColor = Color.Transparent,
+                            unfocusedBorderColor = blue,
+                            focusedBorderColor = blue,
+                            cursorColor = blue,
+                        )
+                    )
+                    if (!errorNombre.isNullOrBlank()) {
+                        Text(
+                            text = errorNombre ?: "",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 2.dp, start = 2.dp)
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(18.dp),
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(top = 10.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
                                 editandoNombre = false
                                 viewModel.resetErrorCambioNombre()
-                            }) {
-                                Text("Cancelar")
-                            }
-                            Button(onClick = {
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, mutedText),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.Transparent
+                            )
+                        ) {
+                            Text("Cancelar", color = mutedText)
+                        }
+                        Button(
+                            onClick = {
                                 viewModel.cambiarNombreUsuario(nuevoNombre.text)
-                            }) {
-                                Text("Guardar")
-                            }
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = blue)
+                        ) {
+                            Text("Guardar", color = Color.White)
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(22.dp))
-                Divider(color = Color(0xFFE5E7ED), thickness = 1.dp)
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // BOTÓN: RESTABLECER PASSWORD
-                Button(
-                    onClick = { viewModel.enviarCorreoResetPassword() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = resetTimer == 0,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4767C3)),
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    if (resetTimer > 0) {
-                        Text(
-                            "Restablecer contraseña (${resetTimer}s)",
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    } else {
-                        Text(
-                            "Restablecer contraseña",
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-
-                // Mensaje de éxito
-                AnimatedVisibility(
-                    visible = showMensajeReset,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Text(
-                        "Correo de restablecimiento de contraseña enviado.",
-                        color = Color(0xFF207A39),
-                        fontSize = 15.sp,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // BOTÓN: CERRAR SESIÓN
-                Button(
-                    onClick = { viewModel.confirmarCerrarSesionDialog(true) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4767C3)),
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    Icon(Icons.Filled.Logout, contentDescription = "Cerrar sesión", tint = Color.White)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Cerrar sesión", color = Color.White, fontWeight = FontWeight.SemiBold)
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // BOTÓN: ELIMINAR CUENTA
-                Button(
-                    onClick = { viewModel.confirmarEliminarCuentaDialog(true) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF74B4B)),
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar cuenta", tint = Color.White)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Eliminar cuenta", color = Color.White, fontWeight = FontWeight.SemiBold)
-                }
             }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            AccountMenuButton(
+                title = if (resetTimer > 0) "Restablecer contraseña (${resetTimer}s)" else "Restablecer contraseña",
+                icon = Icons.Filled.Email,
+                description = "Te enviaremos un correo de restablecimiento",
+                borderColor = Color(0xFF388E3C),
+                onClick = { viewModel.enviarCorreoResetPassword() },
+                enabled = resetTimer == 0,
+                lightText = lightText
+            )
+            AnimatedVisibility(
+                visible = showMensajeReset,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Text(
+                    "Correo de restablecimiento de contraseña enviado.",
+                    color = Color(0xFF207A39),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(18.dp))
+
+            AccountMenuButton(
+                title = "Cerrar sesión",
+                icon = Icons.Filled.Logout,
+                description = "Salir de tu cuenta y de todos tus dispositivos",
+                borderColor = violet,
+                onClick = { viewModel.confirmarCerrarSesionDialog(true) },
+                lightText = lightText
+            )
+            Spacer(modifier = Modifier.height(18.dp))
+            AccountMenuButton(
+                title = "Eliminar cuenta",
+                icon = Icons.Filled.Delete,
+                description = "Esta acción es irreversible. Todos tus datos serán eliminados.",
+                borderColor = Color(0xFFF44336),
+                onClick = { viewModel.confirmarEliminarCuentaDialog(true) },
+                lightText = lightText
+            )
+        }
+
+        if (confirmarCerrarSesion) {
+            AlertDialog(
+                onDismissRequest = { viewModel.confirmarCerrarSesionDialog(false) },
+                title = { Text("Cerrar sesión", color = lightText) },
+                text = { Text("¿Estás seguro de que quieres cerrar sesión?", color = mutedText) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.cerrarSesion()
+                        viewModel.confirmarCerrarSesionDialog(false)
+                    }) {
+                        Text("Sí", color = blue)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        viewModel.confirmarCerrarSesionDialog(false)
+                    }) {
+                        Text("Cancelar", color = mutedText)
+                    }
+                },
+                containerColor = Color(0xFF22243B)
+            )
+        }
+
+        if (confirmarEliminarCuenta) {
+            AlertDialog(
+                onDismissRequest = { viewModel.confirmarEliminarCuentaDialog(false) },
+                title = { Text("Eliminar cuenta", color = lightText) },
+                text = { Text("Se eliminarán todos tus partidos creados. ¿Deseas continuar?", color = mutedText) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.eliminarCuentaYDatos()
+                        viewModel.confirmarEliminarCuentaDialog(false)
+                    }) {
+                        Text("Eliminar", color = Color(0xFFF44336))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        viewModel.confirmarEliminarCuentaDialog(false)
+                    }) {
+                        Text("Cancelar", color = mutedText)
+                    }
+                },
+                containerColor = Color(0xFF22243B)
+            )
         }
     }
+}
 
-    // DIALOGOS
-    if (confirmarCerrarSesion) {
-        AlertDialog(
-            onDismissRequest = { viewModel.confirmarCerrarSesionDialog(false) },
-            title = { Text("Cerrar sesión") },
-            text = { Text("¿Estás seguro de que quieres cerrar sesión?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.cerrarSesion()
-                    viewModel.confirmarCerrarSesionDialog(false)
-                }) {
-                    Text("Sí")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    viewModel.confirmarCerrarSesionDialog(false)
-                }) {
-                    Text("Cancelar")
-                }
+@Composable
+fun AccountMenuButton(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    description: String,
+    borderColor: Color,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    lightText: Color = Color.White
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(78.dp),
+        border = BorderStroke(2.dp, borderColor),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = borderColor
+        ),
+        elevation = null
+    ) {
+        Row(
+            Modifier
+                .fillMaxSize()
+                .padding(start = 8.dp, end = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                icon,
+                contentDescription = title,
+                tint = borderColor,
+                modifier = Modifier
+                    .size(30.dp)
+                    .padding(end = 16.dp)
+            )
+            Column(
+                Modifier.weight(1f)
+            ) {
+                Text(
+                    title,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = borderColor
+                )
+                Text(
+                    text = description,
+                    fontSize = 13.sp,
+                    color = lightText.copy(alpha = 0.65f),
+                    maxLines = 2
+                )
             }
-        )
-    }
-
-    if (confirmarEliminarCuenta) {
-        AlertDialog(
-            onDismissRequest = { viewModel.confirmarEliminarCuentaDialog(false) },
-            title = { Text("Eliminar cuenta") },
-            text = { Text("Se eliminarán todos tus partidos creados. ¿Deseas continuar?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.eliminarCuentaYDatos()
-                    viewModel.confirmarEliminarCuentaDialog(false)
-                }) {
-                    Text("Eliminar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    viewModel.confirmarEliminarCuentaDialog(false)
-                }) {
-                    Text("Cancelar")
-                }
-            }
-        )
+        }
     }
 }
