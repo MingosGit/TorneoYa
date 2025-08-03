@@ -31,16 +31,20 @@ class AdministrarPartidoOnlineViewModel(
     private val _jugadoresB = MutableStateFlow<List<JugadorFirebase>>(emptyList())
     val jugadoresB: StateFlow<List<JugadorFirebase>> = _jugadoresB.asStateFlow()
 
+    private val _jugadoresManualA = MutableStateFlow<List<JugadorFirebase>>(emptyList())
+    val jugadoresManualA: StateFlow<List<JugadorFirebase>> = _jugadoresManualA.asStateFlow()
+
+    private val _jugadoresManualB = MutableStateFlow<List<JugadorFirebase>>(emptyList())
+    val jugadoresManualB: StateFlow<List<JugadorFirebase>> = _jugadoresManualB.asStateFlow()
+
     private val _goles = MutableStateFlow<List<GoleadorFirebase>>(emptyList())
     val goles: StateFlow<List<GoleadorFirebase>> = _goles.asStateFlow()
 
-    // Para edición de nombre de equipo
     private val _nombreEquipoAEditable = MutableStateFlow("")
     val nombreEquipoAEditable: StateFlow<String> = _nombreEquipoAEditable.asStateFlow()
     private val _nombreEquipoBEditable = MutableStateFlow("")
     val nombreEquipoBEditable: StateFlow<String> = _nombreEquipoBEditable.asStateFlow()
 
-    // NUEVO: Campos editables para fecha/hora/duración/partes/descanso
     private val _fechaEditable = MutableStateFlow("")
     val fechaEditable: StateFlow<String> = _fechaEditable.asStateFlow()
     private val _horaEditable = MutableStateFlow("")
@@ -69,10 +73,15 @@ class AdministrarPartidoOnlineViewModel(
             _equipoB.value = p?.equipoBId?.let { repo.obtenerEquipo(it) }
             _jugadoresA.value = p?.jugadoresEquipoA?.let { getJugadoresByUidList(it) } ?: emptyList()
             _jugadoresB.value = p?.jugadoresEquipoB?.let { getJugadoresByUidList(it) } ?: emptyList()
+            _jugadoresManualA.value = p?.nombresManualEquipoA?.map { nombre ->
+                JugadorFirebase(uid = "", nombre = nombre, email = "", avatarUrl = null)
+            } ?: emptyList()
+            _jugadoresManualB.value = p?.nombresManualEquipoB?.map { nombre ->
+                JugadorFirebase(uid = "", nombre = nombre, email = "", avatarUrl = null)
+            } ?: emptyList()
             _goles.value = obtenerGoleadoresPartido(partidoUid)
             _nombreEquipoAEditable.value = _equipoA.value?.nombre ?: ""
             _nombreEquipoBEditable.value = _equipoB.value?.nombre ?: ""
-            // NUEVO: cargar campos editables partido
             _fechaEditable.value = p?.fecha ?: ""
             _horaEditable.value = p?.horaInicio ?: ""
             _numeroPartesEditable.value = p?.numeroPartes ?: 2
@@ -120,12 +129,13 @@ class AdministrarPartidoOnlineViewModel(
             g?.copy(uid = doc.id)
         }
     }
-
     fun agregarGol(
         equipoUid: String,
         jugadorUid: String,
         minuto: Int?,
-        asistenciaUid: String?
+        asistenciaUid: String?,
+        jugadorNombreManual: String? = null,
+        asistenciaNombreManual: String? = null
     ) {
         viewModelScope.launch {
             val partido = _partido.value ?: return@launch
@@ -135,7 +145,35 @@ class AdministrarPartidoOnlineViewModel(
                 "equipoUid" to equipoUid,
                 "jugadorUid" to jugadorUid,
                 "minuto" to minuto,
-                "asistenciaJugadorUid" to asistenciaUid
+                "asistenciaJugadorUid" to asistenciaUid,
+                "jugadorNombreManual" to jugadorNombreManual,
+                "asistenciaNombreManual" to asistenciaNombreManual
+            )
+            val doc = db.collection("goleadores").document()
+            golMap["uid"] = doc.id
+            doc.set(golMap).await()
+            actualizarMarcadorPartido()
+            recargarTodo()
+        }
+    }
+
+    fun agregarGolManual(
+        equipoUid: String,
+        nombreJugadorManual: String,
+        minuto: Int?,
+        nombreAsistenteManual: String?
+    ) {
+        viewModelScope.launch {
+            val partido = _partido.value ?: return@launch
+            val db = FirebaseFirestore.getInstance()
+            val golMap = hashMapOf(
+                "partidoUid" to partido.uid,
+                "equipoUid" to equipoUid,
+                "jugadorUid" to "",
+                "jugadorManual" to nombreJugadorManual,
+                "minuto" to minuto,
+                "asistenciaJugadorUid" to "",
+                "asistenciaManual" to (nombreAsistenteManual ?: "")
             )
             val doc = db.collection("goleadores").document()
             golMap["uid"] = doc.id
@@ -203,7 +241,6 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
-    // -------- NUEVO: ACTUALIZAR PARTIDO ---------
     fun actualizarDatosPartido() {
         val fecha = _fechaEditable.value.trim()
         val hora = _horaEditable.value.trim()

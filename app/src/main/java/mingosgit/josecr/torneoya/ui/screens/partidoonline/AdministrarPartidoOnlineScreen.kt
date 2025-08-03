@@ -72,6 +72,14 @@ fun AdministrarPartidoOnlineScreen(
     var pickedHour by remember { mutableStateOf(horaEditable) }
 
     var esCreador by remember { mutableStateOf(false) }
+// Convierte los nombres manuales en objetos JugadorFirebase falsos
+    val jugadoresManualA = partido?.nombresManualEquipoA?.map { nombre ->
+        JugadorFirebase(uid = "", nombre = nombre, email = "")
+    } ?: emptyList()
+
+    val jugadoresManualB = partido?.nombresManualEquipoB?.map { nombre ->
+        JugadorFirebase(uid = "", nombre = nombre, email = "")
+    } ?: emptyList()
 
     // --- Detectar si es creador ---
     LaunchedEffect(partidoUid, usuarioUid) {
@@ -365,7 +373,11 @@ fun AdministrarPartidoOnlineScreen(
 
             item {
                 // Jugador (solo del equipo seleccionado)
-                val jugadoresActual = if (equipoSeleccionado == "A") jugadoresA else jugadoresB
+// Jugador (equipo seleccionado: online + manuales)
+                val jugadoresOnline = if (equipoSeleccionado == "A") jugadoresA else jugadoresB
+                val jugadoresManual = if (equipoSeleccionado == "A") jugadoresManualA else jugadoresManualB
+                val todosLosJugadores = jugadoresOnline + jugadoresManual
+
                 ExposedDropdownMenuBox(
                     expanded = expandedJugador,
                     onExpandedChange = { expandedJugador = !expandedJugador }
@@ -382,24 +394,48 @@ fun AdministrarPartidoOnlineScreen(
                         expanded = expandedJugador,
                         onDismissRequest = { expandedJugador = false }
                     ) {
-                        jugadoresActual.forEach { jugador ->
-                            DropdownMenuItem(
-                                text = { Text(jugador.nombre) },
-                                onClick = {
-                                    jugadorSeleccionado = jugador
-                                    if (asistenciaSeleccionada?.uid == jugador.uid) asistenciaSeleccionada = null
-                                    expandedJugador = false
-                                }
-                            )
+                        // Primero online
+                        if (jugadoresOnline.isNotEmpty()) {
+                            jugadoresOnline.forEach { jugador ->
+                                DropdownMenuItem(
+                                    text = { Text(jugador.nombre) },
+                                    onClick = {
+                                        jugadorSeleccionado = jugador
+                                        asistenciaSeleccionada = null
+                                        expandedJugador = false
+                                    }
+                                )
+                            }
+                        }
+                        // Luego manuales (distínguelos visualmente si quieres)
+                        if (jugadoresManual.isNotEmpty()) {
+                            if (jugadoresOnline.isNotEmpty()) {
+                                Divider()
+                            }
+                            jugadoresManual.forEach { jugador ->
+                                DropdownMenuItem(
+                                    text = { Text(jugador.nombre + " (manual)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    onClick = {
+                                        jugadorSeleccionado = jugador
+                                        asistenciaSeleccionada = null
+                                        expandedJugador = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             item {
                 // Minuto y Asistencia juntos
-                val jugadoresActual = if (equipoSeleccionado == "A") jugadoresA else jugadoresB
+                // Minuto y Asistencia juntos
+                val jugadoresOnline = if (equipoSeleccionado == "A") jugadoresA else jugadoresB
+                val jugadoresManual = if (equipoSeleccionado == "A") jugadoresManualA else jugadoresManualB
+                val asistentesPosiblesOnline = jugadoresOnline.filter { it.uid != jugadorSeleccionado?.uid }
+                val asistentesPosiblesManual = jugadoresManual.filter { it.nombre != jugadorSeleccionado?.nombre }
                 Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = minuto,
@@ -414,10 +450,9 @@ fun AdministrarPartidoOnlineScreen(
                         expanded = expandedAsistente,
                         onExpandedChange = { expandedAsistente = !expandedAsistente }
                     ) {
-                        val asistentesPosibles = jugadoresActual.filter { it.uid != jugadorSeleccionado?.uid }
                         OutlinedTextField(
                             readOnly = true,
-                            value = asistentesPosibles.find { it.uid == asistenciaSeleccionada?.uid }?.nombre ?: "",
+                            value = asistenciaSeleccionada?.nombre ?: "",
                             onValueChange = {},
                             label = { Text("Asistencia (opcional)") },
                             placeholder = { Text("Sin asistencia") },
@@ -435,18 +470,37 @@ fun AdministrarPartidoOnlineScreen(
                                     expandedAsistente = false
                                 }
                             )
-                            asistentesPosibles.forEach { jugador ->
-                                DropdownMenuItem(
-                                    text = { Text(jugador.nombre) },
-                                    onClick = {
-                                        asistenciaSeleccionada = jugador
-                                        expandedAsistente = false
-                                    }
-                                )
+                            // Online
+                            if (asistentesPosiblesOnline.isNotEmpty()) {
+                                asistentesPosiblesOnline.forEach { jugador ->
+                                    DropdownMenuItem(
+                                        text = { Text(jugador.nombre) },
+                                        onClick = {
+                                            asistenciaSeleccionada = jugador
+                                            expandedAsistente = false
+                                        }
+                                    )
+                                }
+                            }
+                            // Manuales
+                            if (asistentesPosiblesManual.isNotEmpty()) {
+                                if (asistentesPosiblesOnline.isNotEmpty()) {
+                                    Divider()
+                                }
+                                asistentesPosiblesManual.forEach { jugador ->
+                                    DropdownMenuItem(
+                                        text = { Text(jugador.nombre + " (manual)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                        onClick = {
+                                            asistenciaSeleccionada = jugador
+                                            expandedAsistente = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -455,16 +509,28 @@ fun AdministrarPartidoOnlineScreen(
                     onClick = {
                         val equipoUid = if (equipoSeleccionado == "A") equipoA?.uid else equipoB?.uid
                         if (equipoUid != null && jugadorSeleccionado != null) {
-                            viewModel.agregarGol(
-                                equipoUid = equipoUid,
-                                jugadorUid = jugadorSeleccionado!!.uid,
-                                minuto = minuto.toIntOrNull(),
-                                asistenciaUid = asistenciaSeleccionada?.uid
-                            )
+                            if (jugadorSeleccionado!!.uid.isNotBlank()) {
+                                // Online
+                                viewModel.agregarGol(
+                                    equipoUid = equipoUid,
+                                    jugadorUid = jugadorSeleccionado!!.uid,
+                                    minuto = minuto.toIntOrNull(),
+                                    asistenciaUid = asistenciaSeleccionada?.uid.takeIf { asistenciaSeleccionada?.uid?.isNotBlank() == true }
+                                )
+                            } else {
+                                // Manual
+                                viewModel.agregarGolManual(
+                                    equipoUid = equipoUid,
+                                    nombreJugadorManual = jugadorSeleccionado!!.nombre,
+                                    minuto = minuto.toIntOrNull(),
+                                    nombreAsistenteManual = asistenciaSeleccionada?.nombre
+                                )
+                            }
                             jugadorSeleccionado = null
                             asistenciaSeleccionada = null
                             minuto = ""
                         }
+
                     },
                     enabled = jugadorSeleccionado != null && minuto.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()

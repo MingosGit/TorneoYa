@@ -1,18 +1,27 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.firebase.GoleadorFirebase
 import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @Composable
 fun PartidoTabEventosOnline(
@@ -35,12 +44,10 @@ fun PartidoTabEventosOnline(
         isLoading = true
         scope.launch {
             val db = FirebaseFirestore.getInstance()
-            // Obtener partido (solo los uids de equipos)
             val snap = db.collection("partidos").document(partidoUid).get().await()
             equipoAUid = snap.getString("equipoAId")
             equipoBUid = snap.getString("equipoBId")
 
-            // Obtener nombres equipos (por si cambian)
             equipoAUid?.let {
                 val equipoA = db.collection("equipos").document(it).get().await().toObject(EquipoFirebase::class.java)
                 if (equipoA?.nombre?.isNotBlank() == true) nombreA = equipoA.nombre
@@ -50,13 +57,11 @@ fun PartidoTabEventosOnline(
                 if (equipoB?.nombre?.isNotBlank() == true) nombreB = equipoB.nombre
             }
 
-            // Obtener todos los goles de ese partido
             val goles = db.collection("goleadores")
                 .whereEqualTo("partidoUid", partidoUid)
                 .get().await()
                 .documents.mapNotNull { it.toObject(GoleadorFirebase::class.java)?.copy(uid = it.id) }
 
-            // Mapear jugadorUid -> nombre
             val jugadorUids = goles.map { it.jugadorUid } + goles.mapNotNull { it.asistenciaJugadorUid }
             val jugadoresDocs = jugadorUids.distinct()
                 .filter { it.isNotBlank() }
@@ -64,7 +69,6 @@ fun PartidoTabEventosOnline(
                     val jugSnap = db.collection("jugadores").document(uid).get().await()
                     if (jugSnap.exists()) uid to (jugSnap.getString("nombre") ?: "") else null
                 }
-            // Usuarios fallback (por si no existe en jugadores)
             val faltantes = jugadorUids.distinct().filter { it.isNotBlank() && jugadoresDocs.none { pair -> pair.first == it } }
             val usuariosDocs = faltantes.mapNotNull { uid ->
                 val userSnap = db.collection("usuarios").document(uid).get().await()
@@ -72,23 +76,35 @@ fun PartidoTabEventosOnline(
             }
             val nombresMap = (jugadoresDocs + usuariosDocs).toMap()
 
-            // Construir lista de eventos
             eventos = goles
                 .sortedBy { it.minuto ?: Int.MAX_VALUE }
                 .map { gol ->
                     GolEvento(
                         equipoUid = gol.equipoUid,
-                        jugador = nombresMap[gol.jugadorUid] ?: "Desconocido",
+                        jugador = if (!gol.jugadorUid.isNullOrBlank()) {
+                            nombresMap[gol.jugadorUid] ?: gol.jugadorNombreManual ?: "Desconocido"
+                        } else {
+                            gol.jugadorNombreManual ?: "Desconocido"
+                        },
                         minuto = gol.minuto,
-                        asistente = gol.asistenciaJugadorUid?.let { nombresMap[it] },
+                        asistente = when {
+                            !gol.asistenciaJugadorUid.isNullOrBlank() -> nombresMap[gol.asistenciaJugadorUid] ?: gol.asistenciaNombreManual ?: "Desconocido"
+                            !gol.asistenciaNombreManual.isNullOrBlank() -> gol.asistenciaNombreManual
+                            else -> null
+                        }
                     )
                 }
+
             isLoading = false
         }
     }
 
     // UI
-    Column(Modifier.fillMaxWidth().padding(12.dp)) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -96,46 +112,98 @@ fun PartidoTabEventosOnline(
             IconButton(
                 onClick = { recargar() }
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = "Recargar goles")
+                Icon(Icons.Default.Refresh, contentDescription = "Recargar goles", tint = TorneoYaPalette.blue)
             }
         }
 
         if (isLoading) {
             Box(
-                Modifier.fillMaxWidth().padding(top = 32.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 32.dp),
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
             return@Column
         }
 
         if (eventos.isEmpty()) {
-            Text("Sin eventos registrados", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.align(Alignment.CenterHorizontally))
+            Text(
+                "Sin eventos registrados",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TorneoYaPalette.mutedText,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
             return@Column
         }
 
         eventos.forEach { evento ->
             val isEquipoA = evento.equipoUid == equipoAUid
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp),
-                horizontalAlignment = if (isEquipoA) Alignment.Start else Alignment.End
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = if (isEquipoA) Arrangement.Start else Arrangement.End
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            brush = if (isEquipoA)
+                                Brush.horizontalGradient(listOf(TorneoYaPalette.blue.copy(alpha = 0.18f), Color.Transparent))
+                            else
+                                Brush.horizontalGradient(listOf(Color.Transparent, TorneoYaPalette.violet.copy(alpha = 0.18f))),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .border(
+                            width = 2.dp,
+                            brush = if (isEquipoA)
+                                Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet))
+                            else
+                                Brush.horizontalGradient(listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(vertical = 11.dp, horizontal = 16.dp)
                 ) {
-                    Text("⚽", fontSize = MaterialTheme.typography.titleLarge.fontSize)
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        evento.jugador + (evento.minuto?.let { "  ${it}'" } ?: ""),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-                if (!evento.asistente.isNullOrBlank()) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🅰️", fontSize = MaterialTheme.typography.titleMedium.fontSize)
-                        Spacer(Modifier.width(4.dp))
-                        Text(evento.asistente, style = MaterialTheme.typography.bodyMedium)
+                    Column(
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "⚽",
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(end = 6.dp)
+                            )
+                            Text(
+                                text = evento.jugador,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isEquipoA) TorneoYaPalette.blue else TorneoYaPalette.violet,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+                            evento.minuto?.let {
+                                Text(
+                                    text = "${it}'",
+                                    color = TorneoYaPalette.mutedText,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(start = 2.dp)
+                                )
+                            }
+                        }
+                        if (!evento.asistente.isNullOrBlank()) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(top = 2.dp)
+                            ) {
+                                Text("🅰️", fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
+                                Text(
+                                    text = evento.asistente!!,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = TorneoYaPalette.accent
+                                )
+                            }
+                        }
                     }
                 }
             }

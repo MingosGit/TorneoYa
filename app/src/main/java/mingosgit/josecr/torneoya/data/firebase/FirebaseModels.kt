@@ -94,8 +94,12 @@ data class GoleadorFirebase(
     val equipoUid: String = "",
     val jugadorUid: String = "",
     val minuto: Int? = null,
-    val asistenciaJugadorUid: String? = null
+    val asistenciaJugadorUid: String? = null,
+    val jugadorNombreManual: String? = null,
+    val asistenciaNombreManual: String? = null
 )
+
+
 
 @IgnoreExtraProperties
 data class PartidoEquipoJugadorFirebase(
