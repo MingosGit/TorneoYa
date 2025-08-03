@@ -1,11 +1,14 @@
 package mingosgit.josecr.torneoya.ui.screens.amigos
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,15 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,25 +36,36 @@ fun SolicitudesPendientesScreen(
 ) {
     val solicitudes by amigosViewModel.solicitudes.collectAsState()
 
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
+    )
+
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "Solicitudes de amistad",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = MaterialTheme.colorScheme.primary
+                        fontWeight = FontWeight.Black,
+                        fontSize = 23.sp,
+                        color = Color(0xFFF7F7FF)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color(0xFF8F5CFF)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = Color(0xFF1B1D29)
                 )
             )
         }
@@ -60,12 +74,7 @@ fun SolicitudesPendientesScreen(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(
-                    Brush.verticalGradient(
-                        0f to MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
-                        1f to MaterialTheme.colorScheme.background
-                    )
-                )
+                .background(modernBackground)
         ) {
             if (solicitudes.isEmpty()) {
                 Column(
@@ -75,17 +84,41 @@ fun SolicitudesPendientesScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFF296DFF).copy(alpha = 0.13f),
+                        shadowElevation = 0.dp,
+                        modifier = Modifier.size(80.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            tint = Color(0xFF296DFF),
+                            modifier = Modifier.padding(22.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(20.dp))
                     Text(
                         "No tienes solicitudes pendientes",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f)
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 19.sp,
+                        color = Color(0xFFB7B7D1)
+                    )
+                    Spacer(Modifier.height(9.dp))
+                    Text(
+                        "Cuando alguien te envíe una solicitud de amistad, aparecerá aquí.",
+                        fontSize = 15.sp,
+                        color = Color(0xFF8F5CFF),
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = 21.sp,
+                        modifier = Modifier.padding(horizontal = 15.dp)
                     )
                 }
             } else {
                 LazyColumn(
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 6.dp, vertical = 16.dp)
+                        .padding(horizontal = 7.dp, vertical = 18.dp)
                 ) {
                     items(solicitudes) { solicitud ->
                         SolicitudItem(
@@ -93,7 +126,7 @@ fun SolicitudesPendientesScreen(
                             onAceptar = { amigosViewModel.aceptarSolicitud(solicitud) },
                             onRechazar = { amigosViewModel.rechazarSolicitud(solicitud.uid) }
                         )
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(13.dp))
                     }
                 }
             }
@@ -107,13 +140,20 @@ fun SolicitudItem(
     onAceptar: () -> Unit,
     onRechazar: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.Transparent),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(3.dp)
+            .clip(RoundedCornerShape(17.dp))
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                ),
+                shape = RoundedCornerShape(17.dp)
+            )
+            .background(Color(0xFF1B1E2E)),
+        color = Color.Transparent,
+        shadowElevation = 3.dp
     ) {
         Row(
             Modifier
@@ -121,21 +161,28 @@ fun SolicitudItem(
                 .padding(vertical = 16.dp, horizontal = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Inicial circular
+            // Inicial circular con gradiente
             Box(
                 modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        Brush.linearGradient(
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(
                             listOf(TorneoYaPalette.yellow, TorneoYaPalette.blue)
+                        ),
+                        shape = CircleShape
+                    )
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
                         )
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     usuario.nombreUsuario.take(1).uppercase(),
-                    fontWeight = FontWeight.ExtraBold,
+                    fontWeight = FontWeight.Black,
                     color = Color.White,
                     fontSize = 22.sp
                 )
@@ -147,41 +194,54 @@ fun SolicitudItem(
             ) {
                 Text(
                     usuario.nombreUsuario,
-                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    usuario.email,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    fontSize = 17.sp,
+                    color = Color(0xFFF7F7FF)
                 )
             }
-            Spacer(Modifier.width(10.dp))
-            OutlinedButton(
+            Spacer(Modifier.width(12.dp))
+            // Icono aceptar
+            IconButton(
                 onClick = onAceptar,
-                border = BorderStroke(1.4.dp, Color(0xFF27ae60)),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color(0xFF27ae60)
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.height(38.dp)
+                modifier = Modifier
+                    .size(32.dp)
+                    .border(
+                        2.dp,
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF43e97b), TorneoYaPalette.violet)
+                        ),
+                        shape = CircleShape
+                    )
+                    .background(Color(0xFF212442), CircleShape)
             ) {
-                Text("Aceptar", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Aceptar",
+                    tint = Color(0xFF43e97b),
+                    modifier = Modifier.size(18.dp)
+                )
             }
-            Spacer(Modifier.width(8.dp))
-            OutlinedButton(
+            Spacer(Modifier.width(25.dp)) // Más separación entre aceptar y rechazar
+            // Icono rechazar
+            IconButton(
                 onClick = onRechazar,
-                border = BorderStroke(1.4.dp, Color(0xFFc0392b)),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color(0xFFc0392b)
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.height(38.dp)
+                modifier = Modifier
+                    .size(32.dp)
+                    .border(
+                        2.dp,
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFFc0392b), TorneoYaPalette.violet)
+                        ),
+                        shape = CircleShape
+                    )
+                    .background(Color(0xFF212442), CircleShape)
             ) {
-                Text("Rechazar", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Rechazar",
+                    tint = Color(0xFFc0392b),
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }

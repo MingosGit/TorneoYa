@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +23,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -30,23 +30,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
-import kotlin.math.abs
-
-// --- Generador determinista de color desde string ---
-fun randomColorFromString(str: String): Color {
-    val hash = abs(str.hashCode())
-    // Solo para que sea vivo, forzamos valores decentes
-    val r = 120 + (hash % 110)
-    val g = 60 + ((hash / 2) % 130)
-    val b = 150 + ((hash / 3) % 80)
-    return Color(r, g, b)
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -59,53 +49,76 @@ fun AmigosScreen(
     agregarAmigoViewModel: AgregarAmigoViewModel = viewModel(
         factory = AgregarAmigoViewModel.Factory()
     ),
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
     LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() }
     LaunchedEffect(Unit) { amigosViewModel.cargarAmigosYSolicitudes() }
 
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
+    )
+
     if (!sesionOnlineActiva) {
         Box(
             Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.surface)
-                    )
-                ),
+                .background(modernBackground),
             contentAlignment = Alignment.Center
         ) {
-            Card(
-                modifier = Modifier
-                    .padding(32.dp)
-                    .shadow(12.dp, RoundedCornerShape(18.dp)),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                shadowElevation = 12.dp,
+                color = Color(0xFF212442).copy(alpha = 0.94f),
+                modifier = Modifier.padding(32.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(32.dp)
+                    modifier = Modifier.padding(34.dp)
                 ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFF296DFF).copy(alpha = 0.16f),
+                        modifier = Modifier.size(75.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.PersonAdd,
+                            contentDescription = null,
+                            tint = Color(0xFF8F5CFF),
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(18.dp))
                     Text(
-                        "Necesitas iniciar sesión para acceder a tus amigos",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 32.dp)
+                        "Inicia sesión para acceder a tus amigos",
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 18.dp),
+                        lineHeight = 28.sp
                     )
                     Button(
                         onClick = { navController.navigate("login") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(11.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(15.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF))
                     ) {
-                        Text("Iniciar sesión")
+                        Text("Iniciar sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(10.dp))
                     OutlinedButton(
                         onClick = { navController.navigate("register") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(11.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(15.dp),
                     ) {
-                        Text("Crear cuenta")
+                        Text("Crear cuenta", color = Color(0xFF296DFF), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     }
                 }
             }
@@ -122,73 +135,77 @@ fun AmigosScreen(
     var showSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
-
     var expandedUid by remember { mutableStateOf<String?>(null) }
+    var showEliminarDialog by remember { mutableStateOf(false) }
+    var uidAEliminar by remember { mutableStateOf<String?>(null) }
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
-                        MaterialTheme.colorScheme.background
-                    )
-                )
-            )
+            .background(modernBackground)
     ) {
         Column(Modifier.fillMaxSize()) {
-            // TopBar moderna, sticky
-            Surface(
-                tonalElevation = 3.dp,
-                shadowElevation = 0.dp,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 18.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 18.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Text(
+                    "Amigos",
+                    fontSize = 27.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    modifier = Modifier.weight(1f)
+                )
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = CircleShape
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .clickable { navController.navigate("solicitudes_pendientes") },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        "Amigos",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f)
-                    )
                     if (solicitudes.isNotEmpty()) {
                         BadgedBox(
                             badge = {
                                 Badge(
-                                    containerColor = MaterialTheme.colorScheme.error,
+                                    containerColor = TorneoYaPalette.violet,
                                     contentColor = Color.White,
-                                    modifier = Modifier.shadow(4.dp, CircleShape)
                                 ) {
                                     Text("${solicitudes.size}")
                                 }
                             }
                         ) {
-                            IconButton(onClick = { navController.navigate("solicitudes_pendientes") }) {
-                                Icon(
-                                    imageVector = Icons.Default.Notifications,
-                                    contentDescription = "Solicitudes de amistad",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    } else {
-                        IconButton(onClick = { navController.navigate("solicitudes_pendientes") }) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Solicitudes de amistad",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = Color(0xFF8F5CFF),
+                                modifier = Modifier.size(25.dp)
                             )
                         }
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Solicitudes de amistad",
+                            tint = Color(0xFF8F5CFF),
+                            modifier = Modifier.size(25.dp)
+                        )
                     }
                 }
             }
-
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(12.dp))
 
             if (amigos.isEmpty()) {
                 Box(
@@ -199,8 +216,9 @@ fun AmigosScreen(
                 ) {
                     Text(
                         "No tienes amigos todavía",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.44f),
-                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFFB7B7D1),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp
                     )
                 }
             } else {
@@ -211,69 +229,64 @@ fun AmigosScreen(
                         .padding(horizontal = 10.dp)
                 ) {
                     items(amigos) { amigo ->
-                        // Color aleatorio a la izquierda, morado a la derecha
-                        val leftColor = remember(amigo.uid) { randomColorFromString(amigo.uid) }
-                        val rightColor = TorneoYaPalette.violet
-                        Card(
-                            Modifier
+                        Surface(
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp, horizontal = 6.dp)
+                                .clip(RoundedCornerShape(17.dp))
                                 .border(
                                     width = 2.dp,
                                     brush = Brush.horizontalGradient(
-                                        listOf(leftColor, rightColor)
+                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
                                     ),
-                                    shape = RoundedCornerShape(20.dp)
+                                    shape = RoundedCornerShape(17.dp)
                                 )
+                                .background(Color(0xFF23273D))
                                 .combinedClickable(
                                     onClick = {},
-                                    onLongClick = {
-                                        expandedUid = amigo.uid
-                                    }
+                                    onLongClick = { expandedUid = amigo.uid }
                                 ),
-                            shape = RoundedCornerShape(20.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                            color = Color.Transparent,
+                            shadowElevation = 0.dp
                         ) {
                             Row(
                                 Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surface)
                                     .padding(vertical = 14.dp, horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(42.dp)
+                                        .size(44.dp)
+                                        .clip(CircleShape)
                                         .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(
-                                                    MaterialTheme.colorScheme.primaryContainer,
-                                                    MaterialTheme.colorScheme.secondaryContainer
-                                                )
-                                            ),
-                                            shape = CircleShape
+                                            Brush.horizontalGradient(
+                                                listOf(Color(0xFF296DFF).copy(alpha = 0.22f), Color(0xFF8F5CFF).copy(alpha = 0.17f))
+                                            )
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         amigo.nombreUsuario.take(1).uppercase(),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 21.sp
                                     )
                                 }
-                                Spacer(Modifier.width(14.dp))
+                                Spacer(Modifier.width(15.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(
                                         amigo.nombreUsuario,
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-                                        color = MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 17.sp,
+                                        color = Color.White,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         amigo.uid,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.outline,
+                                        fontSize = 13.sp,
+                                        color = Color(0xFFB7B7D1),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -284,7 +297,8 @@ fun AmigosScreen(
                                     ) {
                                         Icon(
                                             Icons.Default.MoreHoriz,
-                                            contentDescription = "Opciones"
+                                            contentDescription = "Opciones",
+                                            tint = Color(0xFF8F5CFF)
                                         )
                                     }
                                     DropdownMenu(
@@ -303,13 +317,14 @@ fun AmigosScreen(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text("Eliminar amigo") },
+                                            text = { Text("Eliminar amigo", color = Color(0xFFFF7675)) },
                                             onClick = {
-                                                amigosViewModel.eliminarAmigo(amigo.uid)
+                                                uidAEliminar = amigo.uid
+                                                showEliminarDialog = true
                                                 expandedUid = null
                                             },
                                             leadingIcon = {
-                                                Icon(Icons.Default.Delete, contentDescription = null)
+                                                Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFFF7675))
                                             }
                                         )
                                     }
@@ -325,24 +340,24 @@ fun AmigosScreen(
             onClick = { showSheet = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(26.dp)
-                .height(44.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            shape = RoundedCornerShape(8.dp),
+                .padding(24.dp)
+                .height(50.dp)
+                .clip(RoundedCornerShape(15.dp)),
+            shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.Transparent,
-                contentColor = TorneoYaPalette.yellow
+                contentColor = Color(0xFF296DFF)
             ),
             border = ButtonDefaults.outlinedButtonBorder.copy(
-                width = 1.5.dp,
+                width = 2.dp,
                 brush = Brush.horizontalGradient(
-                    listOf(TorneoYaPalette.yellow, TorneoYaPalette.violet)
+                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
                 )
             )
         ) {
-            Icon(Icons.Default.PersonAdd, contentDescription = "Añadir amigo", modifier = Modifier.size(22.dp), tint = TorneoYaPalette.yellow)
+            Icon(Icons.Default.PersonAdd, contentDescription = "Añadir amigo", modifier = Modifier.size(24.dp), tint = Color(0xFF296DFF))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Añadir amigo", color = TorneoYaPalette.yellow, fontWeight = FontWeight.Bold)
+            Text("Añadir amigo", color = Color(0xFF296DFF), fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
 
         if (showSheet) {
@@ -375,86 +390,160 @@ fun AmigosScreen(
                         .padding(26.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Tu UID", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(8.dp))
-                    Row(
-                        Modifier
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                ),
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .background(Color(0xFF23273D))
+                            .padding(12.dp)
                     ) {
-                        Text(userUid ?: "Cargando...", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(Modifier.width(8.dp))
-                        IconButton(onClick = {
-                            userUid?.let {
-                                clipboard.setText(androidx.compose.ui.text.AnnotatedString(it))
-                                Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(userUid ?: "Cargando...", color = Color.White, fontSize = 15.sp)
+                            Spacer(Modifier.width(8.dp))
+                            IconButton(onClick = {
+                                userUid?.let {
+                                    clipboard.setText(androidx.compose.ui.text.AnnotatedString(it))
+                                    Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
+                                }
+                            }) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copiar UID", tint = Color(0xFF8F5CFF))
                             }
-                        }) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = "Copiar UID")
                         }
                     }
-                    Spacer(Modifier.height(26.dp))
-                    Text("Buscar por UID", style = MaterialTheme.typography.titleMedium)
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                ),
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .background(Color(0xFF23273D))
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Text(
+                            "Buscar por UID",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+
                     Spacer(Modifier.height(10.dp))
                     var amigoUidInput by remember { mutableStateOf("") }
 
                     OutlinedTextField(
                         value = amigoUidInput,
                         onValueChange = { amigoUidInput = it },
-                        label = { Text("UID del amigo") },
+                        label = { Text("UID del amigo", color = Color(0xFF8F5CFF)) },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp)),
                         shape = RoundedCornerShape(10.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            containerColor = Color(0xFF191A23),
+                            focusedBorderColor = Color(0xFF8F5CFF),
+                            unfocusedBorderColor = Color(0xFF23273D)
+                        ),
                         trailingIcon = {
                             IconButton(onClick = {
                                 val clip = clipboard.getText()
                                 if (clip != null) amigoUidInput = clip.text
                             }) {
-                                Icon(Icons.Default.ContentPaste, contentDescription = "Pegar UID")
+                                Icon(Icons.Default.ContentPaste, contentDescription = "Pegar UID", tint = Color(0xFF8F5CFF))
                             }
                         }
                     )
                     Spacer(Modifier.height(16.dp))
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             agregarAmigoViewModel.buscarPorUid(amigoUidInput)
                         },
                         enabled = amigoUidInput.isNotBlank(),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            )
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color(0xFF23273D),
+                            contentColor = Color.White
+                        )
                     ) {
-                        Text("Buscar")
+                        Text("Buscar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
+
 
                     when (agregarUiState) {
                         is AgregarAmigoViewModel.UiState.Busqueda -> {
                             val usuario = (agregarUiState as AgregarAmigoViewModel.UiState.Busqueda).usuario
                             Spacer(Modifier.height(22.dp))
-                            Text("¿Este es tu amigo?", style = MaterialTheme.typography.titleMedium)
-                            Spacer(Modifier.height(8.dp))
-                            Card(
-                                Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(13.dp))
+                                    .border(
+                                        width = 2.dp,
+                                        brush = Brush.horizontalGradient(
+                                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                        ),
+                                        shape = RoundedCornerShape(13.dp)
+                                    )
+                                    .background(Color(0xFF23273D))
+                                    .padding(18.dp)
                             ) {
-                                Column(Modifier.padding(18.dp)) {
-                                    Text("Nombre: ${usuario.nombreUsuario}", style = MaterialTheme.typography.bodyLarge)
-                                    Text("UID: ${usuario.uid}", style = MaterialTheme.typography.bodyMedium)
+                                Column {
+                                    Text("Nombre: ${usuario.nombreUsuario}", color = Color(0xFFB7B7D1))
+                                    Text("UID: ${usuario.uid}", color = Color(0xFFB7B7D1))
                                     Spacer(Modifier.height(10.dp))
                                     Row(
                                         Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.End
                                     ) {
-                                        Button(
+                                        OutlinedButton(
                                             onClick = {
                                                 agregarAmigoViewModel.enviarSolicitud(usuario.uid)
                                                 amigoUidInput = ""
                                             },
-                                            shape = RoundedCornerShape(10.dp)
+                                            shape = RoundedCornerShape(10.dp),
+                                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                                width = 2.dp,
+                                                brush = Brush.horizontalGradient(
+                                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                                )
+                                            ),
+                                            colors = ButtonDefaults.outlinedButtonColors(
+                                                containerColor = Color(0xFF23273D),
+                                                contentColor = Color.White
+                                            ),
+                                            modifier = Modifier.height(44.dp)
                                         ) {
-                                            Text("Sí, enviar solicitud")
+                                            Text("Sí, enviar solicitud", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                         }
+
                                     }
                                 }
                             }
@@ -463,21 +552,113 @@ fun AmigosScreen(
                             Spacer(Modifier.height(18.dp))
                             Text(
                                 (agregarUiState as AgregarAmigoViewModel.UiState.Error).mensaje,
-                                color = Color.Red,
-                                style = MaterialTheme.typography.bodyMedium
+                                color = Color.Red
                             )
                         }
                         is AgregarAmigoViewModel.UiState.Exito -> {
                             Spacer(Modifier.height(18.dp))
                             Text(
                                 "¡Solicitud enviada!",
-                                color = Color(0xFF2ecc71),
-                                style = MaterialTheme.typography.bodyMedium
+                                color = Color(0xFF2ecc71)
                             )
                         }
                         else -> {}
                     }
                     Spacer(Modifier.height(12.dp))
+                }
+            }
+        }
+
+        if (showEliminarDialog && uidAEliminar != null) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.6f))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(18.dp)
+                        )
+                        .background(Color(0xFF191A23))
+                        .padding(26.dp)
+                        .widthIn(min = 270.dp, max = 340.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Eliminar amigo", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 19.sp)
+                        Spacer(Modifier.height(9.dp))
+                        Text(
+                            "¿Estás seguro que deseas eliminar a este amigo? Esta acción no se puede deshacer.",
+                            color = Color(0xFFB7B7D1),
+                            fontSize = 15.sp
+                        )
+                        Spacer(Modifier.height(22.dp))
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    showEliminarDialog = false
+                                    uidAEliminar = null
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(
+                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                    )
+                                ),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(42.dp)
+                            ) {
+                                Text(
+                                    "Cancelar",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(Modifier.width(16.dp))
+                            OutlinedButton(
+                                onClick = {
+                                    amigosViewModel.eliminarAmigo(uidAEliminar!!)
+                                    showEliminarDialog = false
+                                    uidAEliminar = null
+                                },
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(
+                                        listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
+                                    )
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = Color(0xFFFF7675)
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(42.dp)
+                            ) {
+                                Text(
+                                    "Eliminar",
+                                    color = Color(0xFFFF7675),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
