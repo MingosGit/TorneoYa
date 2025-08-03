@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
-import mingosgit.josecr.torneoya.repository.NotificacionFirebaseRepository
+import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebaseRepository
 
 class NotificacionesViewModel(
     private val usuarioUid: String,

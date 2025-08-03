@@ -23,6 +23,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun NotificacionesScreen(
@@ -164,10 +167,10 @@ fun NotificacionCard(noti: NotificacionFirebase) {
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Normal
             )
-            if (noti.fechaHora.isNotBlank()) {
+            if (noti.fechaHora != null) {
                 Spacer(Modifier.height(7.dp))
                 Text(
-                    text = noti.fechaHora.replace('T', ' ').substring(0, 16),
+                    text = formatTimestamp(noti.fechaHora),
                     color = Color(0xFF8F5CFF),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp
@@ -175,4 +178,10 @@ fun NotificacionCard(noti: NotificacionFirebase) {
             }
         }
     }
+}
+
+fun formatTimestamp(timestamp: Timestamp?): String {
+    if (timestamp == null) return ""
+    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    return sdf.format(Date(timestamp.seconds * 1000))
 }

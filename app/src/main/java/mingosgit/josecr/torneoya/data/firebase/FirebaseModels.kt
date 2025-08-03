@@ -2,7 +2,7 @@ package mingosgit.josecr.torneoya.data.firebase
 
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
-
+import com.google.firebase.Timestamp
 @IgnoreExtraProperties
 data class PartidoFirebase(
     val uid: String = "",
@@ -68,14 +68,15 @@ data class EncuestaFirebase(
     val creadorNombre: String = ""
 )
 
+
 @IgnoreExtraProperties
 data class NotificacionFirebase(
     @get:Exclude var uid: String = "",
-    val tipo: String = "", // "parche" o "infraccion"
+    val tipo: String = "",
     val titulo: String = "",
     val mensaje: String = "",
-    val fechaHora: String = "", // ISO 8601
-    val usuarioUid: String? = null // si es para un usuario específico, si es null es global
+    val fechaHora: Timestamp = Timestamp.now(), // USA Timestamp DE FIREBASE
+    val usuarioUid: String? = null
 )
 
 @IgnoreExtraProperties

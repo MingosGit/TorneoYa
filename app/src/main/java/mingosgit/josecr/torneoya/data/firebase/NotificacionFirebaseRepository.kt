@@ -1,8 +1,8 @@
-package mingosgit.josecr.torneoya.repository
+package mingosgit.josecr.torneoya.data.firebase
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
-import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
 
 class NotificacionFirebaseRepository {
     private val db = FirebaseFirestore.getInstance()
@@ -12,13 +12,12 @@ class NotificacionFirebaseRepository {
             "tipo" to notificacion.tipo,
             "titulo" to notificacion.titulo,
             "mensaje" to notificacion.mensaje,
-            "fechaHora" to notificacion.fechaHora,
+            "fechaHora" to notificacion.fechaHora, // ES UN Timestamp
             "usuarioUid" to notificacion.usuarioUid
         )
         db.collection("notificaciones").add(datos).await()
     }
 
-    // Para usuario normal: trae todas las globales + las dirigidas al usuario
     suspend fun obtenerNotificaciones(usuarioUid: String): List<NotificacionFirebase> {
         val globalesTask = db.collection("notificaciones")
             .whereEqualTo("usuarioUid", null)
@@ -33,10 +32,9 @@ class NotificacionFirebaseRepository {
         val personales = personalesTask.await().documents.mapNotNull {
             it.toObject(NotificacionFirebase::class.java)?.copy(uid = it.id)
         }
-        return (globales + personales).sortedByDescending { it.fechaHora }
+        return (globales + personales).sortedByDescending { it.fechaHora.seconds }
     }
 
-    // Para admin: trae todas (opcional)
     suspend fun obtenerTodasNotificaciones(): List<NotificacionFirebase> {
         val res = db.collection("notificaciones").get().await()
         return res.documents.mapNotNull {
