@@ -183,9 +183,8 @@ fun LoginScreen(
                         val nombreUsuarioOnline = (loginState as LoginState.Success).usuario.nombreUsuario
                         LaunchedEffect(Unit) {
                             globalUserViewModel.setNombreUsuarioOnline(nombreUsuarioOnline)
-                            navController.navigate("usuario") {
-                                popUpTo("login") { inclusive = true }
-                            }
+                            // Reiniciar la app al iniciar sesión
+                            globalUserViewModel.reiniciarApp()
                         }
                     }
                     LoginState.Loading -> {

@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -41,16 +42,22 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun cerrarSesionOnline() {
-        FirebaseAuth.getInstance().signOut()
-        _nombreUsuarioOnline.value = null
-        _sesionOnlineActiva.value = false
-        reiniciarApp()
+        viewModelScope.launch {
+            FirebaseAuth.getInstance().signOut()
+            _nombreUsuarioOnline.value = null
+            _sesionOnlineActiva.value = false
+            delay(200) // deja tiempo para que signOut se complete
+            reiniciarApp()
+        }
     }
 
-    private fun reiniciarApp() {
-        val intent = Intent(getApplication<Application>().applicationContext, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        getApplication<Application>().applicationContext.startActivity(intent)
+
+    internal fun reiniciarApp() {
+        val context = getApplication<Application>().applicationContext
+        val packageManager = context.packageManager
+        val intent = packageManager.getLaunchIntentForPackage(context.packageName)
+        intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        context.startActivity(intent)
         Runtime.getRuntime().exit(0)
     }
 }

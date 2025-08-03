@@ -104,6 +104,9 @@ fun UsuarioScreen(
             onConfirm = {
                 globalUserViewModel.cerrarSesionOnline()
                 showCerrarSesionDialog = false
+                navController.navigate("login") {
+                    popUpTo("usuario") { inclusive = true }
+                }
             },
             onDismiss = { showCerrarSesionDialog = false },
             blue = blue,
