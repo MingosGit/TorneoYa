@@ -1,10 +1,12 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -64,7 +67,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 6.dp)
-                    .defaultMinSize(minHeight = 48.dp), // <--- CAMBIO CLAVE: defaultMinSize
+                    .defaultMinSize(minHeight = 48.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
                     if (textoComentario.isNotBlank()) {
@@ -123,63 +126,158 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         } else {
             val comentariosOrdenados = state.comentarios.sortedByDescending { it.comentario.fechaHora }
 
-            LazyColumn(modifier = Modifier.fillMaxHeight()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(bottom = 8.dp),
+                contentPadding = PaddingValues(bottom = 20.dp)
+            ) {
                 items(comentariosOrdenados) { comentarioConVotos ->
-                    Column(
+                    val votoColor = when {
+                        comentarioConVotos.miVoto == 1 -> TorneoYaPalette.blue
+                        comentarioConVotos.miVoto == -1 -> Color(0xFFFA6767)
+                        else -> Color(0xFF23273D)
+                    }
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp, horizontal = 8.dp)
+                            .padding(horizontal = 7.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Text(
-                            text = comentarioConVotos.comentario.usuarioNombre,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                        Text(
-                            text = comentarioConVotos.comentario.texto,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = comentarioConVotos.comentario.fechaHora,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(top = 4.dp)
+                        // Avatar circular con inicial
+                        Box(
+                            modifier = Modifier
+                                .size(39.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        listOf(
+                                            votoColor.copy(alpha = 0.88f),
+                                            TorneoYaPalette.violet.copy(alpha = 0.80f)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
-                            IconButton(
-                                onClick = {
-                                    if (comentarioConVotos.miVoto != 1) {
-                                        vm.votarComentario(comentarioConVotos.comentario.uid, usuarioUid, 1)
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ThumbUp,
-                                    contentDescription = "Like",
-                                    tint = if (comentarioConVotos.miVoto == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            Text(
+                                text = comentarioConVotos.comentario.usuarioNombre.take(1).uppercase(),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(3.dp, RoundedCornerShape(17.dp)),
+                            shape = RoundedCornerShape(17.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF20243B)),
+                            border = BorderStroke(
+                                2.dp,
+                                Brush.horizontalGradient(
+                                    listOf(votoColor, TorneoYaPalette.violet, Color(0xFF20243B))
                                 )
-                            }
-                            Text(text = comentarioConVotos.likes.toString())
-                            Spacer(modifier = Modifier.width(16.dp))
-                            IconButton(
-                                onClick = {
-                                    if (comentarioConVotos.miVoto != -1) {
-                                        vm.votarComentario(comentarioConVotos.comentario.uid, usuarioUid, -1)
-                                    }
-                                }
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(start = 11.dp, end = 10.dp, top = 10.dp, bottom = 4.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ThumbDown,
-                                    contentDescription = "Dislike",
-                                    tint = if (comentarioConVotos.miVoto == -1) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = comentarioConVotos.comentario.usuarioNombre,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TorneoYaPalette.accent,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = comentarioConVotos.comentario.fechaHora,
+                                        fontSize = 11.sp,
+                                        color = TorneoYaPalette.mutedText,
+                                        textAlign = TextAlign.End
+                                    )
+                                }
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    text = comentarioConVotos.comentario.texto,
+                                    fontSize = 16.sp,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(top = 1.dp, bottom = 3.dp)
                                 )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .padding(top = 2.dp, bottom = 3.dp)
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            if (comentarioConVotos.miVoto != 1) {
+                                                vm.votarComentario(
+                                                    comentarioConVotos.comentario.uid,
+                                                    usuarioUid,
+                                                    1
+                                                )
+                                            }
+                                        },
+                                        modifier = Modifier.size(29.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ThumbUp,
+                                            contentDescription = "Like",
+                                            tint = if (comentarioConVotos.miVoto == 1)
+                                                TorneoYaPalette.blue
+                                            else
+                                                TorneoYaPalette.mutedText,
+                                            modifier = Modifier.size(19.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = comentarioConVotos.likes.toString(),
+                                        color = if (comentarioConVotos.miVoto == 1)
+                                            TorneoYaPalette.blue
+                                        else
+                                            TorneoYaPalette.mutedText,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 14.sp
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    IconButton(
+                                        onClick = {
+                                            if (comentarioConVotos.miVoto != -1) {
+                                                vm.votarComentario(
+                                                    comentarioConVotos.comentario.uid,
+                                                    usuarioUid,
+                                                    -1
+                                                )
+                                            }
+                                        },
+                                        modifier = Modifier.size(29.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ThumbDown,
+                                            contentDescription = "Dislike",
+                                            tint = if (comentarioConVotos.miVoto == -1)
+                                                Color(0xFFFA6767)
+                                            else
+                                                TorneoYaPalette.mutedText,
+                                            modifier = Modifier.size(19.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = comentarioConVotos.dislikes.toString(),
+                                        color = if (comentarioConVotos.miVoto == -1)
+                                            Color(0xFFFA6767)
+                                        else
+                                            TorneoYaPalette.mutedText,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 14.sp
+                                    )
+                                }
                             }
-                            Text(text = comentarioConVotos.dislikes.toString())
                         }
                     }
-                    Divider()
                 }
                 if (comentariosOrdenados.isEmpty()) {
                     item {

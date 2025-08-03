@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.launch
@@ -86,7 +88,12 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
             }
         } else {
             Box(modifier = Modifier.weight(1f)) {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 4.dp),
+                    contentPadding = PaddingValues(bottom = 12.dp)
+                ) {
                     items(state.encuestas) { encuestaConResultados ->
                         val encuesta = encuestaConResultados.encuesta
                         val opcionesList = encuesta.opciones
@@ -99,40 +106,135 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                 seleccionada = sel ?: -1
                             }
                         }
-                        Column(
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 6.dp, horizontal = 8.dp)
+                                .padding(vertical = 9.dp, horizontal = 5.dp)
+                                .shadow(6.dp, RoundedCornerShape(17.dp)),
+                            shape = RoundedCornerShape(17.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1F2E))
                         ) {
-                            Text(encuesta.pregunta, fontWeight = FontWeight.Bold)
-                            opcionesList.forEachIndexed { idx, opcion ->
-                                val porcentaje = (votos.getOrNull(idx) ?: 0) * 100 / totalVotos
+                            Column(
+                                modifier = Modifier.padding(vertical = 15.dp, horizontal = 15.dp)
+                            ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    RadioButton(
-                                        selected = seleccionada == idx,
-                                        onClick = {
-                                            if (seleccionada != idx) {
-                                                vm.votarUnicoEnEncuesta(encuesta.uid, idx, usuarioUid)
-                                                seleccionada = idx
-                                            }
-                                        }
+                                    Box(
+                                        Modifier
+                                            .size(32.dp)
+                                            .background(
+                                                brush = Brush.horizontalGradient(
+                                                    listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)
+                                                ),
+                                                shape = CircleShape
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            "Q",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp,
+                                        )
+                                    }
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(
+                                        encuesta.pregunta,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 17.sp,
+                                        color = Color.White,
+                                        modifier = Modifier.weight(1f)
                                     )
-                                    Text(opcion, modifier = Modifier.weight(1f))
-                                    Text("$porcentaje%", fontSize = 12.sp)
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(7.dp))
+                                            .background(TorneoYaPalette.chipBgDark)
+                                            .padding(horizontal = 11.dp, vertical = 3.dp)
+                                    ) {
+                                        Text(
+                                            text = "Votos: $totalVotos",
+                                            color = TorneoYaPalette.accent,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
                                 }
-                                LinearProgressIndicator(
-                                    progress = (votos.getOrNull(idx)?.toFloat() ?: 0f) / totalVotos,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(8.dp)
-                                )
+                                Spacer(Modifier.height(14.dp))
+                                Column {
+                                    opcionesList.forEachIndexed { idx, opcion ->
+                                        val porcentaje = (votos.getOrNull(idx) ?: 0) * 100 / totalVotos
+                                        val seleccionado = seleccionada == idx
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(bottom = 9.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .border(
+                                                    width = 2.dp,
+                                                    brush = if (seleccionado)
+                                                        Brush.horizontalGradient(listOf(TorneoYaPalette.violet, TorneoYaPalette.accent))
+                                                    else Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF23273D))),
+                                                    shape = RoundedCornerShape(10.dp)
+                                                )
+                                                .background(if (seleccionado) Color(0x1F8F5CFF) else Color(0xFF23273D))
+                                                .clickable {
+                                                    if (seleccionada != idx) {
+                                                        vm.votarUnicoEnEncuesta(encuesta.uid, idx, usuarioUid)
+                                                        seleccionada = idx
+                                                    }
+                                                }
+                                                .padding(vertical = 6.dp, horizontal = 11.dp)
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                RadioButton(
+                                                    selected = seleccionado,
+                                                    onClick = {
+                                                        if (!seleccionado) {
+                                                            vm.votarUnicoEnEncuesta(encuesta.uid, idx, usuarioUid)
+                                                            seleccionada = idx
+                                                        }
+                                                    },
+                                                    colors = RadioButtonDefaults.colors(
+                                                        selectedColor = TorneoYaPalette.violet,
+                                                        unselectedColor = TorneoYaPalette.mutedText
+                                                    ),
+                                                    modifier = Modifier.size(22.dp)
+                                                )
+                                                Text(
+                                                    opcion,
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .padding(start = 3.dp),
+                                                    color = Color.White,
+                                                    fontSize = 16.sp,
+                                                    fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal
+                                                )
+                                                Spacer(Modifier.width(10.dp))
+                                                Text(
+                                                    "$porcentaje%",
+                                                    color = TorneoYaPalette.accent,
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            LinearProgressIndicator(
+                                                progress = (votos.getOrNull(idx)?.toFloat() ?: 0f) / totalVotos,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(7.dp)
+                                                    .align(Alignment.BottomStart)
+                                                    .padding(top = 5.dp)
+                                                    .clip(RoundedCornerShape(6.dp)),
+                                                color = if (seleccionado) TorneoYaPalette.violet else TorneoYaPalette.blue,
+                                                trackColor = Color(0xFF161622)
+                                            )
+                                        }
+                                    }
+                                }
                             }
-                            Text("Total votos: $totalVotos", fontSize = 12.sp)
                         }
-                        Divider()
                     }
                     if (state.encuestas.isEmpty()) {
                         item {
@@ -158,8 +260,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                 onClick = { expandedCrear = !expandedCrear }
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(12.dp)
+                    modifier = Modifier.padding(12.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -168,12 +269,15 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                         Text(
                             "Crear nueva encuesta",
                             fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White,
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = { expandedCrear = !expandedCrear }) {
                             Icon(
                                 imageVector = if (expandedCrear) Icons.Default.Close else Icons.Default.Add,
-                                contentDescription = "Expandir/Colapsar"
+                                contentDescription = "Expandir/Colapsar",
+                                tint = TorneoYaPalette.violet
                             )
                         }
                     }
