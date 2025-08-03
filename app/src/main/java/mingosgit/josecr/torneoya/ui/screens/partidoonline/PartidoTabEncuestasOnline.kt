@@ -1,9 +1,15 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -12,12 +18,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,12 +43,10 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
     val encuestasSize = state.encuestas.size
     val encuestasLoaded = remember(encuestasSize) { encuestasSize > 0 }
 
-    // PRIMERA CARGA
     LaunchedEffect(Unit) {
         isLoading = true
-        // yield y delay para forzar la animación en Compose (NO QUITES ESTO)
         kotlinx.coroutines.yield()
-        delay(150) // <- ESTA LINEA ES CLAVE PARA QUE SALGA EL LOADER
+        delay(150)
         vm.cargarComentariosEncuestas(usuarioUid)
         isLoading = false
     }
@@ -53,7 +61,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                     scope.launch {
                         isLoading = true
                         kotlinx.coroutines.yield()
-                        delay(150) // <- OTRA VEZ: PARA QUE SALGA EL LOADER
+                        delay(150)
                         vm.cargarComentariosEncuestas(usuarioUid)
                         isLoading = false
                     }
@@ -144,13 +152,14 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(vertical = 8.dp)
+                    .animateContentSize(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF23273D)),
                 onClick = { expandedCrear = !expandedCrear }
             ) {
                 Column(
                     modifier = Modifier
                         .padding(12.dp)
-                        .animateContentSize()
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -169,7 +178,11 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                         }
                     }
                     if (expandedCrear) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                        ) {
                             OutlinedTextField(
                                 value = pregunta,
                                 onValueChange = { pregunta = it },
@@ -188,20 +201,37 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         .padding(vertical = 2.dp)
                                 )
                             }
-                            Row(modifier = Modifier.padding(top = 8.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(top = 10.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 if (opciones.size < 5)
-                                    Button(
-                                        onClick = { opciones.add("") },
-                                        modifier = Modifier.padding(end = 8.dp)
-                                    ) {
-                                        Text("+ Opción")
-                                    }
+                                    OutlinedColorButton(
+                                        text = "+ Opción",
+                                        borderBrush = Brush.horizontalGradient(
+                                            listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)
+                                        ),
+                                        onClick = { opciones.add("") }
+                                    )
                                 if (opciones.size > 2)
-                                    Button(onClick = { opciones.removeAt(opciones.size - 1) }) {
-                                        Text("- Opción")
-                                    }
+                                    OutlinedColorButton(
+                                        text = "- Opción",
+                                        borderBrush = Brush.horizontalGradient(
+                                            listOf(Color(0xFFFA6767), TorneoYaPalette.accent)
+                                        ),
+                                        onClick = { opciones.removeAt(opciones.size - 1) }
+                                    )
                             }
-                            Button(
+                            OutlinedColorButton(
+                                text = "Lanzar encuesta",
+                                borderBrush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
+                                ),
+                                modifier = Modifier
+                                    .align(Alignment.End)
+                                    .padding(top = 16.dp, end = 2.dp),
                                 onClick = {
                                     if (
                                         pregunta.isNotBlank() &&
@@ -220,17 +250,44 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                             isLoading = false
                                         }
                                     }
-                                },
-                                modifier = Modifier
-                                    .align(Alignment.End)
-                                    .padding(top = 8.dp)
-                            ) {
-                                Text("Crear encuesta")
-                            }
+                                }
+                            )
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun OutlinedColorButton(
+    text: String,
+    borderBrush: Brush,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .defaultMinSize(minHeight = 38.dp)
+            .heightIn(min = 38.dp, max = 45.dp)
+            .padding(2.dp)
+            .clip(RoundedCornerShape(13.dp))
+            .border(
+                width = 2.dp,
+                brush = borderBrush,
+                shape = RoundedCornerShape(13.dp)
+            )
+            .background(Color.Transparent)
+            .wrapContentSize(Alignment.Center)
+            .clickable { onClick() }
+            .padding(horizontal = 18.dp, vertical = 7.dp)
+    ) {
+        Text(
+            text = text,
+            color = TorneoYaPalette.violet,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp
+        )
     }
 }
