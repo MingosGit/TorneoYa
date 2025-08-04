@@ -125,5 +125,6 @@ data class UsuarioFirebaseEntity(
     @get:Exclude var uid: String = "",
     val email: String = "",
     val nombreUsuario: String = "",
-    val avatarUrl: String? = null
+    val avatarUrl: String? = null,
+    val partidosJugados: Int = 0,   // NUEVO CAMPO
 )

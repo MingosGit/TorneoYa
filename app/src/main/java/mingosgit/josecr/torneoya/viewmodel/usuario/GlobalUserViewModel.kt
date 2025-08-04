@@ -70,17 +70,14 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                 .whereEqualTo("asistenciaJugadorUid", uid)
                 .get().await()
             val asistenciasCount = asistenciasSnapshot.size()
-            // Partidos jugados (al menos un gol o asistencia)
-            val partidoGoles = golesSnapshot.documents.mapNotNull { it.getString("partidoUid") }
-            val partidoAsistencias = asistenciasSnapshot.documents.mapNotNull { it.getString("partidoUid") }
-            val partidosSet = (partidoGoles + partidoAsistencias).toSet()
-            val partidosCount = partidosSet.size
-            val promedio =
-                if (partidosCount > 0) golesCount.toDouble() / partidosCount.toDouble() else 0.0
+            // Partidos jugados: leer el contador del usuario
+            val usuarioSnap = db.collection("usuarios").document(uid).get().await()
+            val partidosJugados = usuarioSnap.getLong("partidosJugados")?.toInt() ?: 0
+            val promedio = if (partidosJugados > 0) golesCount.toDouble() / partidosJugados.toDouble() else 0.0
 
             _goles.value = golesCount
             _asistencias.value = asistenciasCount
-            _partidosJugados.value = partidosCount
+            _partidosJugados.value = partidosJugados
             _promedioGoles.value = promedio
         }
     }

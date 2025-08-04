@@ -14,6 +14,7 @@ import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.firestore.FieldValue
 
 class AdministrarJugadoresOnlineViewModel(
     private val partidoUid: String,
@@ -42,7 +43,7 @@ class AdministrarJugadoresOnlineViewModel(
     fun cargarJugadoresExistentes() {
         viewModelScope.launch {
             jugadoresExistentes.value = partidoFirebaseRepository.obtenerJugadores()
-            cargarNombresEquipos() // ← CARGA NOMBRES REALES
+            cargarNombresEquipos()
             cargarUsuarioYAmigos()
             cargarJugadoresPartido()
         }
@@ -99,7 +100,6 @@ class AdministrarJugadoresOnlineViewModel(
         val partido = partidoFirebaseRepository.obtenerPartido(partidoUid)
         equipoAJugadores.clear()
         equipoBJugadores.clear()
-        // Jugadores Equipo A
         partido?.jugadoresEquipoA?.forEach { uid ->
             val jugador = jugadoresDisponiblesTodos.value.find { it.uid == uid }
                 ?: JugadorFirebase(uid = "", nombre = uid)
@@ -108,7 +108,6 @@ class AdministrarJugadoresOnlineViewModel(
         partido?.nombresManualEquipoA?.forEach { nombre ->
             equipoAJugadores.add(JugadorFirebase(uid = "", nombre = nombre))
         }
-        // Jugadores Equipo B
         partido?.jugadoresEquipoB?.forEach { uid ->
             val jugador = jugadoresDisponiblesTodos.value.find { it.uid == uid }
                 ?: JugadorFirebase(uid = "", nombre = uid)
@@ -147,6 +146,31 @@ class AdministrarJugadoresOnlineViewModel(
         else equipoBJugadores[idx] = equipoBJugadores[idx].copy(nombre = nuevo)
     }
 
+    private suspend fun actualizarContadoresPartidosJugados(
+        oldA: List<String>,
+        oldB: List<String>,
+        newA: List<String>,
+        newB: List<String>
+    ) {
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val antes = (oldA + oldB).toSet()
+        val despues = (newA + newB).toSet()
+
+        val añadidos = despues - antes
+        val eliminados = antes - despues
+
+        añadidos.forEach { uid ->
+            db.collection("usuarios").document(uid)
+                .update("partidosJugados", FieldValue.increment(1))
+                .await()
+        }
+        eliminados.forEach { uid ->
+            db.collection("usuarios").document(uid)
+                .update("partidosJugados", FieldValue.increment(-1))
+                .await()
+        }
+    }
+
     fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
             val equipoA_uids = equipoAJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
@@ -155,8 +179,18 @@ class AdministrarJugadoresOnlineViewModel(
             val equipoB_nombres = equipoBJugadores.mapNotNull { if (it.uid.isBlank() && it.nombre.isNotBlank()) it.nombre else null }
 
             val partido = partidoFirebaseRepository.obtenerPartido(partidoUid)
+            val oldA = partido?.jugadoresEquipoA ?: emptyList()
+            val oldB = partido?.jugadoresEquipoB ?: emptyList()
             val actuales = partido?.usuariosConAcceso ?: emptyList()
             val nuevosAccesos = (actuales + equipoA_uids + equipoB_uids).distinct()
+
+            // ACTUALIZA CONTADOR partidosJugados
+            actualizarContadoresPartidosJugados(
+                oldA = oldA,
+                oldB = oldB,
+                newA = equipoA_uids,
+                newB = equipoB_uids
+            )
 
             partidoFirebaseRepository.actualizarJugadoresPartidoOnline(
                 partidoUid = partidoUid,

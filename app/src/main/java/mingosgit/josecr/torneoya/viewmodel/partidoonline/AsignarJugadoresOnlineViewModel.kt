@@ -13,6 +13,7 @@ import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
 
 class AsignarJugadoresOnlineViewModel(
@@ -40,7 +41,31 @@ class AsignarJugadoresOnlineViewModel(
     var amigos: List<AmigoFirebaseEntity> by mutableStateOf(emptyList())
 
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
+    suspend fun actualizarContadoresPartidosJugados(
+        oldA: List<String>,
+        oldB: List<String>,
+        newA: List<String>,
+        newB: List<String>
+    ) {
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val antes = (oldA + oldB).toSet()
+        val despues = (newA + newB).toSet()
 
+        // Jugadores añadidos y eliminados
+        val añadidos = despues - antes
+        val eliminados = antes - despues
+
+        añadidos.forEach { uid ->
+            db.collection("usuarios").document(uid)
+                .update("partidosJugados", FieldValue.increment(1))
+                .await()
+        }
+        eliminados.forEach { uid ->
+            db.collection("usuarios").document(uid)
+                .update("partidosJugados", FieldValue.increment(-1))
+                .await()
+        }
+    }
     fun repartirAleatoriamente(jugadores: List<JugadorFirebase>) {
         val jugadoresLimpios = jugadores.filter { it.nombre.isNotBlank() }.shuffled()
         val mitad = jugadoresLimpios.size / 2
@@ -65,10 +90,16 @@ class AsignarJugadoresOnlineViewModel(
             // OBTEN LOS QUE YA TIENEN ACCESO (para no machacar los admins/creador)
             val partido = partidoFirebaseRepository.obtenerPartido(partidoUid)
             val actuales = partido?.usuariosConAcceso ?: emptyList()
-
+            val oldA = partido?.jugadoresEquipoA ?: emptyList()
+            val oldB = partido?.jugadoresEquipoB ?: emptyList()
             // Junta todos (sin repetir)
             val nuevosAccesos = (actuales + equipoA_uids + equipoB_uids).distinct()
-
+            actualizarContadoresPartidosJugados(
+                oldA = oldA,
+                oldB = oldB,
+                newA = equipoA_uids,
+                newB = equipoB_uids
+            )
             // Guarda jugadores Y actualiza accesos
             partidoFirebaseRepository.actualizarJugadoresPartidoOnline(
                 partidoUid = partidoUid,
