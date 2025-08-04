@@ -225,6 +225,7 @@ fun UsuarioScreen(
                             modifier = Modifier.padding(horizontal = 0.dp)
                         )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
                 IconButton(
                     onClick = { navController.navigate("ajustes") },
@@ -328,64 +329,71 @@ fun UsuarioScreen(
             // ====== NUEVO: BLOQUE ESTADÍSTICAS DE GOLES Y ASISTENCIAS ======
             if (sesionOnlineActiva) {
                 Spacer(modifier = Modifier.height(20.dp))
-                Card(
+                // Sustituye el Card de estadísticas por este Box para tener el borde gradiente igual que los botones:
+                Box(
                     modifier = Modifier
                         .fillMaxWidth(0.92f)
-                        .clip(RoundedCornerShape(17.dp)),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF23273D),
-                    ),
-                    elevation = CardDefaults.cardElevation(4.dp)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(blue, violet)),
+                            shape = RoundedCornerShape(17.dp)
+                        )
+                        .clip(RoundedCornerShape(17.dp))
+                        .background(Color(0xFF23273D))
                 ) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 18.dp, horizontal = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    Column(
+                        modifier = Modifier.padding(vertical = 16.dp, horizontal = 10.dp)
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Goles", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                            Text(
-                                goles?.toString() ?: "-",
-                                color = Color.White,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Asistencias", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                            Text(
-                                asistencias?.toString() ?: "-",
-                                color = Color.White,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Promedio", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                            Text(
-                                if (promedioGoles != null) String.format("%.2f", promedioGoles) else "-",
-                                color = Color.White,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                        }
-                    }
-                    if (partidosJugados != null) {
                         Row(
-                            Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
+                            Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            Text(
-                                text = "Partidos jugados: $partidosJugados",
-                                color = mutedText,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(bottom = 7.dp)
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Goles", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    goles?.toString() ?: "-",
+                                    color = Color.White,
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Asistencias", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    asistencias?.toString() ?: "-",
+                                    color = Color.White,
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Promedio", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    if (promedioGoles != null) String.format("%.2f", promedioGoles) else "-",
+                                    color = Color.White,
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+                        }
+                        if (partidosJugados != null) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Partidos jugados: $partidosJugados",
+                                    color = mutedText,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
+                                )
+                            }
                         }
                     }
                 }
+
             }
             // ===============================================================
 
