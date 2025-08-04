@@ -101,9 +101,11 @@ fun NavGraph(
             )
         }
         composable("splash") {
+            // Variable en MainActivity, para pasar nombre usuario al singleton/global VM
             SplashScreen(
                 navController = navController,
-                globalUserViewModel = globalUserViewModel
+                setHomeLoaded = { nombreUsuario ->
+                }
             )
         }
 

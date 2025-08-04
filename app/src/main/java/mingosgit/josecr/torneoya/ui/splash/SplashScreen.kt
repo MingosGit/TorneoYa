@@ -2,50 +2,61 @@ package mingosgit.josecr.torneoya.ui.splash
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
-import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @Composable
 fun SplashScreen(
-    navController: NavController,
-    globalUserViewModel: GlobalUserViewModel
+    navController: NavHostController,
+    setHomeLoaded: (nombreUsuario: String) -> Unit
 ) {
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
+    val gradient = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF1B1D29),
+            Color(0xFF212442),
+            Color(0xFF191A23),
+            Color(0xFF14151B)
+        )
     )
-    val nombreUsuarioOnline by globalUserViewModel.nombreUsuarioOnline.collectAsState()
-    var iniciadoCarga by remember { mutableStateOf(false) }
+
+    var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        if (!iniciadoCarga) {
-            iniciadoCarga = true
-            globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva()
-        }
-    }
-    // Cuando ya hay nombre de usuario o está claro que no hay sesión, continúa
-    LaunchedEffect(nombreUsuarioOnline) {
-        if (nombreUsuarioOnline != null || nombreUsuarioOnline == null) {
-            delay(700) // Un pequeño delay visual, opcional
+        try {
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user != null && user.isEmailVerified) {
+                val db = FirebaseFirestore.getInstance()
+                val usuarioSnap = db.collection("usuarios").document(user.uid).get().await()
+                val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: "Usuario"
+                setHomeLoaded(nombreUsuario)
+                navController.navigate("home") {
+                    popUpTo(0) { inclusive = true }
+                }
+            } else {
+                setHomeLoaded("")
+                navController.navigate("home") {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+        } catch (e: Exception) {
+            error = "Error de conexión. Intenta de nuevo."
+            delay(1200)
             navController.navigate("home") {
-                popUpTo(0)
+                popUpTo(0) { inclusive = true }
             }
         }
     }
@@ -53,34 +64,26 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = modernBackground),
+            .background(gradient),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Surface(
-                shape = CircleShape,
-                color = Color(0xFF296DFF).copy(alpha = 0.13f),
-                shadowElevation = 0.dp,
-                modifier = Modifier.size(85.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "Logo",
-                    tint = Color(0xFF296DFF),
-                    modifier = Modifier.padding(22.dp)
-                )
-            }
-            Spacer(Modifier.height(20.dp))
             Text(
-                text = "Bienvenido a TorneoYa",
-                fontSize = 27.sp,
-                color = Color.White
+                text = "TorneoYa",
+                fontWeight = FontWeight.Black,
+                fontSize = 34.sp,
+                color = Color.White,
             )
-            Spacer(Modifier.height(36.dp))
+            Spacer(Modifier.height(30.dp))
             CircularProgressIndicator(
-                color = Color(0xFF8F5CFF),
-                strokeWidth = 3.dp,
-                modifier = Modifier.size(36.dp)
+                color = TorneoYaPalette.blue,
+                strokeWidth = 4.dp
+            )
+            Spacer(Modifier.height(18.dp))
+            Text(
+                text = error ?: "Iniciando sesión...",
+                color = Color(0xFFB7B7D1),
+                fontSize = 17.sp
             )
         }
     }

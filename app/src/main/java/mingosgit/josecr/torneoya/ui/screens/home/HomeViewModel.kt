@@ -91,7 +91,9 @@ class HomeViewModel(
             )
         }
     }
-
+    fun setNombreUsuarioDirecto(nombre: String) {
+        _uiState.value = _uiState.value.copy(nombreUsuario = nombre)
+    }
     private fun cargarProximoPartido() {
         viewModelScope.launch {
             _cargandoProx.value = true

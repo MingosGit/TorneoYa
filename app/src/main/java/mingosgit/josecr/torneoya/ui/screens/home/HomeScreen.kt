@@ -20,12 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
@@ -37,12 +38,13 @@ data class HomeProximoPartidoUi(
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel,
     navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val proximoPartidoUi by viewModel.proximoPartidoUi.collectAsState()
     val cargandoProx by viewModel.cargandoProx.collectAsState()
+    val scope = rememberCoroutineScope()
 
     val modernBackground = Brush.verticalGradient(
         0.0f to Color(0xFF1B1D29),
@@ -51,14 +53,37 @@ fun HomeScreen(
         1.0f to Color(0xFF14151B)
     )
 
-    val sesionActiva = uiState.nombreUsuario.isNotBlank() && uiState.nombreUsuario != "Usuario"
+    var isLoading by remember { mutableStateOf(true) }
+    var loadingTimeoutReached by remember { mutableStateOf(false) }
+    var showNoSesionScreen by remember { mutableStateOf(false) }
+
+    // Lanzamos la animación de carga por máx 2 segundos o hasta que se cargue el usuario
+    LaunchedEffect(uiState.nombreUsuario) {
+        isLoading = true
+        loadingTimeoutReached = false
+        showNoSesionScreen = false
+
+        val sesionActiva = uiState.nombreUsuario.isNotBlank() && uiState.nombreUsuario != "Usuario"
+        // Si no está la sesión activa, pero aún podría cargarse, espera 2 segundos
+        val delayJob = launch {
+            delay(2000)
+            loadingTimeoutReached = true
+        }
+        // Espera hasta que llegue nombre válido o timeout
+        while (!sesionActiva && !loadingTimeoutReached) {
+            delay(100)
+        }
+        isLoading = false
+        showNoSesionScreen = !sesionActiva
+        delayJob.cancel()
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(brush = modernBackground)
     ) {
-        // ----------- BOTON NOTIFICACIONES -----------
+        // ----------- BOTON NOTIFICACIONES ----------- //
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,10 +119,34 @@ fun HomeScreen(
             }
         }
 
-        // Reemplaza el bloque con los botones "Iniciar sesión" y "Crear cuenta" por este:
+        // ---------------- ANIMACIÓN DE CARGA ------------------- //
+        if (isLoading) {
+            Box(
+                Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = Color(0xFF296DFF),
+                        strokeWidth = 3.dp,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(Modifier.height(18.dp))
+                    Text(
+                        text = "Cargando tu cuenta...",
+                        color = Color(0xFFB7B7D1),
+                        fontSize = 17.sp
+                    )
+                }
+            }
+            return
+        }
 
-        if (!sesionActiva) {
-            // PANTALLA DE BIENVENIDA PARA USUARIO SIN SESIÓN
+        // ----------------- PANTALLA NO SESIÓN ----------------- //
+        if (showNoSesionScreen) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -136,7 +185,7 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.height(32.dp))
 
-                // BOTÓN INICIAR SESIÓN con borde gradiente igual al resto
+                // BOTÓN INICIAR SESIÓN
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -167,7 +216,7 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(11.dp))
 
-                // BOTÓN CREAR CUENTA con borde gradiente igual al resto
+                // BOTÓN CREAR CUENTA
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -211,13 +260,12 @@ fun HomeScreen(
             return
         }
 
-
+        // ------------ PANTALLA NORMAL -------------
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-            // Avatar y bienvenida
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -251,10 +299,7 @@ fun HomeScreen(
                     )
                 }
             }
-
             Spacer(Modifier.height(29.dp))
-
-            // Stats SOLO: Partidos y Amigos
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -272,10 +317,7 @@ fun HomeScreen(
                     color = Color(0xFFFF7675)
                 )
             }
-
             Spacer(Modifier.height(31.dp))
-
-            // Accesos rápidos
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -287,17 +329,13 @@ fun HomeScreen(
                     label = "Mi perfil",
                     modifier = Modifier.weight(1f)
                 ) { navController.navigate("usuario") }
-
                 QuickAccessButton(
                     icon = Icons.Filled.SportsSoccer,
                     label = "Partidos Online",
                     modifier = Modifier.weight(1f)
                 ) { navController.navigate("partido_online") }
             }
-
             Spacer(Modifier.height(27.dp))
-
-            // Próximo partido online o mensaje motivador
             if (cargandoProx) {
                 Box(
                     Modifier
@@ -353,7 +391,6 @@ fun HomeScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(Modifier.height(7.dp))
-
                                 Row(
                                     Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -380,9 +417,7 @@ fun HomeScreen(
                                         modifier = Modifier.weight(1f)
                                     )
                                 }
-
                                 Spacer(Modifier.height(12.dp))
-
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(10.dp))
@@ -477,7 +512,7 @@ fun HomeScreen(
     }
 }
 
-// --------- COMPONENTES --------
+// COMPONENTES REUTILIZABLES
 
 @Composable
 fun QuickAccessButton(
