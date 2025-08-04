@@ -129,6 +129,7 @@ class AdministrarPartidoOnlineViewModel(
             g?.copy(uid = doc.id)
         }
     }
+
     fun agregarGol(
         equipoUid: String,
         jugadorUid: String,
@@ -172,13 +173,43 @@ class AdministrarPartidoOnlineViewModel(
                 "jugadorUid" to "",
                 "jugadorManual" to nombreJugadorManual,
                 "minuto" to minuto,
+                // CAMBIO CLAVE: si se pasa nombreAsistenteManual y NO es null o blank, guárdalo en "asistenciaNombreManual"
+                // si se pasa UID de asistente (jugador online) debe guardarse en "asistenciaJugadorUid" y NO en ""
                 "asistenciaJugadorUid" to "",
                 "asistenciaManual" to (nombreAsistenteManual ?: "")
             )
+
+            // CHEQUEA SI nombreAsistenteManual coincide con un jugador online, y guarda el UID si es así
+            val partidoData = _partido.value
+            var asistenciaUidDetectada: String? = null
+            if (partidoData != null && !nombreAsistenteManual.isNullOrBlank()) {
+                val allJugadores = (partidoData.jugadoresEquipoA + partidoData.jugadoresEquipoB)
+                val dbJugadores = db.collection("jugadores").get().await()
+                for (doc in dbJugadores.documents) {
+                    val nombre = doc.getString("nombre")?.trim()
+                    if (nombre.equals(nombreAsistenteManual.trim(), ignoreCase = true) && allJugadores.contains(doc.id)) {
+                        asistenciaUidDetectada = doc.id
+                        break
+                    }
+                }
+                val dbUsuarios = db.collection("usuarios").get().await()
+                for (doc in dbUsuarios.documents) {
+                    val nombre = doc.getString("nombreUsuario")?.trim()
+                    if (nombre.equals(nombreAsistenteManual.trim(), ignoreCase = true) && allJugadores.contains(doc.id)) {
+                        asistenciaUidDetectada = doc.id
+                        break
+                    }
+                }
+            }
+
+            if (asistenciaUidDetectada != null) {
+                golMap["asistenciaJugadorUid"] = asistenciaUidDetectada
+                golMap["asistenciaManual"] = ""
+            }
+
             val doc = db.collection("goleadores").document()
             golMap["uid"] = doc.id
             doc.set(golMap).await()
-
             actualizarMarcadorPartido()
             recargarTodo()
         }
