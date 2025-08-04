@@ -5,6 +5,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,15 +48,14 @@ fun MiCuentaScreen(
     var editandoNombre by remember { mutableStateOf(false) }
     var nuevoNombre by remember { mutableStateOf(TextFieldValue("")) }
 
-    // Colores y fondo igual que en AjustesScreen
     val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF181B26),
+        0.0f to Color(0xFF1B1D29),
         0.25f to Color(0xFF22263B),
         0.6f to Color(0xFF1A1E29),
         1.0f to Color(0xFF161622)
     )
-    val blue = Color(0xFF296DFF)
-    val violet = Color(0xFF8F5CFF)
+    val blue = TorneoYaPalette.blue
+    val violet = TorneoYaPalette.violet
     val lightText = Color(0xFFF7F7FF)
     val mutedText = Color(0xFFB7B7D1)
 
@@ -72,19 +75,12 @@ fun MiCuentaScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
-                        MaterialTheme.colorScheme.background
-                    )
-                )
-            )
+            .background(modernBackground)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(horizontal = 22.dp, vertical = 15.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -92,36 +88,41 @@ fun MiCuentaScreen(
                 text = "Mi Cuenta",
                 fontSize = 29.sp,
                 color = lightText,
-                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier
-                    .padding(bottom = 32.dp, top = 18.dp)
+                    .padding(bottom = 32.dp, top = 16.dp)
                     .align(Alignment.CenterHorizontally)
             )
 
-            OutlinedButton(
-                onClick = {},
-                enabled = false,
-                shape = RoundedCornerShape(20.dp),
+            // Avatar y datos de usuario
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(blue, violet)),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                        )
+                    )
+                    .padding(0.dp)
                     .height(94.dp),
-                border = BorderStroke(2.dp, blue),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = blue
-                ),
-                elevation = null
+                contentAlignment = Alignment.CenterStart
             ) {
                 Row(
                     Modifier
                         .fillMaxSize()
-                        .padding(start = 8.dp, end = 6.dp),
+                        .padding(start = 18.dp, end = 9.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .size(60.dp)
+                            .clip(CircleShape)
                             .background(
                                 brush = Brush.linearGradient(listOf(blue, violet)),
                                 shape = CircleShape
@@ -135,7 +136,7 @@ fun MiCuentaScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(18.dp))
                     Column(Modifier.weight(1f)) {
                         Text(
                             nombreUsuario,
@@ -166,35 +167,43 @@ fun MiCuentaScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(26.dp))
 
+            // CAMBIO NOMBRE USUARIO
             AnimatedVisibility(
                 visible = !editandoNombre,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                OutlinedButton(
-                    onClick = {
-                        editandoNombre = true
-                        nuevoNombre = TextFieldValue(nombreUsuario)
-                    },
-                    shape = RoundedCornerShape(18.dp),
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(17.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(blue, violet)),
+                            shape = RoundedCornerShape(17.dp)
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .clickable {
+                            editandoNombre = true
+                            nuevoNombre = TextFieldValue(nombreUsuario)
+                        }
                         .height(64.dp),
-                    border = BorderStroke(2.dp, blue),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = blue
-                    ),
-                    elevation = null
+                    contentAlignment = Alignment.CenterStart
                 ) {
                     Row(
-                        Modifier.fillMaxSize(),
+                        Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Editar", modifier = Modifier.size(26.dp), tint = blue)
-                        Spacer(Modifier.width(16.dp))
+                        Icon(Icons.Filled.Edit, contentDescription = "Editar", modifier = Modifier.size(25.dp), tint = blue)
+                        Spacer(Modifier.width(15.dp))
                         Column(Modifier.weight(1f)) {
                             Text("Nombre de usuario", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = blue)
                             Text(
@@ -205,11 +214,12 @@ fun MiCuentaScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        Spacer(Modifier.width(10.dp))
+                        Spacer(Modifier.width(9.dp))
                         Text("Cambiar", fontSize = 15.sp, color = blue, fontWeight = FontWeight.Medium)
                     }
                 }
             }
+
             AnimatedVisibility(
                 visible = editandoNombre,
                 enter = fadeIn(),
@@ -218,6 +228,18 @@ fun MiCuentaScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(17.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(blue, violet)),
+                            shape = RoundedCornerShape(17.dp)
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .padding(vertical = 15.dp, horizontal = 15.dp)
                 ) {
                     OutlinedTextField(
                         value = nuevoNombre,
@@ -272,7 +294,7 @@ fun MiCuentaScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             AccountMenuButton(
                 title = if (resetTimer > 0) "Restablecer contraseña (${resetTimer}s)" else "Restablecer contraseña",
@@ -296,7 +318,7 @@ fun MiCuentaScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             AccountMenuButton(
                 title = "Cerrar sesión",
@@ -306,7 +328,7 @@ fun MiCuentaScreen(
                 onClick = { viewModel.confirmarCerrarSesionDialog(true) },
                 lightText = lightText
             )
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             AccountMenuButton(
                 title = "Eliminar cuenta",
                 icon = Icons.Filled.Delete,
@@ -377,24 +399,30 @@ fun AccountMenuButton(
     enabled: Boolean = true,
     lightText: Color = Color.White
 ) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled,
-        shape = RoundedCornerShape(18.dp),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(78.dp),
-        border = BorderStroke(2.dp, borderColor),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = borderColor
-        ),
-        elevation = null
+            .height(78.dp)
+            .clip(RoundedCornerShape(17.dp))
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(borderColor, TorneoYaPalette.violet)
+                ),
+                shape = RoundedCornerShape(17.dp)
+            )
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                )
+            )
+            .clickable(enabled = enabled) { onClick() },
+        contentAlignment = Alignment.Center
     ) {
         Row(
             Modifier
                 .fillMaxSize()
-                .padding(start = 8.dp, end = 6.dp),
+                .padding(start = 15.dp, end = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -402,7 +430,7 @@ fun AccountMenuButton(
                 contentDescription = title,
                 tint = borderColor,
                 modifier = Modifier
-                    .size(30.dp)
+                    .size(29.dp)
                     .padding(end = 16.dp)
             )
             Column(
