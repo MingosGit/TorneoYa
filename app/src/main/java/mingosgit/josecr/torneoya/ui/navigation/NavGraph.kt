@@ -25,6 +25,7 @@ import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
+import mingosgit.josecr.torneoya.ui.splash.SplashScreen
 import mingosgit.josecr.torneoya.ui.screens.amigos.SolicitudesPendientesScreen
 import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
@@ -54,6 +55,7 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 
 @Composable
 fun NavGraph(
+    homeViewModel: HomeViewModel,
     navController: NavHostController,
     usuarioLocalViewModel: UsuarioLocalViewModel,
     partidoViewModel: PartidoViewModel,
@@ -90,7 +92,7 @@ fun NavGraph(
     val userUidState = rememberFirebaseUserUid()
     val userUid = userUidState.value ?: ""
 
-    NavHost(navController, startDestination = BottomNavItem.Home.route) {
+    NavHost(navController, startDestination = "splash") {
         composable(BottomNavItem.Home.route) {
             val homeViewModel = viewModel<HomeViewModel>()
             HomeScreen(
@@ -98,7 +100,20 @@ fun NavGraph(
                 navController = navController
             )
         }
+        composable("splash") {
+            SplashScreen(
+                navController = navController,
+                globalUserViewModel = globalUserViewModel
+            )
+        }
 
+        composable(BottomNavItem.Home.route) {
+            val homeViewModel = viewModel<HomeViewModel>()
+            HomeScreen(
+                viewModel = homeViewModel,
+                navController = navController
+            )
+        }
         composable(
             route = "administrar_partido_online/{partidoUid}",
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })

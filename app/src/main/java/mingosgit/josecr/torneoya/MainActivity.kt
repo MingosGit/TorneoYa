@@ -1,13 +1,11 @@
 package mingosgit.josecr.torneoya
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -22,18 +20,23 @@ import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavigationBar
 import mingosgit.josecr.torneoya.ui.navigation.NavGraph
 import mingosgit.josecr.torneoya.ui.navigation.BottomNavItem
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaTheme
+import mingosgit.josecr.torneoya.ui.theme.ModernTorneoYaTheme
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModelFactory
 import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModelFactory
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import mingosgit.josecr.torneoya.ui.screens.home.HomeViewModel
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
-import mingosgit.josecr.torneoya.ui.theme.ModernTorneoYaTheme
 import android.graphics.Color as AndroidColor
 
 class MainActivity : ComponentActivity() {
+
+    // SINGLETON PARA HOMESCREEN
+    private lateinit var homeViewModel: HomeViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_TorneoYa)
         super.onCreate(savedInstanceState)
 
         // COLOR DE LA BARRA DE ESTADO NEGRA (AUNQUE DÉ WARNING)
@@ -44,6 +47,9 @@ class MainActivity : ComponentActivity() {
             false
 
         WindowCompat.setDecorFitsSystemWindows(window, true)
+
+        // HOMEVIEWMODEL SINGLETON A NIVEL DE ACTIVITY
+        homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         setContent {
             ModernTorneoYaTheme {
@@ -79,11 +85,17 @@ class MainActivity : ComponentActivity() {
                     PartidoViewModelFactory(partidoRepository)
                 )[PartidoViewModel::class.java]
 
+                // GLOBAL USER VIEWMODEL PARA AUTENTICACION Y NOMBRE
+                val globalUserViewModel = ViewModelProvider(
+                    this@MainActivity,
+                    ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+                )[GlobalUserViewModel::class.java]
+
                 val navBackStackEntry = navController.currentBackStackEntryAsState()
                 val showBottomBar = when (navBackStackEntry.value?.destination?.route) {
                     BottomNavItem.Home.route,
                     BottomNavItem.Online.route,
-                    BottomNavItem.Amigos.route, // <-- AGREGA ESTA LINEA
+                    BottomNavItem.Amigos.route,
                     BottomNavItem.Usuario.route -> true
 
                     "partido_online" -> true
@@ -91,7 +103,7 @@ class MainActivity : ComponentActivity() {
                     else -> false
                 }
 
-                Scaffold(
+                androidx.compose.material3.Scaffold(
                     bottomBar = {
                         if (showBottomBar) {
                             BottomNavigationBar(navController)
@@ -104,13 +116,14 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-
                         NavGraph(
                             navController = navController,
                             usuarioLocalViewModel = usuarioLocalViewModel,
                             partidoViewModel = partidoViewModel,
                             partidoRepository = partidoRepository,
-                            equipoRepository = equipoRepository
+                            equipoRepository = equipoRepository,
+                            globalUserViewModel = globalUserViewModel,
+                            homeViewModel = homeViewModel // PASA EL SINGLETON
                         )
                     }
                 }
