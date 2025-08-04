@@ -1,4 +1,4 @@
-import mingosgit.josecr.torneoya.ui.screens.usuario.CropImageDialog
+package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -27,10 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
@@ -55,7 +57,47 @@ fun UsuarioScreen(
     var showCerrarSesionDialog by remember { mutableStateOf(false) }
     var cropUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+    // --- NUEVO: GOLES, ASISTENCIAS Y PROMEDIO ---
+    var goles by remember { mutableStateOf<Int?>(null) }
+    var asistencias by remember { mutableStateOf<Int?>(null) }
+    var partidosJugados by remember { mutableStateOf<Int?>(null) }
+    var promedioGoles by remember { mutableStateOf<Double?>(null) }
     val context = LocalContext.current
+
+    LaunchedEffect(sesionOnlineActiva, nombreUsuarioOnline) {
+        if (sesionOnlineActiva) {
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user != null) {
+                val uid = user.uid
+                val db = FirebaseFirestore.getInstance()
+                // Goles
+                val golesSnapshot = db.collection("goleadores")
+                    .whereEqualTo("jugadorUid", uid)
+                    .get().await()
+                goles = golesSnapshot.size()
+                // Asistencias
+                val asistenciasSnapshot = db.collection("goleadores")
+                    .whereEqualTo("asistenciaJugadorUid", uid)
+                    .get().await()
+                asistencias = asistenciasSnapshot.size()
+                // Partidos jugados (al menos un gol o asistencia)
+                val partidoGoles = golesSnapshot.documents.mapNotNull { it.getString("partidoUid") }
+                val partidoAsistencias = asistenciasSnapshot.documents.mapNotNull { it.getString("partidoUid") }
+                val partidosSet = (partidoGoles + partidoAsistencias).toSet()
+                partidosJugados = partidosSet.size
+                promedioGoles = if (partidosJugados ?: 0 > 0) {
+                    (goles?.toDouble() ?: 0.0) / (partidosJugados?.toDouble() ?: 1.0)
+                } else {
+                    0.0
+                }
+            }
+        } else {
+            goles = null
+            asistencias = null
+            partidosJugados = null
+            promedioGoles = null
+        }
+    }
 
     val selectImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -283,6 +325,70 @@ fun UsuarioScreen(
                 }
             }
 
+            // ====== NUEVO: BLOQUE ESTADÍSTICAS DE GOLES Y ASISTENCIAS ======
+            if (sesionOnlineActiva) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .clip(RoundedCornerShape(17.dp)),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF23273D),
+                    ),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 18.dp, horizontal = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Goles", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                goles?.toString() ?: "-",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Asistencias", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                asistencias?.toString() ?: "-",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Promedio", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                if (promedioGoles != null) String.format("%.2f", promedioGoles) else "-",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+                    if (partidosJugados != null) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Partidos jugados: $partidosJugados",
+                                color = mutedText,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 7.dp)
+                            )
+                        }
+                    }
+                }
+            }
+            // ===============================================================
+
             Spacer(modifier = Modifier.height(26.dp))
 
             if (!sesionOnlineActiva) {
@@ -354,54 +460,6 @@ fun UsuarioScreen(
         }
     }
 }
-
-@Composable
-private fun PerfilOpcionAmigos(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    val blue = TorneoYaPalette.blue
-    val violet = TorneoYaPalette.violet
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(15.dp))
-            .border(
-                width = 2.dp,
-                brush = Brush.horizontalGradient(listOf(blue, violet)),
-                shape = RoundedCornerShape(15.dp)
-            )
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                )
-            )
-            .clickable { onClick() }
-            .padding(horizontal = 19.dp, vertical = 17.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.Group,
-            contentDescription = "Amigos",
-            modifier = Modifier.size(29.dp),
-            tint = blue
-        )
-        Spacer(Modifier.width(15.dp))
-        Column {
-            Text(
-                text = "Amigos",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                text = "Gestiona tus amigos y añade nuevos contactos",
-                fontSize = 13.sp,
-                color = TorneoYaPalette.mutedText
-            )
-        }
-    }
-}
-
 @Composable
 private fun CustomCerrarSesionDialog(
     onConfirm: () -> Unit,
