@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
@@ -340,28 +341,24 @@ fun MiCuentaScreen(
         }
 
         if (confirmarCerrarSesion) {
-            AlertDialog(
-                onDismissRequest = { viewModel.confirmarCerrarSesionDialog(false) },
-                title = { Text("Cerrar sesión", color = lightText) },
-                text = { Text("¿Estás seguro de que quieres cerrar sesión?", color = mutedText) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        viewModel.cerrarSesion()
-                        viewModel.confirmarCerrarSesionDialog(false)
-                    }) {
-                        Text("Sí", color = blue)
-                    }
+            CustomCerrarSesionDialog(
+                onConfirm = {
+                    viewModel.cerrarSesion()
+                    viewModel.confirmarCerrarSesionDialog(false)
                 },
-                dismissButton = {
-                    TextButton(onClick = {
-                        viewModel.confirmarCerrarSesionDialog(false)
-                    }) {
-                        Text("Cancelar", color = mutedText)
-                    }
+                onDismiss = {
+                    viewModel.confirmarCerrarSesionDialog(false)
                 },
-                containerColor = Color(0xFF22243B)
+                blue = TorneoYaPalette.blue,
+                violet = TorneoYaPalette.violet,
+                rojo = Color(0xFFFF2D55),
+                background = Color(0xFF22243B),
+                lightText = Color(0xFFF7F7FF),
+                mutedText = Color(0xFFB7B7D1)
             )
         }
+
+
 
         if (confirmarEliminarCuenta) {
             AlertDialog(
@@ -448,6 +445,88 @@ fun AccountMenuButton(
                     color = lightText.copy(alpha = 0.65f),
                     maxLines = 2
                 )
+            }
+        }
+    }
+}
+@Composable
+private fun CustomCerrarSesionDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    blue: Color,
+    violet: Color,
+    rojo: Color,
+    background: Color,
+    lightText: Color,
+    mutedText: Color
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(listOf(blue, violet)),
+                    shape = RoundedCornerShape(18.dp)
+                )
+                .clip(RoundedCornerShape(18.dp))
+                .background(background)
+        ) {
+            Column(
+                Modifier
+                    .padding(horizontal = 22.dp, vertical = 26.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "¿Cerrar sesión?",
+                    color = lightText,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+                Spacer(Modifier.height(11.dp))
+                Text(
+                    text = "¿Estás seguro que quieres cerrar sesión?",
+                    color = mutedText,
+                    fontSize = 15.sp
+                )
+                Spacer(Modifier.height(25.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    OutlinedButton(
+                        onClick = onConfirm,
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(rojo, violet))
+                        ),
+                        shape = RoundedCornerShape(11.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            "SI",
+                            color = rojo,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(Modifier.width(14.dp))
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(blue, violet))
+                        ),
+                        shape = RoundedCornerShape(11.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            "Cancelar",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
         }
     }
