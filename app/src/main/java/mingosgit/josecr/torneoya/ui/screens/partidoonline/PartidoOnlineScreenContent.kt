@@ -229,23 +229,31 @@ fun PartidoOnlineScreenContent(
 
     Scaffold(
         containerColor = Color.Transparent,
-            // ESTILO "QuickAccessButton" de HomeScreen: Borde gradient, fondo dark, texto azul, redondeo 17dp
         floatingActionButton = {
-                OutlinedButton(
-                    onClick = { navController.navigate("crear_partido_online") },
-                    shape = RoundedCornerShape(17.dp),
-                    border = BorderStroke(2.dp, Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet))),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))).toBrushColor(),
-                        contentColor = Color(0xFF296DFF)
-                    ),
-                    modifier = Modifier
-                        .height(56.dp)
-                        .widthIn(min = 56.dp)
-                        .padding(bottom = 8.dp, end = 8.dp)
+            // BOTÓN SEMITRANSPARENTE
+            Box(
+                modifier = Modifier
+                    .padding(bottom = 8.dp, end = 8.dp)
+                    .clip(RoundedCornerShape(17.dp))
+                    .background(Color(0xCC23273D)) // <--- SEMITRANSPARENTE (80% opacidad)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(
+                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                        ),
+                        shape = RoundedCornerShape(17.dp)
+                    )
+                    .clickable { navController.navigate("crear_partido_online") }
+                    .height(56.dp)
+                    .widthIn(min = 56.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.SportsSoccer, // o el icono que usas para partidos en tu HomeScreen
+                        imageVector = Icons.Default.SportsSoccer,
                         contentDescription = "Crear partido",
                         tint = Color(0xFF296DFF),
                         modifier = Modifier.size(29.dp)
@@ -258,8 +266,7 @@ fun PartidoOnlineScreenContent(
                         fontSize = 16.sp
                     )
                 }
-
-
+            }
         }
     ) { innerPadding ->
         Column(
