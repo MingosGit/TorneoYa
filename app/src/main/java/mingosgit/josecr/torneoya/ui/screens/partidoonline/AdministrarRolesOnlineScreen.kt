@@ -1,14 +1,17 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarRolesOnlineViewModel
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,114 +46,156 @@ fun AdministrarRolesOnlineScreen(
     var showConfirmDialog by remember { mutableStateOf(false) }
     var usuarioABorrar: Pair<String, Boolean>? by remember { mutableStateOf(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Administrar Roles") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Volver")
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(modernBackground)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            // HEADER
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp, start = 9.dp, end = 9.dp, bottom = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Volver",
+                        tint = TorneoYaPalette.violet,
+                        modifier = Modifier.size(27.dp)
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    "Administrar Roles",
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 0.dp, vertical = 6.dp)
+            ) {
+                // ADMINISTRADORES
+                item {
+                    SectionHeader("Administradores")
+                }
+                items(administradores, key = { it.uid }) { usuario ->
+                    UsuarioCard(
+                        nombre = usuario.nombre,
+                        colorBadge = TorneoYaPalette.blue,
+                        iconMain = Icons.Default.KeyboardArrowDown,
+                        iconMainDesc = "Quitar admin",
+                        onMainClick = { vm.quitarRolAdministrador(usuario.uid) },
+                        iconDel = Icons.Default.Delete,
+                        iconDelDesc = "Eliminar usuario completamente",
+                        onDeleteClick = {
+                            usuarioABorrar = usuario.uid to true
+                            showConfirmDialog = true
+                        },
+                        admin = true
+                    )
+                }
+
+                // USUARIOS CON ACCESO
+                item {
+                    SectionHeader("Usuarios con acceso")
+                }
+                items(usuariosConAcceso, key = { it.uid }) { usuario ->
+                    UsuarioCard(
+                        nombre = usuario.nombre,
+                        colorBadge = Color(0xFFFFB531),
+                        iconMain = Icons.Default.KeyboardArrowUp,
+                        iconMainDesc = "Dar rol admin",
+                        onMainClick = { vm.darRolAdministrador(usuario.uid) },
+                        iconDel = Icons.Default.Delete,
+                        iconDelDesc = "Quitar acceso",
+                        onDeleteClick = {
+                            usuarioABorrar = usuario.uid to false
+                            showConfirmDialog = true
+                        },
+                        admin = false
+                    )
+                }
+            }
+        }
+
+        if (showConfirmDialog && usuarioABorrar != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDialog = false },
+                title = { Text("Confirmar eliminación", color = Color.White) },
+                text = {
+                    Text(
+                        if (usuarioABorrar?.second == true)
+                            "¿Estás seguro de eliminar completamente a este administrador?"
+                        else
+                            "¿Estás seguro de quitar el acceso a este usuario?",
+                        color = Color(0xFFB7B7D1)
+                    )
+                },
+                containerColor = Color(0xFF1C1D25),
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val (uid, esAdmin) = usuarioABorrar!!
+                            if (esAdmin) {
+                                vm.eliminarUsuarioCompletamente(uid)
+                            } else {
+                                vm.quitarUsuarioDeAcceso(uid)
+                            }
+                            showConfirmDialog = false
+                            usuarioABorrar = null
+                        }
+                    ) {
+                        Text("Eliminar", color = Color(0xFFF25A6D))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showConfirmDialog = false
+                            usuarioABorrar = null
+                        }
+                    ) {
+                        Text("Cancelar", color = TorneoYaPalette.violet)
                     }
                 }
             )
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF181B26),
-                            Color(0xFF1F2233)
-                        )
-                    )
-                )
-        ) {
-            // ADMINISTRADORES
-            item {
-                SectionHeader("Administradores")
-            }
-            items(administradores, key = { it.uid }) { usuario ->
-                UsuarioCard(
-                    nombre = usuario.nombre,
-                    colorBadge = Color(0xFF296DFF),
-                    iconMain = Icons.Default.KeyboardArrowDown,
-                    iconMainDesc = "Quitar admin",
-                    onMainClick = { vm.quitarRolAdministrador(usuario.uid) },
-                    iconDel = Icons.Default.Delete,
-                    iconDelDesc = "Eliminar usuario completamente",
-                    onDeleteClick = {
-                        usuarioABorrar = usuario.uid to true
-                        showConfirmDialog = true
-                    },
-                    admin = true
-                )
-            }
-
-            // USUARIOS CON ACCESO
-            item {
-                SectionHeader("Usuarios con acceso")
-            }
-            items(usuariosConAcceso, key = { it.uid }) { usuario ->
-                UsuarioCard(
-                    nombre = usuario.nombre,
-                    colorBadge = Color(0xFFFFB531),
-                    iconMain = Icons.Default.KeyboardArrowUp,
-                    iconMainDesc = "Dar rol admin",
-                    onMainClick = { vm.darRolAdministrador(usuario.uid) },
-                    iconDel = Icons.Default.Delete,
-                    iconDelDesc = "Quitar acceso",
-                    onDeleteClick = {
-                        usuarioABorrar = usuario.uid to false
-                        showConfirmDialog = true
-                    },
-                    admin = false
-                )
-            }
-        }
-    }
-
-    if (showConfirmDialog && usuarioABorrar != null) {
-        AlertDialog(
-            onDismissRequest = { showConfirmDialog = false },
-            title = { Text("Confirmar eliminación") },
-            text = {
-                Text(
-                    if (usuarioABorrar?.second == true)
-                        "¿Estás seguro de eliminar completamente a este administrador?"
-                    else
-                        "¿Estás seguro de quitar el acceso a este usuario?"
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val (uid, esAdmin) = usuarioABorrar!!
-                        if (esAdmin) {
-                            vm.eliminarUsuarioCompletamente(uid)
-                        } else {
-                            vm.quitarUsuarioDeAcceso(uid)
-                        }
-                        showConfirmDialog = false
-                        usuarioABorrar = null
-                    }
-                ) {
-                    Text("Eliminar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showConfirmDialog = false
-                        usuarioABorrar = null
-                    }
-                ) {
-                    Text("Cancelar")
-                }
-            }
-        )
     }
 }
 
@@ -157,11 +203,11 @@ fun AdministrarRolesOnlineScreen(
 private fun SectionHeader(text: String) {
     Text(
         text = text,
-        fontSize = 18.sp,
+        fontSize = 17.sp,
         fontWeight = FontWeight.Bold,
         color = Color(0xFFB7B7D1),
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 18.dp, vertical = 10.dp)
     )
 }
 
@@ -181,35 +227,44 @@ private fun UsuarioCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 5.dp)
-            .clip(RoundedCornerShape(13.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
-            .padding(horizontal = 14.dp, vertical = 8.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(
+                        if (admin) TorneoYaPalette.blue else Color(0xFFFFB531),
+                        TorneoYaPalette.violet
+                    )
+                ),
+                shape = RoundedCornerShape(14.dp)
+            )
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                )
+            )
+            .padding(horizontal = 16.dp, vertical = 9.dp)
     ) {
-        // Nombre y badge
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp, 28.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(colorBadge)
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(
-                nombre,
-                fontSize = 16.sp,
-                fontWeight = if (admin) FontWeight.Bold else FontWeight.Medium,
-                color = if (admin) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-            )
-        }
+        Box(
+            modifier = Modifier
+                .size(10.dp, 29.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(colorBadge)
+        )
+        Spacer(Modifier.width(13.dp))
+        Text(
+            nombre,
+            fontSize = 16.sp,
+            fontWeight = if (admin) FontWeight.Bold else FontWeight.Medium,
+            color = if (admin) TorneoYaPalette.blue else Color(0xFFF7F7FF)
+        )
+        Spacer(Modifier.weight(1f))
         IconButton(onClick = onMainClick) {
             Icon(iconMain, contentDescription = iconMainDesc, tint = colorBadge)
         }
         IconButton(onClick = onDeleteClick) {
-            Icon(iconDel, contentDescription = iconDelDesc, tint = Color.Red)
+            Icon(iconDel, contentDescription = iconDelDesc, tint = Color(0xFFF25A6D))
         }
     }
 }
