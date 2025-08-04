@@ -5,8 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,7 +25,7 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 24.dp, top = 6.dp, start = 8.dp, end = 8.dp),
+            .padding(bottom = 20.dp, top = 10.dp, start = 12.dp, end = 12.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -33,37 +33,42 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(IntrinsicSize.Min)
-                .padding(end = 4.dp)
-                .border(
-                    width = 2.dp,
-                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
-                    shape = RoundedCornerShape(13.dp)
-                )
+                .padding(end = 6.dp)
                 .background(
-                    color = Color(0xFF23273D),
-                    shape = RoundedCornerShape(13.dp)
+                    brush = Brush.radialGradient(
+                        listOf(TorneoYaPalette.blue.copy(alpha = 0.21f), Color.Transparent)
+                    ),
+                    shape = CircleShape
                 )
-                .padding(vertical = 9.dp, horizontal = 6.dp),
-            contentAlignment = Alignment.Center
         ) {
-            Row(
+            Box(
                 modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            listOf(Color(0xFF212442), Color(0xFF23273D))
+                        ),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .padding(vertical = 11.dp, horizontal = 5.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = uiState.nombreEquipoA,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Black,
                     color = Color.White,
-                    style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .fillMaxWidth()
                 )
             }
         }
@@ -71,10 +76,10 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
         Text(
             text = "VS",
             fontSize = 16.sp,
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.Black,
             color = TorneoYaPalette.violet,
             modifier = Modifier
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 16.dp)
                 .align(Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
@@ -82,37 +87,42 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(IntrinsicSize.Min)
-                .padding(start = 4.dp)
-                .border(
-                    width = 2.dp,
-                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)),
-                    shape = RoundedCornerShape(13.dp)
-                )
+                .padding(start = 6.dp)
                 .background(
-                    color = Color(0xFF23273D),
-                    shape = RoundedCornerShape(13.dp)
+                    brush = Brush.radialGradient(
+                        listOf(TorneoYaPalette.accent.copy(alpha = 0.18f), Color.Transparent)
+                    ),
+                    shape = CircleShape
                 )
-                .padding(vertical = 9.dp, horizontal = 6.dp),
-            contentAlignment = Alignment.Center
         ) {
-            Row(
+            Box(
                 modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            listOf(Color(0xFF23273D), Color(0xFF212442))
+                        ),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .padding(vertical = 11.dp, horizontal = 5.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = uiState.nombreEquipoB,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Black,
                     color = Color.White,
-                    style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .fillMaxWidth()
                 )
             }
         }

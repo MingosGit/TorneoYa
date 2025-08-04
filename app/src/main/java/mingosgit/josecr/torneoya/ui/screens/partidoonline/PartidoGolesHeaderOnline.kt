@@ -8,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,7 +30,7 @@ fun PartidoGolesHeaderOnline(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 6.dp, horizontal = 14.dp), // Agrega padding lateral aquí
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -39,87 +38,92 @@ fun PartidoGolesHeaderOnline(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 4.dp)
-                .shadow(2.dp, RoundedCornerShape(13.dp))
+                .padding(end = 6.dp)
+                .shadow(2.dp, RoundedCornerShape(14.dp))
                 .background(
                     brush = Brush.horizontalGradient(
-                        listOf(
-                            Color(0xFF23273D),
-                            Color(0xFF1C1D25)
-                        )
+                        listOf(Color(0xFF191A23), Color(0xFF23273D))
                     ),
-                    shape = RoundedCornerShape(13.dp)
+                    shape = RoundedCornerShape(14.dp)
                 )
                 .border(
                     width = 2.dp,
                     brush = Brush.horizontalGradient(
                         listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
                     ),
-                    shape = RoundedCornerShape(13.dp)
+                    shape = RoundedCornerShape(14.dp)
                 )
-                .padding(vertical = 9.dp, horizontal = 2.dp)
+                .padding(vertical = 4.dp, horizontal = 6.dp)
         ) {
             Text(
                 text = "${uiState.golesEquipoA}",
-                fontSize = 38.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        Text(
-            text = "-",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 8.dp),
-            textAlign = TextAlign.Center
-        )
+
+        // Botón recargar en el centro
+        if (onRecargarGoles != null) {
+            IconButton(
+                onClick = { onRecargarGoles() },
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(34.dp)
+                    .background(
+                        color = Color(0xFF23273D),
+                        shape = RoundedCornerShape(50)
+                    )
+                    .border(
+                        width = 1.5.dp,
+                        brush = Brush.horizontalGradient(
+                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                        ),
+                        shape = RoundedCornerShape(50)
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Recargar goles",
+                    tint = Color(0xFF8F5CFF),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        } else {
+            Spacer(Modifier.width(12.dp))
+        }
+
         // Marcador equipo B
         Box(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 4.dp)
-                .shadow(2.dp, RoundedCornerShape(13.dp))
+                .padding(start = 6.dp)
+                .shadow(2.dp, RoundedCornerShape(14.dp))
                 .background(
                     brush = Brush.horizontalGradient(
-                        listOf(
-                            Color(0xFF23273D),
-                            Color(0xFF1C1D25)
-                        )
+                        listOf(Color(0xFF23273D), Color(0xFF191A23))
                     ),
-                    shape = RoundedCornerShape(13.dp)
+                    shape = RoundedCornerShape(14.dp)
                 )
                 .border(
                     width = 2.dp,
                     brush = Brush.horizontalGradient(
                         listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
                     ),
-                    shape = RoundedCornerShape(13.dp)
+                    shape = RoundedCornerShape(14.dp)
                 )
-                .padding(vertical = 9.dp, horizontal = 2.dp)
+                .padding(vertical = 4.dp, horizontal = 6.dp)
         ) {
             Text(
                 text = "${uiState.golesEquipoB}",
-                fontSize = 38.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-        }
-        if (onRecargarGoles != null) {
-            IconButton(
-                onClick = { onRecargarGoles() },
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(38.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Recargar goles"
-                )
-            }
         }
     }
 }

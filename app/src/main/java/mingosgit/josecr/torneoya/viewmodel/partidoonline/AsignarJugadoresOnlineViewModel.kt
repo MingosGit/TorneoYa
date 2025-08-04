@@ -4,17 +4,21 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
-import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
-import com.google.firebase.auth.FirebaseAuth
-import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
+import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
+import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
+import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
+import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
+import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebaseRepository
+import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
+import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import com.google.firebase.firestore.FieldValue
-import kotlinx.coroutines.tasks.await
 
 class AsignarJugadoresOnlineViewModel(
     private val partidoUid: String,
@@ -22,7 +26,8 @@ class AsignarJugadoresOnlineViewModel(
     private val equipoBUid: String,
     private val partidoFirebaseRepository: PartidoFirebaseRepository,
     private val usuarioAuthRepository: UsuarioAuthRepository,
-    private val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity>
+    private val obtenerListaAmigos: suspend () -> List<AmigoFirebaseEntity>,
+    private val notificacionRepository: NotificacionFirebaseRepository = NotificacionFirebaseRepository()
 ) : ViewModel() {
 
     var equipoAJugadores = mutableStateListOf<JugadorFirebase>()
@@ -41,17 +46,17 @@ class AsignarJugadoresOnlineViewModel(
     var amigos: List<AmigoFirebaseEntity> by mutableStateOf(emptyList())
 
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
+
     suspend fun actualizarContadoresPartidosJugados(
         oldA: List<String>,
         oldB: List<String>,
         newA: List<String>,
         newB: List<String>
     ) {
-        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val db = FirebaseFirestore.getInstance()
         val antes = (oldA + oldB).toSet()
         val despues = (newA + newB).toSet()
 
-        // Jugadores añadidos y eliminados
         val añadidos = despues - antes
         val eliminados = antes - despues
 
@@ -66,6 +71,7 @@ class AsignarJugadoresOnlineViewModel(
                 .await()
         }
     }
+
     fun repartirAleatoriamente(jugadores: List<JugadorFirebase>) {
         val jugadoresLimpios = jugadores.filter { it.nombre.isNotBlank() }.shuffled()
         val mitad = jugadoresLimpios.size / 2
@@ -87,20 +93,21 @@ class AsignarJugadoresOnlineViewModel(
             val equipoB_uids = equipoBJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
             val equipoB_nombres = equipoBJugadores.mapNotNull { if (it.uid.isBlank() && it.nombre.isNotBlank()) it.nombre else null }
 
-            // OBTEN LOS QUE YA TIENEN ACCESO (para no machacar los admins/creador)
             val partido = partidoFirebaseRepository.obtenerPartido(partidoUid)
             val actuales = partido?.usuariosConAcceso ?: emptyList()
             val oldA = partido?.jugadoresEquipoA ?: emptyList()
             val oldB = partido?.jugadoresEquipoB ?: emptyList()
-            // Junta todos (sin repetir)
+
             val nuevosAccesos = (actuales + equipoA_uids + equipoB_uids).distinct()
+
             actualizarContadoresPartidosJugados(
                 oldA = oldA,
                 oldB = oldB,
                 newA = equipoA_uids,
                 newB = equipoB_uids
             )
-            // Guarda jugadores Y actualiza accesos
+
+            // Guardar jugadores y actualizar accesos
             partidoFirebaseRepository.actualizarJugadoresPartidoOnline(
                 partidoUid = partidoUid,
                 jugadoresEquipoA = equipoA_uids,
@@ -109,18 +116,33 @@ class AsignarJugadoresOnlineViewModel(
                 nombresManualEquipoB = equipoB_nombres
             )
 
-            // Actualiza accesos en el documento del partido
-            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            FirebaseFirestore.getInstance()
                 .collection("partidos")
                 .document(partidoUid)
                 .update("usuariosConAcceso", nuevosAccesos)
                 .await()
 
+            // NOTIFICACIONES: enviar notificación a jugadores añadidos nuevos (solo a los que entran ahora)
+            val jugadoresAgregados = (equipoA_uids + equipoB_uids).toSet() - (oldA + oldB).toSet()
+            jugadoresAgregados.forEach { uidJugador ->
+                lanzarNotificacionAsignacion(uidJugador)
+            }
+
             onFinish()
         }
     }
 
-
+    private suspend fun lanzarNotificacionAsignacion(usuarioUid: String) {
+        val usuario = usuarioAuthRepository.getUsuarioByUid(usuarioUid) ?: return
+        val notificacion = NotificacionFirebase(
+            tipo = "asignacion_jugador",
+            titulo = "Asignación a partido",
+            mensaje = "Has sido asignado como jugador en el partido $partidoUid.",
+            fechaHora = Timestamp.now(),
+            usuarioUid = usuarioUid
+        )
+        notificacionRepository.agregarNotificacion(notificacion)
+    }
 
     fun cargarJugadoresExistentes() {
         viewModelScope.launch {
@@ -131,11 +153,8 @@ class AsignarJugadoresOnlineViewModel(
 
     private suspend fun cargarUsuarioYAmigos() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        // Obtén mi usuario
         miUsuario = usuarioAuthRepository.getUsuarioByUid(uid)
-        // Obtén amigos
         amigos = obtenerListaAmigos()
-        // Arma la lista completa de seleccionables
         val jugadoresList = mutableListOf<JugadorFirebase>()
         miUsuario?.let {
             jugadoresList.add(
@@ -155,7 +174,6 @@ class AsignarJugadoresOnlineViewModel(
                 )
             )
         }
-        // Agrega también los jugadores "existentes" ya disponibles en la colección jugadores
         val uidsActuales = jugadoresList.map { it.uid }.toSet()
         jugadoresExistentes.forEach { j ->
             if (j.uid !in uidsActuales)

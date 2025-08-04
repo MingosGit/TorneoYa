@@ -3,7 +3,13 @@ package mingosgit.josecr.torneoya.ui.screens.partidoonline
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Settings
@@ -12,6 +18,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -56,10 +64,22 @@ fun VisualizarPartidoOnlineScreen(
         }
     }
 
+    // FONDO ESTILO MODERNO
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
+    )
+
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("Visualizar Partido Online") },
+                title = { Text("Partido Online", color = Color.White) },
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = Color(0xFF23273D)
+                ),
                 actions = {
                     IconButton(onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -69,7 +89,8 @@ fun VisualizarPartidoOnlineScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Default.Share,
-                            contentDescription = "Compartir UID"
+                            contentDescription = "Compartir UID",
+                            tint = Color(0xFF8F5CFF)
                         )
                     }
                     IconButton(onClick = {
@@ -88,14 +109,16 @@ fun VisualizarPartidoOnlineScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Administrar Partido"
+                            contentDescription = "Administrar Partido",
+                            tint = Color(0xFF8F5CFF)
                         )
                     }
                     if (!esCreador) {
                         IconButton(onClick = { showDejarDeVerDialog = true }) {
                             Icon(
                                 imageVector = Icons.Default.ExitToApp,
-                                contentDescription = "Dejar de visualizar"
+                                contentDescription = "Dejar de visualizar",
+                                tint = Color(0xFFFF7675)
                             )
                         }
                     }
@@ -103,7 +126,12 @@ fun VisualizarPartidoOnlineScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(modernBackground)
+                .padding(innerPadding)
+        ) {
             VisualizarPartidoOnlineContent(
                 modifier = Modifier.fillMaxSize(),
                 uiState = uiState,
@@ -112,19 +140,17 @@ fun VisualizarPartidoOnlineScreen(
                 partidoUid = partidoUid
             )
 
-            if (showCopiedMessage) {
-                LaunchedEffect(showCopiedMessage) {
-                    if (showCopiedMessage) {
-                        scope.launch {
-                            delay(2000)
-                            showCopiedMessage = false
-                        }
-                    }
-                }
+            AnimatedVisibility(
+                visible = showCopiedMessage,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 Snackbar(
                     modifier = Modifier
                         .padding(16.dp)
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.BottomCenter),
+                    containerColor = Color(0xFF23273D),
+                    contentColor = Color.White
                 ) {
                     Text("UID copiado al portapapeles")
                 }
@@ -135,11 +161,12 @@ fun VisualizarPartidoOnlineScreen(
                     onDismissRequest = { showPermisoDialog = false },
                     confirmButton = {
                         TextButton(onClick = { showPermisoDialog = false }) {
-                            Text("OK")
+                            Text("OK", color = Color(0xFF8F5CFF))
                         }
                     },
-                    title = { Text("Sin permisos") },
-                    text = { Text("No tienes permisos para administrar este partido.") }
+                    title = { Text("Sin permisos", color = Color.White) },
+                    text = { Text("No tienes permisos para administrar este partido.", color = Color(0xFFB7B7D1)) },
+                    containerColor = Color(0xFF23273D)
                 )
             }
 
@@ -153,16 +180,17 @@ fun VisualizarPartidoOnlineScreen(
                                 navController.popBackStack()
                             }
                         }) {
-                            Text("Sí, dejar de visualizar")
+                            Text("Sí, dejar de visualizar", color = Color(0xFFFF7675))
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDejarDeVerDialog = false }) {
-                            Text("Cancelar")
+                            Text("Cancelar", color = Color(0xFF8F5CFF))
                         }
                     },
-                    title = { Text("¿Dejar de visualizar este partido?") },
-                    text = { Text("Ya no podrás visualizar este partido. Podrás volver a verlo buscándolo por su UID.") }
+                    title = { Text("¿Dejar de visualizar este partido?", color = Color.White) },
+                    text = { Text("Ya no podrás visualizar este partido. Podrás volver a verlo buscándolo por su UID.", color = Color(0xFFB7B7D1)) },
+                    containerColor = Color(0xFF23273D)
                 )
             }
         }
