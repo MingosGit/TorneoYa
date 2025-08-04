@@ -2,6 +2,8 @@ package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterState
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,8 +40,8 @@ fun RegisterScreen(
 
     var navegarAConfirmarCorreo by remember { mutableStateOf(false) }
 
-    val blue = Color(0xFF296DFF)
-    val purple = Color(0xFF8F5CFF)
+    val blue = TorneoYaPalette.blue
+    val purple = TorneoYaPalette.violet
     val backgroundBrush = Brush.verticalGradient(
         0.0f to Color(0xFF181B26),
         0.25f to Color(0xFF22263B),
@@ -67,7 +71,7 @@ fun RegisterScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 22.dp)
                 .wrapContentHeight(align = Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -109,66 +113,120 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = nombreUsuario,
                 onValueChange = { nombreUsuario = it.trim() },
-                label = { Text("Nombre de usuario único") },
+                label = { Text("Nombre de usuario único", color = purple) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Person, contentDescription = null, tint = purple)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF222742), RoundedCornerShape(13.dp))
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        RoundedCornerShape(17.dp)
+                    ),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = Color.Transparent,
+                    focusedBorderColor = purple,
+                    unfocusedBorderColor = purple.copy(alpha = 0.6f),
+                    cursorColor = purple,
+ )
             )
             Spacer(Modifier.height(10.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
-                label = { Text("Email") },
+                label = { Text("Email", color = blue) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.MailOutline, contentDescription = null, tint = blue)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF222742), RoundedCornerShape(13.dp))
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        RoundedCornerShape(17.dp)
+                    ),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = Color.Transparent,
+                    focusedBorderColor = blue,
+                    unfocusedBorderColor = blue.copy(alpha = 0.6f),
+                    cursorColor = blue,
+                )
             )
             Spacer(Modifier.height(10.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña") },
+                label = { Text("Contraseña", color = blue) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Lock, contentDescription = null, tint = blue)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF222742), RoundedCornerShape(13.dp)),
-                visualTransformation = PasswordVisualTransformation()
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        RoundedCornerShape(17.dp)
+                    ),
+                visualTransformation = PasswordVisualTransformation(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = Color.Transparent,
+                    focusedBorderColor = blue,
+                    unfocusedBorderColor = blue.copy(alpha = 0.6f),
+                    cursorColor = blue,
+                )
             )
             Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = { registerViewModel.register(email, password, nombreUsuario) },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                enabled = registerState != RegisterState.Loading && email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = purple),
-                shape = RoundedCornerShape(15.dp)
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(purple, blue)),
+                        shape = RoundedCornerShape(15.dp)
+                    )
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                    )
+                    .clickable(enabled = registerState != RegisterState.Loading && email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank()) {
+                        registerViewModel.register(email, password, nombreUsuario)
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Text("Registrar", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                Text(
+                    "Registrar",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = if (registerState != RegisterState.Loading && email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank()) Color.White else Color.White.copy(alpha = 0.4f)
+                )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = {
-                    registerViewModel.clearState()
-                    navController.popBackStack()
-                },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(15.dp)
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(blue, purple)),
+                        shape = RoundedCornerShape(15.dp)
+                    )
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                    )
+                    .clickable {
+                        registerViewModel.clearState()
+                        navController.popBackStack()
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Text("¿Ya tienes cuenta? Inicia sesión", color = blue, fontWeight = FontWeight.SemiBold)
+                Text(
+                    "¿Ya tienes cuenta? Inicia sesión",
+                    color = blue,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
             AnimatedVisibility(

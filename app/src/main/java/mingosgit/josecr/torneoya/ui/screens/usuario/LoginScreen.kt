@@ -2,6 +2,8 @@ package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +26,7 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
 import mingosgit.josecr.torneoya.viewmodel.usuario.ResetPasswordState
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,10 +40,10 @@ fun LoginScreen(
     val loginState by loginViewModel.loginState.collectAsState()
     val resetPasswordState by loginViewModel.resetPasswordState.collectAsState()
 
-    val blue = Color(0xFF296DFF)
-    val purple = Color(0xFF8F5CFF)
+    val blue = TorneoYaPalette.blue
+    val purple = TorneoYaPalette.violet
     val backgroundBrush = Brush.verticalGradient(
-        0.0f to Color(0xFF181B26),
+        0.0f to Color(0xFF1B1D29),
         0.25f to Color(0xFF22263B),
         0.7f to Color(0xFF1A1E29),
         1.0f to Color(0xFF161622)
@@ -53,25 +57,22 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 22.dp)
                 .wrapContentHeight(align = Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(16.dp))
             Surface(
                 shape = CircleShape,
-                color = blue.copy(alpha = 0.1f),
+                color = blue.copy(alpha = 0.13f),
                 shadowElevation = 0.dp,
-                modifier = Modifier
-                    .size(76.dp)
+                modifier = Modifier.size(76.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = "Login",
                     tint = blue,
-                    modifier = Modifier
-                        .padding(17.dp)
-                        .fillMaxSize()
+                    modifier = Modifier.padding(17.dp)
                 )
             }
 
@@ -81,14 +82,14 @@ fun LoginScreen(
                 text = "Iniciar Sesión",
                 color = Color.White,
                 fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Black
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = "Accede a tu cuenta para continuar",
                 color = Color(0xFFB7B7D1),
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Normal
             )
 
             Spacer(Modifier.height(30.dp))
@@ -96,59 +97,108 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
-                label = { Text("Email") },
+                label = { Text("Email", color = blue) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.MailOutline, contentDescription = "Email", tint = blue)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF222742), RoundedCornerShape(13.dp))
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        RoundedCornerShape(17.dp)
+                    ),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = Color.Transparent,
+                    focusedBorderColor = blue,
+                    unfocusedBorderColor = blue.copy(alpha = 0.6f),
+                    cursorColor = blue,
+                )
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(Modifier.height(14.dp))
 
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña") },
+                label = { Text("Contraseña", color = purple) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Lock, contentDescription = "Contraseña", tint = purple)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF222742), RoundedCornerShape(13.dp)),
-                visualTransformation = PasswordVisualTransformation()
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        RoundedCornerShape(17.dp)
+                    ),
+                visualTransformation = PasswordVisualTransformation(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = Color.Transparent,
+                    focusedBorderColor = purple,
+                    unfocusedBorderColor = purple.copy(alpha = 0.6f),
+                    cursorColor = purple,
+                )
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(Modifier.height(18.dp))
 
-            Button(
-                onClick = { loginViewModel.login(email, password) },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                enabled = loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6,
-                colors = ButtonDefaults.buttonColors(containerColor = blue),
-                shape = RoundedCornerShape(15.dp)
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(blue, purple)),
+                        shape = RoundedCornerShape(15.dp)
+                    )
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                    )
+                    .clickable(enabled = loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6) {
+                        loginViewModel.login(email, password)
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Text("Entrar", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                Text(
+                    "Entrar",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = if (loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6) Color.White else Color.White.copy(alpha = 0.4f)
+                )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = {
-                    loginViewModel.clearState()
-                    navController.navigate("register")
-                },
+
+            Spacer(Modifier.height(8.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(15.dp)
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(blue, purple)),
+                        shape = RoundedCornerShape(15.dp)
+                    )
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                    )
+                    .clickable {
+                        loginViewModel.clearState()
+                        navController.navigate("register")
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Text("¿No tienes cuenta? Regístrate", color = blue, fontWeight = FontWeight.SemiBold)
+                Text(
+                    "¿No tienes cuenta? Regístrate",
+                    color = blue,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
-            Spacer(modifier = Modifier.height(4.dp))
+
+            Spacer(Modifier.height(4.dp))
+
             TextButton(
                 onClick = { loginViewModel.enviarCorreoRestablecerPassword(email) },
                 enabled = email.isNotBlank() && resetPasswordState != ResetPasswordState.Loading,
@@ -183,7 +233,6 @@ fun LoginScreen(
                         val nombreUsuarioOnline = (loginState as LoginState.Success).usuario.nombreUsuario
                         LaunchedEffect(Unit) {
                             globalUserViewModel.setNombreUsuarioOnline(nombreUsuarioOnline)
-                            // Reiniciar la app al iniciar sesión
                             globalUserViewModel.reiniciarApp()
                         }
                     }
@@ -220,6 +269,7 @@ fun LoginScreen(
                     else -> Unit
                 }
             }
+
             Spacer(Modifier.height(32.dp))
         }
     }
