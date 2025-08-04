@@ -1,10 +1,9 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -13,11 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,14 +24,13 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel
+import java.util.*
 
 @Composable
 fun CrearPartidoOnlineScreen(
     navController: NavController,
     viewModel: CreatePartidoOnlineViewModel
 ) {
-    val context = LocalContext.current
-
     var equipoA by rememberSaveable { mutableStateOf("") }
     var equipoB by rememberSaveable { mutableStateOf("") }
     var fecha by rememberSaveable { mutableStateOf("") }
@@ -47,32 +45,11 @@ fun CrearPartidoOnlineScreen(
     var mostrarErrores by rememberSaveable { mutableStateOf(false) }
     var guardando by remember { mutableStateOf(false) }
 
-    val calendar = remember { java.util.Calendar.getInstance() }
     val scope = rememberCoroutineScope()
 
-    val datePickerDialog = remember {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                fecha = "%02d-%02d-%04d".format(dayOfMonth, month + 1, year)
-            },
-            calendar.get(java.util.Calendar.YEAR),
-            calendar.get(java.util.Calendar.MONTH),
-            calendar.get(java.util.Calendar.DAY_OF_MONTH)
-        )
-    }
-
-    val timePickerDialog = remember {
-        TimePickerDialog(
-            context,
-            { _, hourOfDay, minute ->
-                horaInicio = "%02d:%02d".format(hourOfDay, minute)
-            },
-            calendar.get(java.util.Calendar.HOUR_OF_DAY),
-            calendar.get(java.util.Calendar.MINUTE),
-            true
-        )
-    }
+    // PICKERS CUSTOM
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     fun validarCampos(): Boolean {
         val errores = mutableMapOf<String, Boolean>()
@@ -142,14 +119,14 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(Modifier.height(13.dp))
 
-            // FECHA Y HORA
+            // FECHA Y HORA (USANDO CUSTOM PICKERS)
             Row(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 GradientButton(
                     text = if (fecha.isBlank()) "Seleccionar fecha" else fecha,
-                    onClick = { datePickerDialog.show() },
+                    onClick = { showDatePicker = true },
                     modifier = Modifier.weight(1f),
                     isError = mostrarErrores && camposError["fecha"] == true,
                     height = 58.dp
@@ -157,7 +134,7 @@ fun CrearPartidoOnlineScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 GradientButton(
                     text = if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio,
-                    onClick = { timePickerDialog.show() },
+                    onClick = { showTimePicker = true },
                     modifier = Modifier.weight(1f),
                     isError = mostrarErrores && camposError["horaInicio"] == true,
                     height = 58.dp
@@ -209,7 +186,7 @@ fun CrearPartidoOnlineScreen(
                 )
             }
 
-            // CAMPOS DE NUMEROS
+            // CAMPOS DE NÚMEROS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -365,10 +342,29 @@ fun CrearPartidoOnlineScreen(
                 }
             }
         }
+
+        // PICKERS CUSTOM DIALOGS
+        CustomDatePickerDialog(
+            show = showDatePicker,
+            initialDate = Calendar.getInstance(),
+            onDismiss = { showDatePicker = false },
+            onDateSelected = { cal ->
+                fecha = "%02d-%02d-%04d".format(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR))
+            }
+        )
+        CustomTimePickerDialog(
+            show = showTimePicker,
+            initialHour = horaInicio.takeIf { it.isNotBlank() }?.split(":")?.get(0)?.toIntOrNull() ?: 0,
+            initialMinute = horaInicio.takeIf { it.isNotBlank() }?.split(":")?.get(1)?.toIntOrNull() ?: 0,
+            onDismiss = { showTimePicker = false },
+            onTimeSelected = { hour, min ->
+                horaInicio = "%02d:%02d".format(hour, min)
+            }
+        )
     }
 }
 
-// ------------------- COMPONENTES REUTILIZABLES ESTILO TORNEOYA -------------------
+// ------------------- COMPONENTES REUTILIZABLES ESTILO TORNEOYA + PICKERS CUSTOM -------------------
 
 @Composable
 fun GradientOutlinedField(
