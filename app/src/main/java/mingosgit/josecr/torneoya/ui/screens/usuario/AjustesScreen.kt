@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 private val cardShape = RoundedCornerShape(16.dp)
@@ -75,12 +76,14 @@ fun AjustesScreen(
                 mostrarAlerta = false
                 navController.navigate("register")
             },
-            blue = blue,
+            blue = TorneoYaPalette.blue,
+            violet = TorneoYaPalette.violet,
             background = Color(0xFF22294A),
-            lightText = lightText,
-            mutedText = mutedText
+            lightText = Color(0xFFF7F7FF),
+            mutedText = Color(0xFFB7B7D1)
         )
     }
+
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -162,30 +165,33 @@ fun AjustesScreen(
         }
     }
 }
-
 @Composable
 private fun CustomAjustesAlertDialog(
     onDismiss: () -> Unit,
     onLogin: () -> Unit,
     onRegister: () -> Unit,
     blue: Color,
+    violet: Color,
     background: Color,
     lightText: Color,
     mutedText: Color
 ) {
     Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(19.dp),
-            color = background,
-            tonalElevation = 0.dp,
-            shadowElevation = 12.dp,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp)
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(listOf(blue, violet)),
+                    shape = RoundedCornerShape(18.dp)
+                )
+                .clip(RoundedCornerShape(18.dp))
+                .background(background)
         ) {
             Column(
                 Modifier
-                    .padding(horizontal = 26.dp, vertical = 28.dp),
+                    .padding(horizontal = 22.dp, vertical = 26.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -194,36 +200,53 @@ private fun CustomAjustesAlertDialog(
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(11.dp))
                 Text(
                     text = "Debes iniciar sesión o registrarte para acceder a tu cuenta online.",
                     color = mutedText,
                     fontSize = 15.sp
                 )
-                Spacer(Modifier.height(28.dp))
+                Spacer(Modifier.height(25.dp))
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Button(
+                    OutlinedButton(
                         onClick = onLogin,
-                        colors = ButtonDefaults.buttonColors(containerColor = blue),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(violet, blue))
+                        ),
                         shape = RoundedCornerShape(11.dp),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        contentPadding = PaddingValues(0.dp) // Elimina padding interno
                     ) {
-                        Text("Iniciar sesión", color = Color.White, fontWeight = FontWeight.Bold)
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Text("Iniciar sesión", color = violet, fontWeight = FontWeight.Bold)
+                        }
                     }
-                    Spacer(Modifier.width(16.dp))
                     OutlinedButton(
                         onClick = onRegister,
-                        border = ButtonDefaults.outlinedButtonBorder,
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(blue, violet))
+                        ),
                         shape = RoundedCornerShape(11.dp),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
-                        Text("Registrarme", color = blue, fontWeight = FontWeight.SemiBold)
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Text("Registrarme", color = blue, fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
             }
         }
     }
 }
+
+
