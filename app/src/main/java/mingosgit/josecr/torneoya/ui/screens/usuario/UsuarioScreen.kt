@@ -183,18 +183,14 @@ fun UsuarioScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(modernBackground)
-                .padding(padding),
+                .padding(horizontal = 0.dp, vertical = 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 6.dp, // TOP DINÁMICO Y PEGADO
-                        start = 18.dp,
-                        end = 18.dp,
-                        bottom = 14.dp
-                    ),
+                    .padding(horizontal = 18.dp, vertical = 18.dp), // IGUAL QUE AmigosScreen
+
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
@@ -263,7 +259,7 @@ fun UsuarioScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Justo antes, recoge el avatar del GlobalUserViewModel
             val avatar by globalUserViewModel.avatar.collectAsState()
