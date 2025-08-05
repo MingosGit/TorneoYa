@@ -15,6 +15,7 @@ import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 
 class AdministrarJugadoresOnlineViewModel(
     private val partidoUid: String,
@@ -70,12 +71,27 @@ class AdministrarJugadoresOnlineViewModel(
         miUsuario.value = usuarioAuthRepository.getUsuarioByUid(uid)
         amigos.value = obtenerListaAmigos()
         val jugadoresList = mutableListOf<JugadorFirebase>()
+
+        // --- CORRECCIÓN SEGURA DEL CAMPO AVATAR ---
+        suspend fun getAvatarSafe(usuarioUid: String): Int? {
+            val db = FirebaseFirestore.getInstance()
+            val doc = db.collection("usuarios").document(usuarioUid).get().await()
+            val avatarValue = doc.get("avatar")
+            return when (avatarValue) {
+                is String -> avatarValue.toIntOrNull()
+                is Long -> avatarValue.toInt()
+                is Int -> avatarValue
+                else -> null
+            }
+        }
+
         miUsuario.value?.let {
             jugadoresList.add(
                 JugadorFirebase(
                     uid = it.uid,
                     nombre = it.nombreUsuario,
-                    email = it.email
+                    email = it.email,
+                    avatar = getAvatarSafe(it.uid)
                 )
             )
         }
@@ -84,14 +100,19 @@ class AdministrarJugadoresOnlineViewModel(
                 JugadorFirebase(
                     uid = amigo.uid,
                     nombre = amigo.nombreUsuario,
-                    email = ""
+                    email = "",
+                    avatar = getAvatarSafe(amigo.uid)
                 )
             )
         }
         val uidsActuales = jugadoresList.map { it.uid }.toSet()
         jugadoresExistentes.value.forEach { j ->
             if (j.uid !in uidsActuales)
-                jugadoresList.add(j)
+                jugadoresList.add(
+                    j.copy(
+                        avatar = getAvatarSafe(j.uid)
+                    )
+                )
         }
         jugadoresDisponiblesTodos.value = jugadoresList
     }
