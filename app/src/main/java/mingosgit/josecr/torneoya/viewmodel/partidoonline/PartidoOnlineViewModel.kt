@@ -27,7 +27,8 @@ class PartidoOnlineViewModel(
 ) : ViewModel() {
     private val _partidos = MutableStateFlow<List<PartidoFirebase>>(emptyList())
     val partidos: StateFlow<List<PartidoFirebase>> = _partidos
-
+    private val _cargandoPartidos = MutableStateFlow(true)
+    val cargandoPartidos: StateFlow<Boolean> = _cargandoPartidos
     private val _partidosConNombres = MutableStateFlow<List<PartidoConNombresOnline>>(emptyList())
     val partidosConNombres: StateFlow<List<PartidoConNombresOnline>> = _partidosConNombres
 
@@ -39,6 +40,7 @@ class PartidoOnlineViewModel(
 
     fun cargarPartidosConNombres() {
         viewModelScope.launch {
+            _cargandoPartidos.value = true
             val partidos = partidoRepo.listarPartidosPorUsuario(usuarioUid)
             val equipos = mutableMapOf<String, EquipoFirebase>()
             val equipoUids = partidos.flatMap { listOf(it.equipoAId, it.equipoBId) }.distinct()
@@ -67,6 +69,7 @@ class PartidoOnlineViewModel(
                 )
             }
             _partidosConNombres.value = partidosNombres
+            _cargandoPartidos.value = false
         }
     }
 

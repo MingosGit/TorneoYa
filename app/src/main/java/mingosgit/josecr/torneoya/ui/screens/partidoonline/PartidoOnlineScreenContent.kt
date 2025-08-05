@@ -51,6 +51,7 @@ fun PartidoOnlineScreenContent(
     navController: NavController,
     partidoViewModel: PartidoOnlineViewModel
 ) {
+    val cargandoPartidos by partidoViewModel.cargandoPartidos.collectAsState()
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) { partidoViewModel.cargarPartidosConNombres() }
     val clipboardManager = LocalClipboardManager.current
@@ -574,7 +575,29 @@ fun PartidoOnlineScreenContent(
                     )
                 }
             }
-
+            if (cargandoPartidos) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 38.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(
+                            color = Color(0xFF296DFF),
+                            strokeWidth = 3.dp,
+                            modifier = Modifier.size(46.dp)
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            text = "Cargando partidos...",
+                            color = Color(0xFFB7B7D1),
+                            fontSize = 17.sp
+                        )
+                    }
+                }
+                return@Column
+            }
             // ---- CARD DE PARTIDO: Borde gradient blue-violet, fondo dark, bordes 17dp, texto blanco ----
             LazyColumn {
                 items(sortedPartidos) { partido ->
