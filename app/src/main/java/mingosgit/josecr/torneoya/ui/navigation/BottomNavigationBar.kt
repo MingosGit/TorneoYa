@@ -17,11 +17,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
+fun BottomNavigationBar(
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Online,
-        BottomNavItem.Amigos, // AGREGADO
+        BottomNavItem.Amigos,
         BottomNavItem.Usuario
     )
     val navBackStackEntry = navController.currentBackStackEntryAsState()
@@ -30,7 +33,8 @@ fun BottomNavigationBar(navController: NavController) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 3.dp,
-        shadowElevation = 12.dp
+        shadowElevation = 12.dp,
+        modifier = modifier
     ) {
         Row(
             modifier = Modifier

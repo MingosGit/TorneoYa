@@ -233,7 +233,7 @@ fun PartidoOnlineScreenContent(
             // BOTÓN SEMITRANSPARENTE
             Box(
                 modifier = Modifier
-                    .padding(bottom = 8.dp, end = 8.dp)
+                    .padding(bottom = 1.dp, end = 1.dp) // <- SÚBELO MÁS CON MÁS BOTTOM
                     .clip(RoundedCornerShape(17.dp))
                     .background(Color(0xCC23273D)) // <--- SEMITRANSPARENTE (80% opacidad)
                     .border(
@@ -273,8 +273,12 @@ fun PartidoOnlineScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .background(modernBackground)
-                .padding(innerPadding)
-                .padding(16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp,
+                    top = 26.dp
+                )
         ) {
             Text(
                 text = "Partidos Online",

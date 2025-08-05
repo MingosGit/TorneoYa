@@ -189,9 +189,15 @@ fun UsuarioScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 24.dp),
+                    .padding(
+                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 6.dp, // TOP DINÁMICO Y PEGADO
+                        start = 18.dp,
+                        end = 18.dp,
+                        bottom = 14.dp
+                    ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Text(
                     "Perfil",
                     fontSize = 28.sp,

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -32,23 +33,17 @@ import android.graphics.Color as AndroidColor
 
 class MainActivity : ComponentActivity() {
 
-    // SINGLETON PARA HOMESCREEN
     private lateinit var homeViewModel: HomeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_TorneoYa)
         super.onCreate(savedInstanceState)
 
-        // COLOR DE LA BARRA DE ESTADO NEGRA (AUNQUE DÉ WARNING)
         window.statusBarColor = AndroidColor.BLACK
+        window.navigationBarColor = AndroidColor.BLACK
+        WindowCompat.getInsetsController(window, window.decorView)?.isAppearanceLightStatusBars = false
+        WindowCompat.setDecorFitsSystemWindows(window, false) // CAMBIA ESTO A FALSE
 
-        // ICONOS DE LA BARRA SIEMPRE BLANCOS (APARIENCIA OSCURA)
-        WindowCompat.getInsetsController(window, window.decorView)?.isAppearanceLightStatusBars =
-            false
-
-        WindowCompat.setDecorFitsSystemWindows(window, true)
-
-        // HOMEVIEWMODEL SINGLETON A NIVEL DE ACTIVITY
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         setContent {
@@ -60,8 +55,7 @@ class MainActivity : ComponentActivity() {
                 val db = AppDatabase.getInstance(context)
                 val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
                 val jugadorRepository = JugadorRepository(db.jugadorDao())
-                val partidoEquipoJugadorRepository =
-                    PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
+                val partidoEquipoJugadorRepository = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
 
                 val partidoRepository = PartidoRepository(
                     db.partidoDao(),
@@ -85,7 +79,6 @@ class MainActivity : ComponentActivity() {
                     PartidoViewModelFactory(partidoRepository)
                 )[PartidoViewModel::class.java]
 
-                // GLOBAL USER VIEWMODEL PARA AUTENTICACION Y NOMBRE
                 val globalUserViewModel = ViewModelProvider(
                     this@MainActivity,
                     ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -97,7 +90,6 @@ class MainActivity : ComponentActivity() {
                     BottomNavItem.Online.route,
                     BottomNavItem.Amigos.route,
                     BottomNavItem.Usuario.route -> true
-
                     "partido_online" -> true
                     "visualizar_partido_online/{partidoUid}" -> false
                     else -> false
@@ -106,7 +98,7 @@ class MainActivity : ComponentActivity() {
                 androidx.compose.material3.Scaffold(
                     bottomBar = {
                         if (showBottomBar) {
-                            BottomNavigationBar(navController)
+                            BottomNavigationBar(navController, modifier = Modifier.navigationBarsPadding())
                         }
                     },
                     modifier = Modifier.fillMaxSize()
@@ -123,7 +115,7 @@ class MainActivity : ComponentActivity() {
                             partidoRepository = partidoRepository,
                             equipoRepository = equipoRepository,
                             globalUserViewModel = globalUserViewModel,
-                            homeViewModel = homeViewModel // PASA EL SINGLETON
+                            homeViewModel = homeViewModel
                         )
                     }
                 }
