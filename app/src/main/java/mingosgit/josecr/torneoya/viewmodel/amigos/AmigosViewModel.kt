@@ -8,16 +8,23 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.repository.AmigosRepository
+
+data class AmigoConAvatar(
+    val uid: String,
+    val nombreUsuario: String,
+    val avatar: Int?
+)
 
 class AmigosViewModel(
     private val repo: AmigosRepository = AmigosRepository(),
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : ViewModel() {
-    private val _amigos = MutableStateFlow<List<AmigoFirebaseEntity>>(emptyList())
-    val amigos: StateFlow<List<AmigoFirebaseEntity>> = _amigos
+    private val _amigos = MutableStateFlow<List<AmigoConAvatar>>(emptyList())
+    val amigos: StateFlow<List<AmigoConAvatar>> = _amigos
 
     private val _solicitudes = MutableStateFlow<List<UsuarioFirebaseEntity>>(emptyList())
     val solicitudes: StateFlow<List<UsuarioFirebaseEntity>> = _solicitudes
@@ -35,7 +42,25 @@ class AmigosViewModel(
         val uid = miUid
         if (uid.isBlank()) return
         viewModelScope.launch {
-            _amigos.value = repo.getAmigos(uid)
+            // Carga amigos con avatar
+            val amigosRaw = repo.getAmigos(uid)
+            val db = FirebaseFirestore.getInstance()
+            val amigosConAvatar = amigosRaw.map { amigo ->
+                var avatar: Int? = null
+                var nombre = amigo.nombreUsuario
+                try {
+                    val snap = db.collection("usuarios").document(amigo.uid).get().await()
+                    avatar = snap.getLong("avatar")?.toInt()
+                    nombre = snap.getString("nombreUsuario") ?: nombre
+                } catch (_: Exception) { }
+                AmigoConAvatar(
+                    uid = amigo.uid,
+                    nombreUsuario = nombre,
+                    avatar = avatar
+                )
+            }
+            _amigos.value = amigosConAvatar
+            // Carga solicitudes como antes
             _solicitudes.value = repo.getSolicitudes(uid)
         }
     }
@@ -73,5 +98,4 @@ class AmigosViewModel(
             return AmigosViewModel() as T
         }
     }
-
 }

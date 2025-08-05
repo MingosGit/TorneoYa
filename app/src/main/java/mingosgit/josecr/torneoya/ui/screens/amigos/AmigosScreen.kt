@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -320,13 +321,33 @@ fun AmigosScreen(
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        amigo.nombreUsuario.take(1).uppercase(),
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 21.sp
-                                    )
+                                    val context = LocalContext.current
+                                    val avatarNum = amigo.avatar ?: 0
+                                    val avatarResId = remember(avatarNum) {
+                                        if (avatarNum > 0)
+                                            context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
+                                        else
+                                            context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+                                    }
+                                    if (avatarResId != 0) {
+                                        Icon(
+                                            painter = painterResource(id = avatarResId),
+                                            contentDescription = "Avatar",
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(CircleShape)
+                                        )
+                                    } else {
+                                        Text(
+                                            amigo.nombreUsuario.take(1).uppercase(),
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 21.sp
+                                        )
+                                    }
                                 }
+
                                 Spacer(Modifier.width(15.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(
