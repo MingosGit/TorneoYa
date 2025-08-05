@@ -95,23 +95,32 @@ class AdministrarPartidoOnlineViewModel(
         val db = FirebaseFirestore.getInstance()
         val jugadores = mutableListOf<JugadorFirebase>()
         for (uid in uids.map { it.trim() }) {
+            // Primero intenta buscar en "jugadores"
             val snapJugador = db.collection("jugadores").document(uid).get().await()
             val jugador = snapJugador.toObject(JugadorFirebase::class.java)?.copy(uid = uid)
             if (jugador != null && jugador.nombre.isNotBlank()) {
                 jugadores.add(jugador)
                 continue
             }
+            // Si no hay jugador, busca en "usuarios"
             val snapUsuario = db.collection("usuarios").document(uid).get().await()
-            val nombreUsuario = snapUsuario.getString("nombreUsuario")
+            val nombreUsuario = snapUsuario.getString("nombreUsuario") ?: ""
             val email = snapUsuario.getString("email") ?: ""
-            val avatar = snapUsuario.getString("avatar")
-            if (!nombreUsuario.isNullOrBlank()) {
+            // --- CORRECTO: avatar se puede guardar como String, Long, Int o null ---
+            val avatarValue = snapUsuario.get("avatar")
+            val avatar: Int? = when (avatarValue) {
+                is String -> avatarValue.toIntOrNull()
+                is Long -> avatarValue.toInt()
+                is Int -> avatarValue
+                else -> null
+            }
+            if (nombreUsuario.isNotBlank()) {
                 jugadores.add(
                     JugadorFirebase(
                         uid = uid,
                         nombre = nombreUsuario,
                         email = email,
-                        avatar = null
+                        avatar = avatar
                     )
                 )
             }
@@ -173,8 +182,6 @@ class AdministrarPartidoOnlineViewModel(
                 "jugadorUid" to "",
                 "jugadorManual" to nombreJugadorManual,
                 "minuto" to minuto,
-                // CAMBIO CLAVE: si se pasa nombreAsistenteManual y NO es null o blank, guárdalo en "asistenciaNombreManual"
-                // si se pasa UID de asistente (jugador online) debe guardarse en "asistenciaJugadorUid" y NO en ""
                 "asistenciaJugadorUid" to "",
                 "asistenciaManual" to (nombreAsistenteManual ?: "")
             )

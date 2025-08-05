@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,12 +33,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MiCuentaScreen(
-    viewModel: MiCuentaViewModel = viewModel()
+    viewModel: MiCuentaViewModel = viewModel(),
+    globalUserViewModel: GlobalUserViewModel
 ) {
     val email by viewModel.email.collectAsState()
     val nombreUsuario by viewModel.nombreUsuario.collectAsState()
@@ -45,6 +50,9 @@ fun MiCuentaScreen(
     val cambioExitoso by viewModel.cambioNombreExitoso.collectAsState()
     val resetTimer by viewModel.resetTimer.collectAsState()
     val showMensajeReset by viewModel.showMensajeReset.collectAsState()
+
+    val avatar by globalUserViewModel.avatar.collectAsState()
+    val context = LocalContext.current
 
     var editandoNombre by remember { mutableStateOf(false) }
     var nuevoNombre by remember { mutableStateOf(TextFieldValue("")) }
@@ -120,21 +128,35 @@ fun MiCuentaScreen(
                         .padding(start = 18.dp, end = 9.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // AVATAR VISUAL
+                    val avatarRes = if (avatar == null || avatar == 0) {
+                        context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+                    } else {
+                        context.resources.getIdentifier("avatar_$avatar", "drawable", context.packageName)
+                    }
                     Box(
                         modifier = Modifier
                             .size(60.dp)
                             .clip(CircleShape)
-                            .background(
-                                brush = Brush.linearGradient(listOf(blue, violet)),
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(listOf(blue, violet)),
                                 shape = CircleShape
+                            )
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(Color(0xFF23273D), Color(0xFF1B1D29)),
+                                    radius = 90f
+                                )
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = if (nombreUsuario.isNotEmpty()) nombreUsuario.take(1).uppercase() else "",
-                            color = Color.White,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold
+                        Image(
+                            painter = painterResource(id = avatarRes),
+                            contentDescription = "Avatar de usuario",
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(CircleShape)
                         )
                     }
                     Spacer(Modifier.width(18.dp))
@@ -357,8 +379,6 @@ fun MiCuentaScreen(
                 mutedText = Color(0xFFB7B7D1)
             )
         }
-
-
 
         if (confirmarEliminarCuenta) {
             AlertDialog(

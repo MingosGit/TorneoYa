@@ -23,10 +23,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
-import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -47,13 +45,16 @@ fun VisualizarPartidoOnlineScreen(
     val uiState by vm.uiState.collectAsState()
 
     var esCreador by remember { mutableStateOf(false) }
+    var esAdmin by remember { mutableStateOf(false) }
 
-    // Obtiene si es creador
+    // Obtiene si es creador o admin
     LaunchedEffect(partidoUid, usuarioUid) {
         val firestore = FirebaseFirestore.getInstance()
         val snap = firestore.collection("partidos").document(partidoUid).get().await()
         val creadorUid = snap.getString("creadorUid") ?: ""
+        val administradores = (snap.get("administradores") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
         esCreador = usuarioUid == creadorUid
+        esAdmin = (usuarioUid == creadorUid) || administradores.contains(usuarioUid)
     }
 
     LaunchedEffect(partidoUid) { vm.cargarDatos(usuarioUid) }

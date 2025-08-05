@@ -252,8 +252,12 @@ fun NavGraph(
         composable("mi_cuenta") {
             val activity = LocalContext.current as ComponentActivity
             val miCuentaVM = viewModel<MiCuentaViewModel>(activity)
-            MiCuentaScreen(viewModel = miCuentaVM)
+            MiCuentaScreen(
+                viewModel = miCuentaVM,
+                globalUserViewModel = globalUserViewModel
+            )
         }
+
 
 
         composable("solicitudes_pendientes") {
