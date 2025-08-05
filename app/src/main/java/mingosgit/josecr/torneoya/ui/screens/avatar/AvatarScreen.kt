@@ -33,7 +33,7 @@ fun AvatarScreen(
     globalUserViewModel: GlobalUserViewModel
 ) {
     val totalAvatares = 21
-    val avatarList = (1..totalAvatares).toList()
+    val avatarList = listOf(0) + (1..totalAvatares)  // 0 será el placeholder
     val context = LocalContext.current
 
     val avatarActual by globalUserViewModel.avatar.collectAsState()
@@ -122,11 +122,11 @@ fun AvatarScreen(
                         )
                     )
             ) {
-                val avatarRes = context.resources.getIdentifier(
-                    "avatar_${selectedAvatar}",
-                    "drawable",
-                    context.packageName
-                )
+                val avatarRes = if (selectedAvatar == 0) {
+                    context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+                } else {
+                    context.resources.getIdentifier("avatar_${selectedAvatar}", "drawable", context.packageName)
+                }
                 Image(
                     painter = painterResource(id = avatarRes),
                     contentDescription = "Avatar Seleccionado",
@@ -159,19 +159,19 @@ fun AvatarScreen(
                         .padding(horizontal = 8.dp)
                 ) {
                     items(avatarList) { avatarNum ->
+                        val isPlaceholder = avatarNum == 0
+                        val avatarRes = if (isPlaceholder) {
+                            context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+                        } else {
+                            context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
+                        }
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.padding(7.dp)
                         ) {
                             Image(
-                                painter = painterResource(
-                                    id = context.resources.getIdentifier(
-                                        "avatar_$avatarNum",
-                                        "drawable",
-                                        context.packageName
-                                    )
-                                ),
-                                contentDescription = "Avatar $avatarNum",
+                                painter = painterResource(id = avatarRes),
+                                contentDescription = if (isPlaceholder) "Avatar vacío" else "Avatar $avatarNum",
                                 modifier = Modifier
                                     .size(64.dp)
                                     .clip(CircleShape)
