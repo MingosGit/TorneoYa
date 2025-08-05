@@ -19,12 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,8 +123,17 @@ fun SolicitudesPendientesScreen(
                 ) {
                     items(solicitudes) { solicitud ->
                         SolicitudItem(
-                            usuario = solicitud,
-                            onAceptar = { amigosViewModel.aceptarSolicitud(solicitud) },
+                            uid = solicitud.uid,
+                            nombreUsuario = solicitud.nombreUsuario,
+                            avatar = solicitud.avatar,
+                            onAceptar = {
+                                amigosViewModel.aceptarSolicitud(
+                                    mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity(
+                                        uid = solicitud.uid,
+                                        nombreUsuario = solicitud.nombreUsuario
+                                    )
+                                )
+                            },
                             onRechazar = { amigosViewModel.rechazarSolicitud(solicitud.uid) }
                         )
                         Spacer(Modifier.height(13.dp))
@@ -136,7 +146,9 @@ fun SolicitudesPendientesScreen(
 
 @Composable
 fun SolicitudItem(
-    usuario: UsuarioFirebaseEntity,
+    uid: String,
+    nombreUsuario: String,
+    avatar: Int?,
     onAceptar: () -> Unit,
     onRechazar: () -> Unit
 ) {
@@ -161,7 +173,15 @@ fun SolicitudItem(
                 .padding(vertical = 16.dp, horizontal = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Inicial circular con gradiente
+            // Avatar circular con gradiente y recurso de drawable
+            val context = LocalContext.current
+            val avatarNum = avatar ?: 0
+            val avatarResId = remember(avatarNum) {
+                if (avatarNum > 0)
+                    context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
+                else
+                    context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+            }
             Box(
                 modifier = Modifier
                     .size(50.dp)
@@ -180,12 +200,23 @@ fun SolicitudItem(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    usuario.nombreUsuario.take(1).uppercase(),
-                    fontWeight = FontWeight.Black,
-                    color = Color.White,
-                    fontSize = 22.sp
-                )
+                if (avatarResId != 0) {
+                    Icon(
+                        painter = painterResource(id = avatarResId),
+                        contentDescription = "Avatar",
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Text(
+                        nombreUsuario.take(1).uppercase(),
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                        fontSize = 22.sp
+                    )
+                }
             }
             Spacer(Modifier.width(16.dp))
             Column(
@@ -193,7 +224,7 @@ fun SolicitudItem(
                     .weight(1f)
             ) {
                 Text(
-                    usuario.nombreUsuario,
+                    nombreUsuario,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = Color(0xFFF7F7FF)

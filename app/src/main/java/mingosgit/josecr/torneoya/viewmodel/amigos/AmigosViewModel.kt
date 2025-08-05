@@ -19,6 +19,12 @@ data class AmigoConAvatar(
     val avatar: Int?
 )
 
+data class UsuarioConAvatar(
+    val uid: String,
+    val nombreUsuario: String,
+    val avatar: Int?
+)
+
 class AmigosViewModel(
     private val repo: AmigosRepository = AmigosRepository(),
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -26,8 +32,8 @@ class AmigosViewModel(
     private val _amigos = MutableStateFlow<List<AmigoConAvatar>>(emptyList())
     val amigos: StateFlow<List<AmigoConAvatar>> = _amigos
 
-    private val _solicitudes = MutableStateFlow<List<UsuarioFirebaseEntity>>(emptyList())
-    val solicitudes: StateFlow<List<UsuarioFirebaseEntity>> = _solicitudes
+    private val _solicitudes = MutableStateFlow<List<UsuarioConAvatar>>(emptyList())
+    val solicitudes: StateFlow<List<UsuarioConAvatar>> = _solicitudes
 
     private val _mensaje = MutableStateFlow<String?>(null)
     val mensaje: StateFlow<String?> = _mensaje
@@ -42,7 +48,7 @@ class AmigosViewModel(
         val uid = miUid
         if (uid.isBlank()) return
         viewModelScope.launch {
-            // Carga amigos con avatar
+            // Amigos
             val amigosRaw = repo.getAmigos(uid)
             val db = FirebaseFirestore.getInstance()
             val amigosConAvatar = amigosRaw.map { amigo ->
@@ -60,11 +66,26 @@ class AmigosViewModel(
                 )
             }
             _amigos.value = amigosConAvatar
-            // Carga solicitudes como antes
-            _solicitudes.value = repo.getSolicitudes(uid)
+
+            // Solicitudes: añadir avatar
+            val solicitudesRaw = repo.getSolicitudes(uid)
+            val solicitudesConAvatar = solicitudesRaw.map { solicitud ->
+                var avatar: Int? = null
+                var nombre = solicitud.nombreUsuario
+                try {
+                    val snap = db.collection("usuarios").document(solicitud.uid).get().await()
+                    avatar = snap.getLong("avatar")?.toInt()
+                    nombre = snap.getString("nombreUsuario") ?: nombre
+                } catch (_: Exception) { }
+                UsuarioConAvatar(
+                    uid = solicitud.uid,
+                    nombreUsuario = nombre,
+                    avatar = avatar
+                )
+            }
+            _solicitudes.value = solicitudesConAvatar
         }
     }
-
     fun aceptarSolicitud(usuario: UsuarioFirebaseEntity) {
         val uid = miUid
         viewModelScope.launch {
