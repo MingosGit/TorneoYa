@@ -1,6 +1,7 @@
 package mingosgit.josecr.torneoya.ui.screens.home
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,6 +30,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+
 
 data class HomeProximoPartidoUi(
     val partido: PartidoFirebase,
@@ -45,6 +51,17 @@ fun HomeScreen(
     val proximoPartidoUi by viewModel.proximoPartidoUi.collectAsState()
     val cargandoProx by viewModel.cargandoProx.collectAsState()
     val scope = rememberCoroutineScope()
+    val globalUserViewModel: GlobalUserViewModel = viewModel()
+    LaunchedEffect(Unit) {
+        globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva()
+    }
+    val avatar by globalUserViewModel.avatar.collectAsState()
+    val context = LocalContext.current
+    val avatarRes = if (avatar != null)
+        context.resources.getIdentifier("avatar_${avatar}", "drawable", context.packageName)
+    else
+        context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+
 
     val modernBackground = Brush.verticalGradient(
         0.0f to Color(0xFF1B1D29),
@@ -270,19 +287,45 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFF22243A),
-                    shadowElevation = 14.dp,
-                    modifier = Modifier.size(56.dp)
+                    color = Color.Transparent,
+                    shadowElevation = 0.dp,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = CircleShape
+                        )
+                        .clip(CircleShape)
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Perfil",
-                        tint = Color(0xFFFFB531),
-                        modifier = Modifier.padding(14.dp)
-                    )
+                    if (avatarRes != 0) {
+                        Image(
+                            painter = painterResource(id = avatarRes),
+                            contentDescription = "Avatar",
+                            modifier = Modifier
+                                .size(46.dp)
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("👤", fontSize = 32.sp)
+                        }
+                    }
                 }
+
                 Spacer(Modifier.width(14.dp))
                 Column {
                     Text(

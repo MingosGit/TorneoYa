@@ -284,7 +284,13 @@ fun UsuarioScreen(
                             listOf(Color(0xFF23273D), Color(0xFF1C1D25))
                         )
                     )
-                    .clickable { navController.navigate("avatar") },
+                    .let { baseModifier ->
+                        if (sesionOnlineActiva) {
+                            baseModifier.clickable { navController.navigate("avatar") }
+                        } else {
+                            baseModifier // sin clickable
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 val context = LocalContext.current
@@ -305,6 +311,7 @@ fun UsuarioScreen(
                     Text("👤", fontSize = 52.sp)
                 }
             }
+
 
 
 
