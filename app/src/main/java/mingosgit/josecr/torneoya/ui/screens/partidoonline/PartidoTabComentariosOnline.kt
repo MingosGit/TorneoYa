@@ -24,6 +24,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +59,6 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val oldComentariosSize = remember { mutableStateOf(0) }
     LaunchedEffect(comentariosSize) {
         if (comentariosSize > oldComentariosSize.value) {
-            // Scroll al último comentario (el más nuevo está arriba si sortedByDescending, abajo si sortedBy)
             listState.animateScrollToItem(0)
         }
         oldComentariosSize.value = comentariosSize
@@ -111,7 +112,6 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                     tint = TorneoYaPalette.blue
                 )
             }
-            // BOTÓN ENVIAR OUTLINED MODERNO
             OutlinedIconSendButton(
                 enabled = textoComentario.isNotBlank() && !isLoading,
                 onClick = {
@@ -158,28 +158,16 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                             .padding(horizontal = 7.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        // Avatar circular con inicial
-                        Box(
-                            modifier = Modifier
-                                .size(39.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        listOf(
-                                            votoColor.copy(alpha = 0.88f),
-                                            TorneoYaPalette.violet.copy(alpha = 0.80f)
-                                        )
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = comentarioConVotos.comentario.usuarioNombre.take(1).uppercase(),
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
+                        AvatarComentario(
+                            avatar = comentarioConVotos.avatar,
+                            nombre = comentarioConVotos.comentario.usuarioNombre,
+                            background = Brush.verticalGradient(
+                                listOf(
+                                    Color(0xFF23273D).copy(alpha = 0.88f),
+                                    TorneoYaPalette.violet.copy(alpha = 0.80f)
+                                )
                             )
-                        }
+                        )
                         Spacer(Modifier.width(12.dp))
                         Card(
                             modifier = Modifier
@@ -342,5 +330,37 @@ fun OutlinedIconSendButton(
                 modifier = Modifier.size(22.dp)
             )
         }
+    }
+}
+@Composable
+fun AvatarComentario(avatar: Int?, nombre: String, background: Brush) {
+    val context = LocalContext.current
+    val defaultRes = remember {
+        context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+    }
+    val resId = remember(avatar) {
+        if (avatar != null && avatar > 0) {
+            val found = context.resources.getIdentifier("avatar_$avatar", "drawable", context.packageName)
+            if (found != 0) found else defaultRes
+        } else {
+            defaultRes
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .size(39.dp)
+            .clip(CircleShape)
+            .background(brush = background),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = resId),
+            contentDescription = "avatar",
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(37.dp)
+                .clip(CircleShape)
+        )
     }
 }

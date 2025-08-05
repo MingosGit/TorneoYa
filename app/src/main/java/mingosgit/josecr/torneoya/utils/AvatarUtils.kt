@@ -5,8 +5,8 @@ import android.content.Context
 
 object AvatarUtils {
     fun setAvatarImage(imageView: ImageView, avatarNumber: Int?, context: Context) {
-        if (avatarNumber == null) {
-            val defaultRes = context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+        val defaultRes = context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+        if (avatarNumber == null || avatarNumber <= 0) {
             imageView.setImageResource(defaultRes)
         } else {
             val resourceId = context.resources.getIdentifier(
@@ -15,7 +15,6 @@ object AvatarUtils {
             if (resourceId != 0) {
                 imageView.setImageResource(resourceId)
             } else {
-                val defaultRes = context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
                 imageView.setImageResource(defaultRes)
             }
         }

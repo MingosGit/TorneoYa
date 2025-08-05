@@ -48,8 +48,9 @@ data class ComentarioFirebase(
     val usuarioUid: String = "",
     val usuarioNombre: String = "",
     val texto: String = "",
-    val fechaHora: String = "" // ISO 8601
+    val fechaHora: String = "", // ISO 8601
 )
+
 
 @IgnoreExtraProperties
 data class ComentarioVotoFirebase(

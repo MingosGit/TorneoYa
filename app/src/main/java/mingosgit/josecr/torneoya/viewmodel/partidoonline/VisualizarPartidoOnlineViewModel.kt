@@ -31,6 +31,7 @@ data class VisualizarPartidoOnlineUiState(
 
 data class ComentarioOnlineConVotos(
     val comentario: ComentarioFirebase,
+    val avatar: Int?,
     val likes: Int,
     val dislikes: Int,
     val miVoto: Int? // 1=like, -1=dislike, null=sin voto
@@ -115,12 +116,20 @@ class VisualizarPartidoOnlineViewModel(
     fun cargarComentariosEncuestas(usuarioUid: String? = null) {
         viewModelScope.launch {
             val comentarios = repo.obtenerComentarios(partidoUid)
+            val db = FirebaseFirestore.getInstance()
             val comentariosConVotos = comentarios.map { comentario ->
                 val likes = repo.obtenerVotosComentario(comentario.uid, 1)
                 val dislikes = repo.obtenerVotosComentario(comentario.uid, -1)
                 val miVoto = usuarioUid?.let { repo.obtenerVotoUsuarioComentario(comentario.uid, it) }
+                // AVATAR EN TIEMPO REAL DESDE USUARIOS
+                var avatar: Int? = null
+                if (comentario.usuarioUid.isNotBlank()) {
+                    val snap = db.collection("usuarios").document(comentario.usuarioUid).get().await()
+                    avatar = snap.getLong("avatar")?.toInt()
+                }
                 ComentarioOnlineConVotos(
                     comentario = comentario,
+                    avatar = avatar,
                     likes = likes,
                     dislikes = dislikes,
                     miVoto = miVoto
@@ -140,21 +149,23 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+
     fun agregarComentario(usuarioNombre: String, texto: String, usuarioUid: String? = null) {
         viewModelScope.launch {
             var nombreFinal = usuarioNombre
             val uid = usuarioUid ?: ""
+            var avatar: Int? = null
 
-            // Si el nombre está vacío o es "Tú", intenta buscar el nombre real del usuario
-            if (nombreFinal.isBlank() || nombreFinal.trim().lowercase() == "tú") {
+            // Si el nombre está vacío o es "Tú", intenta buscar el nombre real del usuario Y EL AVATAR
+            if (uid.isNotBlank()) {
                 try {
-                    if (uid.isNotBlank()) {
-                        val db = FirebaseFirestore.getInstance()
-                        val snapUsuario = db.collection("usuarios").document(uid).get().await()
-                        nombreFinal = snapUsuario.getString("nombreUsuario") ?: "Usuario"
-                    }
+                    val db = FirebaseFirestore.getInstance()
+                    val snapUsuario = db.collection("usuarios").document(uid).get().await()
+                    nombreFinal = snapUsuario.getString("nombreUsuario") ?: "Usuario"
+                    avatar = snapUsuario.getLong("avatar")?.toInt()
                 } catch (_: Exception) {
                     nombreFinal = "Usuario"
+                    avatar = null
                 }
             }
 
@@ -164,12 +175,13 @@ class VisualizarPartidoOnlineViewModel(
                 usuarioUid = uid,
                 usuarioNombre = nombreFinal,
                 texto = texto,
-                fechaHora = fechaHora
+                fechaHora = fechaHora,
             )
             repo.agregarComentario(comentario)
             cargarComentariosEncuestas(usuarioUid)
         }
     }
+
 
 
 
