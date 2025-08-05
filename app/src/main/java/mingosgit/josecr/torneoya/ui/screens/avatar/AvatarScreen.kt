@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
@@ -46,6 +48,8 @@ fun AvatarScreen(
         0.58f to Color(0xFF191A23),
         1.0f to Color(0xFF14151B)
     )
+
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -122,10 +126,12 @@ fun AvatarScreen(
                         )
                     )
             ) {
-                val avatarRes = if (selectedAvatar == 0) {
-                    context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
-                } else {
-                    context.resources.getIdentifier("avatar_${selectedAvatar}", "drawable", context.packageName)
+                val avatarRes = remember(selectedAvatar) {
+                    if (selectedAvatar == 0) {
+                        context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+                    } else {
+                        context.resources.getIdentifier("avatar_${selectedAvatar}", "drawable", context.packageName)
+                    }
                 }
                 Image(
                     painter = painterResource(id = avatarRes),
@@ -152,18 +158,22 @@ fun AvatarScreen(
                     .padding(vertical = 2.dp)
                     .fillMaxWidth()
             ) {
+                // OPTIMIZACION: Usar key y evitar recomposición de toda la grilla.
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(4),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
+                        .padding(horizontal = 8.dp),
+                    userScrollEnabled = true,
                 ) {
-                    items(avatarList) { avatarNum ->
+                    items(avatarList, key = { it }) { avatarNum ->
                         val isPlaceholder = avatarNum == 0
-                        val avatarRes = if (isPlaceholder) {
-                            context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
-                        } else {
-                            context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
+                        val avatarRes = remember(avatarNum) {
+                            if (isPlaceholder) {
+                                context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+                            } else {
+                                context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
+                            }
                         }
                         Box(
                             contentAlignment = Alignment.Center,
@@ -189,7 +199,9 @@ fun AvatarScreen(
                                         else
                                             Brush.radialGradient(listOf(Color(0x2223243D), Color.Transparent), radius = 55f)
                                     )
-                                    .clickable { selectedAvatar = avatarNum }
+                                    .clickable {
+                                        if (selectedAvatar != avatarNum) selectedAvatar = avatarNum
+                                    }
                             )
                         }
                     }
@@ -250,7 +262,9 @@ fun AvatarScreen(
                             enabled = !guardando
                         ) {
                             guardando = true
-                            globalUserViewModel.cambiarAvatarEnFirebase(selectedAvatar)
+                            scope.launch(Dispatchers.IO) {
+                                globalUserViewModel.cambiarAvatarEnFirebase(selectedAvatar)
+                            }
                             navController.popBackStack()
                         },
                     contentAlignment = Alignment.Center
