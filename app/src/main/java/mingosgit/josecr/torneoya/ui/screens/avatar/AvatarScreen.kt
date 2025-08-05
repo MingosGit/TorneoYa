@@ -9,17 +9,22 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,81 +37,233 @@ fun AvatarScreen(
     val context = LocalContext.current
 
     val avatarActual by globalUserViewModel.avatar.collectAsState()
+    var selectedAvatar by remember { mutableStateOf(avatarActual ?: 1) }
+    var guardando by remember { mutableStateOf(false) }
+
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
+    )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Elige tu avatar", color = Color.White) },
+                title = {
+                    Text(
+                        "Elige tu avatar",
+                        color = Color.White,
+                        fontSize = 23.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                ),
+                                shape = CircleShape
+                            )
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                )
+                            )
+                            .clickable { navController.popBackStack() },
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
                             painter = painterResource(id = android.R.drawable.ic_menu_close_clear_cancel),
                             contentDescription = "Cerrar",
-                            tint = Color.White
+                            tint = Color(0xFF8F5CFF),
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1B1D29)
+                    containerColor = Color.Transparent
                 )
             )
         },
-        containerColor = Color(0xFF1B1D29)
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1B1D29))
+                .background(brush = modernBackground)
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(14.dp))
-            Text(
-                text = "Toca un avatar para seleccionarlo",
-                color = Color.White,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(10.dp)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
+            Spacer(modifier = Modifier.height(28.dp))
+            // AVATAR GRANDE SELECCIONADO
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-                    .weight(1f)
-            ) {
-                items(avatarList) { avatarNum ->
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .padding(8.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(
-                                id = context.resources.getIdentifier(
-                                    "avatar_$avatarNum",
-                                    "drawable",
-                                    context.packageName
-                                )
-                            ),
-                            contentDescription = "Avatar $avatarNum",
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .border(
-                                    width = if (avatarActual == avatarNum) 4.dp else 2.dp,
-                                    color = if (avatarActual == avatarNum) Color(0xFF8F5CFF) else Color.LightGray,
-                                    shape = CircleShape
-                                )
-                                .clickable {
-                                    globalUserViewModel.cambiarAvatarEnFirebase(avatarNum)
-                                    navController.popBackStack()
-                                }
+                    .size(142.dp)
+                    .clip(CircleShape)
+                    .border(
+                        width = 5.dp,
+                        brush = Brush.horizontalGradient(
+                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                        ),
+                        shape = CircleShape
+                    )
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(Color(0xFF23273D), Color(0xFF1B1D29)),
+                            radius = 210f
                         )
+                    )
+            ) {
+                val avatarRes = context.resources.getIdentifier(
+                    "avatar_${selectedAvatar}",
+                    "drawable",
+                    context.packageName
+                )
+                Image(
+                    painter = painterResource(id = avatarRes),
+                    contentDescription = "Avatar Seleccionado",
+                    modifier = Modifier
+                        .size(118.dp)
+                        .clip(CircleShape)
+                )
+            }
+            Spacer(modifier = Modifier.height(18.dp))
+            Text(
+                text = "Selecciona tu avatar",
+                color = Color(0xFFF7F7FF),
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // GRID DE AVATARES
+            Box(
+                Modifier
+                    .weight(1f)
+                    .padding(vertical = 2.dp)
+                    .fillMaxWidth()
+            ) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(4),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    items(avatarList) { avatarNum ->
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.padding(7.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(
+                                    id = context.resources.getIdentifier(
+                                        "avatar_$avatarNum",
+                                        "drawable",
+                                        context.packageName
+                                    )
+                                ),
+                                contentDescription = "Avatar $avatarNum",
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        width = if (selectedAvatar == avatarNum) 3.5.dp else 2.dp,
+                                        brush = if (selectedAvatar == avatarNum)
+                                            Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet))
+                                        else
+                                            Brush.horizontalGradient(listOf(Color(0xFF3E4160), Color(0xFF20243B))),
+                                        shape = CircleShape
+                                    )
+                                    .background(
+                                        if (selectedAvatar == avatarNum)
+                                            Brush.radialGradient(listOf(Color(0x221968FF), Color.Transparent), radius = 55f)
+                                        else
+                                            Brush.radialGradient(listOf(Color(0x2223243D), Color.Transparent), radius = 55f)
+                                    )
+                                    .clickable { selectedAvatar = avatarNum }
+                            )
+                        }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(18.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 30.dp),
+                horizontalArrangement = Arrangement.spacedBy(19.dp)
+            ) {
+                // CANCELAR BUTTON
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            )
+                        )
+                        .clickable { navController.popBackStack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Cancelar",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+
+                // GUARDAR BUTTON SOLO BORDE, SIN FONDO
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .background(Color.Transparent)
+                        .clickable(
+                            enabled = !guardando
+                        ) {
+                            guardando = true
+                            globalUserViewModel.cambiarAvatarEnFirebase(selectedAvatar)
+                            navController.popBackStack()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        if (guardando) "Guardando..." else "Guardar",
+                        color = TorneoYaPalette.blue,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(22.dp))
         }
     }
 }
