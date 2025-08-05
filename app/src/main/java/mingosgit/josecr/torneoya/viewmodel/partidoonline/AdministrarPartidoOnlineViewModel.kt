@@ -74,10 +74,10 @@ class AdministrarPartidoOnlineViewModel(
             _jugadoresA.value = p?.jugadoresEquipoA?.let { getJugadoresByUidList(it) } ?: emptyList()
             _jugadoresB.value = p?.jugadoresEquipoB?.let { getJugadoresByUidList(it) } ?: emptyList()
             _jugadoresManualA.value = p?.nombresManualEquipoA?.map { nombre ->
-                JugadorFirebase(uid = "", nombre = nombre, email = "", avatarUrl = null)
+                JugadorFirebase(uid = "", nombre = nombre, email = "", avatar = null)
             } ?: emptyList()
             _jugadoresManualB.value = p?.nombresManualEquipoB?.map { nombre ->
-                JugadorFirebase(uid = "", nombre = nombre, email = "", avatarUrl = null)
+                JugadorFirebase(uid = "", nombre = nombre, email = "", avatar = null)
             } ?: emptyList()
             _goles.value = obtenerGoleadoresPartido(partidoUid)
             _nombreEquipoAEditable.value = _equipoA.value?.nombre ?: ""
@@ -104,14 +104,14 @@ class AdministrarPartidoOnlineViewModel(
             val snapUsuario = db.collection("usuarios").document(uid).get().await()
             val nombreUsuario = snapUsuario.getString("nombreUsuario")
             val email = snapUsuario.getString("email") ?: ""
-            val avatarUrl = snapUsuario.getString("avatarUrl")
+            val avatar = snapUsuario.getString("avatar")
             if (!nombreUsuario.isNullOrBlank()) {
                 jugadores.add(
                     JugadorFirebase(
                         uid = uid,
                         nombre = nombreUsuario,
                         email = email,
-                        avatarUrl = avatarUrl
+                        avatar = null
                     )
                 )
             }

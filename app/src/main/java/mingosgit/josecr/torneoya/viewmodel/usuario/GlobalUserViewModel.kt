@@ -32,6 +32,9 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
     private val _promedioGoles = MutableStateFlow<Double?>(null)
     val promedioGoles: StateFlow<Double?> = _promedioGoles
 
+    private val _avatar = MutableStateFlow<Int?>(null)
+    val avatar: StateFlow<Int?> = _avatar
+
     fun setNombreUsuarioOnline(nombre: String) {
         _nombreUsuarioOnline.value = nombre
     }
@@ -45,6 +48,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                 val usuarioSnap = db.collection("usuarios").document(user.uid).get().await()
                 val nombreUsuario = usuarioSnap.getString("nombreUsuario")
                 _nombreUsuarioOnline.value = nombreUsuario
+                _avatar.value = usuarioSnap.getLong("avatar")?.toInt()
                 cargarEstadisticasUsuario(user.uid)
             }
         } else {
@@ -54,6 +58,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
             _asistencias.value = null
             _partidosJugados.value = null
             _promedioGoles.value = null
+            _avatar.value = null
         }
     }
 
@@ -82,6 +87,22 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun cambiarAvatarEnFirebase(avatar: Int) {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val uid = user.uid
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
+            try {
+                db.collection("usuarios").document(uid)
+                    .update("avatar", avatar)
+                    .await()
+                _avatar.value = avatar
+            } catch (e: Exception) {
+                // Maneja el error si lo necesitas
+            }
+        }
+    }
+
     fun cerrarSesionOnline() {
         viewModelScope.launch {
             FirebaseAuth.getInstance().signOut()
@@ -91,6 +112,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
             _asistencias.value = null
             _partidosJugados.value = null
             _promedioGoles.value = null
+            _avatar.value = null
             delay(200)
             reiniciarApp()
         }

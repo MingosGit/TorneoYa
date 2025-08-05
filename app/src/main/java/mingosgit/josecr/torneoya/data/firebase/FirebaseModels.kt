@@ -38,7 +38,7 @@ data class JugadorFirebase(
     @get:Exclude var uid: String = "",
     val nombre: String = "",
     val email: String = "",
-    val avatarUrl: String? = null
+    val avatar: Int? = null // null = sin foto de perfil, 1..20 = avatar local
 )
 
 @IgnoreExtraProperties
@@ -120,11 +120,10 @@ data class PartidoEquipoJugadorFirebase(
     val jugadorUid: String = ""
 )
 
-@IgnoreExtraProperties
 data class UsuarioFirebaseEntity(
-    @get:Exclude var uid: String = "",
+    val uid: String = "",
     val email: String = "",
-    val nombreUsuario: String = "",
-    val avatarUrl: String? = null,
-    val partidosJugados: Int = 0,   // NUEVO CAMPO
+    val nombreUsuario: String = "", // nombre de usuario único online
+    val avatar: Int? = null, // null = sin foto de perfil, 1..20 = avatar local
+    val partidosJugados: Int = 0
 )

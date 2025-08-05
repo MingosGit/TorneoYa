@@ -48,6 +48,7 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnl
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import androidx.activity.ComponentActivity // <--- añade este import arriba
+import mingosgit.josecr.torneoya.ui.screens.avatar.AvatarScreen
 import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
 import mingosgit.josecr.torneoya.ui.screens.home.NotificacionesScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
@@ -116,6 +117,13 @@ fun NavGraph(
                 navController = navController
             )
         }
+        composable("avatar") {
+            AvatarScreen(
+                navController = navController,
+                globalUserViewModel = globalUserViewModel
+            )
+        }
+
         composable(
             route = "administrar_partido_online/{partidoUid}",
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })

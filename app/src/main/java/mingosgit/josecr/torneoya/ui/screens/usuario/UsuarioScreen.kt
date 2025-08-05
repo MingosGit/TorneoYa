@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -52,6 +53,7 @@ fun UsuarioScreen(
     val usuario by usuarioLocalViewModel.usuario.collectAsState()
     val nombreUsuarioOnline by globalUserViewModel.nombreUsuarioOnline.collectAsState()
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState(initial = false)
+    val avatar by globalUserViewModel.avatar.collectAsState()
 
     var showDialog by remember { mutableStateOf(false) }
     var showCerrarSesionDialog by remember { mutableStateOf(false) }
@@ -75,6 +77,7 @@ fun UsuarioScreen(
                     .whereEqualTo("jugadorUid", uid)
                     .get().await()
                 goles = golesSnapshot.size()
+
                 // Asistencias
                 val asistenciasSnapshot = db.collection("goleadores")
                     .whereEqualTo("asistenciaJugadorUid", uid)
@@ -256,6 +259,9 @@ fun UsuarioScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Justo antes, recoge el avatar del GlobalUserViewModel
+            val avatar by globalUserViewModel.avatar.collectAsState()
+
             Box(
                 modifier = Modifier
                     .size(118.dp)
@@ -272,27 +278,29 @@ fun UsuarioScreen(
                             listOf(Color(0xFF23273D), Color(0xFF1C1D25))
                         )
                     )
-                    .clickable { showDialog = true },
+                    .clickable { navController.navigate("avatar") },
                 contentAlignment = Alignment.Center
             ) {
-                val fotoPerfilPath = usuario?.fotoPerfilPath
-                if (!fotoPerfilPath.isNullOrEmpty()) {
-                    val bitmap = BitmapFactory.decodeFile(fotoPerfilPath)
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "Foto de perfil",
-                            modifier = Modifier
-                                .size(110.dp)
-                                .clip(CircleShape)
-                        )
-                    } else {
-                        Text("👤", fontSize = 52.sp)
-                    }
+                val context = LocalContext.current
+                val avatarRes = if (avatar != null)
+                    context.resources.getIdentifier("avatar_${avatar}", "drawable", context.packageName)
+                else
+                    context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
+
+                if (avatarRes != 0) {
+                    Image(
+                        painter = painterResource(id = avatarRes),
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(110.dp)
+                            .clip(CircleShape)
+                    )
                 } else {
                     Text("👤", fontSize = 52.sp)
                 }
             }
+
+
 
             Spacer(modifier = Modifier.height(16.dp))
 

@@ -13,7 +13,7 @@ import kotlinx.coroutines.tasks.await
 data class UsuarioConRolUi(
     val uid: String,
     val nombre: String,
-    val avatarUrl: String?,
+    val avatar: Int?, // CAMBIO: avatar en vez de avatarUrl
     val esAdmin: Boolean
 )
 
@@ -54,7 +54,7 @@ class AdministrarRolesOnlineViewModel(
     private suspend fun getUsuarioInfo(uid: String, esAdmin: Boolean): UsuarioConRolUi? {
         val snap = FirebaseFirestore.getInstance().collection("usuarios").document(uid).get().await()
         val entity = snap.toObject(UsuarioFirebaseEntity::class.java) ?: return null
-        return UsuarioConRolUi(uid, entity.nombreUsuario, entity.avatarUrl, esAdmin)
+        return UsuarioConRolUi(uid, entity.nombreUsuario, entity.avatar, esAdmin)
     }
 
     fun quitarUsuarioDeAcceso(uid: String) {
