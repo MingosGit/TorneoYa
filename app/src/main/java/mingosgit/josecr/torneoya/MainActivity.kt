@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         window.statusBarColor = AndroidColor.BLACK
         window.navigationBarColor = AndroidColor.BLACK
         WindowCompat.getInsetsController(window, window.decorView)?.isAppearanceLightStatusBars = false
-        WindowCompat.setDecorFitsSystemWindows(window, false) // CAMBIA ESTO A FALSE
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 

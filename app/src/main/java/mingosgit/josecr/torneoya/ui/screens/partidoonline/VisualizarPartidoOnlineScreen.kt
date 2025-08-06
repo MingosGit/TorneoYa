@@ -204,82 +204,84 @@ fun VisualizarPartidoOnlineScreen(
                         }
                     }
                 )
-            }
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                VisualizarPartidoOnlineContent(
-                    modifier = Modifier.fillMaxSize(),
-                    uiState = uiState,
-                    vm = vm,
-                    usuarioUid = usuarioUid,
-                    partidoUid = partidoUid
-                )
+            },
+            content = { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = innerPadding.calculateTopPadding()) // SOLO TOP
 
-                AnimatedVisibility(
-                    visible = showCopiedMessage,
-                    enter = fadeIn(),
-                    exit = fadeOut()
                 ) {
-                    Snackbar(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .align(Alignment.BottomCenter),
-                        containerColor = Color(0xFF23273D),
-                        contentColor = Color.White,
-                        shape = RoundedCornerShape(17.dp)
+                    VisualizarPartidoOnlineContent(
+                        modifier = Modifier.fillMaxSize(),
+                        uiState = uiState,
+                        vm = vm,
+                        usuarioUid = usuarioUid,
+                        partidoUid = partidoUid
+                    )
+
+                    AnimatedVisibility(
+                        visible = showCopiedMessage,
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
-                        Text(
-                            "UID copiado al portapapeles",
-                            color = Color(0xFFB7B7D1),
-                            fontSize = 16.sp
+                        Snackbar(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .align(Alignment.CenterHorizontally),
+                            containerColor = Color(0xFF23273D),
+                            contentColor = Color.White,
+                            shape = RoundedCornerShape(17.dp)
+                        ) {
+                            Text(
+                                "UID copiado al portapapeles",
+                                color = Color(0xFFB7B7D1),
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+
+                    if (showPermisoDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showPermisoDialog = false },
+                            confirmButton = {
+                                TextButton(onClick = { showPermisoDialog = false }) {
+                                    Text("OK", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
+                                }
+                            },
+                            title = { Text("Sin permisos", color = Color.White, fontWeight = FontWeight.Black) },
+                            text = { Text("No tienes permisos para administrar este partido.", color = Color(0xFFB7B7D1)) },
+                            containerColor = Color(0xFF23273D),
+                            shape = RoundedCornerShape(17.dp)
+                        )
+                    }
+
+                    if (showDejarDeVerDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDejarDeVerDialog = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    vm.dejarDeVerPartido(usuarioUid) {
+                                        showDejarDeVerDialog = false
+                                        navController.popBackStack()
+                                    }
+                                }) {
+                                    Text("Sí, dejar de visualizar", color = Color(0xFFFF7675), fontWeight = FontWeight.Bold)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDejarDeVerDialog = false }) {
+                                    Text("Cancelar", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
+                                }
+                            },
+                            title = { Text("¿Dejar de visualizar este partido?", color = Color.White, fontWeight = FontWeight.Black) },
+                            text = { Text("Ya no podrás visualizar este partido. Podrás volver a verlo buscándolo por su UID.", color = Color(0xFFB7B7D1)) },
+                            containerColor = Color(0xFF23273D),
+                            shape = RoundedCornerShape(17.dp)
                         )
                     }
                 }
-
-                if (showPermisoDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showPermisoDialog = false },
-                        confirmButton = {
-                            TextButton(onClick = { showPermisoDialog = false }) {
-                                Text("OK", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
-                            }
-                        },
-                        title = { Text("Sin permisos", color = Color.White, fontWeight = FontWeight.Black) },
-                        text = { Text("No tienes permisos para administrar este partido.", color = Color(0xFFB7B7D1)) },
-                        containerColor = Color(0xFF23273D),
-                        shape = RoundedCornerShape(17.dp)
-                    )
-                }
-
-                if (showDejarDeVerDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDejarDeVerDialog = false },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                vm.dejarDeVerPartido(usuarioUid) {
-                                    showDejarDeVerDialog = false
-                                    navController.popBackStack()
-                                }
-                            }) {
-                                Text("Sí, dejar de visualizar", color = Color(0xFFFF7675), fontWeight = FontWeight.Bold)
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showDejarDeVerDialog = false }) {
-                                Text("Cancelar", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
-                            }
-                        },
-                        title = { Text("¿Dejar de visualizar este partido?", color = Color.White, fontWeight = FontWeight.Black) },
-                        text = { Text("Ya no podrás visualizar este partido. Podrás volver a verlo buscándolo por su UID.", color = Color(0xFFB7B7D1)) },
-                        containerColor = Color(0xFF23273D),
-                        shape = RoundedCornerShape(17.dp)
-                    )
-                }
             }
-        }
+        )
     }
 }
