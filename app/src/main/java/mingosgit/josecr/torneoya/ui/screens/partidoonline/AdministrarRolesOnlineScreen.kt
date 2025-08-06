@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -20,12 +19,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarRolesOnlineViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,14 +55,15 @@ fun AdministrarRolesOnlineScreen(
         1.0f to Color(0xFF14151B)
     )
 
+    val context = LocalContext.current
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(modernBackground)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             // HEADER
             Row(
@@ -89,14 +92,14 @@ fun AdministrarRolesOnlineScreen(
                 ) {
                     Icon(
                         Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(id = R.string.gen_volver),
                         tint = TorneoYaPalette.violet,
                         modifier = Modifier.size(27.dp)
                     )
                 }
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    "Administrar Roles",
+                    stringResource(id = R.string.adminroles_title),
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
@@ -112,17 +115,17 @@ fun AdministrarRolesOnlineScreen(
             ) {
                 // ADMINISTRADORES
                 item {
-                    SectionHeader("Administradores")
+                    SectionHeader(stringResource(id = R.string.adminroles_administradores))
                 }
                 items(administradores, key = { it.uid }) { usuario ->
                     UsuarioCard(
                         nombre = usuario.nombre,
                         colorBadge = TorneoYaPalette.blue,
                         iconMain = Icons.Default.KeyboardArrowDown,
-                        iconMainDesc = "Quitar admin",
+                        iconMainDesc = stringResource(id = R.string.adminroles_quitar_admin),
                         onMainClick = { vm.quitarRolAdministrador(usuario.uid) },
                         iconDel = Icons.Default.Delete,
-                        iconDelDesc = "Eliminar usuario completamente",
+                        iconDelDesc = stringResource(id = R.string.adminroles_eliminar_usuario_completo),
                         onDeleteClick = {
                             usuarioABorrar = usuario.uid to true
                             showConfirmDialog = true
@@ -133,17 +136,17 @@ fun AdministrarRolesOnlineScreen(
 
                 // USUARIOS CON ACCESO
                 item {
-                    SectionHeader("Usuarios con acceso")
+                    SectionHeader(stringResource(id = R.string.adminroles_usuarios_con_acceso))
                 }
                 items(usuariosConAcceso, key = { it.uid }) { usuario ->
                     UsuarioCard(
                         nombre = usuario.nombre,
                         colorBadge = Color(0xFFFFB531),
                         iconMain = Icons.Default.KeyboardArrowUp,
-                        iconMainDesc = "Dar rol admin",
+                        iconMainDesc = stringResource(id = R.string.adminroles_dar_rol_admin),
                         onMainClick = { vm.darRolAdministrador(usuario.uid) },
                         iconDel = Icons.Default.Delete,
-                        iconDelDesc = "Quitar acceso",
+                        iconDelDesc = stringResource(id = R.string.adminroles_quitar_acceso),
                         onDeleteClick = {
                             usuarioABorrar = usuario.uid to false
                             showConfirmDialog = true
@@ -157,13 +160,13 @@ fun AdministrarRolesOnlineScreen(
         if (showConfirmDialog && usuarioABorrar != null) {
             AlertDialog(
                 onDismissRequest = { showConfirmDialog = false },
-                title = { Text("Confirmar eliminación", color = Color.White) },
+                title = { Text(stringResource(id = R.string.adminroles_confirmar_eliminacion), color = Color.White) },
                 text = {
                     Text(
                         if (usuarioABorrar?.second == true)
-                            "¿Estás seguro de eliminar completamente a este administrador?"
+                            stringResource(id = R.string.adminroles_confirmar_eliminacion_admin)
                         else
-                            "¿Estás seguro de quitar el acceso a este usuario?",
+                            stringResource(id = R.string.adminroles_confirmar_eliminacion_usuario),
                         color = Color(0xFFB7B7D1)
                     )
                 },
@@ -181,7 +184,7 @@ fun AdministrarRolesOnlineScreen(
                             usuarioABorrar = null
                         }
                     ) {
-                        Text("Eliminar", color = Color(0xFFF25A6D))
+                        Text(stringResource(id = R.string.gen_eliminar), color = Color(0xFFF25A6D))
                     }
                 },
                 dismissButton = {
@@ -191,7 +194,7 @@ fun AdministrarRolesOnlineScreen(
                             usuarioABorrar = null
                         }
                     ) {
-                        Text("Cancelar", color = TorneoYaPalette.violet)
+                        Text(stringResource(id = R.string.gen_cancelar), color = TorneoYaPalette.violet)
                     }
                 }
             )
@@ -206,8 +209,7 @@ private fun SectionHeader(text: String) {
         fontSize = 17.sp,
         fontWeight = FontWeight.Bold,
         color = Color(0xFFB7B7D1),
-        modifier = Modifier
-            .padding(horizontal = 18.dp, vertical = 10.dp)
+        modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp)
     )
 }
 

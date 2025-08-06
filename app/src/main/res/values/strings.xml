@@ -123,6 +123,17 @@
     <string name="adminp_dialog_confirmar_cambios_titulo">Confirmar cambios</string>
     <string name="adminp_dialog_confirmar_cambios_mensaje">¿Guardar y volver?</string>
 
+    <!-- ===== ADMINISTRAR ROLES ONLINE SCREEN ===== -->
+    <string name="adminroles_title">Administrar Roles</string>
+    <string name="adminroles_administradores">Administradores</string>
+    <string name="adminroles_usuarios_con_acceso">Usuarios con acceso</string>
+    <string name="adminroles_quitar_admin">Quitar admin</string>
+    <string name="adminroles_eliminar_usuario_completo">Eliminar usuario completamente</string>
+    <string name="adminroles_dar_rol_admin">Dar rol admin</string>
+    <string name="adminroles_quitar_acceso">Quitar acceso</string>
+    <string name="adminroles_confirmar_eliminacion">Confirmar eliminación</string>
+    <string name="adminroles_confirmar_eliminacion_admin">¿Estás seguro de eliminar completamente a este administrador?</string>
+    <string name="adminroles_confirmar_eliminacion_usuario">¿Estás seguro de quitar el acceso a este usuario?</string>
 
 
 </resources>
