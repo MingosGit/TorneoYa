@@ -135,5 +135,19 @@
     <string name="adminroles_confirmar_eliminacion_admin">¿Estás seguro de eliminar completamente a este administrador?</string>
     <string name="adminroles_confirmar_eliminacion_usuario">¿Estás seguro de quitar el acceso a este usuario?</string>
 
+    <!-- ===== ASEG. JUGADORES ONLINE SCREEN ===== -->
+    <string name="asignjug_title">Asignar jugadores</string>
+    <string name="asignjug_equipo_a">Equipo A</string>
+    <string name="asignjug_equipo_b">Equipo B</string>
+    <string name="asignjug_modo_manual">Manual</string>
+    <string name="asignjug_modo_aleatorio">Aleatorio</string>
+    <string name="asignjug_jugadores_equipo_a">Jugadores Equipo A</string>
+    <string name="asignjug_jugadores_equipo_b">Jugadores Equipo B</string>
+    <string name="asignjug_poner_todos_aleatorio">Pon todos los jugadores, se asignarán aleatoriamente</string>
+    <string name="asignjug_agregar_jugador">Agregar jugador</string>
+    <string name="asignjug_jugador_num">Jugador %1$d</string>
+    <string name="asignjug_elegir_jugador">Elegir jugador</string>
+    <string name="asignjug_tu">/Tú</string>
+    <string name="asignjug_guardar_asignacion">Guardar asignación</string>
 
 </resources>

@@ -14,8 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -33,6 +32,7 @@ import com.google.firebase.auth.FirebaseAuth
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AsignarJugadoresOnlineViewModel
 import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 
 @Composable
 fun AsignarJugadoresOnlineScreen(
@@ -77,14 +77,14 @@ fun AsignarJugadoresOnlineScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Group,
-                        contentDescription = "Asignar jugadores",
+                        contentDescription = stringResource(id = R.string.asignjug_title),
                         tint = Color(0xFF8F5CFF),
                         modifier = Modifier.padding(12.dp)
                     )
                 }
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    "Asignar jugadores",
+                    stringResource(id = R.string.asignjug_title),
                     fontSize = 23.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Black
@@ -101,14 +101,14 @@ fun AsignarJugadoresOnlineScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 EquipoGradientButton(
-                    text = "Equipo A",
+                    text = stringResource(id = R.string.asignjug_equipo_a),
                     selected = vm.equipoSeleccionado == "A",
                     color = TorneoYaPalette.blue,
                     onClick = { vm.equipoSeleccionado = "A" },
                     modifier = Modifier.weight(1f)
                 )
                 EquipoGradientButton(
-                    text = "Equipo B",
+                    text = stringResource(id = R.string.asignjug_equipo_b),
                     selected = vm.equipoSeleccionado == "B",
                     color = Color(0xFFFF7675),
                     onClick = { vm.equipoSeleccionado = "B" },
@@ -124,14 +124,14 @@ fun AsignarJugadoresOnlineScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 EquipoGradientButton(
-                    text = "Manual",
+                    text = stringResource(id = R.string.asignjug_modo_manual),
                     selected = !vm.modoAleatorio,
                     color = TorneoYaPalette.violet,
                     onClick = { vm.cambiarModo(false) },
                     modifier = Modifier.weight(1f)
                 )
                 EquipoGradientButton(
-                    text = "Aleatorio",
+                    text = stringResource(id = R.string.asignjug_modo_aleatorio),
                     selected = vm.modoAleatorio,
                     color = TorneoYaPalette.blue,
                     onClick = { vm.cambiarModo(true) },
@@ -145,7 +145,7 @@ fun AsignarJugadoresOnlineScreen(
             ) {
                 Column(Modifier.fillMaxWidth()) {
                     Text(
-                        if (vm.equipoSeleccionado == "A") "Jugadores Equipo A" else "Jugadores Equipo B",
+                        if (vm.equipoSeleccionado == "A") stringResource(id = R.string.asignjug_jugadores_equipo_a) else stringResource(id = R.string.asignjug_jugadores_equipo_b),
                         fontSize = 17.sp,
                         color = Color(0xFFB7B7D1),
                         fontWeight = FontWeight.Bold,
@@ -202,7 +202,14 @@ fun AsignarJugadoresOnlineScreen(
                                                 }
                                             }
                                         },
-                                        label = { Text(if (idx == jugadores.size) "Agregar jugador" else "Jugador ${idx + 1}") },
+                                        label = {
+                                            Text(
+                                                if (idx == jugadores.size)
+                                                    stringResource(id = R.string.asignjug_agregar_jugador)
+                                                else
+                                                    stringResource(id = R.string.asignjug_jugador_num, idx + 1)
+                                            )
+                                        },
                                         singleLine = true,
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                                         modifier = Modifier
@@ -213,7 +220,7 @@ fun AsignarJugadoresOnlineScreen(
                                     IconButton(
                                         onClick = { expanded = true }
                                     ) {
-                                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir jugador", tint = TorneoYaPalette.violet)
+                                        Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(id = R.string.asignjug_elegir_jugador), tint = TorneoYaPalette.violet)
                                     }
                                     DropdownMenu(
                                         expanded = expanded,
@@ -222,7 +229,7 @@ fun AsignarJugadoresOnlineScreen(
                                         OutlinedTextField(
                                             value = searchQuery,
                                             onValueChange = { searchQuery = it },
-                                            label = { Text("Buscar") },
+                                            label = { Text(stringResource(id = R.string.gen_buscar)) },
                                             singleLine = true,
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -236,7 +243,7 @@ fun AsignarJugadoresOnlineScreen(
                                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                                             Text(jugador.nombre)
                                                             if (miUid != null && jugador.uid == miUid) {
-                                                                Text(" /Tú", color = TorneoYaPalette.blue, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
+                                                                Text(stringResource(id = R.string.asignjug_tu), color = TorneoYaPalette.blue, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
                                                             }
                                                         }
                                                     },
@@ -266,7 +273,7 @@ fun AsignarJugadoresOnlineScreen(
             ) {
                 Column(Modifier.fillMaxWidth()) {
                     Text(
-                        "Pon todos los jugadores, se asignarán aleatoriamente",
+                        stringResource(id = R.string.asignjug_poner_todos_aleatorio),
                         fontSize = 16.sp,
                         color = Color(0xFFB7B7D1),
                         fontWeight = FontWeight.Bold,
@@ -317,7 +324,14 @@ fun AsignarJugadoresOnlineScreen(
                                                 }
                                             }
                                         },
-                                        label = { Text(if (idx == vm.listaNombres.size) "Agregar jugador" else "Jugador ${idx + 1}") },
+                                        label = {
+                                            Text(
+                                                if (idx == vm.listaNombres.size)
+                                                    stringResource(id = R.string.asignjug_agregar_jugador)
+                                                else
+                                                    stringResource(id = R.string.asignjug_jugador_num, idx + 1)
+                                            )
+                                        },
                                         singleLine = true,
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                                         modifier = Modifier
@@ -328,7 +342,7 @@ fun AsignarJugadoresOnlineScreen(
                                     IconButton(
                                         onClick = { expanded = true }
                                     ) {
-                                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Elegir jugador", tint = TorneoYaPalette.violet)
+                                        Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(id = R.string.asignjug_elegir_jugador), tint = TorneoYaPalette.violet)
                                     }
                                     DropdownMenu(
                                         expanded = expanded,
@@ -337,7 +351,7 @@ fun AsignarJugadoresOnlineScreen(
                                         OutlinedTextField(
                                             value = searchQuery,
                                             onValueChange = { searchQuery = it },
-                                            label = { Text("Buscar") },
+                                            label = { Text(stringResource(id = R.string.gen_buscar)) },
                                             singleLine = true,
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -351,7 +365,7 @@ fun AsignarJugadoresOnlineScreen(
                                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                                             Text(jugador.nombre)
                                                             if (miUid != null && jugador.uid == miUid) {
-                                                                Text(" /Tú", color = TorneoYaPalette.blue, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
+                                                                Text(stringResource(id = R.string.asignjug_tu), color = TorneoYaPalette.blue, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
                                                             }
                                                         }
                                                     },
@@ -413,7 +427,7 @@ fun AsignarJugadoresOnlineScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Guardar asignación",
+                    stringResource(id = R.string.asignjug_guardar_asignacion),
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
