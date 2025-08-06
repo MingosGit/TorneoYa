@@ -18,6 +18,9 @@
     <string name="gen_copiar_uid">Copiar UID</string>
     <string name="gen_uid_copiado">UID copiado</string>
     <string name="gen_volver">Volver</string>
+    <string name="gen_guardar">Guardar</string>
+    <string name="gen_guardando">Guardando...</string>
+    <string name="gen_cerrar">Cerrar</string>
 
     <!-- ===== FIN GENERALES ===== -->
 
@@ -44,4 +47,11 @@
     <string name="solpensc_titulo">Solicitudes de amistad</string>
     <string name="solpensc_no_solicitudes_titulo">No tienes solicitudes pendientes</string>
     <string name="solpensc_no_solicitudes_desc">Cuando alguien te envíe una solicitud de amistad, aparecerá aquí.</string>
+
+    <!-- ===== AVATAR SCREEN ===== -->
+    <string name="AvatSC_title">Elige tu avatar</string>
+    <string name="AvatSC_selected_avatar_desc">Avatar Seleccionado</string>
+    <string name="AvatSC_select_avatar">Selecciona tu avatar</string>
+    <string name="AvatSC_empty_avatar_desc">Avatar vacío</string>
+    <string name="AvatSC_avatar_desc">Avatar %1$d</string>
 </resources>

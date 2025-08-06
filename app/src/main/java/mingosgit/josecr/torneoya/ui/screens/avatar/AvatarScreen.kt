@@ -1,3 +1,4 @@
+// Archivo: AvatarScreen.kt
 package mingosgit.josecr.torneoya.ui.screens.avatar
 
 import androidx.compose.foundation.Image
@@ -19,12 +20,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
@@ -56,7 +59,7 @@ fun AvatarScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Elige tu avatar",
+                        text = stringResource(id = R.string.AvatSC_title),
                         color = Color.White,
                         fontSize = 23.sp,
                         fontWeight = FontWeight.Black
@@ -85,7 +88,7 @@ fun AvatarScreen(
                     ) {
                         Icon(
                             painter = painterResource(id = android.R.drawable.ic_menu_close_clear_cancel),
-                            contentDescription = "Cerrar",
+                            contentDescription = stringResource(id = R.string.gen_cerrar),
                             tint = Color(0xFF8F5CFF),
                             modifier = Modifier.size(22.dp)
                         )
@@ -135,7 +138,7 @@ fun AvatarScreen(
                 }
                 Image(
                     painter = painterResource(id = avatarRes),
-                    contentDescription = "Avatar Seleccionado",
+                    contentDescription = stringResource(id = R.string.AvatSC_selected_avatar_desc),
                     modifier = Modifier
                         .size(118.dp)
                         .clip(CircleShape)
@@ -143,7 +146,7 @@ fun AvatarScreen(
             }
             Spacer(modifier = Modifier.height(18.dp))
             Text(
-                text = "Selecciona tu avatar",
+                text = stringResource(id = R.string.AvatSC_select_avatar),
                 color = Color(0xFFF7F7FF),
                 fontSize = 21.sp,
                 fontWeight = FontWeight.Bold,
@@ -158,7 +161,6 @@ fun AvatarScreen(
                     .padding(vertical = 2.dp)
                     .fillMaxWidth()
             ) {
-                // OPTIMIZACION: Usar key y evitar recomposición de toda la grilla.
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(4),
                     modifier = Modifier
@@ -181,7 +183,10 @@ fun AvatarScreen(
                         ) {
                             Image(
                                 painter = painterResource(id = avatarRes),
-                                contentDescription = if (isPlaceholder) "Avatar vacío" else "Avatar $avatarNum",
+                                contentDescription = if (isPlaceholder)
+                                    stringResource(id = R.string.AvatSC_empty_avatar_desc)
+                                else
+                                    stringResource(id = R.string.AvatSC_avatar_desc, avatarNum),
                                 modifier = Modifier
                                     .size(64.dp)
                                     .clip(CircleShape)
@@ -237,7 +242,7 @@ fun AvatarScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Cancelar",
+                        text = stringResource(id = R.string.gen_cancelar),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -270,7 +275,7 @@ fun AvatarScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        if (guardando) "Guardando..." else "Guardar",
+                        text = if (guardando) stringResource(id = R.string.gen_guardando) else stringResource(id = R.string.gen_guardar),
                         color = TorneoYaPalette.blue,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
