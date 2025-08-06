@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.EncuestaOnlineConResultadosConAvatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,10 +47,8 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
     val encuestasSize = state.encuestas.size
     val encuestasLoaded = remember(encuestasSize) { encuestasSize > 0 }
 
-    // Siempre visible, no depende de isLoading
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // Botón flotante SIEMPRE visible
         IconButton(
             onClick = {
                 scope.launch {
@@ -105,7 +104,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                             .padding(bottom = 4.dp),
                         contentPadding = PaddingValues(bottom = 12.dp)
                     ) {
-                        items(state.encuestas) { encuestaConResultados ->
+                        items(state.encuestas) { encuestaConResultados: EncuestaOnlineConResultadosConAvatar ->
                             val encuesta = encuestaConResultados.encuesta
                             val opcionesList = encuesta.opciones
                             val votos = encuestaConResultados.votos
@@ -132,24 +131,13 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Box(
-                                            Modifier
-                                                .size(32.dp)
-                                                .background(
-                                                    brush = Brush.horizontalGradient(
-                                                        listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)
-                                                    ),
-                                                    shape = CircleShape
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                "Q",
-                                                color = Color.White,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 18.sp,
+                                        AvatarComentario(
+                                            avatar = encuestaConResultados.avatar,
+                                            nombre = encuesta.creadorNombre,
+                                            background = Brush.horizontalGradient(
+                                                listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)
                                             )
-                                        }
+                                        )
                                         Spacer(Modifier.width(10.dp))
                                         Text(
                                             encuesta.pregunta,
@@ -354,7 +342,11 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                             opciones.size in 2..5
                                         ) {
                                             scope.launch {
-                                                vm.agregarEncuesta(pregunta, opciones)
+                                                vm.agregarEncuesta(
+                                                    pregunta = pregunta,
+                                                    opciones = opciones.toList(),
+                                                    usuarioUid = usuarioUid // <--- PASA EL UID DEL USUARIO AQUÍ SIEMPRE
+                                                )
                                                 pregunta = ""
                                                 opciones.clear(); opciones.addAll(listOf("", ""))
                                                 expandedCrear = false
@@ -367,6 +359,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         }
                                     }
                                 )
+
                             }
                         }
                     }

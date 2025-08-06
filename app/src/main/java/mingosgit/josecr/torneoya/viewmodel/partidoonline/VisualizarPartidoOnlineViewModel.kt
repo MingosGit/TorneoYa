@@ -7,10 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
-import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
-import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
 import mingosgit.josecr.torneoya.data.firebase.ComentarioFirebase
 import mingosgit.josecr.torneoya.data.firebase.EncuestaFirebase
 import java.time.LocalDateTime
@@ -37,14 +34,15 @@ data class ComentarioOnlineConVotos(
     val miVoto: Int? // 1=like, -1=dislike, null=sin voto
 )
 
-data class EncuestaOnlineConResultados(
+data class EncuestaOnlineConResultadosConAvatar(
     val encuesta: EncuestaFirebase,
-    val votos: List<Int>
+    val votos: List<Int>,
+    val avatar: Int? // avatar del creador
 )
 
-data class VisualizarPartidoOnlineComentariosEncuestasUiState(
+data class VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares(
     val comentarios: List<ComentarioOnlineConVotos> = emptyList(),
-    val encuestas: List<EncuestaOnlineConResultados> = emptyList()
+    val encuestas: List<EncuestaOnlineConResultadosConAvatar> = emptyList()
 )
 
 class VisualizarPartidoOnlineViewModel(
@@ -58,8 +56,8 @@ class VisualizarPartidoOnlineViewModel(
     private val _eliminado = MutableStateFlow(false)
     val eliminado: StateFlow<Boolean> = _eliminado
 
-    private val _comentariosEncuestasState = MutableStateFlow(VisualizarPartidoOnlineComentariosEncuestasUiState())
-    val comentariosEncuestasState: StateFlow<VisualizarPartidoOnlineComentariosEncuestasUiState> = _comentariosEncuestasState
+    private val _comentariosEncuestasState = MutableStateFlow(VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares())
+    val comentariosEncuestasState: StateFlow<VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares> = _comentariosEncuestasState
 
     fun cargarDatos(usuarioUid: String? = null) {
         viewModelScope.launch {
@@ -70,8 +68,6 @@ class VisualizarPartidoOnlineViewModel(
 
                 val nombresManualA = partido.nombresManualEquipoA ?: emptyList()
                 val nombresManualB = partido.nombresManualEquipoB ?: emptyList()
-
-                // *** ESTO AHORA BUSCA EN AMBAS COLECCIONES ***
                 val jugadoresA = obtenerNombresPorUid(partido.jugadoresEquipoA)
                 val jugadoresB = obtenerNombresPorUid(partido.jugadoresEquipoB)
 
@@ -101,18 +97,6 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-
-
-
-
-    fun dejarDeVerPartido(usuarioUid: String, onFinish: () -> Unit) {
-        viewModelScope.launch {
-            repo.quitarUsuarioDeAcceso(partidoUid, usuarioUid)
-            onFinish()
-        }
-    }
-
-
     fun cargarComentariosEncuestas(usuarioUid: String? = null) {
         viewModelScope.launch {
             val comentarios = repo.obtenerComentarios(partidoUid)
@@ -121,7 +105,6 @@ class VisualizarPartidoOnlineViewModel(
                 val likes = repo.obtenerVotosComentario(comentario.uid, 1)
                 val dislikes = repo.obtenerVotosComentario(comentario.uid, -1)
                 val miVoto = usuarioUid?.let { repo.obtenerVotoUsuarioComentario(comentario.uid, it) }
-                // AVATAR EN TIEMPO REAL DESDE USUARIOS
                 var avatar: Int? = null
                 if (comentario.usuarioUid.isNotBlank()) {
                     val snap = db.collection("usuarios").document(comentario.usuarioUid).get().await()
@@ -137,18 +120,22 @@ class VisualizarPartidoOnlineViewModel(
             }
             val encuestas = repo.obtenerEncuestas(partidoUid)
             val encuestasConResultados = encuestas.map { encuesta ->
+                var avatar: Int? = null
+                if (encuesta.creadorUid.isNotBlank()) {
+                    val snap = db.collection("usuarios").document(encuesta.creadorUid).get().await()
+                    avatar = snap.getLong("avatar")?.toInt()
+                }
                 val votosPorOpcion = repo.obtenerVotosPorOpcionEncuesta(encuesta.uid, encuesta.opciones.size)
                 val votosList = MutableList(encuesta.opciones.size) { 0 }
                 votosPorOpcion.forEach { votosList[it.opcionIndex] = it.votos }
-                EncuestaOnlineConResultados(encuesta, votosList)
+                EncuestaOnlineConResultadosConAvatar(encuesta, votosList, avatar)
             }
-            _comentariosEncuestasState.value = VisualizarPartidoOnlineComentariosEncuestasUiState(
+            _comentariosEncuestasState.value = VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares(
                 comentarios = comentariosConVotos,
                 encuestas = encuestasConResultados
             )
         }
     }
-
 
     fun agregarComentario(usuarioNombre: String, texto: String, usuarioUid: String? = null) {
         viewModelScope.launch {
@@ -156,7 +143,6 @@ class VisualizarPartidoOnlineViewModel(
             val uid = usuarioUid ?: ""
             var avatar: Int? = null
 
-            // Si el nombre está vacío o es "Tú", intenta buscar el nombre real del usuario Y EL AVATAR
             if (uid.isNotBlank()) {
                 try {
                     val db = FirebaseFirestore.getInstance()
@@ -182,9 +168,6 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-
-
-
     fun votarComentario(comentarioUid: String, usuarioUid: String, tipo: Int) {
         viewModelScope.launch {
             repo.votarComentario(comentarioUid, usuarioUid, tipo)
@@ -192,7 +175,11 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    fun agregarEncuesta(pregunta: String, opciones: List<String>, usuarioUid: String? = null) {
+    fun agregarEncuesta(
+        pregunta: String,
+        opciones: List<String>,
+        usuarioUid: String? = null
+    ) {
         if (opciones.isEmpty() || opciones.size > 5) return
         viewModelScope.launch {
             var creadorNombre = "Anónimo"
@@ -202,18 +189,30 @@ class VisualizarPartidoOnlineViewModel(
                     val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
                     val snapUsuario = db.collection("usuarios").document(uid).get().await()
                     creadorNombre = snapUsuario.getString("nombreUsuario") ?: "Usuario"
-                } catch (_: Exception) { creadorNombre = "Usuario" }
+                } catch (_: Exception) {
+                    creadorNombre = "Usuario"
+                }
             }
-            val encuesta = EncuestaFirebase(
-                partidoUid = partidoUid,
-                pregunta = pregunta,
-                opciones = opciones,
-                creadorNombre = creadorNombre
+            // UID UNICO PARA LA ENCUESTA (FIRESTORE LO ASIGNA AUTOMATICO EN .add())
+            val encuesta = hashMapOf(
+                "partidoUid" to partidoUid,
+                "pregunta" to pregunta,
+                "opciones" to opciones,
+                "creadorNombre" to creadorNombre,
+                "creadorUid" to uid
             )
-            repo.agregarEncuesta(encuesta)
-            cargarComentariosEncuestas(usuarioUid)
+            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            db.collection("encuestas")
+                .add(encuesta)
+                .addOnSuccessListener {
+                    cargarComentariosEncuestas(usuarioUid)
+                }
+                .addOnFailureListener {
+                    // Si quieres puedes poner un log
+                }
         }
     }
+
 
     suspend fun getVotoUsuarioEncuesta(encuestaUid: String, usuarioUid: String): Int? {
         return repo.obtenerVotoUsuarioEncuesta(encuestaUid, usuarioUid)
@@ -287,32 +286,33 @@ class VisualizarPartidoOnlineViewModel(
             return InfoMinutoParte("-", "-", 0)
         }
     }
+    fun dejarDeVerPartido(usuarioUid: String, onFinish: () -> Unit) {
+        viewModelScope.launch {
+            repo.quitarUsuarioDeAcceso(partidoUid, usuarioUid)
+            onFinish()
+        }
+    }
+
     private suspend fun obtenerNombresPorUid(uids: List<String>): List<String> {
         if (uids.isEmpty()) return emptyList()
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         val nombres = mutableListOf<String>()
         for (uid in uids) {
             if (uid.isBlank()) continue
-
-            // PRIMERO busca en 'jugadores'
             val snapJugador = db.collection("jugadores").document(uid).get().await()
             val nombreJugador = snapJugador.getString("nombre")
             if (!nombreJugador.isNullOrBlank()) {
                 nombres.add(nombreJugador)
                 continue
             }
-
-            // Si no está, busca en 'usuarios'
             val snapUsuario = db.collection("usuarios").document(uid).get().await()
             val nombreUsuario = snapUsuario.getString("nombreUsuario")
             if (!nombreUsuario.isNullOrBlank()) {
                 nombres.add(nombreUsuario)
                 continue
             }
-
             nombres.add("Desconocido")
         }
         return nombres
     }
-
 }

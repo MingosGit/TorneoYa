@@ -66,7 +66,8 @@ data class EncuestaFirebase(
     val partidoUid: String = "",
     val pregunta: String = "",
     val opciones: List<String> = emptyList(),
-    val creadorNombre: String = ""
+    val creadorNombre: String = "",
+    val creadorUid: String = ""
 )
 
 
@@ -80,13 +81,6 @@ data class NotificacionFirebase(
     val usuarioUid: String? = null
 )
 
-@IgnoreExtraProperties
-data class EncuestaVotoFirebase(
-    @get:Exclude var uid: String = "",
-    val encuestaUid: String = "",
-    val opcionIndex: Int = 0,
-    val usuarioUid: String = ""
-)
 
 @IgnoreExtraProperties
 data class EventoFirebase(
