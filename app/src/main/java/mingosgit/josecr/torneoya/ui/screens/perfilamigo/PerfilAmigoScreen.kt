@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 
 @Composable
 fun PerfilAmigoScreen(
@@ -51,6 +53,14 @@ fun PerfilAmigoScreen(
     val context = LocalContext.current
     var showCopiedMessage by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+
+    val textBack = stringResource(id = R.string.gen_volver)
+    val textProfileFriend = stringResource(id = R.string.ponfilamigo_title_profile) // define este en strings.xml
+    val textUidCopied = stringResource(id = R.string.gen_uid_copiado)
+    val textGoals = stringResource(id = R.string.ponfilamigo_label_goals)  // define en strings.xml
+    val textAssists = stringResource(id = R.string.ponfilamigo_label_assists)  // define en strings.xml
+    val textAverage = stringResource(id = R.string.ponfilamigo_label_average)  // define en strings.xml
+    val textMatchesPlayed = stringResource(id = R.string.ponfilamigo_label_matches_played) // define en strings.xml
 
     Box(
         Modifier
@@ -93,7 +103,7 @@ fun PerfilAmigoScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
+                            contentDescription = textBack,
                             tint = Color.White,
                             modifier = Modifier.size(26.dp)
                         )
@@ -102,7 +112,6 @@ fun PerfilAmigoScreen(
                     // Botón compartir/copiar UID
                     IconButton(
                         onClick = {
-                            // Copiar UID al portapapeles
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             val clip = ClipData.newPlainText("UID Amigo", state.uid ?: amigoUid)
                             clipboard.setPrimaryClip(clip)
@@ -128,7 +137,7 @@ fun PerfilAmigoScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Share,
-                            contentDescription = "Copiar UID",
+                            contentDescription = stringResource(id = R.string.gen_copiar_uid),
                             tint = Color.White,
                             modifier = Modifier.size(23.dp)
                         )
@@ -137,7 +146,7 @@ fun PerfilAmigoScreen(
             }
 
             Text(
-                "Perfil del amigo",
+                textProfileFriend,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 26.sp,
                 color = Color.White
@@ -165,7 +174,7 @@ fun PerfilAmigoScreen(
                 if (avatarRes != 0) {
                     Icon(
                         painter = painterResource(id = avatarRes),
-                        contentDescription = "Avatar",
+                        contentDescription = stringResource(id = R.string.gen_avatar_desc),
                         tint = Color.Unspecified,
                         modifier = Modifier
                             .size(92.dp)
@@ -177,7 +186,7 @@ fun PerfilAmigoScreen(
             }
             Spacer(modifier = Modifier.height(14.dp))
             Text(
-                state.nombreUsuario ?: "Usuario",
+                state.nombreUsuario ?: stringResource(id = R.string.gen_amigos),
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 21.sp
@@ -208,7 +217,7 @@ fun PerfilAmigoScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Goles", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(textGoals, color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 state.goles?.toString() ?: "-",
                                 color = Color.White,
@@ -217,7 +226,7 @@ fun PerfilAmigoScreen(
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Asistencias", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(textAssists, color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 state.asistencias?.toString() ?: "-",
                                 color = Color.White,
@@ -226,7 +235,7 @@ fun PerfilAmigoScreen(
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Promedio", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(textAverage, color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 if (state.promedioGoles != null) String.format("%.2f", state.promedioGoles) else "-",
                                 color = Color.White,
@@ -241,7 +250,7 @@ fun PerfilAmigoScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "Partidos jugados: ${state.partidosJugados}",
+                                text = "$textMatchesPlayed: ${state.partidosJugados}",
                                 color = mutedText,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -266,7 +275,7 @@ fun PerfilAmigoScreen(
                     shadowElevation = 7.dp
                 ) {
                     Text(
-                        "UID copiado",
+                        textUidCopied,
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,

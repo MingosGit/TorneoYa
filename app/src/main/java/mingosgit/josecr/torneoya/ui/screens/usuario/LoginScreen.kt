@@ -17,11 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
 import mingosgit.josecr.torneoya.viewmodel.usuario.ResetPasswordState
@@ -49,6 +51,17 @@ fun LoginScreen(
         1.0f to Color(0xFF161622)
     )
 
+    // Strings resources
+    val loginTitle = stringResource(id = R.string.login_title)
+    val loginSubtitle = stringResource(id = R.string.login_subtitle)
+    val emailLabel = stringResource(id = R.string.login_email_label)
+    val passwordLabel = stringResource(id = R.string.login_password_label)
+    val enterButtonText = stringResource(id = R.string.login_button_enter)
+    val noAccountText = stringResource(id = R.string.login_no_account)
+    val forgotPasswordText = stringResource(id = R.string.login_forgot_password)
+    val loginSuccessMessage = stringResource(id = R.string.login_success_message)
+    val resetSuccessMessage = stringResource(id = R.string.login_reset_success)
+
     Box(
         Modifier
             .fillMaxSize()
@@ -70,7 +83,7 @@ fun LoginScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Lock,
-                    contentDescription = "Login",
+                    contentDescription = stringResource(id = R.string.gen_iniciar_sesion),
                     tint = blue,
                     modifier = Modifier.padding(17.dp)
                 )
@@ -79,14 +92,14 @@ fun LoginScreen(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = "Iniciar Sesión",
+                text = loginTitle,
                 color = Color.White,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Black
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Accede a tu cuenta para continuar",
+                text = loginSubtitle,
                 color = Color(0xFFB7B7D1),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
@@ -97,10 +110,10 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
-                label = { Text("Email", color = blue) },
+                label = { Text(emailLabel, color = blue) },
                 singleLine = true,
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.MailOutline, contentDescription = "Email", tint = blue)
+                    Icon(imageVector = Icons.Default.MailOutline, contentDescription = emailLabel, tint = blue)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -121,10 +134,10 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña", color = purple) },
+                label = { Text(passwordLabel, color = purple) },
                 singleLine = true,
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Lock, contentDescription = "Contraseña", tint = purple)
+                    Icon(imageVector = Icons.Default.Lock, contentDescription = passwordLabel, tint = purple)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -162,7 +175,7 @@ fun LoginScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Entrar",
+                    enterButtonText,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = if (loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6) Color.White else Color.White.copy(alpha = 0.4f)
@@ -191,7 +204,7 @@ fun LoginScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "¿No tienes cuenta? Regístrate",
+                    noAccountText,
                     color = blue,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -205,7 +218,7 @@ fun LoginScreen(
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(
-                    "¿Olvidaste tu contraseña?",
+                    forgotPasswordText,
                     color = purple,
                     fontWeight = FontWeight.Medium
                 )
@@ -226,7 +239,7 @@ fun LoginScreen(
                     }
                     is LoginState.Success -> {
                         Text(
-                            text = "¡Sesión iniciada correctamente!",
+                            text = loginSuccessMessage,
                             color = blue,
                             modifier = Modifier.padding(top = 12.dp)
                         )
@@ -251,7 +264,7 @@ fun LoginScreen(
                 when (resetPasswordState) {
                     is ResetPasswordState.Success -> {
                         Text(
-                            text = "Correo de recuperación enviado. Revisa tu email.",
+                            text = resetSuccessMessage,
                             color = purple,
                             modifier = Modifier.padding(top = 8.dp)
                         )

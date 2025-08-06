@@ -15,11 +15,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
@@ -45,16 +47,27 @@ fun AjustesScreen(
     navController: NavController,
     globalUserViewModel: GlobalUserViewModel
 ) {
+    // Obtener strings dentro del contexto composable
+    val miCuentaStr = stringResource(id = R.string.ajustes_mi_cuenta)
+    val miCuentaLocalStr = stringResource(id = R.string.ajustes_mi_cuenta_local)
+    val idiomaStr = stringResource(id = R.string.ajustes_idioma)
+    val notificacionesStr = stringResource(id = R.string.ajustes_notificaciones)
+    val temaAppStr = stringResource(id = R.string.ajustes_tema_app)
+    val datosPrivacidadStr = stringResource(id = R.string.ajustes_datos_privacidad)
+    val ayudaStr = stringResource(id = R.string.ajustes_ayuda)
+    val creditosStr = stringResource(id = R.string.ajustes_creditos)
+    val sobreAppStr = stringResource(id = R.string.ajustes_sobre_aplicacion)
+
     val opciones = listOf(
-        "Mi cuenta",
-        "Mi cuenta local",
-        "Idioma",
-        "Notificaciones",
-        "Tema de la app",
-        "Datos y privacidad",
-        "Ayuda",
-        "Créditos",
-        "Sobre la aplicación"
+        miCuentaStr,
+        miCuentaLocalStr,
+        idiomaStr,
+        notificacionesStr,
+        temaAppStr,
+        datosPrivacidadStr,
+        ayudaStr,
+        creditosStr,
+        sobreAppStr
     )
 
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
@@ -84,12 +97,11 @@ fun AjustesScreen(
         )
     }
 
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("Ajustes", color = lightText, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(id = R.string.ajustes_title), color = lightText, fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 )
@@ -130,14 +142,14 @@ fun AjustesScreen(
                             )
                             .clickable {
                                 when (opcion) {
-                                    "Mi cuenta" -> {
+                                    miCuentaStr -> {
                                         if (sesionOnlineActiva) {
                                             navController.navigate("mi_cuenta")
                                         } else {
                                             mostrarAlerta = true
                                         }
                                     }
-                                    "Mi cuenta local" -> {
+                                    miCuentaLocalStr -> {
                                         navController.navigate("cuenta_local")
                                     }
                                     // Otros casos pueden añadirse aquí
@@ -165,6 +177,7 @@ fun AjustesScreen(
         }
     }
 }
+
 @Composable
 private fun CustomAjustesAlertDialog(
     onDismiss: () -> Unit,
@@ -195,14 +208,14 @@ private fun CustomAjustesAlertDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Inicia sesión",
+                    stringResource(id = R.string.ajustes_dialog_login_title),
                     color = lightText,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
                 Spacer(Modifier.height(11.dp))
                 Text(
-                    text = "Debes iniciar sesión o registrarte para acceder a tu cuenta online.",
+                    stringResource(id = R.string.ajustes_dialog_login_message),
                     color = mutedText,
                     fontSize = 15.sp
                 )
@@ -224,7 +237,7 @@ private fun CustomAjustesAlertDialog(
                         contentPadding = PaddingValues(0.dp) // Elimina padding interno
                     ) {
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text("Iniciar sesión", color = violet, fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.gen_iniciar_sesion), color = violet, fontWeight = FontWeight.Bold)
                         }
                     }
                     OutlinedButton(
@@ -240,7 +253,7 @@ private fun CustomAjustesAlertDialog(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text("Registrarme", color = blue, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(id = R.string.ajustes_register), color = blue, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -248,5 +261,3 @@ private fun CustomAjustesAlertDialog(
         }
     }
 }
-
-

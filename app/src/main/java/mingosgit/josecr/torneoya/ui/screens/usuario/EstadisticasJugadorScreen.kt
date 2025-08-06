@@ -12,15 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.EstadisticasRepository
 import mingosgit.josecr.torneoya.data.entities.EstadisticasJugador
+import mingosgit.josecr.torneoya.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,13 +42,19 @@ fun EstadisticasJugadorScreen(
         }
     }
 
+    val title = stringResource(id = R.string.estadisticas_jugador_title)
+    val labelPartidos = stringResource(id = R.string.estadisticas_partidos_jugados)
+    val labelGoles = stringResource(id = R.string.estadisticas_goles)
+    val labelAsistencias = stringResource(id = R.string.estadisticas_asistencias)
+    val descBack = stringResource(id = R.string.estadisticas_atras)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Estadísticas del Jugador") },
+                title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = descBack)
                     }
                 }
             )
@@ -87,9 +95,9 @@ fun EstadisticasJugadorScreen(
                         color = Color(0xFF1976D2),
                         modifier = Modifier.padding(bottom = 30.dp)
                     )
-                    EstadisticaItemStyled("Partidos Jugados: ", estadisticas?.partidosJugados ?: 0)
-                    EstadisticaItemStyled("Goles: ", estadisticas?.goles ?: 0)
-                    EstadisticaItemStyled("Asistencias: ", estadisticas?.asistencias ?: 0)
+                    EstadisticaItemStyled(labelPartidos, estadisticas?.partidosJugados ?: 0)
+                    EstadisticaItemStyled(labelGoles, estadisticas?.goles ?: 0)
+                    EstadisticaItemStyled(labelAsistencias, estadisticas?.asistencias ?: 0)
                 }
             }
         }

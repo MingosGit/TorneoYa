@@ -266,4 +266,59 @@
     <string name="ponlinetabs_eventos">Eventos</string>
     <string name="ponlinetabs_comentarios">Comentarios</string>
     <string name="ponlinetabs_encuestas">Encuestas</string>
+
+    <!--- ====== VISUALIZAR PARTIDO ONLINE SCREEN ====== -->
+    <string name="ponline_screen_title">Partido Online</string>
+    <string name="ponline_desc_share_uid">Compartir UID</string>
+    <string name="ponline_desc_admin_partido">Administrar Partido</string>
+    <string name="ponline_desc_stop_viewing">Dejar de visualizar</string>
+    <string name="ponline_dialog_no_permissions_title">Sin permisos</string>
+    <string name="ponline_dialog_no_permissions_message">No tienes permisos para administrar este partido.</string>
+    <string name="ponline_dialog_stop_viewing_title">¿Dejar de visualizar este partido?</string>
+    <string name="ponline_dialog_stop_viewing_message">Ya no podrás visualizar este partido. Podrás volver a verlo buscándolo por su UID.</string>
+    <string name="ponline_dialog_stop_viewing_confirm">Sí, dejar de visualizar</string>
+
+    <!--- ====== AMIGOS SCREEN ====== -->
+    <string name="ponfilamigo_title_profile">Perfil del amigo</string>
+    <string name="ponfilamigo_label_goals">Goles</string>
+    <string name="ponfilamigo_label_assists">Asistencias</string>
+    <string name="ponfilamigo_label_average">Promedio</string>
+    <string name="ponfilamigo_label_matches_played">Partidos jugados</string>
+
+    <!--- ===== AJUSTES SCREEN SCREEN ===== -->
+    <string name="ajustes_title">Ajustes</string>
+    <string name="ajustes_mi_cuenta">Mi cuenta</string>
+    <string name="ajustes_mi_cuenta_local">Mi cuenta local</string>
+    <string name="ajustes_idioma">Idioma</string>
+    <string name="ajustes_notificaciones">Notificaciones</string>
+    <string name="ajustes_tema_app">Tema de la app</string>
+    <string name="ajustes_datos_privacidad">Datos y privacidad</string>
+    <string name="ajustes_ayuda">Ayuda</string>
+    <string name="ajustes_creditos">Créditos</string>
+    <string name="ajustes_sobre_aplicacion">Sobre la aplicación</string>
+
+    <string name="ajustes_dialog_login_title">Inicia sesión</string>
+    <string name="ajustes_dialog_login_message">Debes iniciar sesión o registrarte para acceder a tu cuenta online.</string>
+    <string name="ajustes_register">Registrarme</string>
+
+
+    <!--- ===== ESTADISTICAS JUGADOR SCREEN ===== -->    <string name="estadisticas_jugador_title">Estadísticas del Jugador</string>
+    <string name="estadisticas_partidos_jugados">Partidos Jugados: </string>
+    <string name="estadisticas_goles">Goles: </string>
+    <string name="estadisticas_asistencias">Asistencias: </string>
+    <string name="estadisticas_atras">Atrás</string>
+
+    <!--- ===== LOGIN SCREEN ===== -->
+    <string name="login_title">Iniciar Sesión</string>
+    <string name="login_subtitle">Accede a tu cuenta para continuar</string>
+    <string name="login_email_label">Email</string>
+    <string name="login_password_label">Contraseña</string>
+    <string name="login_button_enter">Entrar</string>
+    <string name="login_no_account">¿No tienes cuenta? Regístrate</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_success_message">¡Sesión iniciada correctamente!</string>
+    <string name="login_reset_success">Correo de recuperación enviado. Revisa tu email.</string>
+
+
+
 </resources>

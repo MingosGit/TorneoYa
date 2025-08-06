@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +33,7 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnline
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +53,18 @@ fun VisualizarPartidoOnlineScreen(
 
     var esCreador by remember { mutableStateOf(false) }
     var esAdmin by remember { mutableStateOf(false) }
+
+    val title = stringResource(id = R.string.ponline_screen_title)
+    val descShareUid = stringResource(id = R.string.ponline_desc_share_uid)
+    val descAdminPartido = stringResource(id = R.string.ponline_desc_admin_partido)
+    val descStopViewing = stringResource(id = R.string.ponline_desc_stop_viewing)
+
+    val dialogNoPermTitle = stringResource(id = R.string.ponline_dialog_no_permissions_title)
+    val dialogNoPermMsg = stringResource(id = R.string.ponline_dialog_no_permissions_message)
+    val dialogStopViewingTitle = stringResource(id = R.string.ponline_dialog_stop_viewing_title)
+    val dialogStopViewingMsg = stringResource(id = R.string.ponline_dialog_stop_viewing_message)
+    val dialogStopViewingConfirm = stringResource(id = R.string.ponline_dialog_stop_viewing_confirm)
+    val btnOk = stringResource(id = R.string.gen_cerrar) // Usamos el string genérico "Cerrar" para OK
 
     LaunchedEffect(partidoUid, usuarioUid) {
         val firestore = FirebaseFirestore.getInstance()
@@ -87,7 +101,7 @@ fun VisualizarPartidoOnlineScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Partido Online",
+                            text = title,
                             color = Color.White,
                             fontSize = 27.sp,
                             fontWeight = FontWeight.Black,
@@ -122,14 +136,14 @@ fun VisualizarPartidoOnlineScreen(
                                     ),
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("Partido UID", partidoUid)
+                                    val clip = ClipData.newPlainText(title, partidoUid)
                                     clipboard.setPrimaryClip(clip)
                                     showCopiedMessage = true
                                 }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Share,
-                                    contentDescription = "Compartir UID",
+                                    contentDescription = descShareUid,
                                     tint = Color(0xFF8F5CFF),
                                     modifier = Modifier.size(25.dp)
                                 )
@@ -168,7 +182,7 @@ fun VisualizarPartidoOnlineScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
-                                    contentDescription = "Administrar Partido",
+                                    contentDescription = descAdminPartido,
                                     tint = Color(0xFF8F5CFF),
                                     modifier = Modifier.size(25.dp)
                                 )
@@ -195,7 +209,7 @@ fun VisualizarPartidoOnlineScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.ExitToApp,
-                                        contentDescription = "Dejar de visualizar",
+                                        contentDescription = descStopViewing,
                                         tint = Color(0xFFFF7675),
                                         modifier = Modifier.size(25.dp)
                                     )
@@ -234,7 +248,7 @@ fun VisualizarPartidoOnlineScreen(
                             shape = RoundedCornerShape(17.dp)
                         ) {
                             Text(
-                                "UID copiado al portapapeles",
+                                text = stringResource(id = R.string.gen_uid_copiado),
                                 color = Color(0xFFB7B7D1),
                                 fontSize = 16.sp
                             )
@@ -246,11 +260,11 @@ fun VisualizarPartidoOnlineScreen(
                             onDismissRequest = { showPermisoDialog = false },
                             confirmButton = {
                                 TextButton(onClick = { showPermisoDialog = false }) {
-                                    Text("OK", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
+                                    Text(btnOk, color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
                                 }
                             },
-                            title = { Text("Sin permisos", color = Color.White, fontWeight = FontWeight.Black) },
-                            text = { Text("No tienes permisos para administrar este partido.", color = Color(0xFFB7B7D1)) },
+                            title = { Text(dialogNoPermTitle, color = Color.White, fontWeight = FontWeight.Black) },
+                            text = { Text(dialogNoPermMsg, color = Color(0xFFB7B7D1)) },
                             containerColor = Color(0xFF23273D),
                             shape = RoundedCornerShape(17.dp)
                         )
@@ -266,16 +280,16 @@ fun VisualizarPartidoOnlineScreen(
                                         navController.popBackStack()
                                     }
                                 }) {
-                                    Text("Sí, dejar de visualizar", color = Color(0xFFFF7675), fontWeight = FontWeight.Bold)
+                                    Text(dialogStopViewingConfirm, color = Color(0xFFFF7675), fontWeight = FontWeight.Bold)
                                 }
                             },
                             dismissButton = {
                                 TextButton(onClick = { showDejarDeVerDialog = false }) {
-                                    Text("Cancelar", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
+                                    Text(btnOk, color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
                                 }
                             },
-                            title = { Text("¿Dejar de visualizar este partido?", color = Color.White, fontWeight = FontWeight.Black) },
-                            text = { Text("Ya no podrás visualizar este partido. Podrás volver a verlo buscándolo por su UID.", color = Color(0xFFB7B7D1)) },
+                            title = { Text(dialogStopViewingTitle, color = Color.White, fontWeight = FontWeight.Black) },
+                            text = { Text(dialogStopViewingMsg, color = Color(0xFFB7B7D1)) },
                             containerColor = Color(0xFF23273D),
                             shape = RoundedCornerShape(17.dp)
                         )
