@@ -22,10 +22,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.data.firebase.*
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import java.util.Calendar
@@ -111,8 +113,8 @@ fun AdministrarPartidoOnlineScreen(
         return
     }
 
-    val nombreEquipoA = equipoA?.nombre ?: "Equipo A"
-    val nombreEquipoB = equipoB?.nombre ?: "Equipo B"
+    val nombreEquipoA = equipoA?.nombre ?: stringResource(R.string.adminp_label_nombre_equipo_a)
+    val nombreEquipoB = equipoB?.nombre ?: stringResource(R.string.adminp_label_nombre_equipo_b)
     val fecha = partido?.fecha.orEmpty()
 
     Box(
@@ -156,7 +158,7 @@ fun AdministrarPartidoOnlineScreen(
                     ) {
                         Icon(
                             Icons.Filled.KeyboardArrowLeft,
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.gen_volver),
                             tint = TorneoYaPalette.violet,
                             modifier = Modifier.size(27.dp)
                         )
@@ -164,7 +166,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    "Administrar Goles (Online)",
+                    text = stringResource(R.string.adminp_title),
                     fontSize = 22.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Black
@@ -176,7 +178,7 @@ fun AdministrarPartidoOnlineScreen(
                     }) {
                         Icon(
                             Icons.Default.Person,
-                            contentDescription = "Administrar Roles",
+                            contentDescription = stringResource(R.string.adminp_administrar_roles_desc),
                             tint = TorneoYaPalette.blue
                         )
                     }
@@ -193,7 +195,7 @@ fun AdministrarPartidoOnlineScreen(
             ) {
                 item {
                     Text(
-                        text = "UID: $partidoUid | Fecha: $fecha",
+                        text = stringResource(R.string.adminp_uid_fecha, partidoUid, fecha),
                         color = Color(0xFFB7B7D1),
                         fontSize = 15.sp
                     )
@@ -206,7 +208,7 @@ fun AdministrarPartidoOnlineScreen(
                         ModernMainButton(
                             onClick = { showDatePicker = true },
                             modifier = Modifier.fillMaxWidth()
-                        ) { Text("Seleccionar fecha: $fechaEditable") }
+                        ) { Text(stringResource(R.string.adminp_btn_seleccionar_fecha, fechaEditable)) }
 
                         CustomDatePickerDialog(
                             show = showDatePicker,
@@ -230,11 +232,11 @@ fun AdministrarPartidoOnlineScreen(
                         )
                         Spacer(Modifier.height(8.dp))
 
-// ------ HORA ------
+                        // ------ HORA ------
                         ModernMainButton(
                             onClick = { showTimePicker = true },
                             modifier = Modifier.fillMaxWidth()
-                        ) { Text("Seleccionar hora: $horaEditable") }
+                        ) { Text(stringResource(R.string.adminp_btn_seleccionar_hora, horaEditable)) }
 
                         CustomTimePickerDialog(
                             show = showTimePicker,
@@ -248,13 +250,11 @@ fun AdministrarPartidoOnlineScreen(
                         )
                         Spacer(Modifier.height(8.dp))
 
-
-                        Spacer(Modifier.height(8.dp))
                         // Nº PARTES
                         OutlinedTextField(
                             value = numeroPartesEditable.toString(),
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setNumeroPartesEditable(it) } },
-                            label = { Text("Nº Partes") },
+                            label = { Text(stringResource(R.string.adminp_label_num_partes)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                         )
@@ -264,7 +264,7 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = tiempoPorParteEditable.toString(),
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoPorParteEditable(it) } },
-                            label = { Text("Minutos por parte") },
+                            label = { Text(stringResource(R.string.adminp_label_minutos_por_parte)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                         )
@@ -274,7 +274,7 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = tiempoDescansoEditable.toString(),
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoDescansoEditable(it) } },
-                            label = { Text("Minutos descanso") },
+                            label = { Text(stringResource(R.string.adminp_label_minutos_descanso)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                         )
@@ -283,7 +283,7 @@ fun AdministrarPartidoOnlineScreen(
                             onClick = { viewModel.actualizarDatosPartido() },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Guardar cambios")
+                            Text(stringResource(R.string.adminp_btn_guardar_cambios))
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -298,7 +298,7 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = nombreEquipoAEditable,
                             onValueChange = { viewModel.setNombreEquipoAEditable(it) },
-                            label = { Text("Nombre Equipo A") },
+                            label = { Text(stringResource(R.string.adminp_label_nombre_equipo_a)) },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(Modifier.width(8.dp))
@@ -306,7 +306,7 @@ fun AdministrarPartidoOnlineScreen(
                             onClick = { viewModel.actualizarNombreEquipoA() },
                             enabled = nombreEquipoAEditable.isNotBlank() && nombreEquipoAEditable != nombreEquipoA
                         ) {
-                            Text("Guardar")
+                            Text(stringResource(R.string.gen_guardar))
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -321,7 +321,7 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = nombreEquipoBEditable,
                             onValueChange = { viewModel.setNombreEquipoBEditable(it) },
-                            label = { Text("Nombre Equipo B") },
+                            label = { Text(stringResource(R.string.adminp_label_nombre_equipo_b)) },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(Modifier.width(8.dp))
@@ -329,14 +329,14 @@ fun AdministrarPartidoOnlineScreen(
                             onClick = { viewModel.actualizarNombreEquipoB() },
                             enabled = nombreEquipoBEditable.isNotBlank() && nombreEquipoBEditable != nombreEquipoB
                         ) {
-                            Text("Guardar")
+                            Text(stringResource(R.string.gen_guardar))
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 item {
-                    Text("Goles registrados", color = TorneoYaPalette.violet, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.adminp_goles_registrados), color = TorneoYaPalette.violet, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -344,7 +344,7 @@ fun AdministrarPartidoOnlineScreen(
                     val equipoNombre = when (gol.equipoUid) {
                         equipoA?.uid -> nombreEquipoA
                         equipoB?.uid -> nombreEquipoB
-                        else -> "Equipo"
+                        else -> stringResource(R.string.adminp_label_equipo)
                     }
                     val jugadorNombre = (jugadoresA + jugadoresB).find { it.uid == gol.jugadorUid }?.nombre ?: ""
                     val asistenciaNombre = (jugadoresA + jugadoresB).find { it.uid == gol.asistenciaJugadorUid }?.nombre
@@ -365,7 +365,7 @@ fun AdministrarPartidoOnlineScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "$equipoNombre - Jugador: $jugadorNombre" +
+                            text = "$equipoNombre - ${stringResource(R.string.adminp_label_jugador)}: $jugadorNombre" +
                                     (gol.minuto?.let { " (${it}') " } ?: "") +
                                     (asistenciaNombre?.let { "Asist: $asistenciaNombre" } ?: ""),
                             modifier = Modifier.weight(1f),
@@ -376,7 +376,7 @@ fun AdministrarPartidoOnlineScreen(
                                 viewModel.borrarGol(gol)
                             }
                         ) {
-                            Icon(Icons.Default.Remove, contentDescription = "Quitar gol", tint = Color(0xFFF25A6D))
+                            Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.adminp_btn_quitar_gol), tint = Color(0xFFF25A6D))
                         }
                     }
                 }
@@ -385,7 +385,7 @@ fun AdministrarPartidoOnlineScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Divider(color = Color(0xFF353659))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Agregar gol", color = TorneoYaPalette.violet, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.adminp_btn_agregar_gol), color = TorneoYaPalette.violet, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -399,7 +399,7 @@ fun AdministrarPartidoOnlineScreen(
                             readOnly = true,
                             value = if (equipoSeleccionado == "A") nombreEquipoA else nombreEquipoB,
                             onValueChange = {},
-                            label = { Text("Equipo") },
+                            label = { Text(stringResource(R.string.adminp_label_equipo)) },
                             modifier = Modifier.menuAnchor().fillMaxWidth()
                         )
                         ExposedDropdownMenu(
@@ -442,8 +442,8 @@ fun AdministrarPartidoOnlineScreen(
                             readOnly = true,
                             value = jugadorSeleccionado?.nombre ?: "",
                             onValueChange = {},
-                            label = { Text("Jugador") },
-                            placeholder = { Text("Seleccionar jugador") },
+                            label = { Text(stringResource(R.string.adminp_label_jugador)) },
+                            placeholder = { Text(stringResource(R.string.adminp_placeholder_seleccionar_jugador)) },
                             modifier = Modifier.menuAnchor().fillMaxWidth()
                         )
                         ExposedDropdownMenu(
@@ -493,7 +493,7 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = minuto,
                             onValueChange = { minuto = it.filter { c -> c.isDigit() }.take(3) },
-                            label = { Text("Min") },
+                            label = { Text(stringResource(R.string.adminp_label_minuto)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                             modifier = Modifier.weight(1f)
@@ -507,8 +507,8 @@ fun AdministrarPartidoOnlineScreen(
                                 readOnly = true,
                                 value = asistenciaSeleccionada?.nombre ?: "",
                                 onValueChange = {},
-                                label = { Text("Asistencia (opcional)") },
-                                placeholder = { Text("Sin asistencia") },
+                                label = { Text(stringResource(R.string.adminp_label_asistencia_opcional)) },
+                                placeholder = { Text(stringResource(R.string.adminp_placeholder_sin_asistencia)) },
                                 enabled = jugadorSeleccionado != null,
                                 modifier = Modifier.menuAnchor().weight(1f)
                             )
@@ -517,7 +517,7 @@ fun AdministrarPartidoOnlineScreen(
                                 onDismissRequest = { expandedAsistente = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Sin asistencia") },
+                                    text = { Text(stringResource(R.string.adminp_placeholder_sin_asistencia)) },
                                     onClick = {
                                         asistenciaSeleccionada = null
                                         expandedAsistente = false
@@ -583,7 +583,7 @@ fun AdministrarPartidoOnlineScreen(
                         enabled = jugadorSeleccionado != null && minuto.isNotBlank(),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Agregar gol")
+                        Text(stringResource(R.string.adminp_btn_agregar_gol))
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -593,7 +593,7 @@ fun AdministrarPartidoOnlineScreen(
                         onClick = { showDialog = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Guardar y salir")
+                        Text(stringResource(R.string.adminp_btn_guardar_y_salir))
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -603,7 +603,7 @@ fun AdministrarPartidoOnlineScreen(
                         onClick = { navController?.navigate("administrar_jugadores_online/$partidoUid/${equipoA?.uid}/${equipoB?.uid}") },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Editar jugadores")
+                        Text(stringResource(R.string.adminp_btn_editar_jugadores))
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -612,17 +612,17 @@ fun AdministrarPartidoOnlineScreen(
                     item {
                         AlertDialog(
                             onDismissRequest = { showDialog = false },
-                            title = { Text("Confirmar cambios", color = Color.White) },
-                            text = { Text("¿Guardar y volver?", color = Color(0xFFB7B7D1)) },
+                            title = { Text(stringResource(R.string.adminp_dialog_confirmar_cambios_titulo), color = Color.White) },
+                            text = { Text(stringResource(R.string.adminp_dialog_confirmar_cambios_mensaje), color = Color(0xFFB7B7D1)) },
                             containerColor = Color(0xFF1C1D25),
                             confirmButton = {
                                 TextButton(
                                     onClick = { navController?.popBackStack() }
-                                ) { Text("Guardar", color = TorneoYaPalette.blue) }
+                                ) { Text(stringResource(R.string.gen_guardar), color = TorneoYaPalette.blue) }
                             },
                             dismissButton = {
                                 OutlinedButton(onClick = { showDialog = false }) {
-                                    Text("Cancelar", color = TorneoYaPalette.violet)
+                                    Text(stringResource(R.string.gen_cancelar), color = TorneoYaPalette.violet)
                                 }
                             }
                         )

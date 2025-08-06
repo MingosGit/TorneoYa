@@ -97,4 +97,32 @@
     <string name="adminj_boton_guardar_volver">Guardar y volver</string>
     <string name="adminj_texto_jugadores_equipo">Jugadores %1$s</string>
 
+    <!-- ===== ADMINISTRAR PARTIDO ONLINE SCREEN ===== -->
+    <string name="adminp_title">Administrar Goles (Online)</string>
+    <string name="adminp_administrar_roles_desc">Administrar Roles</string>
+    <string name="adminp_uid_fecha">UID: %1$s | Fecha: %2$s</string>
+    <string name="adminp_btn_seleccionar_fecha">Seleccionar fecha: %1$s</string>
+    <string name="adminp_btn_seleccionar_hora">Seleccionar hora: %1$s</string>
+    <string name="adminp_label_num_partes">Nº Partes</string>
+    <string name="adminp_label_minutos_por_parte">Minutos por parte</string>
+    <string name="adminp_label_minutos_descanso">Minutos descanso</string>
+    <string name="adminp_btn_guardar_cambios">Guardar cambios</string>
+    <string name="adminp_label_nombre_equipo_a">Nombre Equipo A</string>
+    <string name="adminp_label_nombre_equipo_b">Nombre Equipo B</string>
+    <string name="adminp_goles_registrados">Goles registrados</string>
+    <string name="adminp_btn_quitar_gol">Quitar gol</string>
+    <string name="adminp_btn_agregar_gol">Agregar gol</string>
+    <string name="adminp_label_equipo">Equipo</string>
+    <string name="adminp_label_jugador">Jugador</string>
+    <string name="adminp_placeholder_seleccionar_jugador">Seleccionar jugador</string>
+    <string name="adminp_label_minuto">Min</string>
+    <string name="adminp_label_asistencia_opcional">Asistencia (opcional)</string>
+    <string name="adminp_placeholder_sin_asistencia">Sin asistencia</string>
+    <string name="adminp_btn_guardar_y_salir">Guardar y salir</string>
+    <string name="adminp_btn_editar_jugadores">Editar jugadores</string>
+    <string name="adminp_dialog_confirmar_cambios_titulo">Confirmar cambios</string>
+    <string name="adminp_dialog_confirmar_cambios_mensaje">¿Guardar y volver?</string>
+
+
+
 </resources>
