@@ -126,4 +126,128 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         context.startActivity(intent)
         Runtime.getRuntime().exit(0)
     }
+
+    fun eliminarCuentaYDatosDelUsuario(
+        onSuccess: (() -> Unit)? = null,
+        onError: ((Exception) -> Unit)? = null
+    ) {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val uid = user.uid
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
+            try {
+                // Eliminar usuario de colección "usuarios"
+                db.collection("usuarios").document(uid).delete().await()
+
+                // Eliminar de amigos de otros usuarios
+                val usuariosSnapshot = db.collection("usuarios").get().await()
+                for (usuarioDoc in usuariosSnapshot.documents) {
+                    db.collection("usuarios").document(usuarioDoc.id)
+                        .collection("amigos").whereEqualTo("uid", uid)
+                        .get().await().documents.forEach {
+                            db.collection("usuarios").document(usuarioDoc.id)
+                                .collection("amigos").document(it.id).delete()
+                        }
+                }
+
+                // Eliminar comentarios del usuario
+                db.collection("comentarios")
+                    .whereEqualTo("usuarioUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("comentarios").document(it.id).delete()
+                    }
+
+                // Eliminar votos del usuario
+                db.collection("comentariosVotos")
+                    .whereEqualTo("usuarioUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("comentariosVotos").document(it.id).delete()
+                    }
+
+                // Eliminar notificaciones del usuario
+                db.collection("notificaciones")
+                    .whereEqualTo("usuarioUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("notificaciones").document(it.id).delete()
+                    }
+
+                // Eliminar del equipo si existe una colección equipos/jugadores
+                val equiposSnapshot = db.collection("equipos").get().await()
+                for (equipoDoc in equiposSnapshot.documents) {
+                    db.collection("equipos").document(equipoDoc.id)
+                        .collection("jugadores").whereEqualTo("uid", uid)
+                        .get().await().documents.forEach {
+                            db.collection("equipos").document(equipoDoc.id)
+                                .collection("jugadores").document(it.id).delete()
+                        }
+                }
+
+                // Eliminar de partidos: jugadoresEquipoA, jugadoresEquipoB, administradores, usuariosConAcceso
+                val partidosSnapshot = db.collection("partidos").get().await()
+                for (partidoDoc in partidosSnapshot.documents) {
+                    val partidoRef = db.collection("partidos").document(partidoDoc.id)
+                    val datos = partidoDoc.data ?: continue
+                    val jugadoresA = (datos["jugadoresEquipoA"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val jugadoresB = (datos["jugadoresEquipoB"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val administradores = (datos["administradores"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val usuariosConAcceso = (datos["usuariosConAcceso"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val creadorUid = datos["creadorUid"] as? String
+
+                    val updates = mutableMapOf<String, Any>(
+                        "jugadoresEquipoA" to jugadoresA,
+                        "jugadoresEquipoB" to jugadoresB,
+                        "administradores" to administradores,
+                        "usuariosConAcceso" to usuariosConAcceso
+                    )
+                    if (creadorUid == uid) {
+                        updates["creadorUid"] = ""
+                    }
+                    partidoRef.update(updates).await()
+                }
+
+                // Eliminar goles y eventos del usuario
+                db.collection("goleadores")
+                    .whereEqualTo("jugadorUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("goleadores").document(it.id).delete()
+                    }
+                db.collection("goleadores")
+                    .whereEqualTo("asistenciaJugadorUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("goleadores").document(it.id).delete()
+                    }
+
+                db.collection("eventos")
+                    .whereEqualTo("jugadorUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("eventos").document(it.id).delete()
+                    }
+                db.collection("eventos")
+                    .whereEqualTo("asistenteUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("eventos").document(it.id).delete()
+                    }
+
+                // Eliminar encuestas creadas por el usuario
+                db.collection("encuestas")
+                    .whereEqualTo("creadorUid", uid)
+                    .get().await().documents.forEach {
+                        db.collection("encuestas").document(it.id).delete()
+                    }
+
+                // Eliminar usuario de autenticación
+                user.delete().addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        onSuccess?.invoke()
+                        cerrarSesionOnline()
+                    } else {
+                        onError?.invoke(it.exception ?: Exception("Error al eliminar usuario"))
+                    }
+                }
+
+            } catch (e: Exception) {
+                onError?.invoke(e)
+            }
+        }
+    }
 }

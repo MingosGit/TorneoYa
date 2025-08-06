@@ -96,63 +96,118 @@ class MiCuentaViewModel : ViewModel() {
         val user = auth.currentUser ?: return
         val uid = user.uid
         viewModelScope.launch {
-            val creados = partidoRepo.listarPartidosPorUsuario(uid).filter { it.creadorUid == uid }
-            for (p in creados) {
-                val comentarios = firestore.collection("comentarios")
-                    .whereEqualTo("partidoUid", p.uid)
-                    .get().await()
-                for (doc in comentarios.documents) {
-                    firestore.collection("comentarios").document(doc.id).delete().await()
+            try {
+                // 1. Eliminar de amigos de otros usuarios
+                val usuariosSnapshot = firestore.collection("usuarios").get().await()
+                for (usuarioDoc in usuariosSnapshot.documents) {
+                    firestore.collection("usuarios").document(usuarioDoc.id)
+                        .collection("amigos").whereEqualTo("uid", uid)
+                        .get().await().documents.forEach {
+                            firestore.collection("usuarios").document(usuarioDoc.id)
+                                .collection("amigos").document(it.id).delete().await()
+                        }
                 }
 
-                val votosComentarios = firestore.collection("comentario_votos")
-                    .whereEqualTo("partidoUid", p.uid)
-                    .get().await()
-                for (doc in votosComentarios.documents) {
-                    firestore.collection("comentario_votos").document(doc.id).delete().await()
+                // 2. Eliminar de equipos
+                val equiposSnapshot = firestore.collection("equipos").get().await()
+                for (equipoDoc in equiposSnapshot.documents) {
+                    firestore.collection("equipos").document(equipoDoc.id)
+                        .collection("jugadores").whereEqualTo("uid", uid)
+                        .get().await().documents.forEach {
+                            firestore.collection("equipos").document(equipoDoc.id)
+                                .collection("jugadores").document(it.id).delete().await()
+                        }
                 }
 
-                val encuestas = firestore.collection("encuestas")
-                    .whereEqualTo("partidoUid", p.uid)
-                    .get().await()
-                for (encuestaDoc in encuestas.documents) {
-                    val encuestaId = encuestaDoc.id
-                    firestore.collection("encuestas").document(encuestaId).delete().await()
+                // 3. Eliminar de arrays de partidos y referencias como admin, acceso, etc
+                val partidosSnapshot = firestore.collection("partidos").get().await()
+                for (partidoDoc in partidosSnapshot.documents) {
+                    val partidoRef = firestore.collection("partidos").document(partidoDoc.id)
+                    val datos = partidoDoc.data ?: continue
+                    val jugadoresA = (datos["jugadoresEquipoA"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val jugadoresB = (datos["jugadoresEquipoB"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val administradores = (datos["administradores"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val usuariosConAcceso = (datos["usuariosConAcceso"] as? List<*>)?.filter { it != uid } ?: emptyList<String>()
+                    val creadorUid = datos["creadorUid"] as? String
 
-                    val votosEncuesta = firestore.collection("encuesta_votos")
-                        .whereEqualTo("encuestaUid", encuestaId)
-                        .get().await()
-                    for (doc in votosEncuesta.documents) {
-                        firestore.collection("encuesta_votos").document(doc.id).delete().await()
+                    val updates = mutableMapOf<String, Any>(
+                        "jugadoresEquipoA" to jugadoresA,
+                        "jugadoresEquipoB" to jugadoresB,
+                        "administradores" to administradores,
+                        "usuariosConAcceso" to usuariosConAcceso
+                    )
+                    if (creadorUid == uid) {
+                        updates["creadorUid"] = ""
                     }
+                    partidoRef.update(updates).await()
                 }
 
-                partidoRepo.borrarPartido(p.uid)
-            }
+                // 4. Eliminar goles y eventos del usuario
+                firestore.collection("goleadores")
+                    .whereEqualTo("jugadorUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("goleadores").document(it.id).delete().await()
+                    }
+                firestore.collection("goleadores")
+                    .whereEqualTo("asistenciaJugadorUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("goleadores").document(it.id).delete().await()
+                    }
+                firestore.collection("eventos")
+                    .whereEqualTo("jugadorUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("eventos").document(it.id).delete().await()
+                    }
+                firestore.collection("eventos")
+                    .whereEqualTo("asistenteUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("eventos").document(it.id).delete().await()
+                    }
 
-            val comentariosUsuario = firestore.collection("comentarios")
-                .whereEqualTo("usuarioUid", uid)
-                .get().await()
-            for (doc in comentariosUsuario.documents) {
-                firestore.collection("comentarios").document(doc.id).delete().await()
-            }
+                // 5. Eliminar notificaciones
+                firestore.collection("notificaciones")
+                    .whereEqualTo("usuarioUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("notificaciones").document(it.id).delete().await()
+                    }
 
-            val votosUsuario = firestore.collection("comentario_votos")
-                .whereEqualTo("usuarioUid", uid)
-                .get().await()
-            for (doc in votosUsuario.documents) {
-                firestore.collection("comentario_votos").document(doc.id).delete().await()
-            }
+                // 6. Eliminar encuestas creadas por el usuario
+                firestore.collection("encuestas")
+                    .whereEqualTo("creadorUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("encuestas").document(it.id).delete().await()
+                    }
 
-            val votosEncuestasUsuario = firestore.collection("encuesta_votos")
-                .whereEqualTo("usuarioUid", uid)
-                .get().await()
-            for (doc in votosEncuestasUsuario.documents) {
-                firestore.collection("encuesta_votos").document(doc.id).delete().await()
-            }
+                // 7. Eliminar comentarios del usuario
+                firestore.collection("comentarios")
+                    .whereEqualTo("usuarioUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("comentarios").document(it.id).delete().await()
+                    }
 
-            firestore.collection("usuarios").document(uid).delete().await()
-            user.delete().await()
+                // 8. Eliminar votos del usuario
+                firestore.collection("comentario_votos")
+                    .whereEqualTo("usuarioUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("comentario_votos").document(it.id).delete().await()
+                    }
+
+                // 9. Eliminar votos de encuestas del usuario
+                firestore.collection("encuesta_votos")
+                    .whereEqualTo("usuarioUid", uid)
+                    .get().await().documents.forEach {
+                        firestore.collection("encuesta_votos").document(it.id).delete().await()
+                    }
+
+                // 10. Eliminar usuario de la colección usuarios
+                firestore.collection("usuarios").document(uid).delete().await()
+
+                // 11. Eliminar usuario de FirebaseAuth
+                user.delete().await()
+
+            } catch (e: Exception) {
+                // Manejo de error simple (log, puedes adaptar a tu app)
+            }
         }
     }
 
