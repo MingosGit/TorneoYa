@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -34,12 +35,13 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
+import mingosgit.josecr.torneoya.R
 
 @Composable
 fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: String) {
     val state by vm.comentariosEncuestasState.collectAsState()
     var textoComentario by remember { mutableStateOf("") }
-    val usuarioNombre = "Tú"
+    val usuarioNombre = stringResource(id = R.string.ponlinecom_user_you)
     var isLoading by remember { mutableStateOf(false) }
     val comentariosSize = state.comentarios.size
     val comentariosLoaded = remember(comentariosSize) { comentariosSize > 0 }
@@ -75,7 +77,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
             OutlinedTextField(
                 value = textoComentario,
                 onValueChange = { textoComentario = it },
-                label = { Text("Escribe un comentario") },
+                label = { Text(stringResource(id = R.string.ponlinecom_label_comment_input)) },
                 singleLine = true,
                 modifier = Modifier
                     .weight(1f)
@@ -108,7 +110,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
-                    contentDescription = "Refrescar comentarios",
+                    contentDescription = stringResource(id = R.string.ponlinecom_desc_refresh_comments),
                     tint = TorneoYaPalette.blue
                 )
             }
@@ -227,7 +229,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                     ) {
                                         Icon(
                                             imageVector = Icons.Filled.ThumbUp,
-                                            contentDescription = "Like",
+                                            contentDescription = stringResource(id = R.string.ponlinecom_desc_like),
                                             tint = if (comentarioConVotos.miVoto == 1)
                                                 TorneoYaPalette.blue
                                             else
@@ -259,7 +261,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                     ) {
                                         Icon(
                                             imageVector = Icons.Filled.ThumbDown,
-                                            contentDescription = "Dislike",
+                                            contentDescription = stringResource(id = R.string.ponlinecom_desc_dislike),
                                             tint = if (comentarioConVotos.miVoto == -1)
                                                 Color(0xFFFA6767)
                                             else
@@ -284,7 +286,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 if (comentariosOrdenados.isEmpty()) {
                     item {
                         Text(
-                            text = "Sin comentarios",
+                            text = stringResource(id = R.string.ponlinecom_text_no_comments),
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
@@ -325,13 +327,14 @@ fun OutlinedIconSendButton(
         ) {
             Icon(
                 imageVector = Icons.Filled.Send,
-                contentDescription = "Enviar",
+                contentDescription = stringResource(id = R.string.ponlinecom_desc_send),
                 tint = if (enabled) TorneoYaPalette.violet else TorneoYaPalette.mutedText,
                 modifier = Modifier.size(22.dp)
             )
         }
     }
 }
+
 @Composable
 fun AvatarComentario(avatar: Int?, nombre: String, background: Brush) {
     val context = LocalContext.current

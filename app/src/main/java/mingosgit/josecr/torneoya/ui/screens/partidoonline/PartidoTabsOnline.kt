@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 
 @Composable
 fun PartidoTabsOnline(
@@ -27,7 +29,12 @@ fun PartidoTabsOnline(
     golesReloadKey: Int = 0
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabTitles = listOf("Jugadores", "Eventos", "Comentarios", "Encuestas")
+    val tabTitles = listOf(
+        stringResource(id = R.string.ponlinetabs_jugadores),
+        stringResource(id = R.string.ponlinetabs_eventos),
+        stringResource(id = R.string.ponlinetabs_comentarios),
+        stringResource(id = R.string.ponlinetabs_encuestas)
+    )
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var reloadEventos by remember { mutableStateOf(0) }

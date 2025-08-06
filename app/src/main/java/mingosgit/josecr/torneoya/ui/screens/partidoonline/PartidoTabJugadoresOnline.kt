@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
@@ -29,24 +30,30 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnline
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.R
 
 @Composable
 fun PartidoTabJugadoresOnline(
     uiState: VisualizarPartidoOnlineUiState
 ) {
+    val context = LocalContext.current
+    val textNoPlayers = stringResource(id = R.string.ponlinejug_text_no_players)
+    val btnOk = stringResource(id = R.string.ponlinejug_btn_ok)
+    val titleFriends = stringResource(id = R.string.ponlinejug_title_friends)
+    val menuRequestFriendship = stringResource(id = R.string.ponlinejug_menu_request_friendship)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        // Cambia offset dependiendo de si es equipo A o B
         EquipoColumnWithFriendship(
             nombreEquipo = uiState.nombreEquipoA,
             jugadores = uiState.jugadoresEquipoA,
             borderBrush = Brush.horizontalGradient(
                 listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
             ),
-            dropdownOffset = DpOffset((-140).dp, (-10).dp), // Izquierda, sale al lado izquierdo
+            dropdownOffset = DpOffset((-140).dp, (-10).dp), // Izquierda
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 8.dp)
@@ -57,7 +64,7 @@ fun PartidoTabJugadoresOnline(
             borderBrush = Brush.horizontalGradient(
                 listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
             ),
-            dropdownOffset = DpOffset(180.dp, (-10).dp), // Derecha, sale al lado derecho
+            dropdownOffset = DpOffset(180.dp, (-10).dp), // Derecha
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 8.dp)
@@ -71,7 +78,7 @@ private fun EquipoColumnWithFriendship(
     nombreEquipo: String,
     jugadores: List<String>,
     borderBrush: Brush,
-    dropdownOffset: DpOffset, // NUEVO
+    dropdownOffset: DpOffset,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -79,6 +86,20 @@ private fun EquipoColumnWithFriendship(
     var expandedIndex by remember { mutableStateOf<Int?>(null) }
     var mensajeDialog by remember { mutableStateOf<String?>(null) }
     var sendingSolicitud by remember { mutableStateOf(false) }
+
+    val textNoPlayers = stringResource(id = R.string.ponlinejug_text_no_players)
+    val btnOk = stringResource(id = R.string.ponlinejug_btn_ok)
+    val titleFriends = stringResource(id = R.string.ponlinejug_title_friends)
+    val menuRequestFriendship = stringResource(id = R.string.ponlinejug_menu_request_friendship)
+    val msgMustBeLoggedIn = stringResource(id = R.string.ponlinejug_msg_must_be_logged_in)
+    val msgLocalPlayerNoAccount = stringResource(id = R.string.ponlinejug_msg_local_player_no_account)
+    val msgCannotSendToSelf = stringResource(id = R.string.ponlinejug_msg_cannot_send_to_self)
+    val msgUserNotFound = stringResource(id = R.string.ponlinejug_msg_user_not_found)
+    val msgAlreadyFriend = stringResource(id = R.string.ponlinejug_msg_already_friend)
+    val msgRequestAlreadySent = stringResource(id = R.string.ponlinejug_msg_request_already_sent)
+    val msgErrorRetrievingUser = stringResource(id = R.string.ponlinejug_msg_error_retrieving_user)
+    val msgRequestSent = stringResource(id = R.string.ponlinejug_msg_request_sent)
+    val msgErrorSendingRequest = stringResource(id = R.string.ponlinejug_msg_error_sending_request)
 
     Column(
         modifier = modifier,
@@ -148,7 +169,6 @@ private fun EquipoColumnWithFriendship(
                         )
                     }
 
-                    // MENÚ ESTILO CONTEXTUAL TIPO DROPDOWN AL LADO DEL JUGADOR
                     if (expandedIndex == idx) {
                         AmistadDropdownMenu(
                             borderBrush = borderBrush,
@@ -158,7 +178,17 @@ private fun EquipoColumnWithFriendship(
                             onClick = {
                                 sendingSolicitud = true
                                 scope.launch {
-                                    val res = enviarSolicitudAmistadSiProcede(jugadorNombre, context)
+                                    val res = enviarSolicitudAmistadSiProcede(jugadorNombre, context,
+                                        msgMustBeLoggedIn,
+                                        msgLocalPlayerNoAccount,
+                                        msgCannotSendToSelf,
+                                        msgUserNotFound,
+                                        msgAlreadyFriend,
+                                        msgRequestAlreadySent,
+                                        msgErrorRetrievingUser,
+                                        msgRequestSent,
+                                        msgErrorSendingRequest
+                                    )
                                     mensajeDialog = res
                                     sendingSolicitud = false
                                     expandedIndex = null
@@ -171,7 +201,7 @@ private fun EquipoColumnWithFriendship(
             if (jugadores.isEmpty()) {
                 item {
                     Text(
-                        text = "Sin jugadores asignados",
+                        text = textNoPlayers,
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
@@ -184,7 +214,6 @@ private fun EquipoColumnWithFriendship(
         }
     }
 
-    // Diálogo de confirmación o error tras enviar solicitud
     if (mensajeDialog != null) {
         AlertDialog(
             onDismissRequest = { mensajeDialog = null },
@@ -207,7 +236,7 @@ private fun EquipoColumnWithFriendship(
                             .background(Color.Transparent, shape = RoundedCornerShape(10.dp))
                     ) {
                         Text(
-                            "OK",
+                            btnOk,
                             color = TorneoYaPalette.blue,
                             fontWeight = FontWeight.Bold
                         )
@@ -216,7 +245,7 @@ private fun EquipoColumnWithFriendship(
             },
             title = {
                 Text(
-                    "Amigos",
+                    titleFriends,
                     color = TorneoYaPalette.violet,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
@@ -251,6 +280,7 @@ private fun AmistadDropdownMenu(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val menuText = stringResource(id = R.string.ponlinejug_menu_request_friendship)
     DropdownMenu(
         expanded = true,
         onDismissRequest = onDismissRequest,
@@ -272,7 +302,7 @@ private fun AmistadDropdownMenu(
         DropdownMenuItem(
             text = {
                 Text(
-                    "Solicitar amistad",
+                    menuText,
                     color = TorneoYaPalette.blue,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp
@@ -284,9 +314,21 @@ private fun AmistadDropdownMenu(
     }
 }
 
-suspend fun enviarSolicitudAmistadSiProcede(jugadorNombre: String, context: android.content.Context): String {
+suspend fun enviarSolicitudAmistadSiProcede(
+    jugadorNombre: String,
+    context: android.content.Context,
+    msgMustBeLoggedIn: String,
+    msgLocalPlayerNoAccount: String,
+    msgCannotSendToSelf: String,
+    msgUserNotFound: String,
+    msgAlreadyFriend: String,
+    msgRequestAlreadySent: String,
+    msgErrorRetrievingUser: String,
+    msgRequestSent: String,
+    msgErrorSendingRequest: String
+): String {
     val auth = FirebaseAuth.getInstance()
-    val miUid = auth.currentUser?.uid ?: return "Debes estar logueado para enviar solicitudes."
+    val miUid = auth.currentUser?.uid ?: return msgMustBeLoggedIn
     val db = FirebaseFirestore.getInstance()
 
     try {
@@ -297,28 +339,28 @@ suspend fun enviarSolicitudAmistadSiProcede(jugadorNombre: String, context: andr
         val uidDestino = userDoc?.getString("uid")
 
         if (isLocal && (uidDestino == null || uidDestino.isBlank())) {
-            return "Este jugador es local y no tiene cuenta online."
+            return msgLocalPlayerNoAccount
         }
         if (uidDestino == miUid) {
-            return "No puedes enviarte una solicitud a ti mismo."
+            return msgCannotSendToSelf
         }
         if (uidDestino == null) {
-            return "No se encontró un usuario online con ese nombre."
+            return msgUserNotFound
         }
         val amigoSnap = db.collection("usuarios").document(miUid).collection("amigos").document(uidDestino).get().await()
         if (amigoSnap.exists()) {
-            return "¡Este usuario ya es tu amigo!"
+            return msgAlreadyFriend
         }
         val solicitudSnap = db.collection("usuarios").document(uidDestino).collection("solicitudes_amistad").document(miUid).get().await()
         if (solicitudSnap.exists()) {
-            return "Ya enviaste una solicitud de amistad a este usuario."
+            return msgRequestAlreadySent
         }
         val miUsuarioSnap = db.collection("usuarios").document(miUid).get().await()
-        val miUsuario = miUsuarioSnap.data ?: return "Error al recuperar tu usuario."
+        val miUsuario = miUsuarioSnap.data ?: return msgErrorRetrievingUser
         db.collection("usuarios").document(uidDestino)
             .collection("solicitudes_amistad").document(miUid).set(miUsuario).await()
-        return "¡Solicitud de amistad enviada a $jugadorNombre!"
+        return String.format(msgRequestSent, jugadorNombre)
     } catch (e: Exception) {
-        return "Error enviando solicitud: ${e.localizedMessage ?: e.toString()}"
+        return String.format(msgErrorSendingRequest, e.localizedMessage ?: e.toString())
     }
 }

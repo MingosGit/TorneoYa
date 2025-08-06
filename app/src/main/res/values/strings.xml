@@ -220,11 +220,50 @@
     <string name="ponline_ver">Ver</string>
 
     <!--- ====== PARTIDO TAB COMENTARIO SCREEN ====== -->
-    <string name="label_comment_input">Escribe un comentario</string>
-    <string name="content_desc_refresh_comments">Refrescar comentarios</string>
-    <string name="content_desc_send">Enviar</string>
-    <string name="content_desc_like">Like</string>
-    <string name="content_desc_dislike">Dislike</string>
-    <string name="text_no_comments">Sin comentarios</string>
-    <string name="user_you">Tú</string>
+    <string name="ponlinecom_label_comment_input">Escribe un comentario</string>
+    <string name="ponlinecom_desc_refresh_comments">Refrescar comentarios</string>
+    <string name="ponlinecom_desc_send">Enviar</string>
+    <string name="ponlinecom_text_no_comments">Sin comentarios</string>
+    <string name="ponlinecom_desc_like">Like</string>
+    <string name="ponlinecom_desc_dislike">Dislike</string>
+    <string name="ponlinecom_user_you">Tú</string>
+
+    <!--- ====== PARTIDO TAB ENCUESTAS SCREEN ====== -->
+    <string name="ponlineenc_desc_refresh_surveys">Refrescar encuestas</string>
+    <string name="ponlineenc_text_votes">Votos: %1$d</string>
+    <string name="ponlineenc_text_no_surveys">Sin encuestas</string>
+    <string name="ponlineenc_label_create_survey">Crear nueva encuesta</string>
+    <string name="ponlineenc_desc_expand_collapse">Expandir/Colapsar</string>
+    <string name="ponlineenc_label_survey_question">Pregunta de la encuesta</string>
+    <string name="ponlineenc_label_option">Opción %1$d</string>
+    <string name="ponlineenc_button_add_option">+ Opción</string>
+    <string name="ponlineenc_button_remove_option">- Opción</string>
+    <string name="ponlineenc_button_launch_survey">Lanzar encuesta</string>
+
+    <!--- ====== PARTIDO TAB EVENTOS SCREEN ====== -->
+    <string name="ponlineeve_desc_reload_goals">Recargar goles</string>
+    <string name="ponlineeve_text_no_events">Sin eventos registrados</string>
+    <string name="ponlineeve_icon_goal">⚽</string>
+    <string name="ponlineeve_icon_assist">🅰️</string>
+
+    <!--- ====== PARTIDO TAB JUGADORES SCREEN ====== -->
+    <string name="ponlinejug_text_no_players">Sin jugadores asignados</string>
+    <string name="ponlinejug_btn_ok">OK</string>
+    <string name="ponlinejug_title_friends">Amigos</string>
+    <string name="ponlinejug_menu_request_friendship">Solicitar amistad</string>
+    <string name="ponlinejug_msg_must_be_logged_in">Debes estar logueado para enviar solicitudes.</string>
+    <string name="ponlinejug_msg_local_player_no_account">Este jugador es local y no tiene cuenta online.</string>
+    <string name="ponlinejug_msg_cannot_send_to_self">No puedes enviarte una solicitud a ti mismo.</string>
+    <string name="ponlinejug_msg_user_not_found">No se encontró un usuario online con ese nombre.</string>
+    <string name="ponlinejug_msg_already_friend">¡Este usuario ya es tu amigo!</string>
+    <string name="ponlinejug_msg_request_already_sent">Ya enviaste una solicitud de amistad a este usuario.</string>
+    <string name="ponlinejug_msg_error_retrieving_user">Error al recuperar tu usuario.</string>
+    <string name="ponlinejug_msg_request_sent">¡Solicitud de amistad enviada a %1$s!</string>
+    <string name="ponlinejug_msg_error_sending_request">Error enviando solicitud: %1$s</string>
+
+    <!--- ====== PARTIDO TAB SCREEN ====== -->
+    <string name="ponlinetabs_jugadores">Jugadores</string>
+    <string name="ponlinetabs_eventos">Eventos</string>
+    <string name="ponlinetabs_comentarios">Comentarios</string>
+    <string name="ponlinetabs_encuestas">Encuestas</string>
 </resources>

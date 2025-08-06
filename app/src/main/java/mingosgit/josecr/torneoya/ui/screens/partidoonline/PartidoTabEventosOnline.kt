@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +27,7 @@ import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.firebase.GoleadorFirebase
 import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 
 @Composable
 fun PartidoTabEventosOnline(
@@ -32,6 +35,12 @@ fun PartidoTabEventosOnline(
     uiState: mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState,
     reloadKey: Int = 0
 ) {
+    val context = LocalContext.current
+    val descReloadGoals = stringResource(id = R.string.ponlineeve_desc_reload_goals)
+    val iconGoal = stringResource(id = R.string.ponlineeve_icon_goal)
+    val iconAssist = stringResource(id = R.string.ponlineeve_icon_assist)
+    val textNoEvents = stringResource(id = R.string.ponlineeve_text_no_events)
+
     val scope = rememberCoroutineScope()
     var eventos by remember { mutableStateOf<List<GolEvento>>(emptyList()) }
     var equipoAUid by remember { mutableStateOf<String?>(null) }
@@ -91,24 +100,24 @@ fun PartidoTabEventosOnline(
                             nombresMap[gol.jugadorUid]
                                 ?: gol.jugadorNombreManual
                                 ?: golesDocs.find { d -> d.id == gol.uid }?.getString("jugadorManual")
-                                ?: "Desconocido"
+                                ?: textNoEvents
                         }
                         !gol.jugadorNombreManual.isNullOrBlank() -> gol.jugadorNombreManual
-                        else -> golesDocs.find { d -> d.id == gol.uid }?.getString("jugadorManual") ?: "Desconocido"
+                        else -> golesDocs.find { d -> d.id == gol.uid }?.getString("jugadorManual") ?: textNoEvents
                     }
                     val nombreAsistente = when {
                         !gol.asistenciaJugadorUid.isNullOrBlank() -> {
                             nombresMap[gol.asistenciaJugadorUid]
                                 ?: gol.asistenciaNombreManual
                                 ?: golesDocs.find { d -> d.id == gol.uid }?.getString("asistenciaManual")
-                                ?: "Desconocido"
+                                ?: textNoEvents
                         }
                         !gol.asistenciaNombreManual.isNullOrBlank() -> gol.asistenciaNombreManual
                         else -> golesDocs.find { d -> d.id == gol.uid }?.getString("asistenciaManual")
                     }
                     GolEvento(
                         equipoUid = gol.equipoUid,
-                        jugador = nombreJugador ?: "Desconocido",
+                        jugador = nombreJugador ?: textNoEvents,
                         minuto = gol.minuto,
                         asistente = if (!nombreAsistente.isNullOrBlank()) nombreAsistente else null
                     )
@@ -117,7 +126,6 @@ fun PartidoTabEventosOnline(
         }
     }
 
-    // Auto-scroll al final cuando cambian los eventos (siempre ver el último)
     val eventosSize = eventos.size
     val oldEventosSize = remember { mutableStateOf(0) }
     LaunchedEffect(eventosSize) {
@@ -127,7 +135,6 @@ fun PartidoTabEventosOnline(
         oldEventosSize.value = eventosSize
     }
 
-    // UI
     Column(
         Modifier
             .fillMaxWidth()
@@ -140,7 +147,11 @@ fun PartidoTabEventosOnline(
             IconButton(
                 onClick = { recargar() }
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = "Recargar goles", tint = TorneoYaPalette.blue)
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = descReloadGoals,
+                    tint = TorneoYaPalette.blue
+                )
             }
         }
 
@@ -156,7 +167,7 @@ fun PartidoTabEventosOnline(
 
         if (eventos.isEmpty()) {
             Text(
-                "Sin eventos registrados",
+                text = textNoEvents,
                 style = MaterialTheme.typography.bodyMedium,
                 color = TorneoYaPalette.mutedText,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -172,14 +183,13 @@ fun PartidoTabEventosOnline(
         ) {
             items(eventos) { evento ->
                 val isEquipoA = evento.equipoUid == equipoAUid
-                // --- NUEVO: Minuto siempre en el centro ---
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Lado izquierdo (Equipo A)
                     if (isEquipoA) {
                         Box(
                             modifier = Modifier
@@ -201,7 +211,7 @@ fun PartidoTabEventosOnline(
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "⚽",
+                                        text = iconGoal,
                                         fontSize = 20.sp,
                                         modifier = Modifier.padding(end = 6.dp)
                                     )
@@ -218,7 +228,7 @@ fun PartidoTabEventosOnline(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.padding(top = 2.dp)
                                     ) {
-                                        Text("🅰️", fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
+                                        Text(text = iconAssist, fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
                                         Text(
                                             text = evento.asistente!!,
                                             fontSize = 14.sp,
@@ -233,7 +243,6 @@ fun PartidoTabEventosOnline(
                         Spacer(modifier = Modifier.weight(4f))
                     }
 
-                    // Centro: Minuto
                     Box(
                         modifier = Modifier
                             .weight(2f)
@@ -256,7 +265,6 @@ fun PartidoTabEventosOnline(
                         }
                     }
 
-                    // Lado derecho (Equipo B)
                     if (!isEquipoA) {
                         Box(
                             modifier = Modifier
@@ -285,7 +293,7 @@ fun PartidoTabEventosOnline(
                                         modifier = Modifier.padding(end = 4.dp)
                                     )
                                     Text(
-                                        text = "⚽",
+                                        text = iconGoal,
                                         fontSize = 20.sp,
                                         modifier = Modifier.padding(start = 6.dp)
                                     )
@@ -304,7 +312,7 @@ fun PartidoTabEventosOnline(
                                             fontWeight = FontWeight.Medium,
                                             color = TorneoYaPalette.accent
                                         )
-                                        Text("🅰️", fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
+                                        Text(text = iconAssist, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
                                     }
                                 }
                             }

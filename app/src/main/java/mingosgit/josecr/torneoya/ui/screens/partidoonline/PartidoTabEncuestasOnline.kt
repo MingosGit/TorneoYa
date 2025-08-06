@@ -21,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
@@ -33,6 +35,7 @@ import kotlinx.coroutines.delay
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.EncuestaOnlineConResultadosConAvatar
+import mingosgit.josecr.torneoya.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +79,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
         ) {
             Icon(
                 imageVector = Icons.Default.Refresh,
-                contentDescription = "Refrescar encuestas",
+                contentDescription = stringResource(id = R.string.ponlineenc_desc_refresh_surveys),
                 tint = Color(0xFF8F5CFF),
                 modifier = Modifier.size(22.dp)
             )
@@ -153,7 +156,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                 .padding(horizontal = 11.dp, vertical = 3.dp)
                                         ) {
                                             Text(
-                                                text = "Votos: $totalVotos",
+                                                text = stringResource(id = R.string.ponlineenc_text_votes, totalVotos),
                                                 color = TorneoYaPalette.accent,
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Medium
@@ -238,7 +241,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                         if (state.encuestas.isEmpty()) {
                             item {
                                 Text(
-                                    text = "Sin encuestas",
+                                    text = stringResource(id = R.string.ponlineenc_text_no_surveys),
                                     fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier
@@ -266,7 +269,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                "Crear nueva encuesta",
+                                stringResource(id = R.string.ponlineenc_label_create_survey),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = Color.White,
@@ -275,7 +278,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                             IconButton(onClick = { expandedCrear = !expandedCrear }) {
                                 Icon(
                                     imageVector = if (expandedCrear) Icons.Default.Close else Icons.Default.Add,
-                                    contentDescription = "Expandir/Colapsar",
+                                    contentDescription = stringResource(id = R.string.ponlineenc_desc_expand_collapse),
                                     tint = TorneoYaPalette.violet
                                 )
                             }
@@ -289,7 +292,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                 OutlinedTextField(
                                     value = pregunta,
                                     onValueChange = { pregunta = it },
-                                    label = { Text("Pregunta de la encuesta") },
+                                    label = { Text(stringResource(id = R.string.ponlineenc_label_survey_question)) },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 8.dp)
@@ -298,7 +301,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                     OutlinedTextField(
                                         value = valor,
                                         onValueChange = { opciones[idx] = it },
-                                        label = { Text("Opción ${idx + 1}") },
+                                        label = { Text(stringResource(id = R.string.ponlineenc_label_option, idx + 1)) },
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(vertical = 2.dp)
@@ -312,7 +315,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                 ) {
                                     if (opciones.size < 5)
                                         OutlinedColorButton(
-                                            text = "+ Opción",
+                                            text = stringResource(id = R.string.ponlineenc_button_add_option),
                                             borderBrush = Brush.horizontalGradient(
                                                 listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)
                                             ),
@@ -320,7 +323,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         )
                                     if (opciones.size > 2)
                                         OutlinedColorButton(
-                                            text = "- Opción",
+                                            text = stringResource(id = R.string.ponlineenc_button_remove_option),
                                             borderBrush = Brush.horizontalGradient(
                                                 listOf(Color(0xFFFA6767), TorneoYaPalette.accent)
                                             ),
@@ -328,7 +331,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         )
                                 }
                                 OutlinedColorButton(
-                                    text = "Lanzar encuesta",
+                                    text = stringResource(id = R.string.ponlineenc_button_launch_survey),
                                     borderBrush = Brush.horizontalGradient(
                                         listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
                                     ),
@@ -345,7 +348,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                 vm.agregarEncuesta(
                                                     pregunta = pregunta,
                                                     opciones = opciones.toList(),
-                                                    usuarioUid = usuarioUid // <--- PASA EL UID DEL USUARIO AQUÍ SIEMPRE
+                                                    usuarioUid = usuarioUid
                                                 )
                                                 pregunta = ""
                                                 opciones.clear(); opciones.addAll(listOf("", ""))
