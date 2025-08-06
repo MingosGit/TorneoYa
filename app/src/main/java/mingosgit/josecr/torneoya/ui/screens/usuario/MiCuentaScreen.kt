@@ -1,6 +1,7 @@
 package mingosgit.josecr.torneoya.ui.screens.ajustes
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -28,9 +29,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
@@ -119,13 +122,13 @@ fun MiCuentaScreen(
                         )
                     )
                     .padding(0.dp)
-                    .height(94.dp),
+                    .height(104.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(
                     Modifier
                         .fillMaxSize()
-                        .padding(start = 18.dp, end = 9.dp),
+                        .padding(start = 22.dp, end = 9.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // AVATAR VISUAL
@@ -136,30 +139,19 @@ fun MiCuentaScreen(
                     }
                     Box(
                         modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                            .border(
-                                width = 2.dp,
-                                brush = Brush.horizontalGradient(listOf(blue, violet)),
-                                shape = CircleShape
-                            )
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(Color(0xFF23273D), Color(0xFF1B1D29)),
-                                    radius = 90f
-                                )
-                            ),
+                            .size(70.dp)
+                            .offset(x = (-20).dp) // Sale del borde izquierdo
+                            .zIndex(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = avatarRes),
-                            contentDescription = "Avatar de usuario",
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
+                        GradientCircleIcon(
+                            borderColor = blue,
+                            iconRes = avatarRes,
+                            size = 70.dp,
+                            iconSize = 50.dp
                         )
                     }
-                    Spacer(Modifier.width(18.dp))
+                    Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text(
                             nombreUsuario,
@@ -225,7 +217,12 @@ fun MiCuentaScreen(
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Editar", modifier = Modifier.size(25.dp), tint = blue)
+                        GradientCircleIcon(
+                            borderColor = blue,
+                            iconVector = Icons.Filled.Edit,
+                            size = 41.dp,
+                            iconSize = 25.dp
+                        )
                         Spacer(Modifier.width(15.dp))
                         Column(Modifier.weight(1f)) {
                             Text("Nombre de usuario", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = blue)
@@ -248,8 +245,8 @@ fun MiCuentaScreen(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                Column(
-                    Modifier
+                Box(
+                    modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(17.dp))
                         .border(
@@ -262,60 +259,65 @@ fun MiCuentaScreen(
                                 listOf(Color(0xFF23273D), Color(0xFF1C1D25))
                             )
                         )
-                        .padding(vertical = 15.dp, horizontal = 15.dp)
+                        .padding(vertical = 20.dp, horizontal = 15.dp)
+                        .animateContentSize() //
                 ) {
-                    OutlinedTextField(
-                        value = nuevoNombre,
-                        onValueChange = { nuevoNombre = it },
-                        label = { Text("Nuevo nombre de usuario", color = mutedText) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            containerColor = Color.Transparent,
-                            unfocusedBorderColor = blue,
-                            focusedBorderColor = blue,
-                            cursorColor = blue,
-                        )
-                    )
-                    if (!errorNombre.isNullOrBlank()) {
-                        Text(
-                            text = errorNombre ?: "",
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(top = 2.dp, start = 2.dp)
-                        )
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(18.dp),
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(top = 10.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                editandoNombre = false
-                                viewModel.resetErrorCambioNombre()
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, mutedText),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = Color.Transparent
+                    Column {
+                        OutlinedTextField(
+                            value = nuevoNombre,
+                            onValueChange = { nuevoNombre = it },
+                            label = { Text("Nuevo nombre de usuario", color = mutedText) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                containerColor = Color.Transparent,
+                                unfocusedBorderColor = blue,
+                                focusedBorderColor = blue,
+                                cursorColor = blue,
                             )
-                        ) {
-                            Text("Cancelar", color = mutedText)
+                        )
+                        if (!errorNombre.isNullOrBlank()) {
+                            Text(
+                                text = errorNombre ?: "",
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(top = 2.dp, start = 2.dp)
+                            )
                         }
-                        Button(
-                            onClick = {
-                                viewModel.cambiarNombreUsuario(nuevoNombre.text)
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = blue)
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 12.dp)
                         ) {
-                            Text("Guardar", color = Color.White)
+                            OutlinedButton(
+                                onClick = {
+                                    editandoNombre = false
+                                    viewModel.resetErrorCambioNombre()
+                                },
+                                border = BorderStroke(2.dp, mutedText),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent)
+                            ) {
+                                Text("Cancelar", color = mutedText, fontWeight = FontWeight.SemiBold)
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.cambiarNombreUsuario(nuevoNombre.text)
+                                },
+                                border = BorderStroke(2.dp, Brush.horizontalGradient(listOf(blue, violet))),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent)
+                            ) {
+                                Text("Guardar", color = blue, fontWeight = FontWeight.SemiBold)
+                            }
                         }
+
                     }
                 }
             }
+
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -381,31 +383,121 @@ fun MiCuentaScreen(
         }
 
         if (confirmarEliminarCuenta) {
-            AlertDialog(
-                onDismissRequest = { viewModel.confirmarEliminarCuentaDialog(false) },
-                title = { Text("Eliminar cuenta", color = lightText) },
-                text = { Text("Se eliminarán todos tus partidos creados. ¿Deseas continuar?", color = mutedText) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        viewModel.eliminarCuentaYDatos()
-                        viewModel.confirmarEliminarCuentaDialog(false)
-                    }) {
-                        Text("Eliminar", color = Color(0xFFF44336))
+            Dialog(onDismissRequest = { viewModel.confirmarEliminarCuentaDialog(false) }) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(Color(0xFFF44336), violet)),
+                            shape = RoundedCornerShape(18.dp)
+                        )
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF22243B))
+                ) {
+                    Column(
+                        Modifier
+                            .padding(horizontal = 22.dp, vertical = 26.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Eliminar cuenta",
+                            color = Color(0xFFF44336),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                        Spacer(Modifier.height(11.dp))
+                        Text(
+                            text = "Se eliminarán todos tus partidos creados. ¿Deseas continuar?",
+                            color = mutedText,
+                            fontSize = 15.sp
+                        )
+                        Spacer(Modifier.height(25.dp))
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            GradientBorderButton(
+                                text = "Eliminar",
+                                onClick = {
+                                    viewModel.eliminarCuentaYDatos()
+                                    viewModel.confirmarEliminarCuentaDialog(false)
+                                },
+                                borderGradient = Brush.horizontalGradient(listOf(Color(0xFFF44336), violet)),
+                                textColor = Color(0xFFF44336)
+                            )
+                            Spacer(Modifier.width(14.dp))
+                            GradientBorderButton(
+                                text = "Cancelar",
+                                onClick = { viewModel.confirmarEliminarCuentaDialog(false) },
+                                borderGradient = Brush.horizontalGradient(listOf(blue, violet)),
+                                textColor = Color.White
+                            )
+                        }
                     }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        viewModel.confirmarEliminarCuentaDialog(false)
-                    }) {
-                        Text("Cancelar", color = mutedText)
-                    }
-                },
-                containerColor = Color(0xFF22243B)
-            )
+                }
+            }
         }
     }
 }
 
+// REUTILIZABLE: Icono rodeado de borde gradiente circular, puede ser vectorial o resource
+@Composable
+fun GradientCircleIcon(
+    borderColor: Color,
+    iconVector: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    iconRes: Int? = null,
+    size: Dp = 41.dp,
+    iconSize: Dp = 25.dp
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .border(
+                width = 2.5.dp,
+                brush = Brush.sweepGradient(listOf(borderColor, borderColor.copy(alpha = 0.5f), borderColor)),
+                shape = CircleShape
+            )
+            .background(
+                color = Color(0xFF181A23),
+                shape = CircleShape
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        if (iconVector != null) {
+            Icon(
+                imageVector = iconVector,
+                contentDescription = null,
+                tint = borderColor,
+                modifier = Modifier.size(iconSize)
+            )
+        } else if (iconRes != null) {
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(iconSize).clip(CircleShape)
+            )
+        }
+    }
+}
+@Composable
+fun GradientBorderButton(
+    text: String,
+    onClick: () -> Unit,
+    borderGradient: Brush,
+    textColor: Color,
+    background: Color = Color.Transparent
+) {
+    OutlinedButton(
+        onClick = onClick,
+        border = BorderStroke(2.dp, borderGradient),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = background)
+    ) {
+        Text(text, color = textColor, fontWeight = FontWeight.SemiBold)
+    }
+}
 @Composable
 fun AccountMenuButton(
     title: String,
@@ -439,17 +531,16 @@ fun AccountMenuButton(
         Row(
             Modifier
                 .fillMaxSize()
-                .padding(start = 15.dp, end = 10.dp),
+                .padding(start = 18.dp, end = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                icon,
-                contentDescription = title,
-                tint = borderColor,
-                modifier = Modifier
-                    .size(29.dp)
-                    .padding(end = 16.dp)
+            GradientCircleIcon(
+                borderColor = borderColor,
+                iconVector = icon,
+                size = 41.dp,
+                iconSize = 23.dp
             )
+            Spacer(Modifier.width(18.dp))
             Column(
                 Modifier.weight(1f)
             ) {
@@ -469,6 +560,7 @@ fun AccountMenuButton(
         }
     }
 }
+
 @Composable
 private fun CustomCerrarSesionDialog(
     onConfirm: () -> Unit,
