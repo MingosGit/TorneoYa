@@ -1,6 +1,5 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,10 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
@@ -22,19 +23,19 @@ fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
 
     val (borderBrush, textColor) = when (uiState.estado) {
         "Finalizado" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFFD32F2F), TorneoYaPalette.violet)), // Rojo
+            Brush.horizontalGradient(listOf(Color(0xFFD32F2F), TorneoYaPalette.violet)),
             Color(0xFFD32F2F)
         )
         "Jugando" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFFFFD600), TorneoYaPalette.violet)), // Amarillo
+            Brush.horizontalGradient(listOf(Color(0xFFFFD600), TorneoYaPalette.violet)),
             Color(0xFFFFA000)
         )
         "Descanso" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFF43A047), TorneoYaPalette.violet)), // Verde
+            Brush.horizontalGradient(listOf(Color(0xFF43A047), TorneoYaPalette.violet)),
             Color(0xFF43A047)
         )
         "Previa" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFF43A047), TorneoYaPalette.violet)), // Verde
+            Brush.horizontalGradient(listOf(Color(0xFF43A047), TorneoYaPalette.violet)),
             Color(0xFF43A047)
         )
         else -> Pair(
@@ -57,7 +58,7 @@ fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Estado: ${uiState.estado}",
+            text = stringResource(R.string.parequban_estado, uiState.estado),
             modifier = Modifier
                 .padding(start = 16.dp)
                 .weight(1f),
@@ -67,12 +68,11 @@ fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
             textAlign = TextAlign.Start
         )
         Text(
-            text =
-                when (uiState.estado) {
-                    "Jugando" -> "${uiState.minutoActual}"
-                    "Descanso" -> "Descanso"
-                    else -> ""
-                },
+            text = when (uiState.estado) {
+                "Jugando" -> "${uiState.minutoActual}"
+                "Descanso" -> stringResource(R.string.parequban_descanso)
+                else -> ""
+            },
             modifier = Modifier
                 .padding(end = 16.dp)
                 .weight(1f),

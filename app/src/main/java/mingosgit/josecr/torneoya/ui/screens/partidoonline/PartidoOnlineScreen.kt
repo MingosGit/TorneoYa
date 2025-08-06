@@ -15,12 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
@@ -65,14 +66,14 @@ fun PartidoOnlineScreen(
                 }
                 Spacer(Modifier.height(18.dp))
                 Text(
-                    text = "Acceso a Partidos Online",
+                    text = stringResource(R.string.ponline_acceso_partidos_online),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "Inicia sesión o crea tu cuenta para ver y organizar partidos online.",
+                    text = stringResource(R.string.ponline_inicia_sesion_o_crea_cuenta),
                     fontSize = 16.sp,
                     color = Color(0xFFB7B7D1),
                     lineHeight = 22.sp,
@@ -81,7 +82,6 @@ fun PartidoOnlineScreen(
                 )
                 Spacer(Modifier.height(32.dp))
 
-                // BOTÓN INICIAR SESIÓN con borde gradiente igual al resto
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -103,7 +103,7 @@ fun PartidoOnlineScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Iniciar sesión",
+                        text = stringResource(R.string.ponline_boton_iniciar_sesion),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -112,7 +112,6 @@ fun PartidoOnlineScreen(
 
                 Spacer(Modifier.height(11.dp))
 
-                // BOTÓN CREAR CUENTA con borde gradiente igual al resto
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -134,7 +133,7 @@ fun PartidoOnlineScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Crear cuenta",
+                        text = stringResource(R.string.ponline_boton_crear_cuenta),
                         color = TorneoYaPalette.blue,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
@@ -143,7 +142,7 @@ fun PartidoOnlineScreen(
 
                 Spacer(Modifier.height(26.dp))
                 Text(
-                    text = "¿Prefieres una cuenta local?\nAccede desde ajustes de Usuario.",
+                    text = stringResource(R.string.ponline_cuenta_local_ajustes),
                     fontSize = 14.sp,
                     color = Color(0xFFB7B7D1),
                     fontWeight = FontWeight.Normal,

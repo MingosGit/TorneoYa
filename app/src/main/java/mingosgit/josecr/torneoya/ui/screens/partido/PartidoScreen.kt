@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -283,7 +284,8 @@ fun PartidoScreen(
                             onClick = { expandedEstado = true },
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Text(estadoSeleccionado.display)
+                            Text(stringResource(id = estadoSeleccionado.displayRes))
+
                         }
                         DropdownMenu(
                             expanded = expandedEstado,
@@ -291,7 +293,7 @@ fun PartidoScreen(
                         ) {
                             mingosgit.josecr.torneoya.ui.screens.partidoonline.EstadoPartido.values().forEach { estado ->
                                 DropdownMenuItem(
-                                    text = { Text(estado.display) },
+                                    text = { Text(stringResource(id = estado.displayRes)) },
                                     onClick = {
                                         estadoSeleccionado = estado
                                         expandedEstado = false

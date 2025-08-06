@@ -187,4 +187,44 @@
     <string name="datepicker_month_nov">Nov</string>
     <string name="datepicker_month_dic">Dic</string>
 
+    <!--- ====== VISUALIZAR PARTIDO ONLINE SCREEN ====== -->
+    <string name="parequban_estado">Estado: %1$s</string>
+    <string name="parequban_descanso">Descanso</string>
+
+    <!--- ====== PARTIDO ONLINE SCREEN ====== -->
+    <string name="ponline_acceso_partidos_online">Acceso a Partidos Online</string>
+    <string name="ponline_inicia_sesion_o_crea_cuenta">Inicia sesión o crea tu cuenta para ver y organizar partidos online.</string>
+    <string name="ponline_boton_iniciar_sesion">Iniciar sesión</string>
+    <string name="ponline_boton_crear_cuenta">Crear cuenta</string>
+    <string name="ponline_cuenta_local_ajustes">¿Prefieres una cuenta local?\nAccede desde ajustes de Usuario.</string>
+    <string name="ponline_duplicar">Duplicar</string>
+    <string name="ponline_eliminar_partido_titulo">¿Eliminar partido?</string>
+    <string name="ponline_eliminar_partido_confirmacion">¿Estás seguro que deseas eliminar el partido &quot;%1$s vs %2$s&quot;?</string>
+    <string name="ponline_agregar_partido_titulo">¿Agregar partido?</string>
+    <string name="ponline_agregar_partido_confirmacion">¿Seguro que deseas agregar el partido &quot;%1$s vs %2$s&quot; a tu lista?</string>
+    <string name="ponline_agregar">Agregar</string>
+    <string name="ponline_crear_partido">Crear partido</string>
+    <string name="ponline_buscar_por_uid">Buscar por UID</string>
+    <string name="ponline_uid_del_partido">UID del partido</string>
+    <string name="ponline_no_existe_uid">No existe ese UID</string>
+    <string name="ponline_cargando_partidos">Cargando partidos...</string>
+    <string name="ponline_todos">Todos</string>
+    <string name="ponline_previa">Previa</string>
+    <string name="ponline_en_juego">En juego</string>
+    <string name="ponline_finalizado">Finalizado</string>
+    <string name="ponline_nombre">Nombre</string>
+    <string name="ponline_fecha">Fecha</string>
+    <string name="ponline_descendente">Descendente</string>
+    <string name="ponline_ascendente">Ascendente</string>
+    <string name="ponline_ya_tienes_acceso">Ya tienes acceso a este partido</string>
+    <string name="ponline_ver">Ver</string>
+
+    <!--- ====== PARTIDO TAB COMENTARIO SCREEN ====== -->
+    <string name="label_comment_input">Escribe un comentario</string>
+    <string name="content_desc_refresh_comments">Refrescar comentarios</string>
+    <string name="content_desc_send">Enviar</string>
+    <string name="content_desc_like">Like</string>
+    <string name="content_desc_dislike">Dislike</string>
+    <string name="text_no_comments">Sin comentarios</string>
+    <string name="user_you">Tú</string>
 </resources>

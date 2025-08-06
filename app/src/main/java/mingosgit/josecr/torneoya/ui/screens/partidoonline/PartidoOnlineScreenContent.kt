@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.FilterList
@@ -26,11 +25,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoConNombresOnline
 import java.time.LocalDate
@@ -38,11 +39,11 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
-enum class EstadoPartido(val display: String) {
-    TODOS("Todos"),
-    PREVIA("Previa"),
-    JUGANDO("Jugando"),
-    FINALIZADO("Finalizado")
+enum class EstadoPartido(val displayRes: Int) {
+    TODOS(R.string.ponline_todos),
+    PREVIA(R.string.ponline_previa),
+    JUGANDO(R.string.ponline_en_juego),
+    FINALIZADO(R.string.ponline_finalizado)
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -58,7 +59,8 @@ fun PartidoOnlineScreenContent(
 
     val partidos by partidoViewModel.partidosConNombres.collectAsState()
 
-    var sortOption by remember { mutableStateOf("Nombre") }
+    var sortOption by remember { mutableIntStateOf(R.string.ponline_nombre) }
+
     var ascending by remember { mutableStateOf(true) }
     var expandedSort by remember { mutableStateOf(false) }
 
@@ -128,8 +130,8 @@ fun PartidoOnlineScreenContent(
     }
     val sortedPartidos = remember(partidosFiltrados, sortOption, ascending) {
         when (sortOption) {
-            "Nombre" -> if (ascending) partidosFiltrados.sortedBy { it.nombreEquipoA } else partidosFiltrados.sortedByDescending { it.nombreEquipoA }
-            "Fecha" -> {
+            R.string.ponline_nombre -> if (ascending) partidosFiltrados.sortedBy { it.nombreEquipoA } else partidosFiltrados.sortedByDescending { it.nombreEquipoA }
+            R.string.ponline_fecha  -> {
                 val patronesFecha = listOf("yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yyyy")
                 partidosFiltrados.sortedBy { p ->
                     var fecha: LocalDate? = null
@@ -160,7 +162,7 @@ fun PartidoOnlineScreenContent(
                     .padding(vertical = 16.dp, horizontal = 24.dp)
             ) {
                 ListItem(
-                    headlineContent = { Text("Duplicar", fontWeight = FontWeight.Medium, color = Color(0xFF8F5CFF)) },
+                    headlineContent = { Text(stringResource(id = R.string.ponline_duplicar), fontWeight = FontWeight.Medium, color = Color(0xFF8F5CFF)) },
                     leadingContent = {
                         Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color(0xFF8F5CFF))
                     },
@@ -181,17 +183,17 @@ fun PartidoOnlineScreenContent(
         val uid = partidoSeleccionado?.uid
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text("¿Eliminar partido?", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro que deseas eliminar el partido \"$nombreA vs $nombreB\"?") },
+            title = { Text(stringResource(id = R.string.ponline_eliminar_partido_titulo), fontWeight = FontWeight.Bold) },
+            text = { Text(String.format(stringResource(id = R.string.ponline_eliminar_partido_confirmacion), nombreA, nombreB)) },
             confirmButton = {
                 Button(colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                     onClick = {
                         showConfirmDialog = false
                         uid?.let { scope.launch { partidoViewModel.eliminarPartido(it) } }
-                    }) { Text("Eliminar", color = Color.White) }
+                    }) { Text(stringResource(id = R.string.gen_eliminar), color = Color.White) }
             },
             dismissButton = {
-                OutlinedButton(onClick = { showConfirmDialog = false }) { Text("Cancelar") }
+                OutlinedButton(onClick = { showConfirmDialog = false }) { Text(stringResource(id = R.string.gen_cancelar)) }
             }
         )
     }
@@ -205,13 +207,13 @@ fun PartidoOnlineScreenContent(
         if (yaExiste) {
             LaunchedEffect(showAddConfirmDialog) {
                 showAddConfirmDialog = null
-                searchError = "Ya tienes acceso a este partido"
+                searchError = R.string.ponline_ya_tienes_acceso.toString()
             }
         } else if (partidoAdd != null) {
             AlertDialog(
                 onDismissRequest = { showAddConfirmDialog = null },
-                title = { Text("¿Agregar partido?", fontWeight = FontWeight.Bold) },
-                text = { Text("¿Seguro que deseas agregar el partido \"$nombreA vs $nombreB\" a tu lista?") },
+                title = { Text(stringResource(id = R.string.ponline_agregar_partido_titulo), fontWeight = FontWeight.Bold) },
+                text = { Text(String.format(stringResource(id = R.string.ponline_agregar_partido_confirmacion), nombreA, nombreB)) },
                 confirmButton = {
                     Button(onClick = {
                         scope.launch { partidoViewModel.agregarPartidoALista(partidoAdd) }
@@ -219,10 +221,10 @@ fun PartidoOnlineScreenContent(
                         searchText = ""
                         searchResults = emptyList()
                         showSearchDropdown = false
-                    }) { Text("Agregar") }
+                    }) { Text(stringResource(id = R.string.ponline_agregar)) }
                 },
                 dismissButton = {
-                    OutlinedButton(onClick = { showAddConfirmDialog = null }) { Text("Cancelar") }
+                    OutlinedButton(onClick = { showAddConfirmDialog = null }) { Text(stringResource(id = R.string.gen_cancelar)) }
                 }
             )
         }
@@ -231,12 +233,11 @@ fun PartidoOnlineScreenContent(
     Scaffold(
         containerColor = Color.Transparent,
         floatingActionButton = {
-            // BOTÓN SEMITRANSPARENTE
             Box(
                 modifier = Modifier
-                    .padding(bottom = 1.dp, end = 1.dp) // <- SÚBELO MÁS CON MÁS BOTTOM
+                    .padding(bottom = 1.dp, end = 1.dp)
                     .clip(RoundedCornerShape(17.dp))
-                    .background(Color(0xCC23273D)) // <--- SEMITRANSPARENTE (80% opacidad)
+                    .background(Color(0xCC23273D))
                     .border(
                         width = 2.dp,
                         brush = Brush.horizontalGradient(
@@ -255,13 +256,13 @@ fun PartidoOnlineScreenContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.SportsSoccer,
-                        contentDescription = "Crear partido",
+                        contentDescription = stringResource(id = R.string.ponline_crear_partido),
                         tint = Color(0xFF296DFF),
                         modifier = Modifier.size(29.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Crear partido",
+                        stringResource(id = R.string.ponline_crear_partido),
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF296DFF),
                         fontSize = 16.sp
@@ -282,14 +283,14 @@ fun PartidoOnlineScreenContent(
                 )
         ) {
             Text(
-                text = "Partidos Online",
+                text = stringResource(id = R.string.gen_partidos_online),
                 fontSize = 27.sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
-            // ---- BUSCADOR POR UID ESTILO HomeScreen (borde blue-violet, relleno dark, texto azul) ----
+            // ---- BUSCADOR POR UID ----
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -308,9 +309,9 @@ fun PartidoOnlineScreenContent(
                         .height(44.dp)
                         .defaultMinSize(minWidth = 140.dp)
                 ) {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar UID", modifier = Modifier.size(22.dp), tint = Color(0xFF296DFF))
+                    Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.gen_buscar), modifier = Modifier.size(22.dp), tint = Color(0xFF296DFF))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Buscar por UID", color = Color(0xFF296DFF), fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.ponline_buscar_por_uid), color = Color(0xFF296DFF), fontWeight = FontWeight.Bold)
                 }
 
                 DropdownMenu(
@@ -337,7 +338,7 @@ fun PartidoOnlineScreenContent(
                                     searchText = it
                                     searchError = null
                                 },
-                                placeholder = { Text("UID del partido", color = Color(0xFFB7B7D1), fontSize = 16.sp) },
+                                placeholder = { Text(stringResource(id = R.string.ponline_uid_del_partido), color = Color(0xFFB7B7D1), fontSize = 16.sp) },
                                 singleLine = true,
                                 colors = TextFieldDefaults.textFieldColors(
                                     containerColor = Color.Transparent,
@@ -377,26 +378,22 @@ fun PartidoOnlineScreenContent(
                                         shape = RoundedCornerShape(11.dp)
                                     )
                             ) {
-                                Icon(Icons.Default.ContentPaste, contentDescription = "Pegar UID", tint = Color(0xFF8F5CFF), modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.ContentPaste, contentDescription = stringResource(id = R.string.gen_pegar_uid), tint = Color(0xFF8F5CFF), modifier = Modifier.size(24.dp))
                             }
                             Spacer(Modifier.width(7.dp))
                             IconButton(
                                 onClick = {
                                     if (searchText.isNotBlank()) {
                                         searchLoading = true
-                                        searchError = null
                                         scope.launch {
-                                            try {
-                                                val partido = partidoViewModel.buscarPartidoPorUid(searchText)
-                                                searchResults = if (partido != null) listOf(partido) else emptyList()
-                                                searchError = if (partido == null) "No existe ese UID" else null
-                                            } catch (e: Exception) {
-                                                searchResults = emptyList()
-                                                searchError = "Error en búsqueda"
-                                            }
+                                            val partido = runCatching { partidoViewModel.buscarPartidoPorUid(searchText) }.getOrNull()
+                                            searchResults = if (partido != null) listOf(partido) else emptyList()
+                                            searchError = if (partido == null) (R.string.ponline_no_existe_uid.toString()) else null
                                             searchLoading = false
                                         }
-                                    }
+
+                                        }
+
                                 },
                                 modifier = Modifier
                                     .size(42.dp)
@@ -408,10 +405,9 @@ fun PartidoOnlineScreenContent(
                                         shape = RoundedCornerShape(11.dp)
                                     )
                             ) {
-                                Icon(Icons.Default.Search, contentDescription = "Buscar UID", tint = Color(0xFF8F5CFF), modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.gen_buscar), tint = Color(0xFF8F5CFF), modifier = Modifier.size(24.dp))
                             }
                         }
-
 
                         Spacer(modifier = Modifier.height(6.dp))
                         if (searchLoading) {
@@ -477,10 +473,7 @@ fun PartidoOnlineScreenContent(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                when (estadoSeleccionado) {
-                                    EstadoPartido.TODOS -> "Todos"
-                                    else -> estadoSeleccionado.display
-                                },
+                                stringResource(id = estadoSeleccionado.displayRes),
                                 fontWeight = FontWeight.Bold,
                                 color = when (estadoSeleccionado) {
                                     EstadoPartido.TODOS -> TorneoYaPalette.mutedText
@@ -510,7 +503,9 @@ fun PartidoOnlineScreenContent(
                 ) {
                     EstadoPartido.values().forEach { estado ->
                         DropdownMenuItem(
-                            text = { Text(estado.display) },
+                            text = {
+                                Text(stringResource(id = estado.displayRes))
+                            },
                             onClick = {
                                 estadoSeleccionado = estado
                                 expandedEstado = false
@@ -534,7 +529,7 @@ fun PartidoOnlineScreenContent(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                "${sortOption} ${if (ascending) "↑" else "↓"}",
+                                "${sortOption} ${if (ascending) stringResource(id = R.string.ponline_ascendente) else stringResource(id = R.string.ponline_descendente)}",
                                 fontWeight = FontWeight.Bold,
                                 color = TorneoYaPalette.blue
                             )
@@ -553,21 +548,21 @@ fun PartidoOnlineScreenContent(
                     onDismissRequest = { expandedSort = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Nombre") },
+                        text = { Text(stringResource(id = R.string.ponline_nombre)) },
                         onClick = {
-                            sortOption = "Nombre"
+                            sortOption = R.string.ponline_nombre
                             expandedSort = false
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Fecha") },
+                        text = { Text(stringResource(id = R.string.ponline_fecha)) },
                         onClick = {
-                            sortOption = "Fecha"
+                            sortOption = R.string.ponline_fecha
                             expandedSort = false
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text(if (ascending) "Descendente" else "Ascendente") },
+                        text = { Text(if (ascending) stringResource(id = R.string.ponline_descendente) else stringResource(id = R.string.ponline_ascendente)) },
                         onClick = {
                             ascending = !ascending
                             expandedSort = false
@@ -590,7 +585,7 @@ fun PartidoOnlineScreenContent(
                         )
                         Spacer(Modifier.height(16.dp))
                         Text(
-                            text = "Cargando partidos...",
+                            text = stringResource(id = R.string.ponline_cargando_partidos),
                             color = Color(0xFFB7B7D1),
                             fontSize = 17.sp
                         )
@@ -598,7 +593,7 @@ fun PartidoOnlineScreenContent(
                 }
                 return@Column
             }
-            // ---- CARD DE PARTIDO: Borde gradient blue-violet, fondo dark, bordes 17dp, texto blanco ----
+            // ---- CARD DE PARTIDO ----
             LazyColumn {
                 items(sortedPartidos) { partido ->
                     val nombreA = partido.nombreEquipoA ?: "Equipo A"
@@ -647,28 +642,23 @@ fun PartidoOnlineScreenContent(
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Fecha: $fecha  -  Inicio: $horaInicio  -  Fin: $horaFin",
+                                    text = "${stringResource(id = R.string.ponline_fecha)}: $fecha  -  Inicio: $horaInicio  -  Fin: $horaFin",
                                     fontSize = 13.sp,
                                     color = Color(0xFFB7B7D1)
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 val estado = obtenerEstadoPartido(partido)
-                                val (chipBg, chipText, chipBorder) = when (estado) {
-                                    EstadoPartido.PREVIA -> Triple(Color(0xFF222F1C), Color(0xFF97E993), Color(0xFF97E993))
-                                    EstadoPartido.JUGANDO -> Triple(Color(0xFF352D15), Color(0xFFFFB531), Color(0xFFFFB531))
-                                    EstadoPartido.FINALIZADO -> Triple(Color(0xFF2F2322), Color(0xFFF97373), Color(0xFFF97373))
-                                    else -> Triple(Color(0xFF23273D), Color(0xFFB7B7D1), Color.Transparent)
+                                val (chipBg, chipText, chipBorder, chipLabel) = when (estado) {
+                                    EstadoPartido.PREVIA -> Quadruple(Color(0xFF222F1C), Color(0xFF97E993), Color(0xFF97E993), stringResource(id = R.string.ponline_previa))
+                                    EstadoPartido.JUGANDO -> Quadruple(Color(0xFF352D15), Color(0xFFFFB531), Color(0xFFFFB531), stringResource(id = R.string.ponline_en_juego))
+                                    EstadoPartido.FINALIZADO -> Quadruple(Color(0xFF2F2322), Color(0xFFF97373), Color(0xFFF97373), stringResource(id = R.string.ponline_finalizado))
+                                    else -> Quadruple(Color(0xFF23273D), Color(0xFFB7B7D1), Color.Transparent, "")
                                 }
                                 AssistChip(
                                     onClick = { },
                                     label = {
                                         Text(
-                                            when (estado) {
-                                                EstadoPartido.PREVIA -> "Previa"
-                                                EstadoPartido.JUGANDO -> "En juego"
-                                                EstadoPartido.FINALIZADO -> "Finalizado"
-                                                EstadoPartido.TODOS -> ""
-                                            },
+                                            chipLabel,
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 12.sp,
                                             color = chipText
@@ -686,7 +676,7 @@ fun PartidoOnlineScreenContent(
                             }
                             Icon(
                                 imageVector = Icons.Default.ArrowUpward,
-                                contentDescription = "Ver",
+                                contentDescription = stringResource(id = R.string.ponline_ver),
                                 tint = Color(0xFF8F5CFF),
                                 modifier = Modifier
                                     .size(30.dp)
@@ -700,8 +690,10 @@ fun PartidoOnlineScreenContent(
     }
 }
 
+// Helper para devolver 4 valores (como el destructuring de chipBg, chipText, chipBorder, chipLabel)
+data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+
 // Utilidad para usar Brush horizontal como color de fondo de botón
 fun Brush.toBrushColor(): Color {
-    // Para evitar error, simplemente devuelve transparente, ya que el botón ya tiene el background abajo
     return Color.Transparent
 }
