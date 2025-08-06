@@ -17,6 +17,8 @@
     <string name="gen_avatar_desc">Avatar</string>
     <string name="gen_copiar_uid">Copiar UID</string>
     <string name="gen_uid_copiado">UID copiado</string>
+    <string name="gen_volver">Volver</string>
+
     <!-- ===== FIN GENERALES ===== -->
 
     <!-- AmigosScreen -->
@@ -37,4 +39,9 @@
     <string name="amigossc_eliminar_confirm">¿Estás seguro que deseas eliminar a este amigo? Esta acción no se puede deshacer.</string>
     <string name="amigossc_opciones">Opciones</string>
     <string name="amigossc_solicitudes_desc">Ver solicitudes de amistad</string>
+
+    <!-- ===== SOLICITUDES PENDIENTES SCREEN ===== -->
+    <string name="solpensc_titulo">Solicitudes de amistad</string>
+    <string name="solpensc_no_solicitudes_titulo">No tienes solicitudes pendientes</string>
+    <string name="solpensc_no_solicitudes_desc">Cuando alguien te envíe una solicitud de amistad, aparecerá aquí.</string>
 </resources>

@@ -1,3 +1,4 @@
+// Archivo: SolicitudesPendientesScreen.kt
 package mingosgit.josecr.torneoya.ui.screens.amigos
 
 import androidx.compose.foundation.background
@@ -16,16 +17,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.navigation.NavController
+import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +53,7 @@ fun SolicitudesPendientesScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Solicitudes de amistad",
+                        text = stringResource(id = R.string.solpensc_titulo),
                         fontWeight = FontWeight.Black,
                         fontSize = 23.sp,
                         color = Color(0xFFF7F7FF)
@@ -60,7 +63,7 @@ fun SolicitudesPendientesScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(id = R.string.gen_volver),
                             tint = Color(0xFF8F5CFF)
                         )
                     }
@@ -100,14 +103,14 @@ fun SolicitudesPendientesScreen(
                     }
                     Spacer(Modifier.height(20.dp))
                     Text(
-                        "No tienes solicitudes pendientes",
+                        text = stringResource(id = R.string.solpensc_no_solicitudes_titulo),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 19.sp,
                         color = Color(0xFFB7B7D1)
                     )
                     Spacer(Modifier.height(9.dp))
                     Text(
-                        "Cuando alguien te envíe una solicitud de amistad, aparecerá aquí.",
+                        text = stringResource(id = R.string.solpensc_no_solicitudes_desc),
                         fontSize = 15.sp,
                         color = Color(0xFF8F5CFF),
                         fontWeight = FontWeight.Normal,
@@ -173,7 +176,6 @@ fun SolicitudItem(
                 .padding(vertical = 16.dp, horizontal = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar circular con gradiente y recurso de drawable
             val context = LocalContext.current
             val avatarNum = avatar ?: 0
             val avatarResId = remember(avatarNum) {
@@ -203,7 +205,7 @@ fun SolicitudItem(
                 if (avatarResId != 0) {
                     Icon(
                         painter = painterResource(id = avatarResId),
-                        contentDescription = "Avatar",
+                        contentDescription = stringResource(id = R.string.gen_avatar_desc),
                         tint = Color.Unspecified,
                         modifier = Modifier
                             .size(44.dp)
@@ -231,7 +233,6 @@ fun SolicitudItem(
                 )
             }
             Spacer(Modifier.width(12.dp))
-            // Icono aceptar
             IconButton(
                 onClick = onAceptar,
                 modifier = Modifier
@@ -247,13 +248,12 @@ fun SolicitudItem(
             ) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "Aceptar",
+                    contentDescription = stringResource(id = R.string.gen_iniciar_sesion),
                     tint = Color(0xFF43e97b),
                     modifier = Modifier.size(18.dp)
                 )
             }
-            Spacer(Modifier.width(25.dp)) // Más separación entre aceptar y rechazar
-            // Icono rechazar
+            Spacer(Modifier.width(25.dp))
             IconButton(
                 onClick = onRechazar,
                 modifier = Modifier
@@ -269,7 +269,7 @@ fun SolicitudItem(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Rechazar",
+                    contentDescription = stringResource(id = R.string.gen_eliminar_amigo),
                     tint = Color(0xFFc0392b),
                     modifier = Modifier.size(18.dp)
                 )
