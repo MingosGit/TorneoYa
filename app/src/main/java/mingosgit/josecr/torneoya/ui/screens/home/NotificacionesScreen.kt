@@ -17,12 +17,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import com.google.firebase.Timestamp
@@ -75,7 +77,7 @@ fun NotificacionesScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (!mostrarLeidas) "Notificaciones" else "Leídas",
+                    text = if (!mostrarLeidas) stringResource(R.string.notisc_title_notificaciones) else stringResource(R.string.notisc_title_leidas),
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 27.sp,
@@ -85,13 +87,13 @@ fun NotificacionesScreen(
                         TextButton(
                             onClick = { mostrarLeidas = true }
                         ) {
-                            Text("Ver leídas", color = Color(0xFF8F5CFF))
+                            Text(stringResource(R.string.notisc_button_ver_leidas), color = Color(0xFF8F5CFF))
                         }
                     } else {
                         TextButton(
                             onClick = { mostrarLeidas = false }
                         ) {
-                            Text("No leídas", color = Color(0xFF8F5CFF))
+                            Text(stringResource(R.string.notisc_button_no_leidas), color = Color(0xFF8F5CFF))
                         }
                     }
                 }
@@ -132,14 +134,14 @@ fun NotificacionesScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.MarkEmailRead,
-                                        contentDescription = "Sin notificaciones",
+                                        contentDescription = stringResource(R.string.notisc_icon_desc_sin_notificaciones),
                                         tint = Color(0xFF8F5CFF),
                                         modifier = Modifier.size(40.dp)
                                     )
                                 }
                                 Spacer(Modifier.height(18.dp))
                                 Text(
-                                    text = if (!mostrarLeidas) "Sin notificaciones" else "Sin leídas",
+                                    text = if (!mostrarLeidas) stringResource(R.string.notisc_sin_notificaciones) else stringResource(R.string.notisc_sin_leidas),
                                     color = Color(0xFF8F5CFF),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 21.sp
@@ -147,9 +149,9 @@ fun NotificacionesScreen(
                                 Spacer(Modifier.height(7.dp))
                                 Text(
                                     text = if (!mostrarLeidas)
-                                        "¡Estás al día! Cuando tengas novedades,\naparecerán aquí."
+                                        stringResource(R.string.notisc_estasyalday)
                                     else
-                                        "No hay notificaciones leídas por mostrar.",
+                                        stringResource(R.string.notisc_no_hay_leidas),
                                     color = Color(0xFFB7B7D1),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Medium,
@@ -185,13 +187,13 @@ fun NotificacionesScreen(
             }
         }
 
-        // Popup custom con botones gradiente
         if (borrarUid != null && borrarTitulo != null) {
+            val titulo = borrarTitulo!!
             CustomGradientDialog(
-                title = "Eliminar notificación",
-                message = "¿Seguro que quieres eliminar \"${borrarTitulo}\"? Esta acción no se puede deshacer.",
-                confirmText = "Eliminar",
-                dismissText = "Cancelar",
+                title = stringResource(R.string.notisc_eliminar_notificacion_title),
+                message = stringResource(R.string.notisc_eliminar_notificacion_message, titulo),
+                confirmText = stringResource(R.string.gen_eliminar),
+                dismissText = stringResource(R.string.gen_cancelar),
                 onConfirm = {
                     viewModel.borrarNotificacion(borrarUid!!)
                     borrarUid = null
@@ -374,7 +376,7 @@ fun NotificacionCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = "Eliminar",
+                            contentDescription = stringResource(R.string.gen_eliminar),
                             tint = Color(0xFF8F5CFF)
                         )
                     }
@@ -385,7 +387,7 @@ fun NotificacionCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Done,
-                            contentDescription = "Marcar como leída",
+                            contentDescription = stringResource(R.string.notisc_icon_desc_marcar_leida),
                             tint = Color(0xFF8F5CFF)
                         )
                     }

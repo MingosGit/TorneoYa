@@ -72,8 +72,17 @@
     <string name="home_sin_proximos_partidos">¡Sin próximos partidos online!</string>
     <string name="home_crea_une_partido">Crea uno o únete a una partida para no perderte ningún gol.</string>
 
-
-
-
-
+    <!-- ===== NOTIFICACIONES SCREEN ===== -->
+    <string name="notisc_title_notificaciones">Notificaciones</string>
+    <string name="notisc_title_leidas">Leídas</string>
+    <string name="notisc_button_ver_leidas">Ver leídas</string>
+    <string name="notisc_button_no_leidas">No leídas</string>
+    <string name="notisc_sin_notificaciones">Sin notificaciones</string>
+    <string name="notisc_sin_leidas">Sin leídas</string>
+    <string name="notisc_estasyalday">¡Estás al día! Cuando tengas novedades,\naparecerán aquí.</string>
+    <string name="notisc_no_hay_leidas">No hay notificaciones leídas por mostrar.</string>
+    <string name="notisc_eliminar_notificacion_title">Eliminar notificación</string>
+    <string name="notisc_eliminar_notificacion_message">¿Seguro que quieres eliminar &quot;%1$s&quot;? Esta acción no se puede deshacer.</string>
+    <string name="notisc_icon_desc_sin_notificaciones">Sin notificaciones</string>
+    <string name="notisc_icon_desc_marcar_leida">Marcar como leída</string>
 </resources>
