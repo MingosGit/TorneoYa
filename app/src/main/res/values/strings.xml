@@ -85,4 +85,16 @@
     <string name="notisc_eliminar_notificacion_message">¿Seguro que quieres eliminar &quot;%1$s&quot;? Esta acción no se puede deshacer.</string>
     <string name="notisc_icon_desc_sin_notificaciones">Sin notificaciones</string>
     <string name="notisc_icon_desc_marcar_leida">Marcar como leída</string>
+
+    <!-- ===== ADMINISTRAR JUGADORES ONLINE SCREEN ===== -->
+    <string name="adminj_title">Administrar jugadores</string>
+    <string name="adminj_label_agregar_jugador">Agregar jugador</string>
+    <string name="adminj_label_jugador">Jugador %1$d</string>
+    <string name="adminj_contentdesc_icono">Administrar jugadores</string>
+    <string name="adminj_contentdesc_elegir_jugador">Elegir jugador</string>
+    <string name="adminj_texto_titulo_eliminar">¿Eliminar jugador?</string>
+    <string name="adminj_texto_mensaje_eliminar">¿Estás seguro de que quieres eliminar a este jugador?</string>
+    <string name="adminj_boton_guardar_volver">Guardar y volver</string>
+    <string name="adminj_texto_jugadores_equipo">Jugadores %1$s</string>
+
 </resources>

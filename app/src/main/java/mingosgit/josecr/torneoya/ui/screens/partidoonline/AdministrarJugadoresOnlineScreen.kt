@@ -25,12 +25,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
 import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
@@ -79,14 +81,14 @@ fun AdministrarJugadoresOnlineScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Group,
-                        contentDescription = "Administrar jugadores",
+                        contentDescription = stringResource(R.string.adminj_contentdesc_icono),
                         tint = TorneoYaPalette.blue,
                         modifier = Modifier.padding(11.dp)
                     )
                 }
                 Spacer(Modifier.width(13.dp))
                 Text(
-                    "Administrar jugadores",
+                    stringResource(R.string.adminj_title),
                     fontSize = 23.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Black
@@ -121,7 +123,7 @@ fun AdministrarJugadoresOnlineScreen(
             val jugadores = if (vm.equipoSeleccionado.value == "A") vm.equipoAJugadores else vm.equipoBJugadores
 
             Text(
-                if (vm.equipoSeleccionado.value == "A") "Jugadores $equipoANombre" else "Jugadores $equipoBNombre",
+                text = stringResource(R.string.adminj_texto_jugadores_equipo, if (vm.equipoSeleccionado.value == "A") equipoANombre else equipoBNombre),
                 fontSize = 17.sp,
                 color = Color(0xFFB7B7D1),
                 fontWeight = FontWeight.Bold,
@@ -174,8 +176,8 @@ fun AdministrarJugadoresOnlineScreen(
                                     }
                                 },
                                 label = {
-                                    if (idx == jugadores.size) Text("Agregar jugador")
-                                    else Text("Jugador ${idx + 1}")
+                                    if (idx == jugadores.size) Text(stringResource(R.string.adminj_label_agregar_jugador))
+                                    else Text(stringResource(R.string.adminj_label_jugador, idx + 1))
                                 },
                                 singleLine = false,
                                 minLines = 1,
@@ -199,7 +201,7 @@ fun AdministrarJugadoresOnlineScreen(
                             ) {
                                 Icon(
                                     Icons.Default.ArrowDropDown,
-                                    contentDescription = "Elegir jugador",
+                                    contentDescription = stringResource(R.string.adminj_contentdesc_elegir_jugador),
                                     tint = TorneoYaPalette.violet
                                 )
                             }
@@ -210,7 +212,7 @@ fun AdministrarJugadoresOnlineScreen(
                                 OutlinedTextField(
                                     value = searchQuery,
                                     onValueChange = { searchQuery = it },
-                                    label = { Text("Buscar") },
+                                    label = { Text(stringResource(R.string.gen_buscar)) },
                                     singleLine = true,
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -252,7 +254,7 @@ fun AdministrarJugadoresOnlineScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "Eliminar jugador",
+                                        contentDescription = stringResource(R.string.adminj_texto_titulo_eliminar),
                                         tint = Color(0xFFF25A6D)
                                     )
                                 }
@@ -262,18 +264,18 @@ fun AdministrarJugadoresOnlineScreen(
                         if (idxParaEliminar == idx) {
                             AlertDialog(
                                 onDismissRequest = { idxParaEliminar = null },
-                                title = { Text("¿Eliminar jugador?", color = Color.White) },
-                                text = { Text("¿Estás seguro de que quieres eliminar a este jugador?", color = Color(0xFFB7B7D1)) },
+                                title = { Text(stringResource(R.string.adminj_texto_titulo_eliminar), color = Color.White) },
+                                text = { Text(stringResource(R.string.adminj_texto_mensaje_eliminar), color = Color(0xFFB7B7D1)) },
                                 containerColor = Color(0xFF1C1D25),
                                 confirmButton = {
                                     TextButton(onClick = {
                                         vm.eliminarJugador(idx, vm.equipoSeleccionado.value)
                                         idxParaEliminar = null
-                                    }) { Text("Eliminar", color = Color(0xFFF25A6D)) }
+                                    }) { Text(stringResource(R.string.gen_eliminar), color = Color(0xFFF25A6D)) }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { idxParaEliminar = null }) {
-                                        Text("Cancelar", color = TorneoYaPalette.violet)
+                                        Text(stringResource(R.string.gen_cancelar), color = TorneoYaPalette.violet)
                                     }
                                 }
                             )
@@ -309,7 +311,7 @@ fun AdministrarJugadoresOnlineScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Guardar y volver",
+                    stringResource(R.string.adminj_boton_guardar_volver),
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp
@@ -319,4 +321,3 @@ fun AdministrarJugadoresOnlineScreen(
         }
     }
 }
-
