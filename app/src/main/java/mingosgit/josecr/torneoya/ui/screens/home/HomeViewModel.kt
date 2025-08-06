@@ -100,13 +100,32 @@ class HomeViewModel(
             val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
             var partidoUi: HomeProximoPartidoUi? = null
             if (userUid.isNotBlank()) {
-                val partidos = partidoRepo
-                    .listarPartidosPorUsuario(userUid)
+                // Carga TODOS los partidos online
+                val partidos = PartidoFirebaseRepository().listarPartidos()
                     .filter { it.estado == "PREVIA" }
-                    .sortedBy { it.fecha + " " + it.horaInicio }
-                val proximoPartido = partidos.firstOrNull()
+                    .filter { partido ->
+                        partido.creadorUid == userUid ||
+                                partido.usuariosConAcceso.contains(userUid) ||
+                                partido.administradores.contains(userUid)
+                    }
+                    .map { partido ->
+                        val fechaHora = try {
+                            val partes = partido.fecha.split("-") // DD-MM-YYYY
+                            val fechaNormalizada = "${partes[2]}-${partes[1]}-${partes[0]}" // YYYY-MM-DD
+                            val fechaHoraStr = "$fechaNormalizada ${partido.horaInicio}"
+                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
+                            sdf.parse(fechaHoraStr)?.time ?: Long.MAX_VALUE
+                        } catch (e: Exception) {
+                            Long.MAX_VALUE
+                        }
+                        Pair(partido, fechaHora)
+                    }
+                    .filter { it.second >= System.currentTimeMillis() }
+                    .sortedBy { it.second }
+
+                val proximoPartido = partidos.firstOrNull()?.first
+
                 if (proximoPartido != null) {
-                    // SIEMPRE nombre de la colección equipos, no jugadores sueltos
                     val nombreEquipoA = if (proximoPartido.equipoAId.isNotBlank()) {
                         val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoAId)
                         eq?.nombre ?: "Equipo A"
@@ -130,4 +149,5 @@ class HomeViewModel(
             _cargandoProx.value = false
         }
     }
+
 }

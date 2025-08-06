@@ -528,23 +528,24 @@ fun HomeScreen(
                             fontWeight = FontWeight.Medium,
                         )
                         Spacer(Modifier.height(17.dp))
-                        Row {
-                            Button(
-                                onClick = { navController.navigate("partido_online") },
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF296DFF)),
+                        // --- NUEVO ESTILO, IGUAL QUE "Mi perfil" y "Partidos Online" ---
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(18.dp)
+                        ) {
+                            QuickAccessButton(
+                                icon = Icons.Filled.SportsSoccer,
+                                label = "Buscar partidos",
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Buscar partidos", color = Color.White, fontWeight = FontWeight.Bold)
+                                navController.navigate("partido_online")
                             }
-                            Spacer(Modifier.width(15.dp))
-                            OutlinedButton(
-                                onClick = { navController.navigate("crear_partido_online") },
-                                shape = RoundedCornerShape(10.dp),
-                                border = ButtonDefaults.outlinedButtonBorder,
+                            QuickAccessButton(
+                                icon = Icons.Filled.Star,
+                                label = "Crear uno",
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Crear uno", color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
+                                navController.navigate("crear_partido_online")
                             }
                         }
                     }
