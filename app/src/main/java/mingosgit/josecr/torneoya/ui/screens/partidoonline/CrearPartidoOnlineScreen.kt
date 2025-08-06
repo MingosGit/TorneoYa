@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel
+import mingosgit.josecr.torneoya.R
 import java.util.*
 
 @Composable
@@ -47,7 +49,6 @@ fun CrearPartidoOnlineScreen(
 
     val scope = rememberCoroutineScope()
 
-    // PICKERS CUSTOM
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -84,48 +85,45 @@ fun CrearPartidoOnlineScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                "Crear Partido Online",
+                text = stringResource(id = R.string.crearpartido_title),
                 fontSize = 27.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
+                fontWeight = FontWeight.Black,
                 color = Color.White,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
-            // EQUIPO A
             GradientOutlinedField(
                 value = equipoA,
                 onValueChange = { equipoA = it },
-                label = "Nombre Equipo A",
+                label = stringResource(id = R.string.crearpartido_nombre_equipo_a),
                 isError = mostrarErrores && camposError["equipoA"] == true,
                 height = 64.dp
             )
             if (mostrarErrores && camposError["equipoA"] == true) {
-                Text("Campo obligatorio", color = Color(0xFFFF7675), fontSize = 13.sp, modifier = Modifier.align(Alignment.Start))
+                Text(stringResource(id = R.string.crearpartido_campo_obligatorio), color = Color(0xFFFF7675), fontSize = 13.sp, modifier = Modifier.align(Alignment.Start))
             }
 
             Spacer(Modifier.height(10.dp))
 
-            // EQUIPO B
             GradientOutlinedField(
                 value = equipoB,
                 onValueChange = { equipoB = it },
-                label = "Nombre Equipo B",
+                label = stringResource(id = R.string.crearpartido_nombre_equipo_b),
                 isError = mostrarErrores && camposError["equipoB"] == true,
                 height = 64.dp
             )
             if (mostrarErrores && camposError["equipoB"] == true) {
-                Text("Campo obligatorio", color = Color(0xFFFF7675), fontSize = 13.sp, modifier = Modifier.align(Alignment.Start))
+                Text(stringResource(id = R.string.crearpartido_campo_obligatorio), color = Color(0xFFFF7675), fontSize = 13.sp, modifier = Modifier.align(Alignment.Start))
             }
 
             Spacer(Modifier.height(13.dp))
 
-            // FECHA Y HORA (USANDO CUSTOM PICKERS)
             Row(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 GradientButton(
-                    text = if (fecha.isBlank()) "Seleccionar fecha" else fecha,
+                    text = if (fecha.isBlank()) stringResource(id = R.string.crearpartido_seleccionar_fecha) else fecha,
                     onClick = { showDatePicker = true },
                     modifier = Modifier.weight(1f),
                     isError = mostrarErrores && camposError["fecha"] == true,
@@ -133,7 +131,7 @@ fun CrearPartidoOnlineScreen(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 GradientButton(
-                    text = if (horaInicio.isBlank()) "Seleccionar hora" else horaInicio,
+                    text = if (horaInicio.isBlank()) stringResource(id = R.string.crearpartido_seleccionar_hora) else horaInicio,
                     onClick = { showTimePicker = true },
                     modifier = Modifier.weight(1f),
                     isError = mostrarErrores && camposError["horaInicio"] == true,
@@ -144,14 +142,14 @@ fun CrearPartidoOnlineScreen(
                 Row(Modifier.fillMaxWidth()) {
                     if (camposError["fecha"] == true)
                         Text(
-                            "Falta la fecha",
+                            stringResource(id = R.string.crearpartido_falta_fecha),
                             color = Color(0xFFFF7675),
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
                     if (camposError["horaInicio"] == true)
                         Text(
-                            "Falta la hora",
+                            stringResource(id = R.string.crearpartido_falta_hora),
                             color = Color(0xFFFF7675),
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
@@ -161,32 +159,30 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(modifier = Modifier.height(13.dp))
 
-            // ETIQUETAS ARRIBA DE CADA CAMPO NUMÉRICO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Nº de partes",
+                    stringResource(id = R.string.crearpartido_numero_partes),
                     color = Color(0xFFB7B7D1),
                     fontSize = 14.sp,
                     modifier = Modifier.weight(1f).padding(start = 4.dp, bottom = 2.dp)
                 )
                 Text(
-                    "Min/parte",
+                    stringResource(id = R.string.crearpartido_min_por_parte),
                     color = Color(0xFFB7B7D1),
                     fontSize = 14.sp,
                     modifier = Modifier.weight(1f).padding(start = 4.dp, bottom = 2.dp)
                 )
                 Text(
-                    "Descanso (min)",
+                    stringResource(id = R.string.crearpartido_descanso_min),
                     color = Color(0xFFB7B7D1),
                     fontSize = 14.sp,
                     modifier = Modifier.weight(1f).padding(start = 4.dp, bottom = 2.dp)
                 )
             }
 
-            // CAMPOS DE NÚMEROS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -225,21 +221,21 @@ fun CrearPartidoOnlineScreen(
                 Row(Modifier.fillMaxWidth()) {
                     if (camposError["numeroPartes"] == true)
                         Text(
-                            "Obligatorio o inválido",
+                            stringResource(id = R.string.crearpartido_obligatorio_invalido),
                             color = Color(0xFFFF7675),
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
                     if (camposError["tiempoPorParte"] == true)
                         Text(
-                            "Obligatorio o inválido",
+                            stringResource(id = R.string.crearpartido_obligatorio_invalido),
                             color = Color(0xFFFF7675),
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
                     if (camposError["tiempoDescanso"] == true)
                         Text(
-                            "Obligatorio o inválido",
+                            stringResource(id = R.string.crearpartido_obligatorio_invalido),
                             color = Color(0xFFFF7675),
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
@@ -249,7 +245,6 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // CHECKBOX PUBLICO
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -272,12 +267,11 @@ fun CrearPartidoOnlineScreen(
                     )
                 )
                 Spacer(Modifier.width(10.dp))
-                Text("Partido público (compartible por link/UID)", color = Color(0xFFB7B7D1), fontSize = 16.sp)
+                Text(stringResource(id = R.string.crearpartido_partido_publico), color = Color(0xFFB7B7D1), fontSize = 16.sp)
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // BOTON CREAR
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -328,9 +322,9 @@ fun CrearPartidoOnlineScreen(
             ) {
                 if (!guardando) {
                     Text(
-                        "Crear y asignar jugadores",
+                        stringResource(id = R.string.crearpartido_crear_asignar),
                         color = Color.White,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontWeight = FontWeight.Bold,
                         fontSize = 19.sp
                     )
                 } else {
@@ -343,7 +337,6 @@ fun CrearPartidoOnlineScreen(
             }
         }
 
-        // PICKERS CUSTOM DIALOGS
         CustomDatePickerDialog(
             show = showDatePicker,
             initialDate = Calendar.getInstance(),
@@ -363,8 +356,6 @@ fun CrearPartidoOnlineScreen(
         )
     }
 }
-
-// ------------------- COMPONENTES REUTILIZABLES ESTILO TORNEOYA + PICKERS CUSTOM -------------------
 
 @Composable
 fun GradientOutlinedField(
@@ -456,7 +447,7 @@ fun GradientButton(
         Text(
             text,
             color = if (isError) Color(0xFFFF7675) else TorneoYaPalette.blue,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            fontWeight = FontWeight.Bold,
             fontSize = 17.sp
         )
     }

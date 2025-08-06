@@ -150,4 +150,41 @@
     <string name="asignjug_tu">/Tú</string>
     <string name="asignjug_guardar_asignacion">Guardar asignación</string>
 
+    <!-- ===== CREAR PARTIDO ONLINE SCREEN ===== -->
+    <string name="crearpartido_title">Crear Partido Online</string>
+    <string name="crearpartido_nombre_equipo_a">Nombre Equipo A</string>
+    <string name="crearpartido_nombre_equipo_b">Nombre Equipo B</string>
+    <string name="crearpartido_campo_obligatorio">Campo obligatorio</string>
+    <string name="crearpartido_seleccionar_fecha">Seleccionar fecha</string>
+    <string name="crearpartido_seleccionar_hora">Seleccionar hora</string>
+    <string name="crearpartido_falta_fecha">Falta la fecha</string>
+    <string name="crearpartido_falta_hora">Falta la hora</string>
+    <string name="crearpartido_numero_partes">Nº de partes</string>
+    <string name="crearpartido_min_por_parte">Min/parte</string>
+    <string name="crearpartido_descanso_min">Descanso (min)</string>
+    <string name="crearpartido_obligatorio_invalido">Obligatorio o inválido</string>
+    <string name="crearpartido_partido_publico">Partido público (compartible por link/UID)</string>
+    <string name="crearpartido_crear_asignar">Crear y asignar jugadores</string>
+
+    <!-- ===== CUSTOM DATE TIME PICKER ===== -->
+    <string name="datepicker_title">Selecciona una fecha</string>
+    <string name="datepicker_label_day">Día</string>
+    <string name="datepicker_label_month">Mes</string>
+    <string name="datepicker_label_year">Año</string>
+
+    <string name="timepicker_title">Selecciona una hora</string>
+
+    <string name="datepicker_month_ene">Ene</string>
+    <string name="datepicker_month_feb">Feb</string>
+    <string name="datepicker_month_mar">Mar</string>
+    <string name="datepicker_month_abr">Abr</string>
+    <string name="datepicker_month_may">May</string>
+    <string name="datepicker_month_jun">Jun</string>
+    <string name="datepicker_month_jul">Jul</string>
+    <string name="datepicker_month_ago">Ago</string>
+    <string name="datepicker_month_sep">Sep</string>
+    <string name="datepicker_month_oct">Oct</string>
+    <string name="datepicker_month_nov">Nov</string>
+    <string name="datepicker_month_dic">Dic</string>
+
 </resources>

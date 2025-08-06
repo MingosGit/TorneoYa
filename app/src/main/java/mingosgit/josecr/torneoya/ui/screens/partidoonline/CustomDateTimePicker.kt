@@ -15,10 +15,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 import java.util.*
 
 @Composable
@@ -34,8 +36,18 @@ fun CustomDatePickerDialog(
     var month by remember { mutableStateOf(initialDate.get(Calendar.MONTH) + 1) }
     var day by remember { mutableStateOf(initialDate.get(Calendar.DAY_OF_MONTH)) }
     val monthNames = listOf(
-        "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-        "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+        stringResource(id = R.string.datepicker_month_ene),
+        stringResource(id = R.string.datepicker_month_feb),
+        stringResource(id = R.string.datepicker_month_mar),
+        stringResource(id = R.string.datepicker_month_abr),
+        stringResource(id = R.string.datepicker_month_may),
+        stringResource(id = R.string.datepicker_month_jun),
+        stringResource(id = R.string.datepicker_month_jul),
+        stringResource(id = R.string.datepicker_month_ago),
+        stringResource(id = R.string.datepicker_month_sep),
+        stringResource(id = R.string.datepicker_month_oct),
+        stringResource(id = R.string.datepicker_month_nov),
+        stringResource(id = R.string.datepicker_month_dic)
     )
     var showMonthDropdown by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
@@ -64,20 +76,19 @@ fun CustomDatePickerDialog(
                 .widthIn(min = 310.dp, max = 350.dp)
         ) {
             Text(
-                "Selecciona una fecha",
+                text = stringResource(id = R.string.datepicker_title),
                 fontSize = 22.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
-            // Día (input), Mes (dropdown), Año (input)
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Día", color = Color(0xFFB7B7D1), fontSize = 15.sp)
+                    Text(stringResource(id = R.string.datepicker_label_day), color = Color(0xFFB7B7D1), fontSize = 15.sp)
                     OutlinedTextField(
                         value = day.toString(),
                         onValueChange = { txt ->
@@ -102,7 +113,7 @@ fun CustomDatePickerDialog(
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Mes", color = Color(0xFFB7B7D1), fontSize = 15.sp)
+                    Text(stringResource(id = R.string.datepicker_label_month), color = Color(0xFFB7B7D1), fontSize = 15.sp)
                     Box {
                         Button(
                             onClick = { showMonthDropdown = true },
@@ -133,7 +144,7 @@ fun CustomDatePickerDialog(
                     }
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Año", color = Color(0xFFB7B7D1), fontSize = 15.sp)
+                    Text(stringResource(id = R.string.datepicker_label_year), color = Color(0xFFB7B7D1), fontSize = 15.sp)
                     OutlinedTextField(
                         value = year.toString(),
                         onValueChange = { txt ->
@@ -169,7 +180,7 @@ fun CustomDatePickerDialog(
                         onDismiss()
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFB7B7D1))
-                ) { Text("Cancelar") }
+                ) { Text(stringResource(id = R.string.gen_cancelar)) }
                 Button(
                     onClick = {
                         val cal = Calendar.getInstance()
@@ -183,7 +194,7 @@ fun CustomDatePickerDialog(
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(14.dp)
-                ) { Text("Aceptar") }
+                ) { Text(stringResource(id = R.string.gen_guardar)) }
             }
         }
     }
@@ -227,7 +238,7 @@ fun CustomTimePickerDialog(
                 .widthIn(min = 270.dp, max = 350.dp)
         ) {
             Text(
-                "Selecciona una hora",
+                text = stringResource(id = R.string.timepicker_title),
                 fontSize = 22.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -295,7 +306,7 @@ fun CustomTimePickerDialog(
                         onDismiss()
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFB7B7D1))
-                ) { Text("Cancelar") }
+                ) { Text(stringResource(id = R.string.gen_cancelar)) }
                 Button(
                     onClick = {
                         focusManager.clearFocus()
@@ -307,7 +318,7 @@ fun CustomTimePickerDialog(
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(14.dp)
-                ) { Text("Aceptar") }
+                ) { Text(stringResource(id = R.string.gen_guardar)) }
             }
         }
     }
