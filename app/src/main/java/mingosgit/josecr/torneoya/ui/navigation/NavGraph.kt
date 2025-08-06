@@ -51,6 +51,7 @@ import androidx.activity.ComponentActivity // <--- añade este import arriba
 import mingosgit.josecr.torneoya.ui.screens.avatar.AvatarScreen
 import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
 import mingosgit.josecr.torneoya.ui.screens.home.NotificacionesScreen
+import mingosgit.josecr.torneoya.ui.screens.perfilamigo.PerfilAmigoScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 
@@ -147,6 +148,12 @@ fun NavGraph(
                 usuarioUid = userUid
             )
         }
+
+        composable("perfil_amigo/{amigoUid}") { backStackEntry ->
+            val amigoUid = backStackEntry.arguments?.getString("amigoUid") ?: ""
+            PerfilAmigoScreen(navController, amigoUid)
+        }
+
         composable("administrar_partidos") {
             val administrarViewModel = viewModel<AdministrarPartidosViewModel>(
                 modelClass = AdministrarPartidosViewModel::class.java,

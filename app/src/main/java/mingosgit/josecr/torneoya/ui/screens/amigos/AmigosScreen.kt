@@ -297,10 +297,9 @@ fun AmigosScreen(
                                     shape = RoundedCornerShape(17.dp)
                                 )
                                 .background(Color(0xFF23273D))
-                                .combinedClickable(
-                                    onClick = {},
-                                    onLongClick = { expandedUid = amigo.uid }
-                                ),
+                                .clickable {
+                                    navController.navigate("perfil_amigo/${amigo.uid}")
+                                },
                             color = Color.Transparent,
                             shadowElevation = 0.dp
                         ) {
