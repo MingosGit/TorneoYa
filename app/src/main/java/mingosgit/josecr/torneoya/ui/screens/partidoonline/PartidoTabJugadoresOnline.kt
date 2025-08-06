@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -38,12 +39,14 @@ fun PartidoTabJugadoresOnline(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
+        // Cambia offset dependiendo de si es equipo A o B
         EquipoColumnWithFriendship(
             nombreEquipo = uiState.nombreEquipoA,
             jugadores = uiState.jugadoresEquipoA,
             borderBrush = Brush.horizontalGradient(
                 listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
             ),
+            dropdownOffset = DpOffset((-140).dp, (-10).dp), // Izquierda, sale al lado izquierdo
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 8.dp)
@@ -54,6 +57,7 @@ fun PartidoTabJugadoresOnline(
             borderBrush = Brush.horizontalGradient(
                 listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
             ),
+            dropdownOffset = DpOffset(180.dp, (-10).dp), // Derecha, sale al lado derecho
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 8.dp)
@@ -67,6 +71,7 @@ private fun EquipoColumnWithFriendship(
     nombreEquipo: String,
     jugadores: List<String>,
     borderBrush: Brush,
+    dropdownOffset: DpOffset, // NUEVO
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -122,39 +127,44 @@ private fun EquipoColumnWithFriendship(
                         )
                         .combinedClickable(
                             onClick = {},
-                            onLongClick = { expandedIndex = idx }
+                            onLongClick = {
+                                expandedIndex = idx
+                            }
                         )
                         .padding(vertical = 9.dp, horizontal = 2.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(32.dp)
+                    ) {
                         Text(
                             text = jugadorNombre,
                             fontSize = 16.sp,
                             color = Color.White,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.align(Alignment.Center)
                         )
-                        // Mostrar botón justo debajo del jugador pulsado
-                        if (expandedIndex == idx) {
-                            OutlinedButton(
-                                onClick = {
-                                    sendingSolicitud = true
-                                    scope.launch {
-                                        val res = enviarSolicitudAmistadSiProcede(jugadorNombre, context)
-                                        mensajeDialog = res
-                                        sendingSolicitud = false
-                                        expandedIndex = null
-                                    }
-                                },
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text("Enviar solicitud de amistad", color = TorneoYaPalette.blue, fontWeight = FontWeight.Bold)
+                    }
+
+                    // MENÚ ESTILO CONTEXTUAL TIPO DROPDOWN AL LADO DEL JUGADOR
+                    if (expandedIndex == idx) {
+                        AmistadDropdownMenu(
+                            borderBrush = borderBrush,
+                            offset = dropdownOffset,
+                            onDismissRequest = { expandedIndex = null },
+                            enabled = !sendingSolicitud,
+                            onClick = {
+                                sendingSolicitud = true
+                                scope.launch {
+                                    val res = enviarSolicitudAmistadSiProcede(jugadorNombre, context)
+                                    mensajeDialog = res
+                                    sendingSolicitud = false
+                                    expandedIndex = null
+                                }
                             }
-                        }
+                        )
                     }
                 }
             }
@@ -231,7 +241,47 @@ private fun EquipoColumnWithFriendship(
                 )
         )
     }
+}
 
+@Composable
+private fun AmistadDropdownMenu(
+    borderBrush: Brush,
+    offset: DpOffset = DpOffset.Zero,
+    onDismissRequest: () -> Unit,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = onDismissRequest,
+        offset = offset,
+        modifier = Modifier
+            .border(
+                2.dp,
+                borderBrush,
+                RoundedCornerShape(12.dp)
+            )
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                brush = Brush.horizontalGradient(
+                    listOf(Color(0xFF222441), Color(0xFF242348))
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+    ) {
+        DropdownMenuItem(
+            text = {
+                Text(
+                    "Solicitar amistad",
+                    color = TorneoYaPalette.blue,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                )
+            },
+            onClick = onClick,
+            enabled = enabled
+        )
+    }
 }
 
 suspend fun enviarSolicitudAmistadSiProcede(jugadorNombre: String, context: android.content.Context): String {
