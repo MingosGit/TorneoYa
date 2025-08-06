@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
+import mingosgit.josecr.torneoya.data.firebase.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.repository.AmigosRepository
 

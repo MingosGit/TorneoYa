@@ -38,7 +38,7 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnline
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
-import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
+import mingosgit.josecr.torneoya.data.firebase.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import mingosgit.josecr.torneoya.ui.screens.ajustes.AjustesScreen
 import mingosgit.josecr.torneoya.ui.screens.ajustes.MiCuentaScreen

@@ -2,7 +2,7 @@ package mingosgit.josecr.torneoya.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
-import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
+import mingosgit.josecr.torneoya.data.firebase.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 
 class AmigosRepository(

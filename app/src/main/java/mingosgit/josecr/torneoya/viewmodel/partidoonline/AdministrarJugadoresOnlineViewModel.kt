@@ -11,7 +11,7 @@ import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import com.google.firebase.auth.FirebaseAuth
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
-import mingosgit.josecr.torneoya.data.entities.AmigoFirebaseEntity
+import mingosgit.josecr.torneoya.data.firebase.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.firestore.FieldValue

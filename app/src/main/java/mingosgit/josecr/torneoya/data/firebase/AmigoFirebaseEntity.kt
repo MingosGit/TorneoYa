@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.data.entities
+package mingosgit.josecr.torneoya.data.firebase
 
 data class AmigoFirebaseEntity(
     val uid: String = "",
