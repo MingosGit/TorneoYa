@@ -1,3 +1,4 @@
+// Archivo: HomeScreen.kt
 package mingosgit.josecr.torneoya.ui.screens.home
 
 import androidx.compose.animation.*
@@ -21,6 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,13 +32,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.viewmodel.compose.viewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
-
 
 data class HomeProximoPartidoUi(
     val partido: PartidoFirebase,
@@ -62,7 +63,6 @@ fun HomeScreen(
     else
         context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
 
-
     val modernBackground = Brush.verticalGradient(
         0.0f to Color(0xFF1B1D29),
         0.28f to Color(0xFF212442),
@@ -74,19 +74,16 @@ fun HomeScreen(
     var loadingTimeoutReached by remember { mutableStateOf(false) }
     var showNoSesionScreen by remember { mutableStateOf(false) }
 
-    // Lanzamos la animación de carga por máx 2 segundos o hasta que se cargue el usuario
     LaunchedEffect(uiState.nombreUsuario) {
         isLoading = true
         loadingTimeoutReached = false
         showNoSesionScreen = false
 
         val sesionActiva = uiState.nombreUsuario.isNotBlank() && uiState.nombreUsuario != "Usuario"
-        // Si no está la sesión activa, pero aún podría cargarse, espera 2 segundos
         val delayJob = launch {
             delay(2000)
             loadingTimeoutReached = true
         }
-        // Espera hasta que llegue nombre válido o timeout
         while (!sesionActiva && !loadingTimeoutReached) {
             delay(100)
         }
@@ -129,18 +126,16 @@ fun HomeScreen(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Email,
-                    contentDescription = "Notificaciones",
+                    contentDescription = stringResource(id = R.string.gen_notificaciones_desc),
                     tint = Color(0xFF8F5CFF),
                     modifier = Modifier.size(25.dp)
                 )
             }
         }
 
-        // ---------------- ANIMACIÓN DE CARGA ------------------- //
         if (isLoading) {
             Box(
-                Modifier
-                    .fillMaxSize(),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -153,7 +148,7 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(18.dp))
                     Text(
-                        text = "Cargando tu cuenta...",
+                        text = stringResource(id = R.string.gen_cargando) + " tu cuenta...",
                         color = Color(0xFFB7B7D1),
                         fontSize = 17.sp
                     )
@@ -162,7 +157,6 @@ fun HomeScreen(
             return
         }
 
-        // ----------------- PANTALLA NO SESIÓN ----------------- //
         if (showNoSesionScreen) {
             Column(
                 modifier = Modifier
@@ -179,21 +173,21 @@ fun HomeScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
-                        contentDescription = "Logo",
+                        contentDescription = stringResource(id = R.string.gen_notificaciones_desc),
                         tint = Color(0xFF296DFF),
                         modifier = Modifier.padding(22.dp)
                     )
                 }
                 Spacer(Modifier.height(18.dp))
                 Text(
-                    text = "Bienvenido a TorneoYa",
+                    text = stringResource(id = R.string.home_bienvenido_torneoya),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "Organiza y disfruta tus partidos.\n\nInicia sesión o crea tu cuenta para empezar.",
+                    text = stringResource(id = R.string.home_organiza_disfruta),
                     fontSize = 16.sp,
                     color = Color(0xFFB7B7D1),
                     lineHeight = 22.sp,
@@ -202,7 +196,6 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.height(32.dp))
 
-                // BOTÓN INICIAR SESIÓN
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -224,7 +217,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Iniciar sesión",
+                        text = stringResource(id = R.string.gen_iniciar_sesion),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -233,7 +226,6 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(11.dp))
 
-                // BOTÓN CREAR CUENTA
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -255,7 +247,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Crear cuenta",
+                        text = stringResource(id = R.string.gen_crear_cuenta),
                         color = TorneoYaPalette.blue,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
@@ -264,7 +256,7 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(26.dp))
                 Text(
-                    text = "¿Prefieres una cuenta local?\nAccede desde ajustes de Usuario.",
+                    text = stringResource(id = R.string.home_cuenta_local),
                     fontSize = 14.sp,
                     color = Color(0xFFB7B7D1),
                     fontWeight = FontWeight.Normal,
@@ -277,7 +269,6 @@ fun HomeScreen(
             return
         }
 
-        // ------------ PANTALLA NORMAL -------------
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -311,7 +302,7 @@ fun HomeScreen(
                     if (avatarRes != 0) {
                         Image(
                             painter = painterResource(id = avatarRes),
-                            contentDescription = "Avatar",
+                            contentDescription = stringResource(id = R.string.gen_avatar_desc),
                             modifier = Modifier
                                 .size(46.dp)
                                 .clip(CircleShape)
@@ -329,13 +320,13 @@ fun HomeScreen(
                 Spacer(Modifier.width(14.dp))
                 Column {
                     Text(
-                        text = "¡Hola, ${uiState.nombreUsuario}!",
+                        text = stringResource(id = R.string.home_hola_usuario, uiState.nombreUsuario),
                         fontSize = 27.sp,
                         color = Color(0xFFF7F7FF),
                         fontWeight = FontWeight.Black
                     )
                     Text(
-                        text = "Resumen de tu actividad",
+                        text = stringResource(id = R.string.home_resumen_actividad),
                         fontSize = 15.sp,
                         color = Color(0xFFB7B7D1),
                         fontWeight = FontWeight.Normal
@@ -349,13 +340,13 @@ fun HomeScreen(
             ) {
                 StatCircle(
                     icon = Icons.Filled.SportsSoccer,
-                    label = "Partidos",
+                    label = stringResource(id = R.string.gen_partidos),
                     value = uiState.partidosTotales,
                     color = Color(0xFF296DFF)
                 )
                 StatCircle(
                     icon = Icons.Filled.Group,
-                    label = "Amigos",
+                    label = stringResource(id = R.string.gen_amigos),
                     value = uiState.amigosTotales,
                     color = Color(0xFFFF7675)
                 )
@@ -369,12 +360,12 @@ fun HomeScreen(
             ) {
                 QuickAccessButton(
                     icon = Icons.Filled.Person,
-                    label = "Mi perfil",
+                    label = stringResource(id = R.string.gen_mi_perfil),
                     modifier = Modifier.weight(1f)
                 ) { navController.navigate("usuario") }
                 QuickAccessButton(
                     icon = Icons.Filled.SportsSoccer,
-                    label = "Partidos Online",
+                    label = stringResource(id = R.string.gen_partidos_online),
                     modifier = Modifier.weight(1f)
                 ) { navController.navigate("partido_online") }
             }
@@ -421,7 +412,7 @@ fun HomeScreen(
                                 horizontalAlignment = Alignment.Start
                             ) {
                                 Text(
-                                    text = "Próximo partido online",
+                                    text = stringResource(id = R.string.home_proximo_partido_titulo),
                                     color = Color(0xFF8F5CFF),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
@@ -484,7 +475,7 @@ fun HomeScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        "Ver partido",
+                                        text = stringResource(id = R.string.gen_ver_partido),
                                         color = Color(0xFF8F5CFF),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp,
@@ -515,34 +506,33 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "¡Sin próximos partidos online!",
+                            text = stringResource(id = R.string.home_sin_proximos_partidos),
                             color = Color(0xFFB7B7D1),
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.height(7.dp))
                         Text(
-                            text = "Crea uno o únete a una partida para no perderte ningún gol.",
+                            text = stringResource(id = R.string.home_crea_une_partido),
                             color = Color(0xFF8F5CFF),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium,
                         )
                         Spacer(Modifier.height(17.dp))
-                        // --- NUEVO ESTILO, IGUAL QUE "Mi perfil" y "Partidos Online" ---
                         Row(
                             Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(18.dp)
                         ) {
                             QuickAccessButton(
                                 icon = Icons.Filled.SportsSoccer,
-                                label = "Buscar partidos",
+                                label = stringResource(id = R.string.gen_buscar_partidos),
                                 modifier = Modifier.weight(1f)
                             ) {
                                 navController.navigate("partido_online")
                             }
                             QuickAccessButton(
                                 icon = Icons.Filled.Star,
-                                label = "Crear uno",
+                                label = stringResource(id = R.string.gen_crear_uno),
                                 modifier = Modifier.weight(1f)
                             ) {
                                 navController.navigate("crear_partido_online")
@@ -555,8 +545,6 @@ fun HomeScreen(
         }
     }
 }
-
-// COMPONENTES REUTILIZABLES
 
 @Composable
 fun QuickAccessButton(
@@ -614,7 +602,7 @@ fun StatCircle(
                 .border(
                     width = 2.dp,
                     brush = Brush.horizontalGradient(
-                        if (label == "Partidos")
+                        if (label == stringResource(id = R.string.gen_partidos))
                             listOf(Color(0xFF296DFF), TorneoYaPalette.violet)
                         else
                             listOf(Color(0xFFFF7675), TorneoYaPalette.violet)

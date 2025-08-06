@@ -21,7 +21,14 @@
     <string name="gen_guardar">Guardar</string>
     <string name="gen_guardando">Guardando...</string>
     <string name="gen_cerrar">Cerrar</string>
-
+    <string name="gen_notificaciones_desc">Notificaciones</string>
+    <string name="gen_partidos">Partidos</string>
+    <string name="gen_amigos">Amigos</string>
+    <string name="gen_mi_perfil">Mi perfil</string>
+    <string name="gen_partidos_online">Partidos Online</string>
+    <string name="gen_ver_partido">Ver partido</string>
+    <string name="gen_buscar_partidos">Buscar partidos</string>
+    <string name="gen_crear_uno">Crear uno</string>
     <!-- ===== FIN GENERALES ===== -->
 
     <!-- AmigosScreen -->
@@ -54,4 +61,19 @@
     <string name="AvatSC_select_avatar">Selecciona tu avatar</string>
     <string name="AvatSC_empty_avatar_desc">Avatar vacío</string>
     <string name="AvatSC_avatar_desc">Avatar %1$d</string>
+
+    <!-- ===== HOME SCREEN ===== -->
+    <string name="home_bienvenido_torneoya">Bienvenido a TorneoYa</string>
+    <string name="home_organiza_disfruta">Organiza y disfruta tus partidos.\n\nInicia sesión o crea tu cuenta para empezar.</string>
+    <string name="home_cuenta_local">¿Prefieres una cuenta local?\nAccede desde ajustes de Usuario.</string>
+    <string name="home_hola_usuario">¡Hola, %1$s!</string>
+    <string name="home_resumen_actividad">Resumen de tu actividad</string>
+    <string name="home_proximo_partido_titulo">Próximo partido online</string>
+    <string name="home_sin_proximos_partidos">¡Sin próximos partidos online!</string>
+    <string name="home_crea_une_partido">Crea uno o únete a una partida para no perderte ningún gol.</string>
+
+
+
+
+
 </resources>
