@@ -1,3 +1,5 @@
+// Archivo: AmigosScreen.kt
+
 package mingosgit.josecr.torneoya.ui.screens.amigos
 
 import android.widget.Toast
@@ -38,6 +40,8 @@ import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import androidx.compose.ui.res.stringResource
+import mingosgit.josecr.torneoya.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -85,21 +89,21 @@ fun AmigosScreen(
                 ) {
                     Icon(
                         Icons.Default.PersonAdd,
-                        contentDescription = "Icono amigos",
+                        contentDescription = stringResource(id = R.string.gen_icono_amigos_desc),
                         tint = Color(0xFF296DFF),
                         modifier = Modifier.padding(22.dp)
                     )
                 }
                 Spacer(Modifier.height(18.dp))
                 Text(
-                    text = "Acceso a Amigos",
+                    text = stringResource(id = R.string.amigossc_acceso_titulo),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
                 Text(
-                    text = "Inicia sesión para acceder a tu lista de amigos, enviar solicitudes y gestionar contactos.",
+                    text = stringResource(id = R.string.amigossc_acceso_desc),
                     fontSize = 16.sp,
                     color = Color(0xFFB7B7D1),
                     lineHeight = 22.sp,
@@ -130,7 +134,7 @@ fun AmigosScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Iniciar sesión",
+                        stringResource(id = R.string.gen_iniciar_sesion),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -160,7 +164,7 @@ fun AmigosScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Crear cuenta",
+                        stringResource(id = R.string.gen_crear_cuenta),
                         color = TorneoYaPalette.blue,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
@@ -170,7 +174,7 @@ fun AmigosScreen(
                 Spacer(Modifier.height(26.dp))
 
                 Text(
-                    text = "¿Prefieres usar una cuenta local?\nPuedes configurarla en Ajustes de Usuario.",
+                    text = stringResource(id = R.string.amigossc_cuenta_local),
                     fontSize = 14.sp,
                     color = Color(0xFFB7B7D1),
                     fontWeight = FontWeight.Normal,
@@ -207,7 +211,7 @@ fun AmigosScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Amigos",
+                    text = stringResource(id = R.string.amigossc_titulo),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
@@ -245,7 +249,7 @@ fun AmigosScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
-                                contentDescription = "Solicitudes de amistad",
+                                contentDescription = stringResource(id = R.string.amigossc_solicitudes_desc),
                                 tint = Color(0xFF8F5CFF),
                                 modifier = Modifier.size(25.dp)
                             )
@@ -253,7 +257,7 @@ fun AmigosScreen(
                     } else {
                         Icon(
                             imageVector = Icons.Default.Notifications,
-                            contentDescription = "Solicitudes de amistad",
+                            contentDescription = stringResource(id = R.string.amigossc_solicitudes_desc),
                             tint = Color(0xFF8F5CFF),
                             modifier = Modifier.size(25.dp)
                         )
@@ -270,13 +274,21 @@ fun AmigosScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "No tienes amigos todavía",
+                        stringResource(id = R.string.amigossc_no_amigos),
                         color = Color(0xFFB7B7D1),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp
                     )
                 }
             } else {
+                var showToast by remember { mutableStateOf(false) }
+
+                if (showToast) {
+                    LaunchedEffect(Unit) {
+                        Toast.makeText(context, context.getString(R.string.gen_copiado), Toast.LENGTH_SHORT).show()
+                        showToast = false
+                    }
+                }
                 LazyColumn(
                     Modifier
                         .fillMaxWidth()
@@ -309,6 +321,13 @@ fun AmigosScreen(
                                     .padding(vertical = 14.dp, horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // CORREGIDO: Mueve la obtención del avatarResId FUERA del contexto composable
+                                val avatarNum = amigo.avatar ?: 0
+                                val avatarResId = if (avatarNum > 0)
+                                    LocalContext.current.resources.getIdentifier("avatar_$avatarNum", "drawable", LocalContext.current.packageName)
+                                else
+                                    LocalContext.current.resources.getIdentifier("avatar_placeholder", "drawable", LocalContext.current.packageName)
+
                                 Box(
                                     modifier = Modifier
                                         .size(44.dp)
@@ -320,18 +339,10 @@ fun AmigosScreen(
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    val context = LocalContext.current
-                                    val avatarNum = amigo.avatar ?: 0
-                                    val avatarResId = remember(avatarNum) {
-                                        if (avatarNum > 0)
-                                            context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
-                                        else
-                                            context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
-                                    }
                                     if (avatarResId != 0) {
                                         Icon(
                                             painter = painterResource(id = avatarResId),
-                                            contentDescription = "Avatar",
+                                            contentDescription = stringResource(id = R.string.gen_avatar_desc),
                                             tint = Color.Unspecified,
                                             modifier = Modifier
                                                 .size(40.dp)
@@ -346,11 +357,10 @@ fun AmigosScreen(
                                         )
                                     }
                                 }
-
                                 Spacer(Modifier.width(15.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(
-                                        amigo.nombreUsuario,
+                                        text = stringResource(id = R.string.amigossc_nombre_label, amigo.nombreUsuario),
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 17.sp,
                                         color = Color.White,
@@ -358,7 +368,7 @@ fun AmigosScreen(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
-                                        amigo.uid,
+                                        text = stringResource(id = R.string.amigossc_uid_label, amigo.uid),
                                         fontSize = 13.sp,
                                         color = Color(0xFFB7B7D1),
                                         maxLines = 1,
@@ -371,7 +381,7 @@ fun AmigosScreen(
                                     ) {
                                         Icon(
                                             Icons.Default.MoreHoriz,
-                                            contentDescription = "Opciones",
+                                            contentDescription = stringResource(id = R.string.amigossc_opciones),
                                             tint = Color(0xFF8F5CFF)
                                         )
                                     }
@@ -380,10 +390,10 @@ fun AmigosScreen(
                                         onDismissRequest = { expandedUid = null }
                                     ) {
                                         DropdownMenuItem(
-                                            text = { Text("Copiar código de amigo") },
+                                            text = { Text(stringResource(id = R.string.amigossc_copiar_codigo)) },
                                             onClick = {
                                                 clipboard.setText(androidx.compose.ui.text.AnnotatedString(amigo.uid))
-                                                Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
+                                                showToast = true
                                                 expandedUid = null
                                             },
                                             leadingIcon = {
@@ -391,7 +401,7 @@ fun AmigosScreen(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text("Eliminar amigo", color = Color(0xFFFF7675)) },
+                                            text = { Text(stringResource(id = R.string.gen_eliminar_amigo), color = Color(0xFFFF7675)) },
                                             onClick = {
                                                 uidAEliminar = amigo.uid
                                                 showEliminarDialog = true
@@ -429,9 +439,9 @@ fun AmigosScreen(
                 )
             )
         ) {
-            Icon(Icons.Default.PersonAdd, contentDescription = "Añadir amigo", modifier = Modifier.size(24.dp), tint = Color(0xFF296DFF))
+            Icon(Icons.Default.PersonAdd, contentDescription = stringResource(id = R.string.amigossc_añadir_amigo), modifier = Modifier.size(24.dp), tint = Color(0xFF296DFF))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Añadir amigo", color = Color(0xFF296DFF), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(stringResource(id = R.string.amigossc_añadir_amigo), color = Color(0xFF296DFF), fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
 
         if (showSheet) {
@@ -458,188 +468,13 @@ fun AmigosScreen(
                     }
                 }
             ) {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(26.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .border(
-                                width = 2.dp,
-                                brush = Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                ),
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            .background(Color(0xFF23273D))
-                            .padding(12.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(userUid ?: "Cargando...", color = Color.White, fontSize = 15.sp)
-                            Spacer(Modifier.width(8.dp))
-                            IconButton(onClick = {
-                                userUid?.let {
-                                    clipboard.setText(androidx.compose.ui.text.AnnotatedString(it))
-                                    Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
-                                }
-                            }) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copiar UID", tint = Color(0xFF8F5CFF))
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .border(
-                                width = 2.dp,
-                                brush = Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                ),
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            .background(Color(0xFF23273D))
-                            .padding(vertical = 12.dp)
-                    ) {
-                        Text(
-                            "Buscar por UID",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-
-                    Spacer(Modifier.height(10.dp))
-                    var amigoUidInput by remember { mutableStateOf("") }
-
-                    OutlinedTextField(
-                        value = amigoUidInput,
-                        onValueChange = { amigoUidInput = it },
-                        label = { Text("UID del amigo", color = Color(0xFF8F5CFF)) },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp)),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            containerColor = Color(0xFF191A23),
-                            focusedBorderColor = Color(0xFF8F5CFF),
-                            unfocusedBorderColor = Color(0xFF23273D)
-                        ),
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                val clip = clipboard.getText()
-                                if (clip != null) amigoUidInput = clip.text
-                            }) {
-                                Icon(Icons.Default.ContentPaste, contentDescription = "Pegar UID", tint = Color(0xFF8F5CFF))
-                            }
-                        }
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    OutlinedButton(
-                        onClick = {
-                            agregarAmigoViewModel.buscarPorUid(amigoUidInput)
-                        },
-                        enabled = amigoUidInput.isNotBlank(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(44.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            )
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = Color(0xFF23273D),
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text("Buscar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    }
-
-
-                    when (agregarUiState) {
-                        is AgregarAmigoViewModel.UiState.Busqueda -> {
-                            val usuario = (agregarUiState as AgregarAmigoViewModel.UiState.Busqueda).usuario
-                            Spacer(Modifier.height(22.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(13.dp))
-                                    .border(
-                                        width = 2.dp,
-                                        brush = Brush.horizontalGradient(
-                                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                        ),
-                                        shape = RoundedCornerShape(13.dp)
-                                    )
-                                    .background(Color(0xFF23273D))
-                                    .padding(18.dp)
-                            ) {
-                                Column {
-                                    Text("Nombre: ${usuario.nombreUsuario}", color = Color(0xFFB7B7D1))
-                                    Text("UID: ${usuario.uid}", color = Color(0xFFB7B7D1))
-                                    Spacer(Modifier.height(10.dp))
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.End
-                                    ) {
-                                        OutlinedButton(
-                                            onClick = {
-                                                agregarAmigoViewModel.enviarSolicitud(usuario.uid)
-                                                amigoUidInput = ""
-                                            },
-                                            shape = RoundedCornerShape(10.dp),
-                                            border = ButtonDefaults.outlinedButtonBorder.copy(
-                                                width = 2.dp,
-                                                brush = Brush.horizontalGradient(
-                                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                                )
-                                            ),
-                                            colors = ButtonDefaults.outlinedButtonColors(
-                                                containerColor = Color(0xFF23273D),
-                                                contentColor = Color.White
-                                            ),
-                                            modifier = Modifier.height(44.dp)
-                                        ) {
-                                            Text("Sí, enviar solicitud", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                        is AgregarAmigoViewModel.UiState.Error -> {
-                            Spacer(Modifier.height(18.dp))
-                            Text(
-                                (agregarUiState as AgregarAmigoViewModel.UiState.Error).mensaje,
-                                color = Color.Red
-                            )
-                        }
-                        is AgregarAmigoViewModel.UiState.Exito -> {
-                            Spacer(Modifier.height(18.dp))
-                            Text(
-                                "¡Solicitud enviada!",
-                                color = Color(0xFF2ecc71)
-                            )
-                        }
-                        else -> {}
-                    }
-                    Spacer(Modifier.height(12.dp))
-                }
+                BottomSheetContent(
+                    userUid = userUid,
+                    clipboard = clipboard,
+                    context = context,
+                    agregarUiState = agregarUiState,
+                    agregarAmigoViewModel = agregarAmigoViewModel
+                )
             }
         }
 
@@ -665,10 +500,10 @@ fun AmigosScreen(
                         .widthIn(min = 270.dp, max = 340.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Eliminar amigo", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 19.sp)
+                        Text(stringResource(id = R.string.gen_eliminar_titulo), fontWeight = FontWeight.Bold, color = Color.White, fontSize = 19.sp)
                         Spacer(Modifier.height(9.dp))
                         Text(
-                            "¿Estás seguro que deseas eliminar a este amigo? Esta acción no se puede deshacer.",
+                            stringResource(id = R.string.amigossc_eliminar_confirm),
                             color = Color(0xFFB7B7D1),
                             fontSize = 15.sp
                         )
@@ -698,7 +533,7 @@ fun AmigosScreen(
                                     .height(42.dp)
                             ) {
                                 Text(
-                                    "Cancelar",
+                                    stringResource(id = R.string.gen_cancelar),
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -726,7 +561,7 @@ fun AmigosScreen(
                                     .height(42.dp)
                             ) {
                                 Text(
-                                    "Eliminar",
+                                    stringResource(id = R.string.gen_eliminar),
                                     color = Color(0xFFFF7675),
                                     fontWeight = FontWeight.Bold
                                 )
@@ -738,3 +573,205 @@ fun AmigosScreen(
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BottomSheetContent(
+    userUid: String?,
+    clipboard: androidx.compose.ui.platform.ClipboardManager,
+    context: android.content.Context,
+    agregarUiState: AgregarAmigoViewModel.UiState,
+    agregarAmigoViewModel: AgregarAmigoViewModel
+) {
+    var amigoUidInput by remember { mutableStateOf("") }
+    var showToast by remember { mutableStateOf(false) }
+
+    if (showToast) {
+        LaunchedEffect(Unit) {
+            android.widget.Toast.makeText(context, context.getString(R.string.gen_copiado), android.widget.Toast.LENGTH_SHORT).show()
+            showToast = false
+        }
+    }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(26.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(
+                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .background(Color(0xFF23273D))
+                .padding(12.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(userUid ?: stringResource(id = R.string.gen_cargando), color = Color.White, fontSize = 15.sp)
+                Spacer(Modifier.width(8.dp))
+                IconButton(onClick = {
+                    userUid?.let {
+                        clipboard.setText(androidx.compose.ui.text.AnnotatedString(it))
+                        showToast = true
+                    }
+                }) {
+                    Icon(Icons.Default.ContentCopy, contentDescription = stringResource(id = R.string.gen_copiar_uid), tint = Color(0xFF8F5CFF))
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(
+                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .background(Color(0xFF23273D))
+                .padding(vertical = 12.dp)
+        ) {
+            Text(
+                stringResource(id = R.string.amigossc_buscar_uid),
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        OutlinedTextField(
+            value = amigoUidInput,
+            onValueChange = { amigoUidInput = it },
+            label = { Text(stringResource(id = R.string.amigossc_uid_amigo), color = Color(0xFF8F5CFF)) },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp)),
+            shape = RoundedCornerShape(10.dp),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color(0xFF191A23),
+                focusedBorderColor = Color(0xFF8F5CFF),
+                unfocusedBorderColor = Color(0xFF23273D)
+            ),
+            trailingIcon = {
+                IconButton(onClick = {
+                    val clip = clipboard.getText()
+                    if (clip != null) amigoUidInput = clip.text
+                }) {
+                    Icon(Icons.Default.ContentPaste, contentDescription = stringResource(id = R.string.gen_pegar_uid), tint = Color(0xFF8F5CFF))
+                }
+            }
+        )
+        Spacer(Modifier.height(16.dp))
+        OutlinedButton(
+            onClick = {
+                agregarAmigoViewModel.buscarPorUid(amigoUidInput)
+            },
+            enabled = amigoUidInput.isNotBlank(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp),
+            shape = RoundedCornerShape(10.dp),
+            border = ButtonDefaults.outlinedButtonBorder.copy(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                )
+            ),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color(0xFF23273D),
+                contentColor = Color.White
+            )
+        ) {
+            Text(stringResource(id = R.string.gen_buscar), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+
+        when (agregarUiState) {
+            is AgregarAmigoViewModel.UiState.Busqueda -> {
+                val usuario = (agregarUiState as AgregarAmigoViewModel.UiState.Busqueda).usuario
+                Spacer(Modifier.height(22.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(13.dp))
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(13.dp)
+                        )
+                        .background(Color(0xFF23273D))
+                        .padding(18.dp)
+                ) {
+                    Column {
+                        Text(stringResource(id = R.string.amigossc_nombre_label, usuario.nombreUsuario), color = Color(0xFFB7B7D1))
+                        Text(stringResource(id = R.string.amigossc_uid_label, usuario.uid), color = Color(0xFFB7B7D1))
+                        Spacer(Modifier.height(10.dp))
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    agregarAmigoViewModel.enviarSolicitud(usuario.uid)
+                                    amigoUidInput = ""
+                                },
+                                shape = RoundedCornerShape(10.dp),
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(
+                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                    )
+                                ),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = Color(0xFF23273D),
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier.height(44.dp)
+                            ) {
+                                Text(stringResource(id = R.string.amigossc_si_enviar_solicitud), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            }
+
+                        }
+                    }
+                }
+            }
+            is AgregarAmigoViewModel.UiState.Error -> {
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    (agregarUiState as AgregarAmigoViewModel.UiState.Error).mensaje,
+                    color = Color.Red
+                )
+            }
+            is AgregarAmigoViewModel.UiState.Exito -> {
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    stringResource(id = R.string.amigossc_solicitud_enviada),
+                    color = Color(0xFF2ecc71)
+                )
+            }
+            else -> {}
+        }
+        Spacer(Modifier.height(12.dp))
+    }
+}
+
+

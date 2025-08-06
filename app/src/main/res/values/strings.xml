@@ -1,3 +1,40 @@
 <resources>
     <string name="app_name">TorneoYa</string>
+
+    <!-- ===== GENERALES ===== -->
+    <string name="gen_iniciar_sesion">Iniciar sesión</string>
+    <string name="gen_crear_cuenta">Crear cuenta</string>
+    <string name="gen_eliminar_amigo">Eliminar amigo</string>
+    <string name="gen_copiado">Copiado</string>
+    <string name="gen_pegar_uid">Pegar UID</string>
+    <string name="gen_buscar">Buscar</string>
+    <string name="gen_error">Error</string>
+    <string name="gen_eliminar_titulo">Eliminar amigo</string>
+    <string name="gen_cancelar">Cancelar</string>
+    <string name="gen_eliminar">Eliminar</string>
+    <string name="gen_cargando">Cargando...</string>
+    <string name="gen_icono_amigos_desc">Icono amigos</string>
+    <string name="gen_avatar_desc">Avatar</string>
+    <string name="gen_copiar_uid">Copiar UID</string>
+    <string name="gen_uid_copiado">UID copiado</string>
+    <!-- ===== FIN GENERALES ===== -->
+
+    <!-- AmigosScreen -->
+    <string name="amigossc_acceso_titulo">Acceso a Amigos</string>
+    <string name="amigossc_acceso_desc">Inicia sesión para acceder a tu lista de amigos, enviar solicitudes y gestionar contactos.</string>
+    <string name="amigossc_cuenta_local">¿Prefieres usar una cuenta local?&#10;Puedes configurarla en Ajustes de Usuario.</string>
+    <string name="amigossc_titulo">Amigos</string>
+    <string name="amigossc_solicitudes">Solicitudes de amistad</string>
+    <string name="amigossc_no_amigos">No tienes amigos todavía</string>
+    <string name="amigossc_copiar_codigo">Copiar código de amigo</string>
+    <string name="amigossc_añadir_amigo">Añadir amigo</string>
+    <string name="amigossc_buscar_uid">Buscar por UID</string>
+    <string name="amigossc_uid_amigo">UID del amigo</string>
+    <string name="amigossc_nombre_label">Nombre: %1$s</string>
+    <string name="amigossc_uid_label">UID: %1$s</string>
+    <string name="amigossc_si_enviar_solicitud">Sí, enviar solicitud</string>
+    <string name="amigossc_solicitud_enviada">¡Solicitud enviada!</string>
+    <string name="amigossc_eliminar_confirm">¿Estás seguro que deseas eliminar a este amigo? Esta acción no se puede deshacer.</string>
+    <string name="amigossc_opciones">Opciones</string>
+    <string name="amigossc_solicitudes_desc">Ver solicitudes de amistad</string>
 </resources>
