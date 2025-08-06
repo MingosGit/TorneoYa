@@ -142,7 +142,54 @@ class MiCuentaViewModel : ViewModel() {
                     partidoRef.update(updates).await()
                 }
 
-                // 4. Eliminar goles y eventos del usuario
+                // 4. BORRAR PARTIDOS DONDE EL USUARIO ES CREADOR (Y TODOS SUS DATOS RELACIONADOS)
+                val partidosCreados = firestore.collection("partidos")
+                    .whereEqualTo("creadorUid", uid)
+                    .get().await()
+
+                for (partidoDoc in partidosCreados.documents) {
+                    val partidoUid = partidoDoc.id
+
+                    // Borra comentarios del partido
+                    firestore.collection("comentarios")
+                        .whereEqualTo("partidoUid", partidoUid)
+                        .get().await().documents.forEach {
+                            firestore.collection("comentarios").document(it.id).delete().await()
+                        }
+
+                    // Borra encuestas del partido
+                    firestore.collection("encuestas")
+                        .whereEqualTo("partidoUid", partidoUid)
+                        .get().await().documents.forEach {
+                            firestore.collection("encuestas").document(it.id).delete().await()
+                        }
+
+                    // Borra votos de encuestas del partido
+                    firestore.collection("encuesta_votos")
+                        .whereEqualTo("partidoUid", partidoUid)
+                        .get().await().documents.forEach {
+                            firestore.collection("encuesta_votos").document(it.id).delete().await()
+                        }
+
+                    // Borra goles del partido
+                    firestore.collection("goleadores")
+                        .whereEqualTo("partidoUid", partidoUid)
+                        .get().await().documents.forEach {
+                            firestore.collection("goleadores").document(it.id).delete().await()
+                        }
+
+                    // Borra eventos del partido
+                    firestore.collection("eventos")
+                        .whereEqualTo("partidoUid", partidoUid)
+                        .get().await().documents.forEach {
+                            firestore.collection("eventos").document(it.id).delete().await()
+                        }
+
+                    // Finalmente, borra el partido
+                    firestore.collection("partidos").document(partidoUid).delete().await()
+                }
+
+                // 5. Eliminar goles y eventos del usuario
                 firestore.collection("goleadores")
                     .whereEqualTo("jugadorUid", uid)
                     .get().await().documents.forEach {
@@ -164,45 +211,45 @@ class MiCuentaViewModel : ViewModel() {
                         firestore.collection("eventos").document(it.id).delete().await()
                     }
 
-                // 5. Eliminar notificaciones
+                // 6. Eliminar notificaciones
                 firestore.collection("notificaciones")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("notificaciones").document(it.id).delete().await()
                     }
 
-                // 6. Eliminar encuestas creadas por el usuario
+                // 7. Eliminar encuestas creadas por el usuario
                 firestore.collection("encuestas")
                     .whereEqualTo("creadorUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("encuestas").document(it.id).delete().await()
                     }
 
-                // 7. Eliminar comentarios del usuario
+                // 8. Eliminar comentarios del usuario
                 firestore.collection("comentarios")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("comentarios").document(it.id).delete().await()
                     }
 
-                // 8. Eliminar votos del usuario
+                // 9. Eliminar votos del usuario
                 firestore.collection("comentario_votos")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("comentario_votos").document(it.id).delete().await()
                     }
 
-                // 9. Eliminar votos de encuestas del usuario
+                // 10. Eliminar votos de encuestas del usuario
                 firestore.collection("encuesta_votos")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("encuesta_votos").document(it.id).delete().await()
                     }
 
-                // 10. Eliminar usuario de la colección usuarios
+                // 11. Eliminar usuario de la colección usuarios
                 firestore.collection("usuarios").document(uid).delete().await()
 
-                // 11. Eliminar usuario de FirebaseAuth
+                // 12. Eliminar usuario de FirebaseAuth
                 user.delete().await()
 
             } catch (e: Exception) {
