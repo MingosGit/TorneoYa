@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.R
 
 @Composable
 fun SplashScreen(
@@ -33,6 +35,7 @@ fun SplashScreen(
         )
     )
 
+    val context = LocalContext.current
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -53,7 +56,7 @@ fun SplashScreen(
                 }
             }
         } catch (e: Exception) {
-            error = "Error de conexión. Intenta de nuevo."
+            error = context.getString(R.string.splash_error_conexion)
             delay(1200)
             navController.navigate("home") {
                 popUpTo(0) { inclusive = true }
@@ -69,7 +72,7 @@ fun SplashScreen(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "TorneoYa",
+                text = context.getString(R.string.splash_app_name),
                 fontWeight = FontWeight.Black,
                 fontSize = 34.sp,
                 color = Color.White,
@@ -81,7 +84,7 @@ fun SplashScreen(
             )
             Spacer(Modifier.height(18.dp))
             Text(
-                text = error ?: "Iniciando sesión...",
+                text = error ?: context.getString(R.string.splash_iniciando_sesion),
                 color = Color(0xFFB7B7D1),
                 fontSize = 17.sp
             )

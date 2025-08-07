@@ -18,11 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterState
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
@@ -84,7 +87,7 @@ fun RegisterScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Registrar",
+                    contentDescription = stringResource(id = R.string.register_crear_cuenta),
                     tint = purple,
                     modifier = Modifier
                         .padding(18.dp)
@@ -95,14 +98,14 @@ fun RegisterScreen(
             Spacer(Modifier.height(15.dp))
 
             Text(
-                text = "Crear Cuenta",
+                text = stringResource(id = R.string.register_crear_cuenta),
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Únete a la comunidad de TorneoYa",
+                text = stringResource(id = R.string.register_unete_comunidad),
                 color = Color(0xFFB7B7D1),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -113,7 +116,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = nombreUsuario,
                 onValueChange = { nombreUsuario = it.trim() },
-                label = { Text("Nombre de usuario único", color = purple) },
+                label = { Text(stringResource(id = R.string.register_nombre_usuario_label), color = purple) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Person, contentDescription = null, tint = purple)
@@ -129,13 +132,13 @@ fun RegisterScreen(
                     focusedBorderColor = purple,
                     unfocusedBorderColor = purple.copy(alpha = 0.6f),
                     cursorColor = purple,
- )
+                )
             )
             Spacer(Modifier.height(10.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
-                label = { Text("Email", color = blue) },
+                label = { Text(stringResource(id = R.string.register_email_label), color = blue) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.MailOutline, contentDescription = null, tint = blue)
@@ -157,7 +160,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña", color = blue) },
+                label = { Text(stringResource(id = R.string.register_contraseña_label), color = blue) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Lock, contentDescription = null, tint = blue)
@@ -196,7 +199,7 @@ fun RegisterScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Registrar",
+                    stringResource(id = R.string.register_registrar_button),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = if (registerState != RegisterState.Loading && email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank()) Color.White else Color.White.copy(alpha = 0.4f)
@@ -223,7 +226,7 @@ fun RegisterScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "¿Ya tienes cuenta? Inicia sesión",
+                    stringResource(id = R.string.register_ya_tienes_cuenta),
                     color = blue,
                     fontWeight = FontWeight.SemiBold
                 )

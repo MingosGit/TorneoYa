@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
@@ -97,7 +99,7 @@ fun MiCuentaScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Mi Cuenta",
+                text = stringResource(id = R.string.micuenta_title),
                 fontSize = 29.sp,
                 color = lightText,
                 fontWeight = FontWeight.ExtraBold,
@@ -140,7 +142,7 @@ fun MiCuentaScreen(
                     Box(
                         modifier = Modifier
                             .size(70.dp)
-                            .offset(x = (-20).dp) // Sale del borde izquierdo
+                            .offset(x = (-20).dp)
                             .zIndex(1f),
                         contentAlignment = Alignment.Center
                     ) {
@@ -164,7 +166,7 @@ fun MiCuentaScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 Icons.Filled.Email,
-                                contentDescription = "Email",
+                                contentDescription = stringResource(id = R.string.micuenta_email_content_description),
                                 tint = blue,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -225,7 +227,12 @@ fun MiCuentaScreen(
                         )
                         Spacer(Modifier.width(15.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("Nombre de usuario", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = blue)
+                            Text(
+                                stringResource(id = R.string.micuenta_nombre_de_usuario_label),
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = blue
+                            )
                             Text(
                                 text = nombreUsuario,
                                 fontSize = 14.sp,
@@ -235,7 +242,12 @@ fun MiCuentaScreen(
                             )
                         }
                         Spacer(Modifier.width(9.dp))
-                        Text("Cambiar", fontSize = 15.sp, color = blue, fontWeight = FontWeight.Medium)
+                        Text(
+                            stringResource(id = R.string.micuenta_cambiar_label),
+                            fontSize = 15.sp,
+                            color = blue,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
@@ -260,13 +272,18 @@ fun MiCuentaScreen(
                             )
                         )
                         .padding(vertical = 20.dp, horizontal = 15.dp)
-                        .animateContentSize() //
+                        .animateContentSize()
                 ) {
                     Column {
                         OutlinedTextField(
                             value = nuevoNombre,
                             onValueChange = { nuevoNombre = it },
-                            label = { Text("Nuevo nombre de usuario", color = mutedText) },
+                            label = {
+                                Text(
+                                    stringResource(id = R.string.micuenta_nuevo_nombre_de_usuario_label),
+                                    color = mutedText
+                                )
+                            },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -299,7 +316,11 @@ fun MiCuentaScreen(
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent)
                             ) {
-                                Text("Cancelar", color = mutedText, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    stringResource(id = R.string.gen_cancelar),
+                                    color = mutedText,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
                             Spacer(Modifier.width(12.dp))
                             OutlinedButton(
@@ -310,7 +331,11 @@ fun MiCuentaScreen(
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent)
                             ) {
-                                Text("Guardar", color = blue, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    stringResource(id = R.string.gen_guardar),
+                                    color = blue,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
                         }
 
@@ -318,13 +343,14 @@ fun MiCuentaScreen(
                 }
             }
 
-
             Spacer(modifier = Modifier.height(24.dp))
 
             AccountMenuButton(
-                title = if (resetTimer > 0) "Restablecer contraseña (${resetTimer}s)" else "Restablecer contraseña",
+                title = if (resetTimer > 0)
+                    "${stringResource(id = R.string.micuenta_restablecer_contraseña_label)} ($resetTimer s)"
+                else stringResource(id = R.string.micuenta_restablecer_contraseña_label),
                 icon = Icons.Filled.Email,
-                description = "Te enviaremos un correo de restablecimiento",
+                description = stringResource(id = R.string.micuenta_restablecer_contraseña_enviando),
                 borderColor = Color(0xFF388E3C),
                 onClick = { viewModel.enviarCorreoResetPassword() },
                 enabled = resetTimer == 0,
@@ -336,7 +362,7 @@ fun MiCuentaScreen(
                 exit = fadeOut()
             ) {
                 Text(
-                    "Correo de restablecimiento de contraseña enviado.",
+                    stringResource(id = R.string.micuenta_restablecer_contraseña_mensaje),
                     color = Color(0xFF207A39),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
@@ -346,18 +372,18 @@ fun MiCuentaScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             AccountMenuButton(
-                title = "Cerrar sesión",
+                title = stringResource(id = R.string.micuenta_cerrar_sesion_label),
                 icon = Icons.Filled.Logout,
-                description = "Salir de tu cuenta y de todos tus dispositivos",
+                description = stringResource(id = R.string.micuenta_cerrar_sesion_descripcion),
                 borderColor = violet,
                 onClick = { viewModel.confirmarCerrarSesionDialog(true) },
                 lightText = lightText
             )
             Spacer(modifier = Modifier.height(16.dp))
             AccountMenuButton(
-                title = "Eliminar cuenta",
+                title = stringResource(id = R.string.micuenta_eliminar_cuenta_label),
                 icon = Icons.Filled.Delete,
-                description = "Esta acción es irreversible. Todos tus datos serán eliminados.",
+                description = stringResource(id = R.string.micuenta_eliminar_cuenta_descripcion),
                 borderColor = Color(0xFFF44336),
                 onClick = { viewModel.confirmarEliminarCuentaDialog(true) },
                 lightText = lightText
@@ -402,14 +428,14 @@ fun MiCuentaScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Eliminar cuenta",
+                            text = stringResource(id = R.string.micuenta_eliminar_cuenta_dialog_title),
                             color = Color(0xFFF44336),
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         )
                         Spacer(Modifier.height(11.dp))
                         Text(
-                            text = "Se eliminarán todos tus partidos creados. ¿Deseas continuar?",
+                            text = stringResource(id = R.string.micuenta_eliminar_cuenta_dialog_message),
                             color = mutedText,
                             fontSize = 15.sp
                         )
@@ -419,7 +445,7 @@ fun MiCuentaScreen(
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             GradientBorderButton(
-                                text = "Eliminar",
+                                text = stringResource(id = R.string.gen_eliminar),
                                 onClick = {
                                     viewModel.eliminarCuentaYDatos()
                                     viewModel.confirmarEliminarCuentaDialog(false)
@@ -429,7 +455,7 @@ fun MiCuentaScreen(
                             )
                             Spacer(Modifier.width(14.dp))
                             GradientBorderButton(
-                                text = "Cancelar",
+                                text = stringResource(id = R.string.gen_cancelar),
                                 onClick = { viewModel.confirmarEliminarCuentaDialog(false) },
                                 borderGradient = Brush.horizontalGradient(listOf(blue, violet)),
                                 textColor = Color.White
@@ -481,6 +507,7 @@ fun GradientCircleIcon(
         }
     }
 }
+
 @Composable
 fun GradientBorderButton(
     text: String,
@@ -498,6 +525,7 @@ fun GradientBorderButton(
         Text(text, color = textColor, fontWeight = FontWeight.SemiBold)
     }
 }
+
 @Composable
 fun AccountMenuButton(
     title: String,
@@ -591,14 +619,14 @@ private fun CustomCerrarSesionDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "¿Cerrar sesión?",
+                    text = stringResource(id = R.string.micuenta_confirmar_cerrar_sesion_title),
                     color = lightText,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
                 Spacer(Modifier.height(11.dp))
                 Text(
-                    text = "¿Estás seguro que quieres cerrar sesión?",
+                    text = stringResource(id = R.string.micuenta_confirmar_cerrar_sesion_message),
                     color = mutedText,
                     fontSize = 15.sp
                 )
@@ -617,7 +645,7 @@ private fun CustomCerrarSesionDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            "SI",
+                            stringResource(id = R.string.micuenta_si_button),
                             color = rojo,
                             fontWeight = FontWeight.Bold
                         )
@@ -633,7 +661,7 @@ private fun CustomCerrarSesionDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            "Cancelar",
+                            stringResource(id = R.string.gen_cancelar),
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold
                         )

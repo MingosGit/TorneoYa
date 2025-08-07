@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +35,7 @@ import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
@@ -126,19 +128,19 @@ fun UsuarioScreen(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Cambiar foto de perfil") },
-            text = { Text("¿Quieres seleccionar una foto de tu galería?") },
+            title = { Text(stringResource(id = R.string.usuario_cambiar_foto_perfil_title)) },
+            text = { Text(stringResource(id = R.string.usuario_cambiar_foto_perfil_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDialog = false
                     selectImageLauncher.launch("image/*")
                 }) {
-                    Text("Sí")
+                    Text(stringResource(id = R.string.usuario_si))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text("No")
+                    Text(stringResource(id = R.string.usuario_no))
                 }
             }
         )
@@ -189,13 +191,13 @@ fun UsuarioScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 18.dp), // IGUAL QUE AmigosScreen
+                    .padding(horizontal = 18.dp, vertical = 18.dp),
 
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
                 Text(
-                    "Perfil",
+                    stringResource(id = R.string.usuario_perfil_title),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
@@ -223,7 +225,7 @@ fun UsuarioScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Cerrar sesión",
+                            text = stringResource(id = R.string.usuario_cerrar_sesion_button),
                             color = rojo,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
@@ -252,7 +254,7 @@ fun UsuarioScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = "Ajustes",
+                        contentDescription = stringResource(id = R.string.usuario_ajustes_desc),
                         tint = Color(0xFF8F5CFF),
                         modifier = Modifier.size(25.dp)
                     )
@@ -261,7 +263,6 @@ fun UsuarioScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Justo antes, recoge el avatar del GlobalUserViewModel
             val avatar by globalUserViewModel.avatar.collectAsState()
 
             Box(
@@ -284,7 +285,7 @@ fun UsuarioScreen(
                         if (sesionOnlineActiva) {
                             baseModifier.clickable { navController.navigate("avatar") }
                         } else {
-                            baseModifier // sin clickable
+                            baseModifier
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -298,7 +299,7 @@ fun UsuarioScreen(
                 if (avatarRes != 0) {
                     Image(
                         painter = painterResource(id = avatarRes),
-                        contentDescription = "Avatar",
+                        contentDescription = stringResource(id = R.string.usuario_avatar_desc),
                         modifier = Modifier
                             .size(110.dp)
                             .clip(CircleShape)
@@ -308,21 +309,18 @@ fun UsuarioScreen(
                 }
             }
 
-
-
-
             Spacer(modifier = Modifier.height(16.dp))
 
             if (sesionOnlineActiva) {
                 Text(
-                    text = if (!nombreUsuarioOnline.isNullOrBlank()) "Hola, $nombreUsuarioOnline" else "Hola",
+                    text = if (!nombreUsuarioOnline.isNullOrBlank()) "${stringResource(id = R.string.usuario_hola)}, $nombreUsuarioOnline" else stringResource(id = R.string.usuario_hola),
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
                 )
             } else {
                 Text(
-                    text = "Bienvenido",
+                    text = stringResource(id = R.string.usuario_bienvenido),
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
@@ -335,7 +333,7 @@ fun UsuarioScreen(
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "Sin sesión online",
+                        text = stringResource(id = R.string.usuario_sin_sesion_online),
                         fontSize = 13.sp,
                         color = mutedText,
                         fontWeight = FontWeight.SemiBold
@@ -343,10 +341,8 @@ fun UsuarioScreen(
                 }
             }
 
-            // ====== NUEVO: BLOQUE ESTADÍSTICAS DE GOLES Y ASISTENCIAS ======
             if (sesionOnlineActiva) {
                 Spacer(modifier = Modifier.height(20.dp))
-                // Sustituye el Card de estadísticas por este Box para tener el borde gradiente igual que los botones:
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.92f)
@@ -367,7 +363,7 @@ fun UsuarioScreen(
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Goles", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.usuario_goles_label), color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     goles?.toString() ?: "-",
                                     color = Color.White,
@@ -376,7 +372,7 @@ fun UsuarioScreen(
                                 )
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Asistencias", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.usuario_asistencias_label), color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     asistencias?.toString() ?: "-",
                                     color = Color.White,
@@ -385,7 +381,7 @@ fun UsuarioScreen(
                                 )
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Promedio", color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.usuario_promedio_label), color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     if (promedioGoles != null) String.format("%.2f", promedioGoles) else "-",
                                     color = Color.White,
@@ -400,7 +396,7 @@ fun UsuarioScreen(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "Partidos jugados: $partidosJugados",
+                                    text = stringResource(id = R.string.usuario_partidos_jugados_prefix) + partidosJugados.toString(),
                                     color = mutedText,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
@@ -410,9 +406,7 @@ fun UsuarioScreen(
                         }
                     }
                 }
-
             }
-            // ===============================================================
 
             Spacer(modifier = Modifier.height(26.dp))
 
@@ -445,7 +439,7 @@ fun UsuarioScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "Iniciar sesión",
+                            stringResource(id = R.string.gen_iniciar_sesion),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -473,7 +467,7 @@ fun UsuarioScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "Crear cuenta",
+                            stringResource(id = R.string.gen_crear_cuenta),
                             color = TorneoYaPalette.blue,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 16.sp
@@ -485,6 +479,7 @@ fun UsuarioScreen(
         }
     }
 }
+
 @Composable
 private fun CustomCerrarSesionDialog(
     onConfirm: () -> Unit,
@@ -516,14 +511,14 @@ private fun CustomCerrarSesionDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "¿Cerrar sesión?",
+                    text = stringResource(id = R.string.usuario_confirmar_cerrar_sesion_title),
                     color = lightText,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
                 Spacer(Modifier.height(11.dp))
                 Text(
-                    text = "¿Estás seguro que quieres cerrar sesión?",
+                    text = stringResource(id = R.string.usuario_confirmar_cerrar_sesion_message),
                     color = mutedText,
                     fontSize = 15.sp
                 )
@@ -542,7 +537,7 @@ private fun CustomCerrarSesionDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            "SI",
+                            stringResource(id = R.string.usuario_si_button),
                             color = rojo,
                             fontWeight = FontWeight.Bold
                         )
@@ -558,7 +553,7 @@ private fun CustomCerrarSesionDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            "Cancelar",
+                            stringResource(id = R.string.gen_cancelar),
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold
                         )

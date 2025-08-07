@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">TorneoYa</string>
+    <string name="splash_app_name">TorneoYa</string>
+    <string name="splash_iniciando_sesion">Iniciando sesión...</string>
+    <string name="splash_error_conexion">Error de conexión. Intenta de nuevo.</string>
 
     <!-- ===== GENERALES ===== -->
     <string name="gen_iniciar_sesion">Iniciar sesión</string>
@@ -319,6 +322,51 @@
     <string name="login_success_message">¡Sesión iniciada correctamente!</string>
     <string name="login_reset_success">Correo de recuperación enviado. Revisa tu email.</string>
 
+    <!--- ===== MI CUENTA SCREEN ===== -->
+    <string name="micuenta_title">Mi Cuenta</string>
+    <string name="micuenta_email_content_description">Email</string>
+    <string name="micuenta_nombre_de_usuario_label">Nombre de usuario</string>
+    <string name="micuenta_cambiar_label">Cambiar</string>
+    <string name="micuenta_nuevo_nombre_de_usuario_label">Nuevo nombre de usuario</string>
+    <string name="micuenta_restablecer_contraseña_label">Restablecer contraseña</string>
+    <string name="micuenta_restablecer_contraseña_enviando">Te enviaremos un correo de restablecimiento</string>
+    <string name="micuenta_restablecer_contraseña_mensaje">Correo de restablecimiento de contraseña enviado.</string>
+    <string name="micuenta_cerrar_sesion_label">Cerrar sesión</string>
+    <string name="micuenta_cerrar_sesion_descripcion">Salir de tu cuenta y de todos tus dispositivos</string>
+    <string name="micuenta_eliminar_cuenta_label">Eliminar cuenta</string>
+    <string name="micuenta_eliminar_cuenta_descripcion">Esta acción es irreversible. Todos tus datos serán eliminados.</string>
+    <string name="micuenta_eliminar_cuenta_dialog_title">Eliminar cuenta</string>
+    <string name="micuenta_eliminar_cuenta_dialog_message">Se eliminarán todos tus partidos creados. ¿Deseas continuar?</string>
+    <string name="micuenta_confirmar_cerrar_sesion_title">¿Cerrar sesión?</string>
+    <string name="micuenta_confirmar_cerrar_sesion_message">¿Estás seguro que quieres cerrar sesión?</string>
+    <string name="micuenta_si_button">SI</string>
+    <!-- ===== REGISTER SCREEN ===== -->
+    <string name="register_crear_cuenta">Crear Cuenta</string>
+    <string name="register_unete_comunidad">Únete a la comunidad de TorneoYa</string>
+    <string name="register_nombre_usuario_label">Nombre de usuario único</string>
+    <string name="register_email_label">Email</string>
+    <string name="register_contraseña_label">Contraseña</string>
+    <string name="register_registrar_button">Registrar</string>
+    <string name="register_ya_tienes_cuenta">¿Ya tienes cuenta? Inicia sesión</string>
 
 
+    <!-- ===== USUARIO SCREEN ===== -->
+    <string name="usuario_perfil_title">Perfil</string>
+    <string name="usuario_cambiar_foto_perfil_title">Cambiar foto de perfil</string>
+    <string name="usuario_cambiar_foto_perfil_message">¿Quieres seleccionar una foto de tu galería?</string>
+    <string name="usuario_si">Sí</string>
+    <string name="usuario_no">No</string>
+    <string name="usuario_cerrar_sesion_button">Cerrar sesión</string>
+    <string name="usuario_ajustes_desc">Ajustes</string>
+    <string name="usuario_hola">Hola</string>
+    <string name="usuario_bienvenido">Bienvenido</string>
+    <string name="usuario_sin_sesion_online">Sin sesión online</string>
+    <string name="usuario_goles_label">Goles</string>
+    <string name="usuario_asistencias_label">Asistencias</string>
+    <string name="usuario_promedio_label">Promedio</string>
+    <string name="usuario_partidos_jugados_prefix">Partidos jugados: </string>
+    <string name="usuario_confirmar_cerrar_sesion_title">¿Cerrar sesión?</string>
+    <string name="usuario_confirmar_cerrar_sesion_message">¿Estás seguro que quieres cerrar sesión?</string>
+    <string name="usuario_si_button">SI</string>
+    <string name="usuario_avatar_desc">avatar</string>
 </resources>
