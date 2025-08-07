@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,11 +16,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
@@ -94,12 +99,36 @@ fun AjustesScreen(
             mutedText = Color(0xFFB7B7D1)
         )
     }
-
+    val modernBackground = Brush.verticalGradient(
+        0.0f to Color(0xFF1B1D29),
+        0.28f to Color(0xFF212442),
+        0.58f to Color(0xFF191A23),
+        1.0f to Color(0xFF14151B)
+    )
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = R.string.ajustes_title), color = lightText, fontWeight = FontWeight.Bold) },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        GradientBorderedIconButton(
+                            icon = Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            onClick = { navController.popBackStack() },
+                            gradient = Brush.horizontalGradient(listOf(Color(0xFF296DFF), Color(0xFF8F5CFF)))
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            stringResource(id = R.string.ajustes_title),
+                            color = lightText,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 28.sp
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 )
@@ -109,73 +138,102 @@ fun AjustesScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
-                .padding(innerPadding)
+                .background(modernBackground)
         ) {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(top = innerPadding.calculateTopPadding())
             ) {
-                itemsIndexed(opciones) { i, opcion ->
-                    val leftColor = leftColors[i % leftColors.size]
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(4.dp, cardShape)
-                            .clip(cardShape)
-                            .background(cardBg)
-                            .border(
-                                width = 2.dp,
-                                brush = Brush.horizontalGradient(listOf(leftColor, rightColor)),
-                                shape = cardShape
-                            )
-                            .clickable {
-                                when (opcion) {
-                                    miCuentaStr -> {
-                                        if (sesionOnlineActiva) {
-                                            navController.navigate("mi_cuenta")
-                                        } else {
-                                            mostrarAlerta = true
-                                        }
-                                    }
-                                    miCuentaLocalStr -> {
-                                        navController.navigate("cuenta_local")
-                                    }
-                                    idiomaStr -> {
-                                        navController.navigate("idioma_screen")
-                                    }
-                                    // Otros casos pueden añadirse aquí
-                                }
-                            },
-                        color = cardBg,
-                        tonalElevation = 0.dp
-                    ) {
-                        Box(
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    itemsIndexed(opciones) { i, opcion ->
+                        val leftColor = leftColors[i % leftColors.size]
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 22.dp, horizontal = 20.dp),
-                            contentAlignment = Alignment.CenterStart
+                                .shadow(4.dp, cardShape)
+                                .clip(cardShape)
+                                .background(cardBg)
+                                .border(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(listOf(leftColor, rightColor)),
+                                    shape = cardShape
+                                )
+                                .clickable {
+                                    when (opcion) {
+                                        miCuentaStr -> {
+                                            if (sesionOnlineActiva) {
+                                                navController.navigate("mi_cuenta")
+                                            } else {
+                                                mostrarAlerta = true
+                                            }
+                                        }
+                                        miCuentaLocalStr -> {
+                                            navController.navigate("cuenta_local")
+                                        }
+                                        idiomaStr -> {
+                                            navController.navigate("idioma_screen")
+                                        }
+                                        // Otros casos pueden añadirse aquí
+                                    }
+                                },
+                            color = cardBg,
+                            tonalElevation = 0.dp
                         ) {
-                            Text(
-                                text = opcion,
-                                fontSize = 17.sp,
-                                color = lightText,
-                                fontWeight = FontWeight.Medium
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 22.dp, horizontal = 20.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Text(
+                                    text = opcion,
+                                    fontSize = 17.sp,
+                                    color = lightText,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun GradientBorderedIconButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    gradient: Brush,
+    size: Dp = 38.dp,
+    iconSize: Dp = 21.dp
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .border(
+                width = 2.5.dp,
+                brush = gradient,
+                shape = CircleShape
+            )
+            .background(Color.Transparent)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            icon,
+            contentDescription = contentDescription,
+            tint = Color.White,
+            modifier = Modifier.size(iconSize)
+        )
     }
 }
 
@@ -190,16 +248,13 @@ private fun CustomAjustesAlertDialog(
     lightText: Color,
     mutedText: Color
 ) {
+
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp)
-                .border(
-                    width = 2.dp,
-                    brush = Brush.horizontalGradient(listOf(blue, violet)),
-                    shape = RoundedCornerShape(18.dp)
-                )
+
                 .clip(RoundedCornerShape(18.dp))
                 .background(background)
         ) {
@@ -211,8 +266,8 @@ private fun CustomAjustesAlertDialog(
                 Text(
                     stringResource(id = R.string.ajustes_dialog_login_title),
                     color = lightText,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
                 )
                 Spacer(Modifier.height(11.dp))
                 Text(
