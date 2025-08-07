@@ -2,7 +2,6 @@ package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
-import androidx.compose.material3.Icon
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,6 +127,7 @@ fun IdiomaScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 idiomas.forEachIndexed { index, idioma ->
+                    val seleccionado = currentLocale.value == languageCodes[index]
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -176,7 +176,6 @@ fun IdiomaScreen(
                                     )
                                 )
                                 .clickable {
-                                    // Guarda el idioma en SharedPreferences
                                     val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                                     sharedPref.edit().putString("app_language", languageCodes[index]).apply()
 
@@ -193,12 +192,40 @@ fun IdiomaScreen(
                                     .padding(vertical = 22.dp, horizontal = 17.dp),
                                 contentAlignment = Alignment.CenterStart
                             ) {
-                                Text(
-                                    text = idioma,
-                                    fontSize = 17.sp,
-                                    color = Color(0xFFF7F7FF),
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = idioma,
+                                        fontSize = 17.sp,
+                                        color = Color(0xFFF7F7FF),
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (seleccionado) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(26.dp)
+                                                .border(
+                                                    width = 2.dp,
+                                                    brush = Brush.horizontalGradient(
+                                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                                    ),
+                                                    shape = CircleShape
+                                                )
+                                                .background(Color.Transparent),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = "Seleccionado",
+                                                tint = TorneoYaPalette.blue,
+                                                modifier = Modifier.size(17.dp)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
