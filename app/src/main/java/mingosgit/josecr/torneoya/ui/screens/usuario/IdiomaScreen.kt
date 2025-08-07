@@ -1,5 +1,6 @@
 package mingosgit.josecr.torneoya.ui.screens.usuario
 
+import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -181,6 +182,7 @@ fun IdiomaScreen(
 
                                     currentLocale.value = languageCodes[index]
                                     onLanguageChanged()
+                                    (context as? Activity)?.recreate()
                                 },
                             color = Color.Transparent,
                             shadowElevation = 0.dp
