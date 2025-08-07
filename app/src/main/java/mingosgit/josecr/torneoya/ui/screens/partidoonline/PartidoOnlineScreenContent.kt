@@ -529,7 +529,7 @@ fun PartidoOnlineScreenContent(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                "${sortOption} ${if (ascending) stringResource(id = R.string.ponline_ascendente) else stringResource(id = R.string.ponline_descendente)}",
+                                "${stringResource(id = sortOption)} ${if (ascending) stringResource(id = R.string.ponline_ascendente) else stringResource(id = R.string.ponline_descendente)}",
                                 fontWeight = FontWeight.Bold,
                                 color = TorneoYaPalette.blue
                             )
