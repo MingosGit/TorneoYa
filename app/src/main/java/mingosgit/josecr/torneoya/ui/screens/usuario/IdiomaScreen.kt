@@ -1,5 +1,7 @@
 package mingosgit.josecr.torneoya.ui.screens.usuario
 
+import android.content.Context
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,18 +11,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,17 +30,30 @@ import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import androidx.compose.material3.Icon
+import java.util.Locale
+
+private fun setLocale(context: Context, language: String): Context {
+    val locale = Locale(language)
+    Locale.setDefault(locale)
+    val config = Configuration(context.resources.configuration)
+    config.setLocale(locale)
+    return context.createConfigurationContext(config)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IdiomaScreen(navController: NavController) {
     val cardShape = RoundedCornerShape(17.dp)
+    val context = LocalContext.current
+    val currentLocale = remember { mutableStateOf(Locale.getDefault().language) }
 
     val idiomas = listOf(
         stringResource(id = R.string.idioma_espanol),
         stringResource(id = R.string.idioma_catala),
         stringResource(id = R.string.idioma_english)
     )
+
+    val languageCodes = listOf("es", "ca", "en")
 
     val banderas = listOf(
         R.drawable.flag_es,
@@ -123,7 +136,6 @@ fun IdiomaScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Circulo bandera SIN margen (la imagen ocupa TODO el espacio)
                         Box(
                             modifier = Modifier
                                 .size(38.dp)
@@ -151,7 +163,6 @@ fun IdiomaScreen(navController: NavController) {
                             )
                         }
                         Spacer(Modifier.width(13.dp))
-                        // Tarjeta idioma
                         Surface(
                             modifier = Modifier
                                 .weight(1f)
@@ -169,7 +180,10 @@ fun IdiomaScreen(navController: NavController) {
                                     )
                                 )
                                 .clickable {
-                                    // TODO: Cambiar idioma aquí
+                                    val newContext = setLocale(context, languageCodes[index])
+                                    currentLocale.value = languageCodes[index]
+                                    // Recargar la activity para aplicar el cambio (depende de tu navegación)
+                                    // Aquí debes implementar cómo recargar o reiniciar la pantalla para que refleje el cambio.
                                 },
                             color = Color.Transparent,
                             shadowElevation = 0.dp

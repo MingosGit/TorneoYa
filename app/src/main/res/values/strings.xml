@@ -370,9 +370,10 @@
     <string name="usuario_si_button">SI</string>
     <string name="usuario_avatar_desc">avatar</string>
 
-    <!-- IDIOMA -->
+
     <string name="idioma_espanol">Español</string>
     <string name="idioma_catala">Català</string>
     <string name="idioma_english">English</string>
+
 
 </resources>
