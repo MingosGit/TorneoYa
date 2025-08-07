@@ -150,7 +150,14 @@ fun NavGraph(
             )
         }
         composable("idioma_screen") {
-            IdiomaScreen(navController)
+            val context = LocalContext.current
+            IdiomaScreen(
+                navController = navController,
+                onLanguageChanged = {
+                    val activity = context as ComponentActivity
+                    activity.recreate()
+                }
+            )
         }
         composable("perfil_amigo/{amigoUid}") { backStackEntry ->
             val amigoUid = backStackEntry.arguments?.getString("amigoUid") ?: ""

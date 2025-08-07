@@ -32,17 +32,12 @@ import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import androidx.compose.material3.Icon
 import java.util.Locale
 
-private fun setLocale(context: Context, language: String): Context {
-    val locale = Locale(language)
-    Locale.setDefault(locale)
-    val config = Configuration(context.resources.configuration)
-    config.setLocale(locale)
-    return context.createConfigurationContext(config)
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IdiomaScreen(navController: NavController) {
+fun IdiomaScreen(
+    navController: NavController,
+    onLanguageChanged: () -> Unit
+) {
     val cardShape = RoundedCornerShape(17.dp)
     val context = LocalContext.current
     val currentLocale = remember { mutableStateOf(Locale.getDefault().language) }
@@ -180,10 +175,12 @@ fun IdiomaScreen(navController: NavController) {
                                     )
                                 )
                                 .clickable {
-                                    val newContext = setLocale(context, languageCodes[index])
+                                    // Guarda el idioma en SharedPreferences
+                                    val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                                    sharedPref.edit().putString("app_language", languageCodes[index]).apply()
+
                                     currentLocale.value = languageCodes[index]
-                                    // Recargar la activity para aplicar el cambio (depende de tu navegación)
-                                    // Aquí debes implementar cómo recargar o reiniciar la pantalla para que refleje el cambio.
+                                    onLanguageChanged()
                                 },
                             color = Color.Transparent,
                             shadowElevation = 0.dp

@@ -1,5 +1,7 @@
 package mingosgit.josecr.torneoya
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,27 +15,26 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import mingosgit.josecr.torneoya.data.database.AppDatabase
-import mingosgit.josecr.torneoya.repository.UsuarioLocalRepository
-import mingosgit.josecr.torneoya.repository.PartidoRepository
-import mingosgit.josecr.torneoya.repository.EquipoRepository
-import mingosgit.josecr.torneoya.repository.JugadorRepository
-import mingosgit.josecr.torneoya.repository.PartidoEquipoJugadorRepository
-import mingosgit.josecr.torneoya.ui.navigation.BottomNavigationBar
-import mingosgit.josecr.torneoya.ui.navigation.NavGraph
-import mingosgit.josecr.torneoya.ui.navigation.BottomNavItem
+import mingosgit.josecr.torneoya.repository.*
+import mingosgit.josecr.torneoya.ui.navigation.*
 import mingosgit.josecr.torneoya.ui.theme.ModernTorneoYaTheme
-import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel
-import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModel
-import mingosgit.josecr.torneoya.viewmodel.partido.PartidoViewModelFactory
-import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.*
+import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.ui.screens.home.HomeViewModel
 import androidx.core.view.WindowCompat
 import android.graphics.Color as AndroidColor
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var homeViewModel: HomeViewModel
+
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val language = sharedPref.getString("app_language", "es") ?: "es"
+        val localeUpdatedContext = updateLocale(newBase, language)
+        super.attachBaseContext(localeUpdatedContext)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_TorneoYa)
@@ -121,5 +122,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun updateLocale(context: Context, languageCode: String): Context {
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        return context.createConfigurationContext(config)
     }
 }
