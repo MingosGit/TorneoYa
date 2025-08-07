@@ -64,7 +64,7 @@ fun VisualizarPartidoOnlineScreen(
     val dialogStopViewingTitle = stringResource(id = R.string.ponline_dialog_stop_viewing_title)
     val dialogStopViewingMsg = stringResource(id = R.string.ponline_dialog_stop_viewing_message)
     val dialogStopViewingConfirm = stringResource(id = R.string.ponline_dialog_stop_viewing_confirm)
-    val btnOk = stringResource(id = R.string.gen_cerrar) // Usamos el string genérico "Cerrar" para OK
+    val btnOk = stringResource(id = R.string.gen_cerrar)
 
     LaunchedEffect(partidoUid, usuarioUid) {
         val firestore = FirebaseFirestore.getInstance()
@@ -223,8 +223,7 @@ fun VisualizarPartidoOnlineScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = innerPadding.calculateTopPadding()) // SOLO TOP
-
+                        .padding(top = innerPadding.calculateTopPadding())
                 ) {
                     VisualizarPartidoOnlineContent(
                         modifier = Modifier.fillMaxSize(),
@@ -254,48 +253,171 @@ fun VisualizarPartidoOnlineScreen(
                             )
                         }
                     }
+                }
+            }
+        )
 
-                    if (showPermisoDialog) {
-                        AlertDialog(
-                            onDismissRequest = { showPermisoDialog = false },
-                            confirmButton = {
-                                TextButton(onClick = { showPermisoDialog = false }) {
-                                    Text(btnOk, color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
-                                }
-                            },
-                            title = { Text(dialogNoPermTitle, color = Color.White, fontWeight = FontWeight.Black) },
-                            text = { Text(dialogNoPermMsg, color = Color(0xFFB7B7D1)) },
-                            containerColor = Color(0xFF23273D),
-                            shape = RoundedCornerShape(17.dp)
+        // ----------- POPUP PERMISOS -----------
+        if (showPermisoDialog) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(22.dp)
                         )
+                        .background(Color(0xFF23273D), shape = RoundedCornerShape(22.dp))
+                        .padding(horizontal = 24.dp, vertical = 26.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = dialogNoPermTitle,
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 21.sp
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = dialogNoPermMsg,
+                            color = Color(0xFFB7B7D1),
+                            fontSize = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(23.dp))
+                        Button(
+                            onClick = { showPermisoDialog = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+                            shape = RoundedCornerShape(13.dp),
+                            border = androidx.compose.foundation.BorderStroke(
+                                2.dp,
+                                Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                )
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        ) {
+                            Text(
+                                text = btnOk,
+                                color = TorneoYaPalette.blue,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
+                }
+            }
+        }
+        // ----------- FIN POPUP PERMISOS -----------
 
-                    if (showDejarDeVerDialog) {
-                        AlertDialog(
-                            onDismissRequest = { showDejarDeVerDialog = false },
-                            confirmButton = {
-                                TextButton(onClick = {
+        // ----------- POPUP DEJAR DE VISUALIZAR -----------
+        if (showDejarDeVerDialog) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            ),
+                            shape = RoundedCornerShape(22.dp)
+                        )
+                        .background(Color(0xFF23273D), shape = RoundedCornerShape(22.dp))
+                        .padding(horizontal = 24.dp, vertical = 26.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = dialogStopViewingTitle,
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 21.sp
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = dialogStopViewingMsg,
+                            color = Color(0xFFB7B7D1),
+                            fontSize = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(23.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Button(
+                                onClick = {
                                     vm.dejarDeVerPartido(usuarioUid) {
                                         showDejarDeVerDialog = false
                                         navController.popBackStack()
                                     }
-                                }) {
-                                    Text(dialogStopViewingConfirm, color = Color(0xFFFF7675), fontWeight = FontWeight.Bold)
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showDejarDeVerDialog = false }) {
-                                    Text(btnOk, color = Color(0xFF8F5CFF), fontWeight = FontWeight.Bold)
-                                }
-                            },
-                            title = { Text(dialogStopViewingTitle, color = Color.White, fontWeight = FontWeight.Black) },
-                            text = { Text(dialogStopViewingMsg, color = Color(0xFFB7B7D1)) },
-                            containerColor = Color(0xFF23273D),
-                            shape = RoundedCornerShape(17.dp)
-                        )
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+                                shape = RoundedCornerShape(13.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    2.dp,
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
+                                    )
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                            ) {
+                                Text(
+                                    text = dialogStopViewingConfirm,
+                                    color = Color(0xFFFF7675),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                            OutlinedButton(
+                                onClick = { showDejarDeVerDialog = false },
+                                modifier = Modifier.weight(1f),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    2.dp,
+                                    Brush.horizontalGradient(
+                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                    )
+                                ),
+                                shape = RoundedCornerShape(13.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = TorneoYaPalette.blue
+                                ),
+                                contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp)
+                            ) {
+                                Text(
+                                    btnOk,
+                                    color = TorneoYaPalette.blue,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
                     }
                 }
             }
-        )
+        }
+        // ----------- FIN POPUP DEJAR DE VISUALIZAR -----------
     }
 }
