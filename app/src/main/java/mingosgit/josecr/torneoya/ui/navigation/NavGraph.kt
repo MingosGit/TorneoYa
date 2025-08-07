@@ -40,7 +40,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.firebase.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
-import mingosgit.josecr.torneoya.ui.screens.ajustes.AjustesScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.AjustesScreen
 import mingosgit.josecr.torneoya.ui.screens.ajustes.MiCuentaScreen
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
@@ -52,6 +52,7 @@ import mingosgit.josecr.torneoya.ui.screens.avatar.AvatarScreen
 import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
 import mingosgit.josecr.torneoya.ui.screens.home.NotificacionesScreen
 import mingosgit.josecr.torneoya.ui.screens.perfilamigo.PerfilAmigoScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.IdiomaScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 
@@ -148,7 +149,9 @@ fun NavGraph(
                 usuarioUid = userUid
             )
         }
-
+        composable("idioma_screen") {
+            IdiomaScreen(navController)
+        }
         composable("perfil_amigo/{amigoUid}") { backStackEntry ->
             val amigoUid = backStackEntry.arguments?.getString("amigoUid") ?: ""
             PerfilAmigoScreen(navController, amigoUid)

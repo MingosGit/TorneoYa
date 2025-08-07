@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.ajustes
+package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,19 +27,18 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 private val cardShape = RoundedCornerShape(16.dp)
 
-// Paleta ordenada para las opciones
 private val leftColors = listOf(
-    Color(0xFF2ecc71), // Verde
-    Color(0xFF3498db), // Azul
-    Color(0xFFf1c40f), // Amarillo
-    Color(0xFFe67e22), // Naranja
-    Color(0xFF9b59b6), // Violeta
-    Color(0xFF34495e), // Azul oscuro
-    Color(0xFF16a085), // Verde azulado
-    Color(0xFFe74c3c), // Rojo
-    Color(0xFFf39c12), // Amarillo naranja
+    Color(0xFF2ecc71),
+    Color(0xFF3498db),
+    Color(0xFFf1c40f),
+    Color(0xFFe67e22),
+    Color(0xFF9b59b6),
+    Color(0xFF34495e),
+    Color(0xFF16a085),
+    Color(0xFFe74c3c),
+    Color(0xFFf39c12),
 )
-private val rightColor = Color(0xFF8F5CFF) // Violeta institucional
+private val rightColor = Color(0xFF8F5CFF)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +46,6 @@ fun AjustesScreen(
     navController: NavController,
     globalUserViewModel: GlobalUserViewModel
 ) {
-    // Obtener strings dentro del contexto composable
     val miCuentaStr = stringResource(id = R.string.ajustes_mi_cuenta)
     val miCuentaLocalStr = stringResource(id = R.string.ajustes_mi_cuenta_local)
     val idiomaStr = stringResource(id = R.string.ajustes_idioma)
@@ -152,6 +150,9 @@ fun AjustesScreen(
                                     miCuentaLocalStr -> {
                                         navController.navigate("cuenta_local")
                                     }
+                                    idiomaStr -> {
+                                        navController.navigate("idioma_screen")
+                                    }
                                     // Otros casos pueden añadirse aquí
                                 }
                             },
@@ -234,7 +235,7 @@ private fun CustomAjustesAlertDialog(
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 8.dp),
-                        contentPadding = PaddingValues(0.dp) // Elimina padding interno
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text(stringResource(id = R.string.gen_iniciar_sesion), color = violet, fontWeight = FontWeight.Bold)
