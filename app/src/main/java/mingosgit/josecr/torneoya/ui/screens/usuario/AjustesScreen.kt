@@ -175,6 +175,10 @@ fun AjustesScreen(
                                                 mostrarAlerta = true
                                             }
                                         }
+                                        creditosStr -> {
+                                            navController.navigate("creditos_screen")
+                                        }
+
                                         miCuentaLocalStr -> {
                                             navController.navigate("cuenta_local")
                                         }

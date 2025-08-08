@@ -35,12 +35,7 @@
     <string name="gen_crear_uno">Crear uno</string>
     <string name="gen_tu_cuenta"> tu cuenta...</string>"
     <!-- ===== FIN GENERALES ===== -->
-    <string name="amigos_err_self_add">No puedes agregarte a ti mismo.</string>
-    <string name="amigos_err_user_not_found">No existe ningún usuario con ese UID.</string>
-    <string name="amigos_err_invalid_user">Usuario no válido.</string>
-    <string name="amigos_err_search">Error al buscar usuario.</string>
-    <string name="amigos_err_already_sent">Ya has enviado solicitud a este usuario.</string>
-    <string name="amigos_err_send">Error enviando solicitud.</string>
+
     <!-- AmigosScreen -->
     <string name="amigossc_acceso_titulo">Acceso a Amigos</string>
     <string name="amigossc_acceso_desc">Inicia sesión para acceder a tu lista de amigos, enviar solicitudes y gestionar contactos.</string>
@@ -59,6 +54,12 @@
     <string name="amigossc_eliminar_confirm">¿Estás seguro que deseas eliminar a este amigo? Esta acción no se puede deshacer.</string>
     <string name="amigossc_opciones">Opciones</string>
     <string name="amigossc_solicitudes_desc">Ver solicitudes de amistad</string>
+    <string name="amigos_err_self_add">No puedes agregarte a ti mismo.</string>
+    <string name="amigos_err_user_not_found">No existe ningún usuario con ese UID.</string>
+    <string name="amigos_err_invalid_user">Usuario no válido.</string>
+    <string name="amigos_err_search">Error al buscar usuario.</string>
+    <string name="amigos_err_already_sent">Ya has enviado solicitud a este usuario.</string>
+    <string name="amigos_err_send">Error enviando solicitud.</string>
 
     <!-- ===== SOLICITUDES PENDIENTES SCREEN ===== -->
     <string name="solpensc_titulo">Solicitudes de amistad</string>
@@ -379,6 +380,21 @@
     <string name="usuario_si_button">SI</string>
     <string name="usuario_avatar_desc">avatar</string>
 
+    <!--- ===== CREDITOS SCREEN ===== -->
+    <string name="creditos_titulo">Créditos</string>
+    <string name="creditos_volver">Volver</string>
+    <string name="creditos_creado_por">Creado por:</string>
+    <string name="creditos_nombre_autor">Jose Candon Rubio</string>
+    <string name="creditos_agradecimiento">¡Gracias desde Cornellà por descargar y usar Torneo Ya!
+Disfruta del fútbol tanto como yo disfruté creando esta app para ti.</string>
+    <string name="creditos_github">GitHub: MingosGit</string>
+    <string name="creditos_github_url">https://github.com/MingosGit</string>
+    <string name="creditos_web_personal">Web personal</string>
+    <string name="creditos_web_personal_url">https://mingosgit.github.io/</string>
+    <string name="creditos_linkedin">LinkedIn</string>
+    <string name="creditos_linkedin_url">https://www.linkedin.com/in/jose-candon/</string>
+    <string name="creditos_email">Email: josecandonrubio@gmail.com</string>
+    <string name="creditos_email_url">mailto:josecandonrubio@gmail.com</string>
 
     <string name="idioma_espanol">Español</string>
     <string name="idioma_catala">Català</string>

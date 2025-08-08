@@ -55,6 +55,12 @@
     <string name="amigossc_eliminar_confirm">Estàs segur que vols eliminar aquest amic? Aquesta acció no es pot desfer.</string>
     <string name="amigossc_opciones">Opcions</string>
     <string name="amigossc_solicitudes_desc">Veure sol·licituds d`amistat</string>
+    <string name="amigos_err_self_add">No et pots afegir a tu mateix.</string>
+    <string name="amigos_err_user_not_found">No existeix cap usuari amb aquest UID.</string>
+    <string name="amigos_err_invalid_user">Usuari no vàlid.</string>
+    <string name="amigos_err_search">Error en cercar usuari.</string>
+    <string name="amigos_err_already_sent">Ja has enviat una sol·licitud a aquest usuari.</string>
+    <string name="amigos_err_send">Error en enviar la sol·licitud.</string>
 
     <!-- ===== SOL·LICITUDS PENDENTS SCREEN ===== -->
     <string name="solpensc_titulo">Sol·licituds d`amistat</string>
@@ -375,6 +381,24 @@
     <string name="usuario_confirmar_cerrar_sesion_message">Estàs segur que vols tancar sessió?</string>
     <string name="usuario_si_button">SI</string>
     <string name="usuario_avatar_desc">avatar</string>
+
+
+    <!--- ===== CREDITOS SCREEN ===== -->
+    <string name="creditos_titulo">Crèdits</string>
+    <string name="creditos_volver">Tornar</string>
+    <string name="creditos_creado_por">Creat per:</string>
+    <string name="creditos_nombre_autor">Jose Candon Rubio</string>
+    <string name="creditos_agradecimiento">Gràcies des de Cornellà per descarregar i utilitzar Torneo Ya!
+Gaudeix del futbol tant com jo he gaudit creant aquesta aplicació per a tu.</string>
+    <string name="creditos_github">GitHub: MingosGit</string>
+    <string name="creditos_github_url">https://github.com/MingosGit</string>
+    <string name="creditos_web_personal">Web personal</string>
+    <string name="creditos_web_personal_url">https://mingosgit.github.io/</string>
+    <string name="creditos_linkedin">LinkedIn</string>
+    <string name="creditos_linkedin_url">https://www.linkedin.com/in/jose-candon/</string>
+    <string name="creditos_email">Email: josecandonrubio@gmail.com</string>
+    <string name="creditos_email_url">mailto:josecandonrubio@gmail.com</string>
+
 
     <string name="idioma_espanol">Español</string>
     <string name="idioma_catala">Català</string>
