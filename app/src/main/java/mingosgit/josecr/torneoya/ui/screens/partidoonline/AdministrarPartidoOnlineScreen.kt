@@ -32,6 +32,7 @@ import mingosgit.josecr.torneoya.data.firebase.*
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import java.util.Calendar
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
@@ -76,6 +77,12 @@ fun AdministrarPartidoOnlineScreen(
     var pickedHour by remember { mutableStateOf(horaEditable) }
 
     var esCreador by remember { mutableStateOf(false) }
+
+    // NUEVO: diálogo y estado para eliminar partido
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var deleting by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val repo = remember { PartidoFirebaseRepository() }
 
     val jugadoresManualA = partido?.nombresManualEquipoA?.map { nombre ->
         JugadorFirebase(uid = "", nombre = nombre, email = "")
@@ -608,6 +615,64 @@ fun AdministrarPartidoOnlineScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
+                // ======== NUEVA SECCIÓN: ELIMINAR PARTIDO (SOLO CREADOR) ========
+                if (esCreador) {
+                    item {
+                        Divider(color = Color(0xFF353659))
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = "Eliminar Partido",
+                            color = Color(0xFFF25A6D),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        ModernDangerButton(
+                            onClick = { showDeleteDialog = true },
+                            enabled = !deleting,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(if (deleting) "Eliminando..." else "Eliminar Partido")
+                        }
+                        Spacer(Modifier.height(24.dp))
+                    }
+                }
+
+                if (showDeleteDialog && esCreador) {
+                    item {
+                        AlertDialog(
+                            onDismissRequest = { if (!deleting) showDeleteDialog = false },
+                            title = { Text("Eliminar partido", color = Color.White, fontWeight = FontWeight.Bold) },
+                            text = { Text("Se eliminará el partido, todos los jugadores manuales, comentarios, encuestas y votos asociados. Esta acción no se puede deshacer.", color = Color(0xFFB7B7D1)) },
+                            containerColor = Color(0xFF1C1D25),
+                            confirmButton = {
+                                TextButton(
+                                    enabled = !deleting,
+                                    onClick = {
+                                        if (!esCreador) return@TextButton
+                                        deleting = true
+                                        scope.launch {
+                                            try {
+                                                repo.eliminarPartidoCompleto(partidoUid, usuarioUid)
+                                                showDeleteDialog = false
+                                                navController?.popBackStack()
+                                            } catch (e: Exception) {
+                                                deleting = false
+                                            }
+                                        }
+                                    }
+                                ) { Text("Eliminar definitivamente", color = Color(0xFFF25A6D)) }
+                            },
+                            dismissButton = {
+                                OutlinedButton(enabled = !deleting, onClick = { showDeleteDialog = false }) {
+                                    Text("Cancelar", color = TorneoYaPalette.violet)
+                                }
+                            }
+                        )
+                    }
+                }
+
                 if (showDialog) {
                     item {
                         AlertDialog(
@@ -628,7 +693,74 @@ fun AdministrarPartidoOnlineScreen(
                         )
                     }
                 }
+
+                if (showDeleteDialog && esCreador) {
+                    item {
+                        AlertDialog(
+                            onDismissRequest = { if (!deleting) showDeleteDialog = false },
+                            title = { Text("Eliminar partido", color = Color.White, fontWeight = FontWeight.Bold) },
+                            text = { Text("Se eliminará el partido, todos los jugadores manuales, comentarios, encuestas y votos asociados. Esta acción no se puede deshacer.", color = Color(0xFFB7B7D1)) },
+                            containerColor = Color(0xFF1C1D25),
+                            confirmButton = {
+                                TextButton(
+                                    enabled = !deleting,
+                                    onClick = {
+                                        if (!esCreador) return@TextButton
+                                        deleting = true
+                                        scope.launch {
+                                            try {
+                                                repo.eliminarPartidoCompleto(partidoUid, usuarioUid)
+                                                showDeleteDialog = false
+                                                navController?.popBackStack()
+                                            } catch (e: Exception) {
+                                                deleting = false
+                                                // Manejar error si es necesario
+                                            }
+                                        }
+                                    }
+                                ) { Text("Eliminar definitivamente", color = Color(0xFFF25A6D)) }
+                            },
+                            dismissButton = {
+                                OutlinedButton(enabled = !deleting, onClick = { showDeleteDialog = false }) {
+                                    Text("Cancelar", color = TorneoYaPalette.violet)
+                                }
+                            }
+                        )
+                    }
+                }
             }
+            if (showDeleteDialog && esCreador) {
+                AlertDialog(
+                    onDismissRequest = { if (!deleting) showDeleteDialog = false },
+                    title = { Text("Eliminar partido", color = Color.White, fontWeight = FontWeight.Bold) },
+                    text = { Text("Se eliminará el partido, todos los jugadores manuales, comentarios, encuestas y votos asociados. Esta acción no se puede deshacer.", color = Color(0xFFB7B7D1)) },
+                    containerColor = Color(0xFF1C1D25),
+                    confirmButton = {
+                        TextButton(
+                            enabled = !deleting,
+                            onClick = {
+                                if (!esCreador) return@TextButton
+                                deleting = true
+                                scope.launch {
+                                    try {
+                                        repo.eliminarPartidoCompleto(partidoUid, usuarioUid)
+                                        showDeleteDialog = false
+                                        navController?.popBackStack()
+                                    } catch (e: Exception) {
+                                        deleting = false
+                                    }
+                                }
+                            }
+                        ) { Text("Eliminar definitivamente", color = Color(0xFFF25A6D)) }
+                    },
+                    dismissButton = {
+                        OutlinedButton(enabled = !deleting, onClick = { showDeleteDialog = false }) {
+                            Text("Cancelar", color = TorneoYaPalette.violet)
+                        }
+                    }
+                )
+            }
+
         }
     }
 }
@@ -701,6 +833,45 @@ fun ModernOutlineButton(
         ) {
             CompositionLocalProvider(
                 LocalContentColor provides TorneoYaPalette.blue.copy(alpha = if (enabled) 1f else 0.45f),
+                content = { content() }
+            )
+        }
+    }
+}
+
+// Botón de peligro (rojo)
+@Composable
+fun ModernDangerButton(
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit
+) {
+    Box(
+        modifier = modifier
+            .height(45.dp)
+            .clip(RoundedCornerShape(13.dp))
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(Color(0xFFF25A6D), Color(0xFFFF8DA1))
+                ),
+                shape = RoundedCornerShape(13.dp)
+            )
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF3A1E25), Color(0xFF2A171C))
+                )
+            )
+            .clickable(enabled = enabled) { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CompositionLocalProvider(
+                LocalContentColor provides if (enabled) Color(0xFFFFDCE2) else Color(0x66FFDCE2),
                 content = { content() }
             )
         }

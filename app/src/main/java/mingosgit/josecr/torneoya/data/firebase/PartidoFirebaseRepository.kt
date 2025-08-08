@@ -3,6 +3,7 @@ package mingosgit.josecr.torneoya.data.firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.tasks.await
+import kotlin.math.min
 
 class PartidoFirebaseRepository {
     private val db = FirebaseFirestore.getInstance()
@@ -280,5 +281,86 @@ class PartidoFirebaseRepository {
             "usuarioUid" to usuarioUid
         )
         db.collection("encuesta_votos").add(datos).await()
+    }
+
+    // ====================== ELIMINACIÓN COMPLETA =========================
+
+    /**
+     * Solo el creador puede eliminar definitivamente el partido.
+     * Elimina el partido y TODO su contenido asociado:
+     * - Comentarios y sus votos
+     * - Encuestas y sus votos
+     * - Eventos y goleadores relacionados (si existen)
+     * - Finalmente el documento del partido
+     */
+    suspend fun eliminarPartidoCompleto(partidoUid: String, solicitanteUid: String) {
+        // Verificar que el solicitante es el creador
+        val partidoSnap = db.collection("partidos").document(partidoUid).get().await()
+        val creadorUid = partidoSnap.getString("creadorUid") ?: ""
+        if (creadorUid.isBlank() || creadorUid != solicitanteUid) {
+            throw SecurityException("Solo el creador del partido puede eliminarlo.")
+        }
+
+        // 1) Borrar comentarios y sus votos
+        val comentarios = db.collection("comentarios")
+            .whereEqualTo("partidoUid", partidoUid)
+            .get().await()
+
+        for (comentario in comentarios.documents) {
+            val comentarioId = comentario.id
+            val votos = db.collection("comentario_votos")
+                .whereEqualTo("comentarioUid", comentarioId)
+                .get().await()
+            deleteDocsInChunks(votos.documents.map { it.reference.path })
+            comentario.reference.delete().await()
+        }
+
+        // 2) Borrar encuestas y sus votos
+        val encuestas = db.collection("encuestas")
+            .whereEqualTo("partidoUid", partidoUid)
+            .get().await()
+
+        for (encuesta in encuestas.documents) {
+            val encuestaId = encuesta.id
+            val votos = db.collection("encuesta_votos")
+                .whereEqualTo("encuestaUid", encuestaId)
+                .get().await()
+            deleteDocsInChunks(votos.documents.map { it.reference.path })
+            encuesta.reference.delete().await()
+        }
+
+        // 3) Borrar eventos del partido si existen
+        val eventos = db.collection("eventos")
+            .whereEqualTo("partidoUid", partidoUid)
+            .get().await()
+        deleteDocsInChunks(eventos.documents.map { it.reference.path })
+
+//        // 4) Borrar goleadores del partido si existen
+//        val goles = db.collection("goleadores")
+//            .whereEqualTo("partidoUid", partidoUid)
+//            .get().await()
+//        deleteDocsInChunks(goles.documents.map { it.reference.path })
+
+        // 5) Borrar el partido
+        db.collection("partidos").document(partidoUid).delete().await()
+    }
+
+    // --- Helpers ---
+
+    /**
+     * Borra documentos a partir de sus rutas absolutas, troceando en lotes de 450 (límite de Firestore: 500 por batch).
+     */
+    private suspend fun deleteDocsInChunks(paths: List<String>) {
+        var start = 0
+        val chunkSize = 450
+        while (start < paths.size) {
+            val end = min(start + chunkSize, paths.size)
+            val batch = db.batch()
+            for (p in paths.subList(start, end)) {
+                batch.delete(db.document(p))
+            }
+            batch.commit().await()
+            start = end
+        }
     }
 }
