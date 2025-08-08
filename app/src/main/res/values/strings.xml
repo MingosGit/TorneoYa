@@ -35,7 +35,12 @@
     <string name="gen_crear_uno">Crear uno</string>
     <string name="gen_tu_cuenta"> tu cuenta...</string>"
     <!-- ===== FIN GENERALES ===== -->
-
+    <string name="amigos_err_self_add">No puedes agregarte a ti mismo.</string>
+    <string name="amigos_err_user_not_found">No existe ningún usuario con ese UID.</string>
+    <string name="amigos_err_invalid_user">Usuario no válido.</string>
+    <string name="amigos_err_search">Error al buscar usuario.</string>
+    <string name="amigos_err_already_sent">Ya has enviado solicitud a este usuario.</string>
+    <string name="amigos_err_send">Error enviando solicitud.</string>
     <!-- AmigosScreen -->
     <string name="amigossc_acceso_titulo">Acceso a Amigos</string>
     <string name="amigossc_acceso_desc">Inicia sesión para acceder a tu lista de amigos, enviar solicitudes y gestionar contactos.</string>

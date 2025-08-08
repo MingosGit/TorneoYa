@@ -757,7 +757,7 @@ private fun BottomSheetContent(
             is AgregarAmigoViewModel.UiState.Error -> {
                 Spacer(Modifier.height(18.dp))
                 Text(
-                    (agregarUiState as AgregarAmigoViewModel.UiState.Error).mensaje,
+                    text = stringResource(id = (agregarUiState as AgregarAmigoViewModel.UiState.Error).resId),
                     color = Color.Red
                 )
             }
