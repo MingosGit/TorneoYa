@@ -4,6 +4,11 @@
     <string name="splash_iniciando_sesion">Iniciant sessió...</string>
     <string name="splash_error_conexion">Error de connexió. Torna-ho a provar.</string>
 
+
+    <string name="BottomNav_Home">Home</string>
+    <string name="BottomNav_Online">Partits</string>
+    <string name="BottomNav_Amigos">Amics</string>
+    <string name="BottomNav_Usuario">Usuari</string>
     <!-- ===== GENERALS ===== -->
     <string name="gen_iniciar_sesion">Iniciar sessió</string>
     <string name="gen_crear_cuenta">Crear compte</string>

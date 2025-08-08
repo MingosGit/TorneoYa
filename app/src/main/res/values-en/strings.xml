@@ -4,6 +4,12 @@
     <string name="splash_iniciando_sesion">Signing in...</string>
     <string name="splash_error_conexion">Connection error. Try again.</string>
 
+
+    <string name="BottomNav_Home">Home</string>
+    <string name="BottomNav_Online">Matches</string>
+    <string name="BottomNav_Amigos">Friends</string>
+    <string name="BottomNav_Usuario">User</string>
+
     <!-- ===== GENERAL ===== -->
     <string name="gen_iniciar_sesion">Sign In</string>
     <string name="gen_crear_cuenta">Create Account</string>

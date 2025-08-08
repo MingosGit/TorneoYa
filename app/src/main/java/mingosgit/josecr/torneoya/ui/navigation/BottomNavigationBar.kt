@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -70,12 +71,12 @@ fun BottomNavigationBar(
                 ) {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.title,
+                        contentDescription = stringResource(item.titleResId),
                         tint = color,
                         modifier = Modifier.size(26.dp)
                     )
                     Text(
-                        text = item.title,
+                        text = stringResource(item.titleResId),
                         color = color,
                         fontSize = if (selected) 13.sp else 12.sp,
                         style = if (selected) MaterialTheme.typography.labelLarge else MaterialTheme.typography.labelMedium,
