@@ -8,6 +8,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,31 +24,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 private val cardShape = RoundedCornerShape(16.dp)
-
-// Colores nuevos más agradables para la izquierda de los gradientes
-private val leftColors = listOf(
-    Color(0xFF4CAF50),  // verde más suave y brillante
-    Color(0xFF2196F3),  // azul limpio
-    Color(0xFFFFC107),  // ámbar cálido
-    Color(0xFFFF5722),  // naranja vibrante
-    Color(0xFF9C27B0),  // púrpura vivo
-    Color(0xFF455A64),  // azul grisáceo
-    Color(0xFF009688),  // verde azulado
-    Color(0xFFF44336),  // rojo intenso
-    Color(0xFFFF9800),  // naranja brillante
-)
-
-private val rightColor = Color(0xFF8F5CFF)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,10 +63,8 @@ fun AjustesScreen(
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
     var mostrarAlerta by remember { mutableStateOf(false) }
 
-    val lightText = Color(0xFFF7F7FF)
-    val mutedText = Color(0xFFB7B7D1)
-    val cardBg = Color(0xFF22243B)
-    val blue = Color(0xFF296DFF)
+    val colorScheme = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
 
     if (mostrarAlerta) {
         CustomAjustesAlertDialog(
@@ -94,19 +77,19 @@ fun AjustesScreen(
                 mostrarAlerta = false
                 navController.navigate("register")
             },
-            blue = TorneoYaPalette.blue,
-            violet = TorneoYaPalette.violet,
-            background = Color(0xFF22294A),
-            lightText = Color(0xFFF7F7FF),
-            mutedText = Color(0xFFB7B7D1)
+            blue = colorScheme.primary,
+            violet = colorScheme.secondary,
+            background = colorScheme.surfaceVariant,
+            lightText = colorScheme.onSurface,
+            mutedText = colorScheme.onSurfaceVariant
         )
     }
+
     val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
+        0.0f to colorScheme.background,
+        1.0f to colorScheme.surface
     )
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -120,12 +103,12 @@ fun AjustesScreen(
                             icon = Icons.Default.ArrowBack,
                             contentDescription = "Volver",
                             onClick = { navController.popBackStack() },
-                            gradient = Brush.horizontalGradient(listOf(Color(0xFF296DFF), Color(0xFF8F5CFF)))
+                            gradient = Brush.horizontalGradient(listOf(colorScheme.primary, colorScheme.secondary))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             stringResource(id = R.string.ajustes_title),
-                            color = lightText,
+                            color = colorScheme.onBackground,
                             fontWeight = FontWeight.Bold,
                             fontSize = 28.sp
                         )
@@ -154,16 +137,16 @@ fun AjustesScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     itemsIndexed(opciones) { i, opcion ->
-                        val leftColor = leftColors[i % leftColors.size]
+                        val leftColor = colorScheme.primary.copy(alpha = 0.8f)
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .shadow(4.dp, cardShape)
                                 .clip(cardShape)
-                                .background(cardBg)
+                                .background(colorScheme.surfaceVariant)
                                 .border(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(listOf(leftColor, rightColor)),
+                                    brush = Brush.horizontalGradient(listOf(leftColor, colorScheme.secondary)),
                                     shape = cardShape
                                 )
                                 .clickable {
@@ -175,19 +158,13 @@ fun AjustesScreen(
                                                 mostrarAlerta = true
                                             }
                                         }
-                                        creditosStr -> {
-                                            navController.navigate("creditos_screen")
-                                        }
-
-                                        miCuentaLocalStr -> {
-                                            navController.navigate("cuenta_local")
-                                        }
-                                        idiomaStr -> {
-                                            navController.navigate("idioma_screen")
-                                        }
+                                        creditosStr -> navController.navigate("creditos_screen")
+                                        miCuentaLocalStr -> navController.navigate("cuenta_local")
+                                        idiomaStr -> navController.navigate("idioma_screen")
+                                        temaAppStr -> navController.navigate("theme")
                                     }
                                 },
-                            color = cardBg,
+                            color = colorScheme.surfaceVariant,
                             tonalElevation = 0.dp
                         ) {
                             Box(
@@ -199,7 +176,7 @@ fun AjustesScreen(
                                 Text(
                                     text = opcion,
                                     fontSize = 17.sp,
-                                    color = lightText,
+                                    color = colorScheme.onSurface,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
@@ -236,7 +213,7 @@ fun GradientBorderedIconButton(
         Icon(
             icon,
             contentDescription = contentDescription,
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.size(iconSize)
         )
     }
@@ -253,7 +230,6 @@ private fun CustomAjustesAlertDialog(
     lightText: Color,
     mutedText: Color
 ) {
-
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier

@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -48,7 +52,9 @@ class MainActivity : ComponentActivity() {
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         setContent {
-            ModernTorneoYaTheme {
+            var isDarkTheme by rememberSaveable { mutableStateOf(true) }
+
+            ModernTorneoYaTheme(useDarkTheme = isDarkTheme) {
                 val navController = rememberNavController()
                 val context = this@MainActivity
                 val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
@@ -116,7 +122,9 @@ class MainActivity : ComponentActivity() {
                             partidoRepository = partidoRepository,
                             equipoRepository = equipoRepository,
                             globalUserViewModel = globalUserViewModel,
-                            homeViewModel = homeViewModel
+                            homeViewModel = homeViewModel,
+                            isDarkTheme = isDarkTheme,
+                            onThemeChange = { newValue -> isDarkTheme = newValue }
                         )
                     }
                 }

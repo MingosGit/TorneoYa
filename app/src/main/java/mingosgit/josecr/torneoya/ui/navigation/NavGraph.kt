@@ -55,6 +55,7 @@ import mingosgit.josecr.torneoya.ui.screens.perfilamigo.PerfilAmigoScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.CreditosScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.IdiomaScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
+import mingosgit.josecr.torneoya.ui.theme.ThemeScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 
 @Composable
@@ -67,7 +68,9 @@ fun NavGraph(
     equipoRepository: EquipoRepository,
     globalUserViewModel: GlobalUserViewModel = viewModel(),
     amigosViewModel: AmigosViewModel = viewModel(),
-    agregarAmigoViewModel: AgregarAmigoViewModel = viewModel()
+    onThemeChange: (Boolean) -> Unit,
+    agregarAmigoViewModel: AgregarAmigoViewModel = viewModel(),
+    isDarkTheme: Boolean
 ) {
     val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
     val context = LocalContext.current
@@ -126,7 +129,12 @@ fun NavGraph(
                 globalUserViewModel = globalUserViewModel
             )
         }
-
+        composable(route = "theme") {
+            ThemeScreen(
+                currentThemeDark = isDarkTheme,
+                onThemeChange = onThemeChange
+            )
+        }
         composable(
             route = "administrar_partido_online/{partidoUid}",
             arguments = listOf(navArgument("partidoUid") { type = NavType.StringType })
