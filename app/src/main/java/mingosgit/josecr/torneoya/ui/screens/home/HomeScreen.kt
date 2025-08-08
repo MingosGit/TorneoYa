@@ -148,7 +148,7 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(18.dp))
                     Text(
-                        text = stringResource(id = R.string.gen_cargando) + " tu cuenta...",
+                        text = stringResource(id = R.string.gen_cargando) + stringResource(id = R.string.gen_tu_cuenta),
                         color = Color(0xFFB7B7D1),
                         fontSize = 17.sp
                     )

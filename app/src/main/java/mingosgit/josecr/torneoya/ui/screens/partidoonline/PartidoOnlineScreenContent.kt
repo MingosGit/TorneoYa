@@ -60,13 +60,10 @@ fun PartidoOnlineScreenContent(
     val partidos by partidoViewModel.partidosConNombres.collectAsState()
 
     var sortOption by remember { mutableIntStateOf(R.string.ponline_nombre) }
-
     var ascending by remember { mutableStateOf(true) }
     var expandedSort by remember { mutableStateOf(false) }
-
     var estadoSeleccionado by remember { mutableStateOf(EstadoPartido.TODOS) }
     var expandedEstado by remember { mutableStateOf(false) }
-
     var showOptionsSheet by remember { mutableStateOf(false) }
     var partidoSeleccionado by remember { mutableStateOf<PartidoConNombresOnline?>(null) }
     var showConfirmDialog by remember { mutableStateOf(false) }
@@ -76,6 +73,10 @@ fun PartidoOnlineScreenContent(
     var searchLoading by remember { mutableStateOf(false) }
     var searchError by remember { mutableStateOf<String?>(null) }
     var showAddConfirmDialog by remember { mutableStateOf<PartidoConNombresOnline?>(null) }
+
+    // Obtener strings fuera de lógica para evitar error de @Composable
+    val errorNoExisteUid = stringResource(id = R.string.ponline_no_existe_uid)
+    val errorYaTienesAcceso = stringResource(id = R.string.ponline_ya_tienes_acceso)
 
     fun parseFecha(fecha: String): LocalDate? {
         val patronesFecha = listOf("yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yyyy")
@@ -161,41 +162,48 @@ fun PartidoOnlineScreenContent(
                     .fillMaxWidth()
                     .padding(vertical = 16.dp, horizontal = 24.dp)
             ) {
-                ListItem(
-                    headlineContent = { Text(stringResource(id = R.string.ponline_duplicar), fontWeight = FontWeight.Medium, color = Color(0xFF8F5CFF)) },
-                    leadingContent = {
-                        Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color(0xFF8F5CFF))
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            showOptionsSheet = false
-                            partidoSeleccionado?.uid?.let { uid -> scope.launch { partidoViewModel.duplicarPartido(uid) } }
-                        }
-                )
+                // Safe smart cast workaround
+                val partidoSel = partidoSeleccionado
+                if (partidoSel != null) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(id = R.string.ponline_duplicar), fontWeight = FontWeight.Medium, color = Color(0xFF8F5CFF)) },
+                        leadingContent = {
+                            Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color(0xFF8F5CFF))
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showOptionsSheet = false
+                                scope.launch { partidoViewModel.duplicarPartido(partidoSel.uid) }
+                            }
+                    )
+                }
             }
         }
     }
 
     if (showConfirmDialog && partidoSeleccionado != null) {
-        val nombreA = partidoSeleccionado?.nombreEquipoA ?: "Equipo A"
-        val nombreB = partidoSeleccionado?.nombreEquipoB ?: "Equipo B"
-        val uid = partidoSeleccionado?.uid
-        AlertDialog(
-            onDismissRequest = { showConfirmDialog = false },
-            title = { Text(stringResource(id = R.string.ponline_eliminar_partido_titulo), fontWeight = FontWeight.Bold) },
-            text = { Text(String.format(stringResource(id = R.string.ponline_eliminar_partido_confirmacion), nombreA, nombreB)) },
-            confirmButton = {
-                Button(colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                    onClick = {
-                        showConfirmDialog = false
-                        uid?.let { scope.launch { partidoViewModel.eliminarPartido(it) } }
-                    }) { Text(stringResource(id = R.string.gen_eliminar), color = Color.White) }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showConfirmDialog = false }) { Text(stringResource(id = R.string.gen_cancelar)) }
-            }
-        )
+        val partidoSel = partidoSeleccionado
+        if (partidoSel != null) {
+            val nombreA = partidoSel.nombreEquipoA ?: "Equipo A"
+            val nombreB = partidoSel.nombreEquipoB ?: "Equipo B"
+            val uid = partidoSel.uid
+            AlertDialog(
+                onDismissRequest = { showConfirmDialog = false },
+                title = { Text(stringResource(id = R.string.ponline_eliminar_partido_titulo), fontWeight = FontWeight.Bold) },
+                text = { Text(String.format(stringResource(id = R.string.ponline_eliminar_partido_confirmacion), nombreA, nombreB)) },
+                confirmButton = {
+                    Button(colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        onClick = {
+                            showConfirmDialog = false
+                            scope.launch { partidoViewModel.eliminarPartido(uid) }
+                        }) { Text(stringResource(id = R.string.gen_eliminar), color = Color.White) }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showConfirmDialog = false }) { Text(stringResource(id = R.string.gen_cancelar)) }
+                }
+            )
+        }
     }
 
     if (showAddConfirmDialog != null) {
@@ -207,7 +215,7 @@ fun PartidoOnlineScreenContent(
         if (yaExiste) {
             LaunchedEffect(showAddConfirmDialog) {
                 showAddConfirmDialog = null
-                searchError = R.string.ponline_ya_tienes_acceso.toString()
+                searchError = errorYaTienesAcceso
             }
         } else if (partidoAdd != null) {
             AlertDialog(
@@ -388,12 +396,10 @@ fun PartidoOnlineScreenContent(
                                         scope.launch {
                                             val partido = runCatching { partidoViewModel.buscarPartidoPorUid(searchText) }.getOrNull()
                                             searchResults = if (partido != null) listOf(partido) else emptyList()
-                                            searchError = if (partido == null) (R.string.ponline_no_existe_uid.toString()) else null
+                                            searchError = if (partido == null) errorNoExisteUid else null
                                             searchLoading = false
                                         }
-
-                                        }
-
+                                    }
                                 },
                                 modifier = Modifier
                                     .size(42.dp)
@@ -407,6 +413,7 @@ fun PartidoOnlineScreenContent(
                             ) {
                                 Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.gen_buscar), tint = Color(0xFF8F5CFF), modifier = Modifier.size(24.dp))
                             }
+
                         }
 
                         Spacer(modifier = Modifier.height(6.dp))

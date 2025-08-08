@@ -32,17 +32,19 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 private val cardShape = RoundedCornerShape(16.dp)
 
+// Colores nuevos más agradables para la izquierda de los gradientes
 private val leftColors = listOf(
-    Color(0xFF2ecc71),
-    Color(0xFF3498db),
-    Color(0xFFf1c40f),
-    Color(0xFFe67e22),
-    Color(0xFF9b59b6),
-    Color(0xFF34495e),
-    Color(0xFF16a085),
-    Color(0xFFe74c3c),
-    Color(0xFFf39c12),
+    Color(0xFF4CAF50),  // verde más suave y brillante
+    Color(0xFF2196F3),  // azul limpio
+    Color(0xFFFFC107),  // ámbar cálido
+    Color(0xFFFF5722),  // naranja vibrante
+    Color(0xFF9C27B0),  // púrpura vivo
+    Color(0xFF455A64),  // azul grisáceo
+    Color(0xFF009688),  // verde azulado
+    Color(0xFFF44336),  // rojo intenso
+    Color(0xFFFF9800),  // naranja brillante
 )
+
 private val rightColor = Color(0xFF8F5CFF)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -179,7 +181,6 @@ fun AjustesScreen(
                                         idiomaStr -> {
                                             navController.navigate("idioma_screen")
                                         }
-                                        // Otros casos pueden añadirse aquí
                                     }
                                 },
                             color = cardBg,
@@ -254,7 +255,6 @@ private fun CustomAjustesAlertDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp)
-
                 .clip(RoundedCornerShape(18.dp))
                 .background(background)
         ) {
