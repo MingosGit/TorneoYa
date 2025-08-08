@@ -1,6 +1,9 @@
 package mingosgit.josecr.torneoya.ui.screens.usuario
 
+import android.app.Activity
+import android.content.Context
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -29,6 +33,7 @@ import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterState
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +57,15 @@ fun RegisterScreen(
         1.0f to Color(0xFF161622)
     )
 
+    val context = LocalContext.current
+    val currentLocale = remember { mutableStateOf(Locale.getDefault().language) }
+    val languageCodes = listOf("es", "ca", "en")
+    val banderas = listOf(
+        R.drawable.flag_es,
+        R.drawable.flag_cat,
+        R.drawable.flag_uk
+    )
+
     if (navegarAConfirmarCorreo) {
         ConfirmarCorreoScreen(
             navController = navController,
@@ -71,6 +85,59 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.Top
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                languageCodes.forEachIndexed { index, code ->
+                    val seleccionado = currentLocale.value == code
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                ),
+                                shape = CircleShape
+                            )
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                )
+                            )
+                            .clickable {
+                                val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                                sharedPref.edit().putString("app_language", code).apply()
+                                currentLocale.value = code
+                                (context as? Activity)?.recreate()
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = banderas[index]),
+                            contentDescription = "Idioma $code",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                        if (seleccionado) {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
