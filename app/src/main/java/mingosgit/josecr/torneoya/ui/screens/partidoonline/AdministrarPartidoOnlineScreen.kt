@@ -625,7 +625,7 @@ fun AdministrarPartidoOnlineScreen(
                         Divider(color = Color(0xFF353659))
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            text = "Eliminar Partido",
+                            text = stringResource(R.string.adminp_eliminar_partido),
                             color = Color(0xFFF25A6D),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
@@ -637,7 +637,7 @@ fun AdministrarPartidoOnlineScreen(
                             enabled = !deleting,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(if (deleting) "Eliminando..." else "Eliminar Partido")
+                            Text(if (deleting) "Eliminando..." else stringResource(R.string.adminp_eliminar_partido),)
                         }
                         Spacer(Modifier.height(24.dp))
                     }
@@ -666,121 +666,101 @@ fun AdministrarPartidoOnlineScreen(
                     }
                 }
 
-                if (showDeleteDialog && esCreador) {
-                    item {
-                        AlertDialog(
-                            onDismissRequest = { if (!deleting) showDeleteDialog = false },
-                            title = { Text("Eliminar partido", color = Color.White, fontWeight = FontWeight.Bold) },
-                            text = { Text("Se eliminará el partido, todos los jugadores manuales, comentarios, encuestas y votos asociados. Esta acción no se puede deshacer.", color = Color(0xFFB7B7D1)) },
-                            containerColor = Color(0xFF1C1D25),
-                            confirmButton = {
-                                TextButton(
-                                    enabled = !deleting,
-                                    onClick = {
-                                        if (!esCreador) return@TextButton
-                                        deleting = true
-                                        scope.launch {
-                                            try {
-                                                repo.eliminarPartidoCompleto(partidoUid, usuarioUid)
-                                                showDeleteDialog = false
-                                                navController?.popBackStack(2)
-                                            } catch (e: Exception) {
-                                                deleting = false
-                                                // Manejar error si es necesario
-                                            }
-                                        }
-                                    }
-                                ) { Text("Eliminar", color = Color(0xFFF25A6D)) }
-                            },
-                            dismissButton = {
-                                OutlinedButton(enabled = !deleting, onClick = { showDeleteDialog = false }) {
-                                    Text("Cancelar", color = TorneoYaPalette.violet)
-                                }
-                            }
-                        )
-                    }
-                }
             }
-            if (showDeleteDialog && esCreador) {
-                androidx.compose.ui.window.Dialog(
-                    onDismissRequest = { if (!deleting) showDeleteDialog = false }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .border(
-                                width = 2.dp,
-                                brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .background(
-                                Brush.verticalGradient(
-                                    0f to Color(0xFF1C1D25),
-                                    1f to Color(0xFF14151B)
-                                )
-                            )
-                            .padding(18.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            Text(
-                                text = "Eliminar partido",
-                                color = Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 18.sp
-                            )
-                            Text(
-                                text = "Se eliminará el partido, todos los jugadores manuales, comentarios, encuestas y votos asociados. Esta acción no se puede deshacer.",
-                                color = Color(0xFFB7B7D1),
-                                fontSize = 14.sp
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(45.dp),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // CANCELAR (BORDE DEGRADADO AZUL->MORADO)
-                                ModernOutlineButton(
-                                    enabled = !deleting,
-                                    onClick = { showDeleteDialog = false },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Cancelar")
-                                }
-
-                                // ELIMINAR (BORDE DEGRADADO ROJO->MORADO, TEXTO ROJO)
-                                ModernDangerOutlineButton(
-                                    enabled = !deleting,
-                                    onClick = {
-                                        if (!esCreador) return@ModernDangerOutlineButton
-                                        deleting = true
-                                        scope.launch {
-                                            try {
-                                                repo.eliminarPartidoCompleto(partidoUid, usuarioUid)
-                                                showDeleteDialog = false
-                                                navController?.popBackStack(2)
-                                            } catch (_: Exception) {
-                                                deleting = false
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(if (deleting) "Eliminando..." else "Eliminar")
-                                }
-                            }
+            DeleteMatchDialog(
+                visible = showDeleteDialog && esCreador,
+                deleting = deleting,
+                onDismiss = { if (!deleting) showDeleteDialog = false },
+                onConfirm = {
+                    if (!esCreador) return@DeleteMatchDialog
+                    deleting = true
+                    scope.launch {
+                        try {
+                            repo.eliminarPartidoCompleto(partidoUid, usuarioUid)
+                            showDeleteDialog = false
+                            navController?.popBackStack(2)
+                        } catch (_: Exception) {
+                            deleting = false
                         }
                     }
                 }
-            }
+            )
+        }
+    }
+}
+@Composable
+private fun DeleteMatchDialog(
+    visible: Boolean,
+    deleting: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    if (!visible) return
 
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(
+                        listOf(Color(0xFFF25A6D), TorneoYaPalette.violet) // borde popup rojo -> morado
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .background(Color(0xFF1C1D25))
+                .padding(20.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.adminp_eliminar_partido),
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.adminp_desc_eliminar_partido),
+                color = Color(0xFFB7B7D1),
+                fontSize = 14.sp
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // IZQUIERDA: CANCELAR (borde degradado azul -> morado)
+                ModernOutlineButton(
+                    enabled = !deleting,
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(45.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.gen_cancelar),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                // DERECHA: ELIMINAR (borde degradado rojo -> morado, texto rojo)
+                ModernDangerOutlineButton(
+                    enabled = !deleting,
+                    onClick = onConfirm,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(45.dp)
+                ) {
+                    Text(
+                        text = if (deleting) "Eliminando..." else stringResource(R.string.gen_eliminar),
+                        color = Color(0xFFF25A6D),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }

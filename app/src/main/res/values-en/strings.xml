@@ -1,0 +1,381 @@
+<resources>
+    <string name="app_name">TorneoYa</string>
+    <string name="splash_app_name">TorneoYa</string>
+    <string name="splash_iniciando_sesion">Signing in...</string>
+    <string name="splash_error_conexion">Connection error. Try again.</string>
+
+    <!-- ===== GENERAL ===== -->
+    <string name="gen_iniciar_sesion">Sign In</string>
+    <string name="gen_crear_cuenta">Create Account</string>
+    <string name="gen_eliminar_amigo">Remove Friend</string>
+    <string name="gen_copiado">Copied</string>
+    <string name="gen_pegar_uid">Paste UID</string>
+    <string name="gen_buscar">Search</string>
+    <string name="gen_error">Error</string>
+    <string name="gen_eliminar_titulo">Remove Friend</string>
+    <string name="gen_cancelar">Cancel</string>
+    <string name="gen_eliminar">Remove</string>
+    <string name="gen_eliminando">Removing...</string>
+    <string name="gen_cargando">Loading...</string>
+    <string name="gen_icono_amigos_desc">Friends icon</string>
+    <string name="gen_avatar_desc">Avatar</string>
+    <string name="gen_copiar_uid">Copy UID</string>
+    <string name="gen_uid_copiado">UID copied</string>
+    <string name="gen_volver">Back</string>
+    <string name="gen_guardar">Save</string>
+    <string name="gen_guardando">Saving...</string>
+    <string name="gen_cerrar">Close</string>
+    <string name="gen_notificaciones_desc">Notifications</string>
+    <string name="gen_partidos">Matches</string>
+    <string name="gen_amigos">Friends</string>
+    <string name="gen_mi_perfil">My Profile</string>
+    <string name="gen_partidos_online">Online Matches</string>
+    <string name="gen_ver_partido">View Match</string>
+    <string name="gen_buscar_partidos">Search Matches</string>
+    <string name="gen_crear_uno">Create one</string>
+    <string name="gen_tu_cuenta"> your account...</string>"
+
+    <!-- ===== END GENERAL ===== -->
+
+    <!-- FriendsScreen -->
+    <string name="amigossc_acceso_titulo">Friends Access</string>
+    <string name="amigossc_acceso_desc">Sign in to access your friends list, send requests, and manage contacts.</string>
+    <string name="amigossc_cuenta_local">Prefer using a local account?&#10;You can set it in User Settings.</string>
+    <string name="amigossc_titulo">Friends</string>
+    <string name="amigossc_solicitudes">Friend Requests</string>
+    <string name="amigossc_no_amigos">You have no friends yet</string>
+    <string name="amigossc_copiar_codigo">Copy friend code</string>
+    <string name="amigossc_añadir_amigo">Add Friend</string>
+    <string name="amigossc_buscar_uid">Search by UID</string>
+    <string name="amigossc_uid_amigo">Friend\'s UID</string>
+    <string name="amigossc_nombre_label">Name: %1$s</string>
+    <string name="amigossc_uid_label">UID: %1$s</string>
+    <string name="amigossc_si_enviar_solicitud">Yes, send request</string>
+    <string name="amigossc_solicitud_enviada">Request sent!</string>
+    <string name="amigossc_eliminar_confirm">Are you sure you want to remove this friend? This action cannot be undone.</string>
+    <string name="amigossc_opciones">Options</string>
+    <string name="amigossc_solicitudes_desc">View friend requests</string>
+
+    <!-- ===== PENDING REQUESTS SCREEN ===== -->
+    <string name="solpensc_titulo">Friend Requests</string>
+    <string name="solpensc_no_solicitudes_titulo">No pending requests</string>
+    <string name="solpensc_no_solicitudes_desc">When someone sends you a friend request, it will appear here.</string>
+
+    <!-- ===== AVATAR SCREEN ===== -->
+    <string name="AvatSC_title">Choose your avatar</string>
+    <string name="AvatSC_selected_avatar_desc">Selected Avatar</string>
+    <string name="AvatSC_select_avatar">Select your avatar</string>
+    <string name="AvatSC_empty_avatar_desc">Empty avatar</string>
+    <string name="AvatSC_avatar_desc">Avatar %1$d</string>
+
+    <!-- ===== HOME SCREEN ===== -->
+    <string name="home_bienvenido_torneoya">Welcome to TorneoYa</string>
+    <string name="home_organiza_disfruta">Organize and enjoy your matches.\n\nSign in or create an account to get started.</string>
+    <string name="home_cuenta_local">Prefer a local account?\nAccess it from User settings.</string>
+    <string name="home_hola_usuario">Hello, %1$s!</string>
+    <string name="home_resumen_actividad">Your activity summary</string>
+    <string name="home_proximo_partido_titulo">Next online match</string>
+    <string name="home_sin_proximos_partidos">No upcoming online matches!</string>
+    <string name="home_crea_une_partido">Create one or join a match so you don\'t miss any goal.</string>
+
+    <!-- ===== NOTIFICATIONS SCREEN ===== -->
+    <string name="notisc_title_notificaciones">Notifications</string>
+    <string name="notisc_title_leidas">Read</string>
+    <string name="notisc_button_ver_leidas">View read</string>
+    <string name="notisc_button_no_leidas">Unread</string>
+    <string name="notisc_sin_notificaciones">No notifications</string>
+    <string name="notisc_sin_leidas">No read</string>
+    <string name="notisc_estasyalday">You\'re up to date! When there\'s news,\nit will appear here.</string>
+    <string name="notisc_no_hay_leidas">No read notifications to show.</string>
+    <string name="notisc_eliminar_notificacion_title">Delete notification</string>
+    <string name="notisc_eliminar_notificacion_message">Are you sure you want to delete &quot;%1$s&quot;? This action cannot be undone.</string>
+    <string name="notisc_icon_desc_sin_notificaciones">No notifications</string>
+    <string name="notisc_icon_desc_marcar_leida">Mark as read</string>
+
+    <!-- ===== MANAGE ONLINE PLAYERS SCREEN ===== -->
+    <string name="adminj_title">Manage players</string>
+    <string name="adminj_label_agregar_jugador">Add player</string>
+    <string name="adminj_label_jugador">Player %1$d</string>
+    <string name="adminj_contentdesc_icono">Manage players</string>
+    <string name="adminj_contentdesc_elegir_jugador">Choose player</string>
+    <string name="adminj_texto_titulo_eliminar">Remove player?</string>
+    <string name="adminj_texto_mensaje_eliminar">Are you sure you want to remove this player?</string>
+    <string name="adminj_boton_guardar_volver">Save and return</string>
+    <string name="adminj_texto_jugadores_equipo">Players %1$s</string>
+
+    <!-- ===== MANAGE ONLINE MATCH SCREEN ===== -->
+    <string name="adminp_desc_eliminar_partido">The match, all manual players, comments, polls, and associated votes will be deleted. This action cannot be undone.</string>
+    <string name="adminp_eliminar_partido">Delete match</string>
+    <string name="adminp_title">Manage Goals (Online)</string>
+    <string name="adminp_administrar_roles_desc">Manage Roles</string>
+    <string name="adminp_uid_fecha">UID: %1$s | Date: %2$s</string>
+    <string name="adminp_btn_seleccionar_fecha">Select date: %1$s</string>
+    <string name="adminp_btn_seleccionar_hora">Select time: %1$s</string>
+    <string name="adminp_label_num_partes">No. Periods</string>
+    <string name="adminp_label_minutos_por_parte">Minutes per period</string>
+    <string name="adminp_label_minutos_descanso">Break minutes</string>
+    <string name="adminp_btn_guardar_cambios">Save changes</string>
+    <string name="adminp_label_nombre_equipo_a">Team A Name</string>
+    <string name="adminp_label_nombre_equipo_b">Team B Name</string>
+    <string name="adminp_goles_registrados">Goals recorded</string>
+    <string name="adminp_btn_quitar_gol">Remove goal</string>
+    <string name="adminp_btn_agregar_gol">Add goal</string>
+    <string name="adminp_label_equipo">Team</string>
+    <string name="adminp_label_jugador">Player</string>
+    <string name="adminp_placeholder_seleccionar_jugador">Select player</string>
+    <string name="adminp_label_minuto">Min</string>
+    <string name="adminp_label_asistencia_opcional">Assist (optional)</string>
+    <string name="adminp_placeholder_sin_asistencia">No assist</string>
+    <string name="adminp_btn_guardar_y_salir">Save and exit</string>
+    <string name="adminp_btn_editar_jugadores">Edit players</string>
+    <string name="adminp_dialog_confirmar_cambios_titulo">Confirm changes</string>
+    <string name="adminp_dialog_confirmar_cambios_mensaje">Save and return?</string>
+
+    <!-- ===== MANAGE ONLINE ROLES SCREEN ===== -->
+    <string name="adminroles_title">Manage Roles</string>
+    <string name="adminroles_administradores">Administrators</string>
+    <string name="adminroles_usuarios_con_acceso">Users with access</string>
+    <string name="adminroles_quitar_admin">Remove admin</string>
+    <string name="adminroles_eliminar_usuario_completo">Completely remove user</string>
+    <string name="adminroles_dar_rol_admin">Give admin role</string>
+    <string name="adminroles_quitar_acceso">Remove access</string>
+    <string name="adminroles_confirmar_eliminacion">Confirm deletion</string>
+    <string name="adminroles_confirmar_eliminacion_admin">Are you sure you want to completely remove this administrator?</string>
+    <string name="adminroles_confirmar_eliminacion_usuario">Are you sure you want to remove this user\'s access?</string>
+
+    <!-- ===== ASSIGN ONLINE PLAYERS SCREEN ===== -->
+    <string name="asignjug_title">Assign players</string>
+    <string name="asignjug_equipo_a">Team A</string>
+    <string name="asignjug_equipo_b">Team B</string>
+    <string name="asignjug_modo_manual">Manual</string>
+    <string name="asignjug_modo_aleatorio">Random</string>
+    <string name="asignjug_jugadores_equipo_a">Team A Players</string>
+    <string name="asignjug_jugadores_equipo_b">Team B Players</string>
+    <string name="asignjug_poner_todos_aleatorio">Put all players, they will be assigned randomly</string>
+    <string name="asignjug_agregar_jugador">Add player</string>
+    <string name="asignjug_jugador_num">Player %1$d</string>
+    <string name="asignjug_elegir_jugador">Choose player</string>
+    <string name="asignjug_tu">/You</string>
+    <string name="asignjug_guardar_asignacion">Save assignment</string>
+
+    <!-- ===== CREATE ONLINE MATCH SCREEN ===== -->
+    <string name="crearpartido_title">Create Online Match</string>
+    <string name="crearpartido_nombre_equipo_a">Team A Name</string>
+    <string name="crearpartido_nombre_equipo_b">Team B Name</string>
+    <string name="crearpartido_campo_obligatorio">Required field</string>
+    <string name="crearpartido_seleccionar_fecha">Select date</string>
+    <string name="crearpartido_seleccionar_hora">Select time</string>
+    <string name="crearpartido_falta_fecha">Date missing</string>
+    <string name="crearpartido_falta_hora">Time missing</string>
+    <string name="crearpartido_numero_partes">No. periods</string>
+    <string name="crearpartido_min_por_parte">Min/period</string>
+    <string name="crearpartido_descanso_min">Break (min)</string>
+    <string name="crearpartido_obligatorio_invalido">Required or invalid</string>
+    <string name="crearpartido_partido_publico">Public match (shareable by link/UID)</string>
+    <string name="crearpartido_crear_asignar">Create and assign players</string>
+
+    <!-- ===== CUSTOM DATE TIME PICKER ===== -->
+    <string name="datepicker_title">Select a date</string>
+    <string name="datepicker_label_day">Day</string>
+    <string name="datepicker_label_month">Month</string>
+    <string name="datepicker_label_year">Year</string>
+
+    <string name="timepicker_title">Select a time</string>
+
+    <string name="datepicker_month_ene">Jan</string>
+    <string name="datepicker_month_feb">Feb</string>
+    <string name="datepicker_month_mar">Mar</string>
+    <string name="datepicker_month_abr">Apr</string>
+    <string name="datepicker_month_may">May</string>
+    <string name="datepicker_month_jun">Jun</string>
+    <string name="datepicker_month_jul">Jul</string>
+    <string name="datepicker_month_ago">Aug</string>
+    <string name="datepicker_month_sep">Sep</string>
+    <string name="datepicker_month_oct">Oct</string>
+    <string name="datepicker_month_nov">Nov</string>
+    <string name="datepicker_month_dic">Dec</string>
+
+    <!--- ====== VIEW ONLINE MATCH SCREEN ====== -->
+    <string name="parequban_estado">Status: %1$s</string>
+    <string name="parequban_descanso">Half-time</string>
+
+    <!--- ====== ONLINE MATCH SCREEN ====== -->
+    <string name="ponline_acceso_partidos_online">Access Online Matches</string>
+    <string name="ponline_inicia_sesion_o_crea_cuenta">Sign in or create an account to view and organize online matches.</string>
+    <string name="ponline_boton_iniciar_sesion">Sign In</string>
+    <string name="ponline_boton_crear_cuenta">Create Account</string>
+    <string name="ponline_cuenta_local_ajustes">Prefer a local account?\nAccess it from User settings.</string>
+    <string name="ponline_duplicar">Duplicate</string>
+    <string name="ponline_eliminar_partido_titulo">Delete match?</string>
+    <string name="ponline_eliminar_partido_confirmacion">Are you sure you want to delete the match &quot;%1$s vs %2$s&quot;?</string>
+    <string name="ponline_agregar_partido_titulo">Add match?</string>
+    <string name="ponline_agregar_partido_confirmacion">Are you sure you want to add the match &quot;%1$s vs %2$s&quot; to your list?</string>
+    <string name="ponline_agregar">Add</string>
+    <string name="ponline_crear_partido">Create match</string>
+    <string name="ponline_buscar_por_uid">Search by UID</string>
+    <string name="ponline_uid_del_partido">Match UID</string>
+    <string name="ponline_no_existe_uid">UID does not exist</string>
+    <string name="ponline_cargando_partidos">Loading matches...</string>
+    <string name="ponline_todos">All</string>
+    <string name="ponline_previa">Preview</string>
+    <string name="ponline_en_juego">In Play</string>
+    <string name="ponline_finalizado">Finished</string>
+    <string name="ponline_nombre">Name</string>
+    <string name="ponline_fecha">Date</string>
+    <string name="ponline_descendente">Descending</string>
+    <string name="ponline_ascendente">Ascending</string>
+    <string name="ponline_ya_tienes_acceso">You already have access to this match</string>
+    <string name="ponline_ver">View</string>
+
+    <!--- ====== MATCH COMMENT TAB SCREEN ====== -->
+    <string name="ponlinecom_label_comment_input">Write a comment</string>
+    <string name="ponlinecom_desc_refresh_comments">Refresh comments</string>
+    <string name="ponlinecom_desc_send">Send</string>
+    <string name="ponlinecom_text_no_comments">No comments</string>
+    <string name="ponlinecom_desc_like">Like</string>
+    <string name="ponlinecom_desc_dislike">Dislike</string>
+    <string name="ponlinecom_user_you">You</string>
+
+    <!--- ====== MATCH SURVEYS TAB SCREEN ====== -->
+    <string name="ponlineenc_desc_refresh_surveys">Refresh surveys</string>
+    <string name="ponlineenc_text_votes">Votes: %1$d</string>
+    <string name="ponlineenc_text_no_surveys">No surveys</string>
+    <string name="ponlineenc_label_create_survey">Create new survey</string>
+    <string name="ponlineenc_desc_expand_collapse">Expand/Collapse</string>
+    <string name="ponlineenc_label_survey_question">Survey question</string>
+    <string name="ponlineenc_label_option">Option %1$d</string>
+    <string name="ponlineenc_button_add_option">+ Option</string>
+    <string name="ponlineenc_button_remove_option">- Option</string>
+    <string name="ponlineenc_button_launch_survey">Launch survey</string>
+
+    <!--- ====== MATCH EVENTS TAB SCREEN ====== -->
+    <string name="ponlineeve_desc_reload_goals">Reload goals</string>
+    <string name="ponlineeve_text_no_events">No events recorded</string>
+    <string name="ponlineeve_icon_goal">⚽</string>
+    <string name="ponlineeve_icon_assist">🅰️</string>
+
+    <!--- ====== MATCH PLAYERS TAB SCREEN ====== -->
+    <string name="ponlinejug_text_no_players">No players assigned</string>
+    <string name="ponlinejug_btn_ok">OK</string>
+    <string name="ponlinejug_title_friends">Friends</string>
+    <string name="ponlinejug_menu_request_friendship">Request friendship</string>
+    <string name="ponlinejug_msg_must_be_logged_in">You must be logged in to send requests.</string>
+    <string name="ponlinejug_msg_local_player_no_account">This player is local and has no online account.</string>
+    <string name="ponlinejug_msg_cannot_send_to_self">You cannot send a request to yourself.</string>
+    <string name="ponlinejug_msg_user_not_found">No online user found with that name.</string>
+    <string name="ponlinejug_msg_already_friend">This user is already your friend!</string>
+    <string name="ponlinejug_msg_request_already_sent">You already sent a friend request to this user.</string>
+    <string name="ponlinejug_msg_error_retrieving_user">Error retrieving your user.</string>
+    <string name="ponlinejug_msg_request_sent">Friend request sent to %1$s!</string>
+    <string name="ponlinejug_msg_error_sending_request">Error sending request: %1$s</string>
+
+    <!--- ====== MATCH TAB SCREEN ====== -->
+    <string name="ponlinetabs_jugadores">Players</string>
+    <string name="ponlinetabs_eventos">Events</string>
+    <string name="ponlinetabs_comentarios">Comments</string>
+    <string name="ponlinetabs_encuestas">Surveys</string>
+
+    <!--- ====== VIEW ONLINE MATCH SCREEN ====== -->
+    <string name="ponline_screen_title">Online Match</string>
+    <string name="ponline_desc_share_uid">Share UID</string>
+    <string name="ponline_desc_admin_partido">Manage Match</string>
+    <string name="ponline_desc_stop_viewing">Stop viewing</string>
+    <string name="ponline_dialog_no_permissions_title">No permissions</string>
+    <string name="ponline_dialog_no_permissions_message">You do not have permissions to manage this match.</string>
+    <string name="ponline_dialog_stop_viewing_title">Stop viewing this match?</string>
+    <string name="ponline_dialog_stop_viewing_message">You will no longer be able to view this match. You can view it again by searching its UID.</string>
+    <string name="ponline_dialog_stop_viewing_confirm">Yes, stop viewing</string>
+
+    <!--- ====== FRIENDS SCREEN ====== -->
+    <string name="ponfilamigo_title_profile">Friend Profile</string>
+    <string name="ponfilamigo_label_goals">Goals</string>
+    <string name="ponfilamigo_label_assists">Assists</string>
+    <string name="ponfilamigo_label_average">Average</string>
+    <string name="ponfilamigo_label_matches_played">Matches played</string>
+
+    <!--- ===== SETTINGS SCREEN ===== -->
+    <string name="ajustes_title">Settings</string>
+    <string name="ajustes_mi_cuenta">My account</string>
+    <string name="ajustes_mi_cuenta_local">My local account</string>
+    <string name="ajustes_idioma">Language</string>
+    <string name="ajustes_notificaciones">Notifications</string>
+    <string name="ajustes_tema_app">App theme</string>
+    <string name="ajustes_datos_privacidad">Data and privacy</string>
+    <string name="ajustes_ayuda">Help</string>
+    <string name="ajustes_creditos">Credits</string>
+    <string name="ajustes_sobre_aplicacion">About the app</string>
+
+    <string name="ajustes_dialog_login_title">Sign In</string>
+    <string name="ajustes_dialog_login_message">You must sign in or register to access your online account.</string>
+    <string name="ajustes_register">Register</string>
+
+    <!--- ===== PLAYER STATS SCREEN ===== -->
+    <string name="estadisticas_jugador_title">Player Statistics</string>
+    <string name="estadisticas_partidos_jugados">Matches Played: </string>
+    <string name="estadisticas_goles">Goals: </string>
+    <string name="estadisticas_asistencias">Assists: </string>
+    <string name="estadisticas_atras">Back</string>
+
+    <!--- ===== LOGIN SCREEN ===== -->
+    <string name="login_title">Sign In</string>
+    <string name="login_subtitle">Access your account to continue</string>
+    <string name="login_email_label">Email</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_button_enter">Enter</string>
+    <string name="login_no_account">Don\'t have an account? Register</string>
+    <string name="login_forgot_password">Forgot your password?</string>
+    <string name="login_success_message">Signed in successfully!</string>
+    <string name="login_reset_success">Recovery email sent. Check your inbox.</string>
+
+    <!--- ===== MY ACCOUNT SCREEN ===== -->
+    <string name="micuenta_title">My Account</string>
+    <string name="micuenta_email_content_description">Email</string>
+    <string name="micuenta_nombre_de_usuario_label">Username</string>
+    <string name="micuenta_cambiar_label">Change</string>
+    <string name="micuenta_nuevo_nombre_de_usuario_label">New username</string>
+    <string name="micuenta_restablecer_contraseña_label">Reset password</string>
+    <string name="micuenta_restablecer_contraseña_enviando">We will send you a reset email</string>
+    <string name="micuenta_restablecer_contraseña_mensaje">Password reset email sent.</string>
+    <string name="micuenta_cerrar_sesion_label">Sign out</string>
+    <string name="micuenta_cerrar_sesion_descripcion">Sign out from your account and all your devices</string>
+    <string name="micuenta_eliminar_cuenta_label">Delete account</string>
+    <string name="micuenta_eliminar_cuenta_descripcion">This action is irreversible. All your data will be deleted.</string>
+    <string name="micuenta_eliminar_cuenta_dialog_title">Delete account</string>
+    <string name="micuenta_eliminar_cuenta_dialog_message">All your created matches will be deleted. Do you wish to continue?</string>
+    <string name="micuenta_confirmar_cerrar_sesion_title">Sign out?</string>
+    <string name="micuenta_confirmar_cerrar_sesion_message">Are you sure you want to sign out?</string>
+    <string name="micuenta_si_button">YES</string>
+
+    <!-- ===== REGISTER SCREEN ===== -->
+    <string name="register_crear_cuenta">Create Account</string>
+    <string name="register_unete_comunidad">Join the TorneoYa community</string>
+    <string name="register_nombre_usuario_label">Unique username</string>
+    <string name="register_email_label">Email</string>
+    <string name="register_contraseña_label">Password</string>
+    <string name="register_registrar_button">Register</string>
+    <string name="register_ya_tienes_cuenta">Already have an account? Sign in</string>
+
+    <!-- ===== USER SCREEN ===== -->
+    <string name="usuario_perfil_title">Profile</string>
+    <string name="usuario_cambiar_foto_perfil_title">Change profile picture</string>
+    <string name="usuario_cambiar_foto_perfil_message">Do you want to select a photo from your gallery?</string>
+    <string name="usuario_si">Yes</string>
+    <string name="usuario_no">No</string>
+    <string name="usuario_cerrar_sesion_button">Sign out</string>
+    <string name="usuario_ajustes_desc">Settings</string>
+    <string name="usuario_hola">Hello</string>
+    <string name="usuario_bienvenido">Welcome</string>
+    <string name="usuario_sin_sesion_online">No online session</string>
+    <string name="usuario_goles_label">Goals</string>
+    <string name="usuario_asistencias_label">Assists</string>
+    <string name="usuario_promedio_label">Average</string>
+    <string name="usuario_partidos_jugados_prefix">Matches played: </string>
+    <string name="usuario_confirmar_cerrar_sesion_title">Sign out?</string>
+    <string name="usuario_confirmar_cerrar_sesion_message">Are you sure you want to sign out?</string>
+    <string name="usuario_si_button">YES</string>
+    <string name="usuario_avatar_desc">avatar</string>
+
+    <string name="idioma_espanol">Spanish</string>
+    <string name="idioma_catala">Catalan</string>
+    <string name="idioma_english">English</string>
+</resources>

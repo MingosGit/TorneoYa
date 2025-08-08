@@ -15,6 +15,7 @@
     <string name="gen_eliminar_titulo">Eliminar amigo</string>
     <string name="gen_cancelar">Cancelar</string>
     <string name="gen_eliminar">Eliminar</string>
+    <string name="gen_eliminando">Eliminando...</string>
     <string name="gen_cargando">Cargando...</string>
     <string name="gen_icono_amigos_desc">Icono amigos</string>
     <string name="gen_avatar_desc">Avatar</string>
@@ -102,6 +103,8 @@
     <string name="adminj_texto_jugadores_equipo">Jugadores %1$s</string>
 
     <!-- ===== ADMINISTRAR PARTIDO ONLINE SCREEN ===== -->
+    <string name="adminp_desc_eliminar_partido">Se eliminará el partido, todos los jugadores manuales, comentarios, encuestas y votos asociados. Esta acción no se puede deshacer.</string>
+    <string name="adminp_eliminar_partido">Eliminar partido</string>
     <string name="adminp_title">Administrar Goles (Online)</string>
     <string name="adminp_administrar_roles_desc">Administrar Roles</string>
     <string name="adminp_uid_fecha">UID: %1$s | Fecha: %2$s</string>
