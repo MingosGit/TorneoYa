@@ -187,7 +187,8 @@ fun VisualizarPartidoOnlineScreen(
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
-                            if (!esCreador) {
+                            // AHORA TAMBIÉN SE MUESTRA PARA ADMIN (INCLUYE CREADOR)
+                            if (esAdmin || !esCreador) {
                                 IconButton(
                                     modifier = Modifier
                                         .size(46.dp)
@@ -366,9 +367,16 @@ fun VisualizarPartidoOnlineScreen(
                         ) {
                             Button(
                                 onClick = {
-                                    vm.dejarDeVerPartido(usuarioUid) {
+                                    if (esAdmin) {
+                                        // Admin/creador: solo abandonar la pantalla (no se toca la lista de acceso)
                                         showDejarDeVerDialog = false
                                         navController.popBackStack()
+                                    } else {
+                                        // Usuario con acceso: se le quita el acceso y se sale
+                                        vm.dejarDeVerPartido(usuarioUid) {
+                                            showDejarDeVerDialog = false
+                                            navController.popBackStack()
+                                        }
                                     }
                                 },
                                 modifier = Modifier.weight(1f),
