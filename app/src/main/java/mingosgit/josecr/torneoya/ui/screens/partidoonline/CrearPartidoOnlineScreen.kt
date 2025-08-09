@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,6 +26,14 @@ import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.CreatePartidoOnlineViewModel
 import mingosgit.josecr.torneoya.R
 import java.util.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalTextStyle
+import mingosgit.josecr.torneoya.ui.theme.mutedText
+import mingosgit.josecr.torneoya.ui.theme.text
 
 @Composable
 fun CrearPartidoOnlineScreen(
@@ -65,17 +72,15 @@ fun CrearPartidoOnlineScreen(
         return !errores.values.any { it }
     }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
+    val cs = MaterialTheme.colorScheme
+    val gradientPrimary = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    val gradientError = Brush.horizontalGradient(listOf(cs.error, cs.secondary))
+    val fieldBg = Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(modernBackground)
+            .background(TorneoYaPalette.backgroundGradient)
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         Column(
@@ -88,7 +93,7 @@ fun CrearPartidoOnlineScreen(
                 text = stringResource(id = R.string.crearpartido_title),
                 fontSize = 27.sp,
                 fontWeight = FontWeight.Black,
-                color = Color.White,
+                color = cs.text,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
@@ -100,7 +105,12 @@ fun CrearPartidoOnlineScreen(
                 height = 64.dp
             )
             if (mostrarErrores && camposError["equipoA"] == true) {
-                Text(stringResource(id = R.string.crearpartido_campo_obligatorio), color = Color(0xFFFF7675), fontSize = 13.sp, modifier = Modifier.align(Alignment.Start))
+                Text(
+                    stringResource(id = R.string.crearpartido_campo_obligatorio),
+                    color = cs.error,
+                    fontSize = 13.sp,
+                    modifier = Modifier.align(Alignment.Start)
+                )
             }
 
             Spacer(Modifier.height(10.dp))
@@ -113,7 +123,12 @@ fun CrearPartidoOnlineScreen(
                 height = 64.dp
             )
             if (mostrarErrores && camposError["equipoB"] == true) {
-                Text(stringResource(id = R.string.crearpartido_campo_obligatorio), color = Color(0xFFFF7675), fontSize = 13.sp, modifier = Modifier.align(Alignment.Start))
+                Text(
+                    stringResource(id = R.string.crearpartido_campo_obligatorio),
+                    color = cs.error,
+                    fontSize = 13.sp,
+                    modifier = Modifier.align(Alignment.Start)
+                )
             }
 
             Spacer(Modifier.height(13.dp))
@@ -143,14 +158,14 @@ fun CrearPartidoOnlineScreen(
                     if (camposError["fecha"] == true)
                         Text(
                             stringResource(id = R.string.crearpartido_falta_fecha),
-                            color = Color(0xFFFF7675),
+                            color = cs.error,
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
                     if (camposError["horaInicio"] == true)
                         Text(
                             stringResource(id = R.string.crearpartido_falta_hora),
-                            color = Color(0xFFFF7675),
+                            color = cs.error,
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
@@ -165,21 +180,27 @@ fun CrearPartidoOnlineScreen(
             ) {
                 Text(
                     stringResource(id = R.string.crearpartido_numero_partes),
-                    color = Color(0xFFB7B7D1),
+                    color = cs.mutedText,
                     fontSize = 14.sp,
-                    modifier = Modifier.weight(1f).padding(start = 4.dp, bottom = 2.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp, bottom = 2.dp)
                 )
                 Text(
                     stringResource(id = R.string.crearpartido_min_por_parte),
-                    color = Color(0xFFB7B7D1),
+                    color = cs.mutedText,
                     fontSize = 14.sp,
-                    modifier = Modifier.weight(1f).padding(start = 4.dp, bottom = 2.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp, bottom = 2.dp)
                 )
                 Text(
                     stringResource(id = R.string.crearpartido_descanso_min),
-                    color = Color(0xFFB7B7D1),
+                    color = cs.mutedText,
                     fontSize = 14.sp,
-                    modifier = Modifier.weight(1f).padding(start = 4.dp, bottom = 2.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp, bottom = 2.dp)
                 )
             }
 
@@ -222,21 +243,21 @@ fun CrearPartidoOnlineScreen(
                     if (camposError["numeroPartes"] == true)
                         Text(
                             stringResource(id = R.string.crearpartido_obligatorio_invalido),
-                            color = Color(0xFFFF7675),
+                            color = cs.error,
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
                     if (camposError["tiempoPorParte"] == true)
                         Text(
                             stringResource(id = R.string.crearpartido_obligatorio_invalido),
-                            color = Color(0xFFFF7675),
+                            color = cs.error,
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
                     if (camposError["tiempoDescanso"] == true)
                         Text(
                             stringResource(id = R.string.crearpartido_obligatorio_invalido),
-                            color = Color(0xFFFF7675),
+                            color = cs.error,
                             fontSize = 13.sp,
                             modifier = Modifier.weight(1f)
                         )
@@ -249,10 +270,10 @@ fun CrearPartidoOnlineScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .clip(RoundedCornerShape(15.dp))
-                    .background(Color(0xFF23273D))
+                    .background(cs.surface)
                     .border(
                         2.dp,
-                        Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                        gradientPrimary,
                         RoundedCornerShape(15.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 11.dp)
@@ -261,13 +282,17 @@ fun CrearPartidoOnlineScreen(
                     checked = isPublic,
                     onCheckedChange = { isPublic = it },
                     colors = CheckboxDefaults.colors(
-                        checkedColor = TorneoYaPalette.blue,
-                        uncheckedColor = Color(0xFF6D6D8A),
-                        checkmarkColor = Color.White
+                        checkedColor = cs.primary,
+                        uncheckedColor = cs.outline,
+                        checkmarkColor = cs.onPrimary
                     )
                 )
                 Spacer(Modifier.width(10.dp))
-                Text(stringResource(id = R.string.crearpartido_partido_publico), color = Color(0xFFB7B7D1), fontSize = 16.sp)
+                Text(
+                    stringResource(id = R.string.crearpartido_partido_publico),
+                    color = cs.mutedText,
+                    fontSize = 16.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -279,15 +304,11 @@ fun CrearPartidoOnlineScreen(
                     .clip(RoundedCornerShape(18.dp))
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(
-                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                        ),
+                        brush = gradientPrimary,
                         shape = RoundedCornerShape(18.dp)
                     )
                     .background(
-                        Brush.horizontalGradient(
-                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                        )
+                        Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
                     )
                     .clickable(
                         enabled = !guardando,
@@ -323,13 +344,13 @@ fun CrearPartidoOnlineScreen(
                 if (!guardando) {
                     Text(
                         stringResource(id = R.string.crearpartido_crear_asignar),
-                        color = Color.White,
+                        color = cs.text,
                         fontWeight = FontWeight.Bold,
                         fontSize = 19.sp
                     )
                 } else {
                     CircularProgressIndicator(
-                        color = TorneoYaPalette.blue,
+                        color = cs.primary,
                         strokeWidth = 2.2.dp,
                         modifier = Modifier.size(30.dp)
                     )
@@ -342,7 +363,11 @@ fun CrearPartidoOnlineScreen(
             initialDate = Calendar.getInstance(),
             onDismiss = { showDatePicker = false },
             onDateSelected = { cal ->
-                fecha = "%02d-%02d-%04d".format(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR))
+                fecha = "%02d-%02d-%04d".format(
+                    cal.get(Calendar.DAY_OF_MONTH),
+                    cal.get(Calendar.MONTH) + 1,
+                    cal.get(Calendar.YEAR)
+                )
             }
         )
         CustomTimePickerDialog(
@@ -367,28 +392,25 @@ fun GradientOutlinedField(
     modifier: Modifier = Modifier,
     height: Dp = 64.dp
 ) {
+    val cs = MaterialTheme.colorScheme
+    val borderBrush = if (isError) Brush.horizontalGradient(listOf(cs.error, cs.secondary)) else Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    val bgBrush = Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
+
     Box(
         modifier = modifier
             .height(height)
             .clip(RoundedCornerShape(15.dp))
             .border(
                 width = 2.dp,
-                brush = Brush.horizontalGradient(
-                    if (isError) listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
-                    else listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                ),
+                brush = borderBrush,
                 shape = RoundedCornerShape(15.dp)
             )
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                )
-            )
+            .background(bgBrush)
     ) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            label = if (label.isNotBlank()) ({ Text(label, color = Color(0xFFB7B7D1), fontSize = 17.sp) }) else null,
+            label = if (label.isNotBlank()) ({ Text(label, color = cs.mutedText, fontSize = 17.sp) }) else null,
             singleLine = true,
             isError = isError,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
@@ -397,17 +419,17 @@ fun GradientOutlinedField(
                 focusedBorderColor = Color.Transparent,
                 disabledBorderColor = Color.Transparent,
                 errorBorderColor = Color.Transparent,
-                focusedLabelColor = TorneoYaPalette.blue,
-                errorLabelColor = Color(0xFFFF7675),
-                cursorColor = TorneoYaPalette.blue,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                errorTextColor = Color.White,
-                disabledTextColor = Color(0xFFB7B7D1)
+                focusedLabelColor = cs.primary,
+                errorLabelColor = cs.error,
+                cursorColor = cs.primary,
+                focusedTextColor = cs.text,
+                unfocusedTextColor = cs.text,
+                errorTextColor = cs.text,
+                disabledTextColor = cs.mutedText
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 0.dp, bottom = 0.dp, start = 8.dp, end = 8.dp)
+                .padding(horizontal = 8.dp)
                 .defaultMinSize(minHeight = 1.dp)
                 .background(Color.Transparent),
             textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
@@ -423,32 +445,31 @@ fun GradientButton(
     isError: Boolean = false,
     height: Dp = 58.dp
 ) {
+    val cs = MaterialTheme.colorScheme
+    val borderBrush = if (isError) Brush.horizontalGradient(listOf(cs.error, cs.secondary)) else Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    val bgBrush = Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
+
     Box(
         modifier = modifier
             .height(height)
             .clip(RoundedCornerShape(15.dp))
             .border(
                 width = 2.dp,
-                brush = Brush.horizontalGradient(
-                    if (isError) listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
-                    else listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                ),
+                brush = borderBrush,
                 shape = RoundedCornerShape(15.dp)
             )
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                )
-            )
+            .background(bgBrush)
             .clickable { onClick() }
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text,
-            color = if (isError) Color(0xFFFF7675) else TorneoYaPalette.blue,
+            color = if (isError) cs.error else cs.primary,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp
         )
     }
 }
+
+

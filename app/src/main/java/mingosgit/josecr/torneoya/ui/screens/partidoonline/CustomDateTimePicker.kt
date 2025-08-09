@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.mutedText
+import mingosgit.josecr.torneoya.ui.theme.text
 import java.util.*
 
 @Composable
@@ -31,6 +33,11 @@ fun CustomDatePickerDialog(
     onDateSelected: (Calendar) -> Unit
 ) {
     if (!show) return
+
+    val cs = MaterialTheme.colorScheme
+    val focusManager = LocalFocusManager.current
+    val gradientPrimary = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    val panelBg = Brush.verticalGradient(listOf(cs.surfaceVariant, cs.surface))
 
     var year by remember { mutableStateOf(initialDate.get(Calendar.YEAR)) }
     var month by remember { mutableStateOf(initialDate.get(Calendar.MONTH) + 1) }
@@ -50,35 +57,26 @@ fun CustomDatePickerDialog(
         stringResource(id = R.string.datepicker_month_dic)
     )
     var showMonthDropdown by remember { mutableStateOf(false) }
-    val focusManager = LocalFocusManager.current
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xA0161925))
+            .background(cs.background.copy(alpha = 0.63f))
             .pointerInput(Unit) { detectTapGestures(onTap = { onDismiss() }) }
     ) {
         Column(
             Modifier
                 .align(Alignment.Center)
                 .clip(RoundedCornerShape(22.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color(0xFF23273D), Color(0xFF191A23))
-                    )
-                )
-                .border(
-                    2.dp,
-                    Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
-                    RoundedCornerShape(22.dp)
-                )
+                .background(panelBg)
+                .border(2.dp, gradientPrimary, RoundedCornerShape(22.dp))
                 .padding(28.dp)
                 .widthIn(min = 310.dp, max = 350.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.datepicker_title),
                 fontSize = 22.sp,
-                color = Color.White,
+                color = cs.text,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
@@ -88,52 +86,66 @@ fun CustomDatePickerDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(id = R.string.datepicker_label_day), color = Color(0xFFB7B7D1), fontSize = 15.sp)
+                    Text(
+                        stringResource(id = R.string.datepicker_label_day),
+                        color = cs.mutedText,
+                        fontSize = 15.sp
+                    )
                     OutlinedTextField(
                         value = day.toString(),
-                        onValueChange = { txt ->
-                            txt.toIntOrNull()?.let {
-                                if (it in 1..31) day = it
-                            }
-                        },
+                        onValueChange = { txt -> txt.toIntOrNull()?.let { if (it in 1..31) day = it } },
                         singleLine = true,
                         modifier = Modifier.width(60.dp).height(54.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = TorneoYaPalette.blue,
-                            cursorColor = TorneoYaPalette.blue,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedBorderColor = Color.Transparent,
+                            disabledBorderColor = Color.Transparent,
+                            errorBorderColor = Color.Transparent,
+                            focusedLabelColor = cs.primary,
+                            errorLabelColor = cs.error,
+                            cursorColor = cs.primary,
+                            focusedTextColor = cs.text,
+                            unfocusedTextColor = cs.text,
+                            errorTextColor = cs.text,
+                            disabledTextColor = cs.mutedText
                         ),
                         textStyle = LocalTextStyle.current.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color.White
+                            color = cs.text
                         )
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(id = R.string.datepicker_label_month), color = Color(0xFFB7B7D1), fontSize = 15.sp)
+                    Text(
+                        stringResource(id = R.string.datepicker_label_month),
+                        color = cs.mutedText,
+                        fontSize = 15.sp
+                    )
                     Box {
                         Button(
                             onClick = { showMonthDropdown = true },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF191A23),
-                                contentColor = TorneoYaPalette.blue
+                                containerColor = cs.surface,
+                                contentColor = cs.primary
                             ),
                             shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.width(90.dp).height(54.dp)
+                            modifier = Modifier.width(110.dp).height(54.dp)
                         ) {
-                            Text(monthNames[month - 1], fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(
+                                monthNames[month - 1],
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
                         }
                         DropdownMenu(
                             expanded = showMonthDropdown,
                             onDismissRequest = { showMonthDropdown = false },
-                            modifier = Modifier.background(Color(0xFF23273D))
+                            modifier = Modifier.background(cs.surface)
                         ) {
                             monthNames.forEachIndexed { idx, name ->
                                 DropdownMenuItem(
-                                    text = { Text(name, color = Color.White) },
+                                    text = { Text(name, color = cs.text) },
                                     onClick = {
                                         month = idx + 1
                                         showMonthDropdown = false
@@ -144,27 +156,35 @@ fun CustomDatePickerDialog(
                     }
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(id = R.string.datepicker_label_year), color = Color(0xFFB7B7D1), fontSize = 15.sp)
+                    Text(
+                        stringResource(id = R.string.datepicker_label_year),
+                        color = cs.mutedText,
+                        fontSize = 15.sp
+                    )
                     OutlinedTextField(
                         value = year.toString(),
                         onValueChange = { txt ->
-                            txt.toIntOrNull()?.let {
-                                if (it in (year - 60)..(year + 60)) year = it
-                            }
+                            txt.toIntOrNull()?.let { if (it in (year - 60)..(year + 60)) year = it }
                         },
                         singleLine = true,
-                        modifier = Modifier.width(75.dp).height(54.dp),
+                        modifier = Modifier.width(80.dp).height(54.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = TorneoYaPalette.blue,
-                            cursorColor = TorneoYaPalette.blue,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedBorderColor = Color.Transparent,
+                            disabledBorderColor = Color.Transparent,
+                            errorBorderColor = Color.Transparent,
+                            focusedLabelColor = cs.primary,
+                            errorLabelColor = cs.error,
+                            cursorColor = cs.primary,
+                            focusedTextColor = cs.text,
+                            unfocusedTextColor = cs.text,
+                            errorTextColor = cs.text,
+                            disabledTextColor = cs.mutedText
                         ),
                         textStyle = LocalTextStyle.current.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color.White
+                            color = cs.text
                         )
                     )
                 }
@@ -179,19 +199,18 @@ fun CustomDatePickerDialog(
                         focusManager.clearFocus()
                         onDismiss()
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFB7B7D1))
+                    colors = ButtonDefaults.textButtonColors(contentColor = cs.mutedText)
                 ) { Text(stringResource(id = R.string.gen_cancelar)) }
                 Button(
                     onClick = {
-                        val cal = Calendar.getInstance()
-                        cal.set(year, month - 1, day)
+                        val cal = Calendar.getInstance().apply { set(year, month - 1, day) }
                         focusManager.clearFocus()
                         onDateSelected(cal)
                         onDismiss()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = TorneoYaPalette.blue,
-                        contentColor = Color.White
+                        containerColor = cs.primary,
+                        contentColor = cs.onPrimary
                     ),
                     shape = RoundedCornerShape(14.dp)
                 ) { Text(stringResource(id = R.string.gen_guardar)) }
@@ -210,37 +229,33 @@ fun CustomTimePickerDialog(
 ) {
     if (!show) return
 
+    val cs = MaterialTheme.colorScheme
+    val focusManager = LocalFocusManager.current
+    val gradientPrimary = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    val panelBg = Brush.verticalGradient(listOf(cs.surfaceVariant, cs.surface))
+
     var hour by remember { mutableStateOf(initialHour) }
     var minute by remember { mutableStateOf(initialMinute) }
-    val focusManager = LocalFocusManager.current
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xA0161925))
+            .background(cs.background.copy(alpha = 0.63f))
             .pointerInput(Unit) { detectTapGestures(onTap = { onDismiss() }) }
     ) {
         Column(
             Modifier
                 .align(Alignment.Center)
                 .clip(RoundedCornerShape(22.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color(0xFF23273D), Color(0xFF191A23))
-                    )
-                )
-                .border(
-                    2.dp,
-                    Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
-                    RoundedCornerShape(22.dp)
-                )
+                .background(panelBg)
+                .border(2.dp, gradientPrimary, RoundedCornerShape(22.dp))
                 .padding(28.dp)
                 .widthIn(min = 270.dp, max = 350.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.timepicker_title),
                 fontSize = 22.sp,
-                color = Color.White,
+                color = cs.text,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
@@ -251,47 +266,51 @@ fun CustomTimePickerDialog(
             ) {
                 OutlinedTextField(
                     value = hour.toString().padStart(2, '0'),
-                    onValueChange = { txt ->
-                        txt.toIntOrNull()?.let {
-                            if (it in 0..23) hour = it
-                        }
-                    },
+                    onValueChange = { txt -> txt.toIntOrNull()?.let { if (it in 0..23) hour = it } },
                     singleLine = true,
                     modifier = Modifier.width(66.dp).height(54.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = TorneoYaPalette.blue,
-                        cursorColor = TorneoYaPalette.blue,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        focusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent,
+                        errorBorderColor = Color.Transparent,
+                        focusedLabelColor = cs.primary,
+                        errorLabelColor = cs.error,
+                        cursorColor = cs.primary,
+                        focusedTextColor = cs.text,
+                        unfocusedTextColor = cs.text,
+                        errorTextColor = cs.text,
+                        disabledTextColor = cs.mutedText
                     ),
                     textStyle = LocalTextStyle.current.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
-                        color = Color.White
+                        color = cs.text
                     )
                 )
-                Text(":", color = Color.White, fontSize = 32.sp, modifier = Modifier.padding(horizontal = 8.dp))
+                Text(":", color = cs.text, fontSize = 32.sp, modifier = Modifier.padding(horizontal = 8.dp))
                 OutlinedTextField(
                     value = minute.toString().padStart(2, '0'),
-                    onValueChange = { txt ->
-                        txt.toIntOrNull()?.let {
-                            if (it in 0..59) minute = it
-                        }
-                    },
+                    onValueChange = { txt -> txt.toIntOrNull()?.let { if (it in 0..59) minute = it } },
                     singleLine = true,
                     modifier = Modifier.width(66.dp).height(54.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = TorneoYaPalette.blue,
-                        cursorColor = TorneoYaPalette.blue,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        focusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent,
+                        errorBorderColor = Color.Transparent,
+                        focusedLabelColor = cs.primary,
+                        errorLabelColor = cs.error,
+                        cursorColor = cs.primary,
+                        focusedTextColor = cs.text,
+                        unfocusedTextColor = cs.text,
+                        errorTextColor = cs.text,
+                        disabledTextColor = cs.mutedText
                     ),
                     textStyle = LocalTextStyle.current.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
-                        color = Color.White
+                        color = cs.text
                     )
                 )
             }
@@ -305,7 +324,7 @@ fun CustomTimePickerDialog(
                         focusManager.clearFocus()
                         onDismiss()
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFB7B7D1))
+                    colors = ButtonDefaults.textButtonColors(contentColor = cs.mutedText)
                 ) { Text(stringResource(id = R.string.gen_cancelar)) }
                 Button(
                     onClick = {
@@ -314,8 +333,8 @@ fun CustomTimePickerDialog(
                         onDismiss()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = TorneoYaPalette.blue,
-                        contentColor = Color.White
+                        containerColor = cs.primary,
+                        contentColor = cs.onPrimary
                     ),
                     shape = RoundedCornerShape(14.dp)
                 ) { Text(stringResource(id = R.string.gen_guardar)) }
