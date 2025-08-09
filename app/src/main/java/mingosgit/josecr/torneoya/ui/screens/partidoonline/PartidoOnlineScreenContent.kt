@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sort
@@ -78,9 +79,21 @@ fun PartidoOnlineScreenContent(
     var searchError by remember { mutableStateOf<String?>(null) }
     var showAddConfirmDialog by remember { mutableStateOf<PartidoConNombresOnline?>(null) }
 
-    // Obtener strings fuera de lógica para evitar error de @Composable
+    // NUEVO: diálogos para dejar de ver / creador
+    var showDejarDeVerDialog by remember { mutableStateOf(false) }
+    var showEsCreadorNoSalirDialog by remember { mutableStateOf(false) }
+
+    // Strings usados
     val errorNoExisteUid = stringResource(id = R.string.ponline_no_existe_uid)
     val errorYaTienesAcceso = stringResource(id = R.string.ponline_ya_tienes_acceso)
+    val dialogStopViewingTitle = stringResource(id = R.string.ponline_dialog_stop_viewing_title)
+    val dialogStopViewingMsg = stringResource(id = R.string.ponline_dialog_stop_viewing_message)
+    val dialogStopViewingConfirm = stringResource(id = R.string.ponline_dialog_stop_viewing_confirm)
+    val dialogsi = stringResource(id = R.string.usuario_si)
+    val btnOk = stringResource(id = R.string.gen_cerrar)
+    val btnCancelar = stringResource(id = R.string.gen_cancelar)
+    val dialogEsCreadorNoSalirTitle = stringResource(id = R.string.parequban_avisocreador)
+    val dialogEsCreadorNoSalirMsg = stringResource(id = R.string.parequeban_no_puedes)
 
     fun parseFecha(fecha: String): LocalDate? {
         val patronesFecha = listOf("yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yyyy")
@@ -153,7 +166,6 @@ fun PartidoOnlineScreenContent(
             else -> partidosFiltrados
         }
     }
-
 
     if (showConfirmDialog && partidoSeleccionado != null) {
         val partidoSel = partidoSeleccionado
@@ -290,6 +302,203 @@ fun PartidoOnlineScreenContent(
             }
         }
     }
+
+    // NUEVO: hoja de opciones al mantener presionado (incluye "Dejar de ver")
+    if (showOptionsSheet && partidoSeleccionado != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showOptionsSheet = false },
+            containerColor = cs.surface
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 22.dp)
+            ) {
+                ListItem(
+                    headlineContent = {
+                        Text(
+                            text = stringResource(id = R.string.ponline_dejar_de_ver_partido),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.ExitToApp,
+                            contentDescription = null,
+                            tint = cs.error
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val partido = partidoSeleccionado ?: return@clickable
+                            showOptionsSheet = false
+                            // Verificar si es creador y decidir qué diálogo mostrar
+                            scope.launch {
+                                val esCreador = partidoViewModel.esCreador(partido.uid)
+                                if (esCreador) {
+                                    showEsCreadorNoSalirDialog = true
+                                } else {
+                                    showDejarDeVerDialog = true
+                                }
+                            }
+                        }
+                )
+                Spacer(Modifier.height(6.dp))
+            }
+        }
+    }
+
+    // Diálogo de confirmación "Dejar de ver" (no creador)
+
+    if (showDejarDeVerDialog && partidoSeleccionado != null) {
+        Dialog(onDismissRequest = { showDejarDeVerDialog = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(cs.error, cs.secondary)),
+                        shape = RoundedCornerShape(18.dp)
+                    )
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                    )
+            ) {
+                Column(
+                    Modifier.padding(horizontal = 22.dp, vertical = 26.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = dialogStopViewingTitle,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                    Spacer(Modifier.height(11.dp))
+                    Text(
+                        text = dialogStopViewingMsg,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
+                        fontSize = 15.sp
+                    )
+                    Spacer(Modifier.height(22.dp))
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        // Confirmar (destructivo)
+                        OutlinedButton(
+                            onClick = {
+                                val uid = partidoSeleccionado!!.uid
+                                showDejarDeVerDialog = false
+                                scope.launch { partidoViewModel.dejarDeVerPartido(uid) }
+                            },
+                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(listOf(cs.error, cs.secondary))
+                            ),
+                            shape = RoundedCornerShape(11.dp),
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = cs.error
+                            )
+                        ) {
+                            Text(
+                                text = dialogsi,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(Modifier.width(14.dp))
+                        // Cancelar
+                        OutlinedButton(
+                            onClick = { showDejarDeVerDialog = false },
+                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+                            ),
+                            shape = RoundedCornerShape(11.dp),
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = cs.onBackground
+                            )
+                        ) {
+                            Text(
+                                text = btnCancelar,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+//  aviso creador
+    if (showEsCreadorNoSalirDialog) {
+        Dialog(onDismissRequest = { showEsCreadorNoSalirDialog = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(cs.error, cs.secondary)),
+                        shape = RoundedCornerShape(18.dp)
+                    )
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                    )
+            ) {
+                Column(
+                    Modifier.padding(horizontal = 22.dp, vertical = 26.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = dialogEsCreadorNoSalirMsg,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                    Spacer(Modifier.height(11.dp))
+                    Text(
+                        text = dialogEsCreadorNoSalirTitle,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
+                        fontSize = 15.sp
+                    )
+                    Spacer(Modifier.height(22.dp))
+                    OutlinedButton(
+                        onClick = { showEsCreadorNoSalirDialog = false },
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(cs.error, cs.secondary))
+                        ),
+                        shape = RoundedCornerShape(11.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = cs.error
+                        )
+                    ) {
+                        Text(
+                            text = btnOk,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 
     Scaffold(
         containerColor = Color.Transparent,

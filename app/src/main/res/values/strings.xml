@@ -461,4 +461,5 @@ Disfruta del fútbol tanto como yo disfruté creando esta app para ti.</string>
     <string name="auth_password_need_lowercase">Debe contener al menos una minúscula</string>
     <string name="auth_password_need_digit">Debe contener al menos un número</string>
     <string name="auth_password_requirements_generic">La contraseña no cumple los requisitos.</string>
+    <string name="ponline_dejar_de_ver_partido">Dejar de ver el partido</string>
 </resources>

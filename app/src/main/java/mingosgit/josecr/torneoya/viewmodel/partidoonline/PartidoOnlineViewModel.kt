@@ -155,4 +155,18 @@ class PartidoOnlineViewModel(
             cargarPartidosConNombres()
         }
     }
+
+    // NUEVO: comprobar si el usuario actual es el creador del partido
+    suspend fun esCreador(partidoUid: String): Boolean {
+        val partido = partidoRepo.obtenerPartido(partidoUid) ?: return false
+        return partido.creadorUid == usuarioUid
+    }
+
+    // NUEVO: dejar de ver (quitar acceso) y refrescar lista
+    fun dejarDeVerPartido(partidoUid: String) {
+        viewModelScope.launch {
+            partidoRepo.quitarUsuarioDeAcceso(partidoUid, usuarioUid)
+            cargarPartidosConNombres()
+        }
+    }
 }
