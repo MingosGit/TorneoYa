@@ -7,6 +7,9 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -31,7 +34,7 @@ private val TextDark = Color(0xFF13142C)
 private val MutedText = Color(0xFFB7B7D1)
 private val Errorw = Color(0xFFF44336)
 
-// Paletas de Material 3
+// Paletas de Material 3 (solo claves válidas del esquema)
 private val DarkColorScheme = darkColorScheme(
     primary = Blue,
     onPrimary = TextLight,
@@ -73,11 +76,33 @@ private val DarkBackgroundGradient = Brush.verticalGradient(
 )
 
 private val LightBackgroundGradient = Brush.verticalGradient(
-    0.0f to Color(0xFFFFFFFF), // Blanco puro
-    0.3f to Color(0xFFF8FAFF), // Azul muy muy claro
-    0.7f to Color(0xFFEAEFFF), // Azul/violeta muy tenue
-    1.0f to Color(0xFFDAD6FF)  // Un toque de violeta suave
+    0.0f to Color(0xFFFFFFFF),
+    0.3f to Color(0xFFF8FAFF),
+    0.7f to Color(0xFFEAEFFF),
+    1.0f to Color(0xFFDAD6FF)
 )
+
+// ------------------ Extras del esquema (text, mutedText) ------------------
+@Immutable
+data class TorneoYaExtraColors(
+    val text: Color,
+    val mutedText: Color
+)
+
+private val LocalExtraColors = staticCompositionLocalOf {
+    TorneoYaExtraColors(
+        text = Color.Unspecified,
+        mutedText = Color.Unspecified
+    )
+}
+
+// Accesos como si fueran parte de MaterialTheme.colorScheme
+val androidx.compose.material3.ColorScheme.text: Color
+    @Composable get() = LocalExtraColors.current.text
+
+val androidx.compose.material3.ColorScheme.mutedText: Color
+    @Composable get() = LocalExtraColors.current.mutedText
+// -------------------------------------------------------------------------
 
 @Composable
 fun ModernTorneoYaTheme(
@@ -86,27 +111,42 @@ fun ModernTorneoYaTheme(
 ) {
     val scheme = if (useDarkTheme) DarkColorScheme else WhiteColorScheme
 
+    // Extras según tema (manteniendo tu intención)
+    val extra = if (useDarkTheme) {
+        TorneoYaExtraColors(
+            text = TextLight,
+            mutedText = MutedText        // gris suave para dark
+        )
+    } else {
+        TorneoYaExtraColors(
+            text = TextDark,
+            mutedText = CardDark         // como pediste en light
+        )
+    }
+
     // Actualizamos el gradiente global en función del tema
     TorneoYaPalette.currentBackgroundGradient =
         if (useDarkTheme) DarkBackgroundGradient else LightBackgroundGradient
 
-    MaterialTheme(
-        colorScheme = scheme,
-        typography = Typography(
-            displayLarge = MaterialTheme.typography.displayLarge.copy(letterSpacing = 0.5.sp),
-            titleLarge = MaterialTheme.typography.titleLarge.copy(letterSpacing = 0.15.sp),
-            bodyLarge = MaterialTheme.typography.bodyLarge.copy(letterSpacing = 0.2.sp),
-            labelLarge = MaterialTheme.typography.labelLarge.copy(letterSpacing = 0.2.sp)
-        ),
-        shapes = Shapes(
-            extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
-            small = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
-            medium = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
-            large = androidx.compose.foundation.shape.RoundedCornerShape(19.dp),
-            extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
-        ),
-        content = content
-    )
+    CompositionLocalProvider(LocalExtraColors provides extra) {
+        MaterialTheme(
+            colorScheme = scheme,
+            typography = Typography(
+                displayLarge = MaterialTheme.typography.displayLarge.copy(letterSpacing = 0.5.sp),
+                titleLarge = MaterialTheme.typography.titleLarge.copy(letterSpacing = 0.15.sp),
+                bodyLarge = MaterialTheme.typography.bodyLarge.copy(letterSpacing = 0.2.sp),
+                labelLarge = MaterialTheme.typography.labelLarge.copy(letterSpacing = 0.2.sp)
+            ),
+            shapes = Shapes(
+                extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
+                small = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+                medium = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                large = androidx.compose.foundation.shape.RoundedCornerShape(19.dp),
+                extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+            ),
+            content = content
+        )
+    }
 }
 
 // Paleta auxiliar con gradiente dinámico

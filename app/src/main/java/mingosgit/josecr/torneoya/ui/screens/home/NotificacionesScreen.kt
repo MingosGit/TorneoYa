@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,17 +23,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import mingosgit.josecr.torneoya.R
-import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.*
+import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun NotificacionesScreen(
     usuarioUid: String
 ) {
+    val cs = MaterialTheme.colorScheme
     val context = LocalContext.current
     val app = context.applicationContext as Application
 
@@ -55,12 +56,10 @@ fun NotificacionesScreen(
     var borrarUid by remember { mutableStateOf<String?>(null) }
     var borrarTitulo by remember { mutableStateOf<String?>(null) }
 
-    val background = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
+    val background = TorneoYaPalette.backgroundGradient
+    val gradientPrimarySecondary = remember(cs.primary, cs.secondary) {
+        Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    }
 
     Box(
         modifier = Modifier
@@ -78,22 +77,18 @@ fun NotificacionesScreen(
             ) {
                 Text(
                     text = if (!mostrarLeidas) stringResource(R.string.notisc_title_notificaciones) else stringResource(R.string.notisc_title_leidas),
-                    color = Color.White,
+                    color = cs.mutedText,
                     fontWeight = FontWeight.Bold,
                     fontSize = 27.sp,
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (!mostrarLeidas) {
-                        TextButton(
-                            onClick = { mostrarLeidas = true }
-                        ) {
-                            Text(stringResource(R.string.notisc_button_ver_leidas), color = Color(0xFF8F5CFF))
+                        TextButton(onClick = { mostrarLeidas = true }) {
+                            Text(stringResource(R.string.notisc_button_ver_leidas), color = cs.secondary)
                         }
                     } else {
-                        TextButton(
-                            onClick = { mostrarLeidas = false }
-                        ) {
-                            Text(stringResource(R.string.notisc_button_no_leidas), color = Color(0xFF8F5CFF))
+                        TextButton(onClick = { mostrarLeidas = false }) {
+                            Text(stringResource(R.string.notisc_button_no_leidas), color = cs.secondary)
                         }
                     }
                 }
@@ -103,7 +98,7 @@ fun NotificacionesScreen(
                     cargando -> {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(
-                                color = Color(0xFF8F5CFF),
+                                color = cs.secondary,
                                 strokeWidth = 2.3.dp,
                                 modifier = Modifier.size(34.dp)
                             )
@@ -111,23 +106,19 @@ fun NotificacionesScreen(
                     }
                     (!mostrarLeidas && noLeidas.isEmpty()) || (mostrarLeidas && leidas.isEmpty()) -> {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(
                                     modifier = Modifier
                                         .size(80.dp)
                                         .clip(RoundedCornerShape(24.dp))
                                         .border(
                                             width = 2.5.dp,
-                                            brush = Brush.horizontalGradient(
-                                                listOf(Color(0xFF296DFF), TorneoYaPalette.violet)
-                                            ),
+                                            brush = gradientPrimarySecondary,
                                             shape = RoundedCornerShape(24.dp)
                                         )
                                         .background(
                                             Brush.horizontalGradient(
-                                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                                listOf(cs.surfaceVariant, cs.surface)
                                             )
                                         ),
                                     contentAlignment = Alignment.Center
@@ -135,14 +126,14 @@ fun NotificacionesScreen(
                                     Icon(
                                         imageVector = Icons.Filled.MarkEmailRead,
                                         contentDescription = stringResource(R.string.notisc_icon_desc_sin_notificaciones),
-                                        tint = Color(0xFF8F5CFF),
+                                        tint = cs.secondary,
                                         modifier = Modifier.size(40.dp)
                                     )
                                 }
                                 Spacer(Modifier.height(18.dp))
                                 Text(
                                     text = if (!mostrarLeidas) stringResource(R.string.notisc_sin_notificaciones) else stringResource(R.string.notisc_sin_leidas),
-                                    color = Color(0xFF8F5CFF),
+                                    color = cs.secondary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 21.sp
                                 )
@@ -152,7 +143,7 @@ fun NotificacionesScreen(
                                         stringResource(R.string.notisc_estasyalday)
                                     else
                                         stringResource(R.string.notisc_no_hay_leidas),
-                                    color = Color(0xFFB7B7D1),
+                                    color = cs.mutedText,
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Medium,
                                     lineHeight = 20.sp,
@@ -217,6 +208,14 @@ fun CustomGradientDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val cs = MaterialTheme.colorScheme
+    val gradientPrimarySecondary = remember(cs.primary, cs.secondary) {
+        Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    }
+    val gradientErrorSecondary = remember(cs.error, cs.secondary) {
+        Brush.horizontalGradient(listOf(cs.error, cs.secondary))
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
@@ -226,20 +225,16 @@ fun CustomGradientDialog(
             confirmButton = {
                 GradientButton(
                     text = confirmText,
-                    gradient = Brush.horizontalGradient(
-                        listOf(Color(0xFFFF2E63), Color(0xFF8F5CFF))
-                    ),
-                    textColor = Color.White,
+                    gradient = gradientErrorSecondary,
+                    textColor = cs.mutedText,
                     onClick = onConfirm
                 )
             },
             dismissButton = {
                 GradientButton(
                     text = dismissText,
-                    gradient = Brush.horizontalGradient(
-                        listOf(Color(0xFF296DFF), Color(0xFF8F5CFF))
-                    ),
-                    textColor = Color.White,
+                    gradient = gradientPrimarySecondary,
+                    textColor = cs.mutedText,
                     onClick = onDismiss
                 )
             },
@@ -248,13 +243,13 @@ fun CustomGradientDialog(
                     text = title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color.White
+                    color = cs.mutedText
                 )
             },
             text = {
                 Text(
                     text = message,
-                    color = Color(0xFFB7B7D1),
+                    color = cs.mutedText,
                     fontSize = 16.sp
                 )
             },
@@ -263,16 +258,14 @@ fun CustomGradientDialog(
                 .clip(RoundedCornerShape(22.dp))
                 .border(
                     width = 3.dp,
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(Color(0xFF296DFF), Color(0xFF8F5CFF))
-                    ),
+                    brush = gradientPrimarySecondary,
                     shape = RoundedCornerShape(22.dp)
                 )
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF1C2130),
-                            Color(0xFF191A23)
+                            cs.surfaceVariant,
+                            cs.surface
                         )
                     )
                 )
@@ -284,13 +277,14 @@ fun CustomGradientDialog(
 fun GradientButton(
     text: String,
     gradient: Brush,
-    textColor: Color,
+    textColor: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit
 ) {
+    val cs = MaterialTheme.colorScheme
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
             contentColor = textColor
         ),
         contentPadding = PaddingValues(),
@@ -304,14 +298,14 @@ fun GradientButton(
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
-                color = Color.Transparent,
+                color = androidx.compose.ui.graphics.Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxHeight()
-                .background(Color.Transparent)
+                .background(androidx.compose.ui.graphics.Color.Transparent)
                 .padding(horizontal = 16.dp, vertical = 2.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -331,10 +325,11 @@ fun NotificacionCard(
     onArchivar: (() -> Unit)? = null,
     onBorrar: (() -> Unit)? = null
 ) {
-    val color = when (noti.tipo) {
-        "parche" -> Color(0xFF296DFF)
-        "infraccion" -> Color(0xFFFF7675)
-        else -> Color(0xFF8F5CFF)
+    val cs = MaterialTheme.colorScheme
+    val colorAcento = when (noti.tipo) {
+        "parche" -> cs.primary
+        "infraccion" -> cs.error
+        else -> cs.secondary
     }
 
     Box(
@@ -344,13 +339,13 @@ fun NotificacionCard(
             .border(
                 width = 2.dp,
                 brush = Brush.horizontalGradient(
-                    listOf(color, TorneoYaPalette.violet)
+                    listOf(colorAcento, cs.secondary)
                 ),
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
                 Brush.horizontalGradient(
-                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                    listOf(cs.surfaceVariant, cs.surface)
                 )
             )
             .padding(vertical = 18.dp, horizontal = 16.dp)
@@ -363,7 +358,7 @@ fun NotificacionCard(
             ) {
                 Text(
                     text = noti.titulo,
-                    color = color,
+                    color = colorAcento,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     maxLines = 2,
@@ -377,7 +372,7 @@ fun NotificacionCard(
                         Icon(
                             imageVector = Icons.Filled.Delete,
                             contentDescription = stringResource(R.string.gen_eliminar),
-                            tint = Color(0xFF8F5CFF)
+                            tint = cs.secondary
                         )
                     }
                 } else if (onArchivar != null) {
@@ -388,7 +383,7 @@ fun NotificacionCard(
                         Icon(
                             imageVector = Icons.Filled.Done,
                             contentDescription = stringResource(R.string.notisc_icon_desc_marcar_leida),
-                            tint = Color(0xFF8F5CFF)
+                            tint = cs.secondary
                         )
                     }
                 }
@@ -396,7 +391,7 @@ fun NotificacionCard(
             Spacer(Modifier.height(6.dp))
             Text(
                 text = noti.mensaje,
-                color = Color(0xFFB7B7D1),
+                color = cs.mutedText,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Normal
             )
@@ -404,7 +399,7 @@ fun NotificacionCard(
                 Spacer(Modifier.height(7.dp))
                 Text(
                     text = formatTimestamp(noti.fechaHora),
-                    color = Color(0xFF8F5CFF),
+                    color = cs.secondary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp
                 )
