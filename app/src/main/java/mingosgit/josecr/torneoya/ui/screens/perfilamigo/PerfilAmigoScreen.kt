@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
@@ -38,29 +37,24 @@ fun PerfilAmigoScreen(
     viewModel: PerfilAmigoViewModel = viewModel(factory = PerfilAmigoViewModel.Factory(amigoUid))
 ) {
     val state by viewModel.state.collectAsState()
+
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
     val accent = TorneoYaPalette.accent
-    val mutedText = TorneoYaPalette.mutedText
-
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
+    val mutedText = MaterialTheme.colorScheme.onSurfaceVariant
+    val modernBackground = TorneoYaPalette.backgroundGradient
 
     val context = LocalContext.current
     var showCopiedMessage by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val textBack = stringResource(id = R.string.gen_volver)
-    val textProfileFriend = stringResource(id = R.string.ponfilamigo_title_profile) // define este en strings.xml
+    val textProfileFriend = stringResource(id = R.string.ponfilamigo_title_profile)
     val textUidCopied = stringResource(id = R.string.gen_uid_copiado)
-    val textGoals = stringResource(id = R.string.ponfilamigo_label_goals)  // define en strings.xml
-    val textAssists = stringResource(id = R.string.ponfilamigo_label_assists)  // define en strings.xml
-    val textAverage = stringResource(id = R.string.ponfilamigo_label_average)  // define en strings.xml
-    val textMatchesPlayed = stringResource(id = R.string.ponfilamigo_label_matches_played) // define en strings.xml
+    val textGoals = stringResource(id = R.string.ponfilamigo_label_goals)
+    val textAssists = stringResource(id = R.string.ponfilamigo_label_assists)
+    val textAverage = stringResource(id = R.string.ponfilamigo_label_average)
+    val textMatchesPlayed = stringResource(id = R.string.ponfilamigo_label_matches_played)
 
     Box(
         Modifier
@@ -73,7 +67,7 @@ fun PerfilAmigoScreen(
                 .fillMaxSize()
                 .padding(horizontal = 22.dp)
         ) {
-            Spacer(modifier = Modifier.height(42.dp)) // Margen superior mayor
+            Spacer(modifier = Modifier.height(42.dp))
 
             Box(
                 modifier = Modifier
@@ -97,19 +91,21 @@ fun PerfilAmigoScreen(
                             )
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 )
                             )
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = textBack,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(26.dp)
                         )
                     }
 
-                    // Botón compartir/copiar UID
                     IconButton(
                         onClick = {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -131,14 +127,17 @@ fun PerfilAmigoScreen(
                             )
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 )
                             )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = stringResource(id = R.string.gen_copiar_uid),
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(23.dp)
                         )
                     }
@@ -149,7 +148,7 @@ fun PerfilAmigoScreen(
                 textProfileFriend,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 26.sp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(16.dp))
             Box(
@@ -162,7 +161,12 @@ fun PerfilAmigoScreen(
                         shape = CircleShape
                     )
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -175,7 +179,7 @@ fun PerfilAmigoScreen(
                     Icon(
                         painter = painterResource(id = avatarRes),
                         contentDescription = stringResource(id = R.string.gen_avatar_desc),
-                        tint = Color.Unspecified,
+                        tint = androidx.compose.ui.graphics.Color.Unspecified,
                         modifier = Modifier
                             .size(92.dp)
                             .clip(CircleShape)
@@ -187,14 +191,14 @@ fun PerfilAmigoScreen(
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 state.nombreUsuario ?: stringResource(id = R.string.gen_amigos),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold,
                 fontSize = 21.sp
             )
             Spacer(modifier = Modifier.height(7.dp))
             Text(
                 "UID: ${state.uid}",
-                color = mutedText,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 fontSize = 13.sp
             )
             Spacer(modifier = Modifier.height(22.dp))
@@ -207,7 +211,14 @@ fun PerfilAmigoScreen(
                         shape = RoundedCornerShape(17.dp)
                     )
                     .clip(RoundedCornerShape(17.dp))
-                    .background(Color(0xFF23273D))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
+                    )
             ) {
                 Column(
                     modifier = Modifier.padding(vertical = 16.dp, horizontal = 10.dp)
@@ -217,28 +228,28 @@ fun PerfilAmigoScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(textGoals, color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(textGoals, color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 state.goles?.toString() ?: "-",
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Black
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(textAssists, color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(textAssists, color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 state.asistencias?.toString() ?: "-",
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Black
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(textAverage, color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(textAverage, color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 if (state.promedioGoles != null) String.format("%.2f", state.promedioGoles) else "-",
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Black
                             )
@@ -270,14 +281,14 @@ fun PerfilAmigoScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Surface(
-                    color = Color(0xEE24243A),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.93f),
                     shape = RoundedCornerShape(13.dp),
                     shadowElevation = 7.dp
                 ) {
                     Text(
                         textUidCopied,
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )

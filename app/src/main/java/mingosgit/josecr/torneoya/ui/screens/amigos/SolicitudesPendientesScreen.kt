@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -23,10 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.NavController
-import androidx.compose.ui.unit.LayoutDirection
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
@@ -40,12 +39,11 @@ fun SolicitudesPendientesScreen(
     )
 ) {
     val solicitudes by amigosViewModel.solicitudes.collectAsState()
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
+    val cs = MaterialTheme.colorScheme
+    val gradientBorder = remember(cs.primary, cs.secondary) {
+        Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    }
+    val modernBackground = TorneoYaPalette.backgroundGradient
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -60,19 +58,22 @@ fun SolicitudesPendientesScreen(
                             icon = Icons.Default.ArrowBack,
                             contentDescription = stringResource(id = R.string.gen_volver),
                             onClick = { navController.popBackStack() },
-                            gradient = Brush.horizontalGradient(listOf(Color(0xFF296DFF), Color(0xFF8F5CFF)))
+                            gradient = gradientBorder,
+                            iconTint = cs.onSurface,
+                            background = cs.surfaceVariant
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = stringResource(id = R.string.solpensc_titulo),
-                            color = Color(0xFFF7F7FF),
+                            color = cs.onBackground,
                             fontWeight = FontWeight.Bold,
                             fontSize = 23.sp
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = Color.Transparent,
+                    titleContentColor = cs.onSurface
                 )
             )
         }
@@ -97,14 +98,14 @@ fun SolicitudesPendientesScreen(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = Color(0xFF296DFF).copy(alpha = 0.13f),
+                            color = cs.primary.copy(alpha = 0.13f),
                             shadowElevation = 0.dp,
                             modifier = Modifier.size(80.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = null,
-                                tint = Color(0xFF296DFF),
+                                tint = cs.primary,
                                 modifier = Modifier.padding(22.dp)
                             )
                         }
@@ -113,13 +114,13 @@ fun SolicitudesPendientesScreen(
                             text = stringResource(id = R.string.solpensc_no_solicitudes_titulo),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 19.sp,
-                            color = Color(0xFFB7B7D1)
+                            color = cs.onSurfaceVariant
                         )
                         Spacer(Modifier.height(9.dp))
                         Text(
                             text = stringResource(id = R.string.solpensc_no_solicitudes_desc),
                             fontSize = 15.sp,
-                            color = Color(0xFF8F5CFF),
+                            color = cs.secondary,
                             fontWeight = FontWeight.Normal,
                             lineHeight = 21.sp,
                             modifier = Modifier.padding(horizontal = 15.dp)
@@ -162,7 +163,9 @@ fun GradientBorderedIconButton(
     onClick: () -> Unit,
     gradient: Brush,
     size: androidx.compose.ui.unit.Dp = 38.dp,
-    iconSize: androidx.compose.ui.unit.Dp = 21.dp
+    iconSize: androidx.compose.ui.unit.Dp = 21.dp,
+    iconTint: Color = MaterialTheme.colorScheme.onSurface,
+    background: Color = MaterialTheme.colorScheme.surfaceVariant
 ) {
     Box(
         modifier = Modifier
@@ -173,14 +176,14 @@ fun GradientBorderedIconButton(
                 brush = gradient,
                 shape = CircleShape
             )
-            .background(Color.Transparent)
+            .background(background, CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             icon,
             contentDescription = contentDescription,
-            tint = Color.White,
+            tint = iconTint,
             modifier = Modifier.size(iconSize)
         )
     }
@@ -194,18 +197,27 @@ fun SolicitudItem(
     onAceptar: () -> Unit,
     onRechazar: () -> Unit
 ) {
+    val cs = MaterialTheme.colorScheme
+    val gradientBorder = remember(cs.primary, cs.secondary) {
+        Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    }
+    val gradientAccept = remember(cs.tertiary, cs.secondary) {
+        Brush.horizontalGradient(listOf(cs.tertiary, cs.secondary))
+    }
+    val gradientReject = remember(cs.error, cs.secondary) {
+        Brush.horizontalGradient(listOf(cs.error, cs.secondary))
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(17.dp))
             .border(
                 width = 2.dp,
-                brush = Brush.horizontalGradient(
-                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                ),
+                brush = gradientBorder,
                 shape = RoundedCornerShape(17.dp)
             )
-            .background(Color(0xFF1B1E2E)),
+            .background(cs.surfaceVariant),
         color = Color.Transparent,
         shadowElevation = 3.dp
     ) {
@@ -230,14 +242,15 @@ fun SolicitudItem(
                     .border(
                         width = 2.dp,
                         brush = Brush.horizontalGradient(
-                            listOf(TorneoYaPalette.yellow, TorneoYaPalette.blue)
+                            listOf(cs.tertiary, cs.primary)
                         ),
                         shape = CircleShape
                     )
                     .background(
                         Brush.horizontalGradient(
-                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                        )
+                            listOf(cs.surfaceVariant, cs.surface)
+                        ),
+                        CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -254,7 +267,7 @@ fun SolicitudItem(
                     Text(
                         nombreUsuario.take(1).uppercase(),
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = cs.onSurface,
                         fontSize = 22.sp
                     )
                 }
@@ -268,7 +281,7 @@ fun SolicitudItem(
                     nombreUsuario,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    color = Color(0xFFF7F7FF)
+                    color = cs.onSurface
                 )
             }
             Spacer(Modifier.width(12.dp))
@@ -278,17 +291,15 @@ fun SolicitudItem(
                     .size(32.dp)
                     .border(
                         2.dp,
-                        Brush.horizontalGradient(
-                            listOf(Color(0xFF43e97b), TorneoYaPalette.violet)
-                        ),
+                        gradientAccept,
                         shape = CircleShape
                     )
-                    .background(Color(0xFF212442), CircleShape)
+                    .background(cs.surfaceVariant, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = stringResource(id = R.string.gen_iniciar_sesion),
-                    tint = Color(0xFF43e97b),
+                    tint = cs.tertiary,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -299,17 +310,15 @@ fun SolicitudItem(
                     .size(32.dp)
                     .border(
                         2.dp,
-                        Brush.horizontalGradient(
-                            listOf(Color(0xFFc0392b), TorneoYaPalette.violet)
-                        ),
+                        gradientReject,
                         shape = CircleShape
                     )
-                    .background(Color(0xFF212442), CircleShape)
+                    .background(cs.surfaceVariant, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = stringResource(id = R.string.gen_eliminar_amigo),
-                    tint = Color(0xFFc0392b),
+                    tint = cs.error,
                     modifier = Modifier.size(18.dp)
                 )
             }

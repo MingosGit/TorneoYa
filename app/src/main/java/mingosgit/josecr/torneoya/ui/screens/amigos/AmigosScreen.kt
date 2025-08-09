@@ -1,5 +1,3 @@
-// Archivo: AmigosScreen.kt
-
 package mingosgit.josecr.torneoya.ui.screens.amigos
 
 import android.widget.Toast
@@ -20,7 +18,22 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material3.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,18 +43,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
-import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
-import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
-import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
-import androidx.compose.ui.res.stringResource
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
+import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -60,12 +73,9 @@ fun AmigosScreen(
     LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() }
     LaunchedEffect(Unit) { amigosViewModel.cargarAmigosYSolicitudes() }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
+    val cs = MaterialTheme.colorScheme
+    val gradientBorder = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    val modernBackground = TorneoYaPalette.backgroundGradient
 
     if (!sesionOnlineActiva) {
         Box(
@@ -83,14 +93,14 @@ fun AmigosScreen(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFF296DFF).copy(alpha = 0.13f),
+                    color = cs.primary.copy(alpha = 0.13f),
                     shadowElevation = 0.dp,
                     modifier = Modifier.size(85.dp)
                 ) {
                     Icon(
                         Icons.Default.PersonAdd,
                         contentDescription = stringResource(id = R.string.gen_icono_amigos_desc),
-                        tint = Color(0xFF296DFF),
+                        tint = cs.primary,
                         modifier = Modifier.padding(22.dp)
                     )
                 }
@@ -99,20 +109,20 @@ fun AmigosScreen(
                     text = stringResource(id = R.string.amigossc_acceso_titulo),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = cs.onBackground,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
                 Text(
                     text = stringResource(id = R.string.amigossc_acceso_desc),
                     fontSize = 16.sp,
-                    color = Color(0xFFB7B7D1),
+                    color = cs.onSurfaceVariant,
                     lineHeight = 22.sp,
                     modifier = Modifier.padding(horizontal = 16.dp),
                     fontWeight = FontWeight.Normal,
                 )
                 Spacer(Modifier.height(32.dp))
 
-                // Botón Iniciar sesión con borde gradiente y fondo acorde
+                // Botón Iniciar sesión
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -120,14 +130,12 @@ fun AmigosScreen(
                         .clip(RoundedCornerShape(15.dp))
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorder,
                             shape = RoundedCornerShape(15.dp)
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(cs.surfaceVariant, cs.surface)
                             )
                         )
                         .clickable { navController.navigate("login") },
@@ -135,14 +143,14 @@ fun AmigosScreen(
                 ) {
                     Text(
                         stringResource(id = R.string.gen_iniciar_sesion),
-                        color = Color.White,
+                        color = cs.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                 }
                 Spacer(Modifier.height(11.dp))
 
-                // Botón Crear cuenta con borde gradiente y fondo acorde
+                // Botón Crear cuenta
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -150,14 +158,12 @@ fun AmigosScreen(
                         .clip(RoundedCornerShape(15.dp))
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorder,
                             shape = RoundedCornerShape(15.dp)
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(cs.surfaceVariant, cs.surface)
                             )
                         )
                         .clickable { navController.navigate("register") },
@@ -165,7 +171,7 @@ fun AmigosScreen(
                 ) {
                     Text(
                         stringResource(id = R.string.gen_crear_cuenta),
-                        color = TorneoYaPalette.blue,
+                        color = cs.primary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
                     )
@@ -176,7 +182,7 @@ fun AmigosScreen(
                 Text(
                     text = stringResource(id = R.string.amigossc_cuenta_local),
                     fontSize = 14.sp,
-                    color = Color(0xFFB7B7D1),
+                    color = cs.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -214,7 +220,7 @@ fun AmigosScreen(
                     text = stringResource(id = R.string.amigossc_titulo),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = cs.onBackground,
                     modifier = Modifier.weight(1f)
                 )
                 Box(
@@ -223,14 +229,12 @@ fun AmigosScreen(
                         .clip(CircleShape)
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorder,
                             shape = CircleShape
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(cs.surfaceVariant, cs.surface)
                             )
                         )
                         .clickable { navController.navigate("solicitudes_pendientes") },
@@ -240,8 +244,8 @@ fun AmigosScreen(
                         BadgedBox(
                             badge = {
                                 Badge(
-                                    containerColor = TorneoYaPalette.violet,
-                                    contentColor = Color.White,
+                                    containerColor = cs.secondary,
+                                    contentColor = cs.onSecondary,
                                 ) {
                                     Text("${solicitudes.size}")
                                 }
@@ -250,7 +254,7 @@ fun AmigosScreen(
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = stringResource(id = R.string.amigossc_solicitudes_desc),
-                                tint = Color(0xFF8F5CFF),
+                                tint = cs.secondary,
                                 modifier = Modifier.size(25.dp)
                             )
                         }
@@ -258,7 +262,7 @@ fun AmigosScreen(
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = stringResource(id = R.string.amigossc_solicitudes_desc),
-                            tint = Color(0xFF8F5CFF),
+                            tint = cs.secondary,
                             modifier = Modifier.size(25.dp)
                         )
                     }
@@ -275,7 +279,7 @@ fun AmigosScreen(
                 ) {
                     Text(
                         stringResource(id = R.string.amigossc_no_amigos),
-                        color = Color(0xFFB7B7D1),
+                        color = cs.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp
                     )
@@ -303,12 +307,10 @@ fun AmigosScreen(
                                 .clip(RoundedCornerShape(17.dp))
                                 .border(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                    ),
+                                    brush = gradientBorder,
                                     shape = RoundedCornerShape(17.dp)
                                 )
-                                .background(Color(0xFF23273D))
+                                .background(cs.surfaceVariant)
                                 .clickable {
                                     navController.navigate("perfil_amigo/${amigo.uid}")
                                 },
@@ -321,12 +323,20 @@ fun AmigosScreen(
                                     .padding(vertical = 14.dp, horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // CORREGIDO: Mueve la obtención del avatarResId FUERA del contexto composable
                                 val avatarNum = amigo.avatar ?: 0
-                                val avatarResId = if (avatarNum > 0)
-                                    LocalContext.current.resources.getIdentifier("avatar_$avatarNum", "drawable", LocalContext.current.packageName)
-                                else
-                                    LocalContext.current.resources.getIdentifier("avatar_placeholder", "drawable", LocalContext.current.packageName)
+                                val avatarResId =
+                                    if (avatarNum > 0)
+                                        LocalContext.current.resources.getIdentifier(
+                                            "avatar_$avatarNum",
+                                            "drawable",
+                                            LocalContext.current.packageName
+                                        )
+                                    else
+                                        LocalContext.current.resources.getIdentifier(
+                                            "avatar_placeholder",
+                                            "drawable",
+                                            LocalContext.current.packageName
+                                        )
 
                                 Box(
                                     modifier = Modifier
@@ -334,7 +344,7 @@ fun AmigosScreen(
                                         .clip(CircleShape)
                                         .background(
                                             Brush.horizontalGradient(
-                                                listOf(Color(0xFF296DFF).copy(alpha = 0.22f), Color(0xFF8F5CFF).copy(alpha = 0.17f))
+                                                listOf(cs.primary.copy(alpha = 0.22f), cs.secondary.copy(alpha = 0.17f))
                                             )
                                         ),
                                     contentAlignment = Alignment.Center
@@ -351,7 +361,7 @@ fun AmigosScreen(
                                     } else {
                                         Text(
                                             amigo.nombreUsuario.take(1).uppercase(),
-                                            color = Color.White,
+                                            color = cs.onSurface,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 21.sp
                                         )
@@ -363,14 +373,14 @@ fun AmigosScreen(
                                         text = stringResource(id = R.string.amigossc_nombre_label, amigo.nombreUsuario),
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 17.sp,
-                                        color = Color.White,
+                                        color = cs.onSurface,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = stringResource(id = R.string.amigossc_uid_label, amigo.uid),
                                         fontSize = 13.sp,
-                                        color = Color(0xFFB7B7D1),
+                                        color = cs.onSurfaceVariant,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -382,7 +392,7 @@ fun AmigosScreen(
                                         Icon(
                                             Icons.Default.MoreHoriz,
                                             contentDescription = stringResource(id = R.string.amigossc_opciones),
-                                            tint = Color(0xFF8F5CFF)
+                                            tint = cs.secondary
                                         )
                                     }
                                     DropdownMenu(
@@ -401,14 +411,14 @@ fun AmigosScreen(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.gen_eliminar_amigo), color = Color(0xFFFF7675)) },
+                                            text = { Text(stringResource(id = R.string.gen_eliminar_amigo), color = cs.error) },
                                             onClick = {
                                                 uidAEliminar = amigo.uid
                                                 showEliminarDialog = true
                                                 expandedUid = null
                                             },
                                             leadingIcon = {
-                                                Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFFF7675))
+                                                Icon(Icons.Default.Delete, contentDescription = null, tint = cs.error)
                                             }
                                         )
                                     }
@@ -430,18 +440,26 @@ fun AmigosScreen(
             shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.Transparent,
-                contentColor = Color(0xFF296DFF)
+                contentColor = cs.primary
             ),
             border = ButtonDefaults.outlinedButtonBorder.copy(
                 width = 2.dp,
-                brush = Brush.horizontalGradient(
-                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                )
+                brush = gradientBorder
             )
         ) {
-            Icon(Icons.Default.PersonAdd, contentDescription = stringResource(id = R.string.amigossc_añadir_amigo), modifier = Modifier.size(24.dp), tint = Color(0xFF296DFF))
+            Icon(
+                Icons.Default.PersonAdd,
+                contentDescription = stringResource(id = R.string.amigossc_añadir_amigo),
+                modifier = Modifier.size(24.dp),
+                tint = cs.primary
+            )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(stringResource(id = R.string.amigossc_añadir_amigo), color = Color(0xFF296DFF), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(
+                stringResource(id = R.string.amigossc_añadir_amigo),
+                color = cs.primary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
         }
 
         if (showSheet) {
@@ -463,10 +481,11 @@ fun AmigosScreen(
                             Modifier
                                 .width(42.dp)
                                 .height(8.dp)
-                                .background(Color.LightGray, RoundedCornerShape(5.dp))
+                                .background(cs.onSurfaceVariant, RoundedCornerShape(5.dp))
                         )
                     }
-                }
+                },
+                containerColor = cs.surface
             ) {
                 BottomSheetContent(
                     userUid = userUid,
@@ -490,21 +509,24 @@ fun AmigosScreen(
                         .clip(RoundedCornerShape(18.dp))
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorder,
                             shape = RoundedCornerShape(18.dp)
                         )
-                        .background(Color(0xFF191A23))
+                        .background(cs.surface)
                         .padding(26.dp)
                         .widthIn(min = 270.dp, max = 340.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(stringResource(id = R.string.gen_eliminar_titulo), fontWeight = FontWeight.Bold, color = Color.White, fontSize = 19.sp)
+                        Text(
+                            stringResource(id = R.string.gen_eliminar_titulo),
+                            fontWeight = FontWeight.Bold,
+                            color = cs.onSurface,
+                            fontSize = 19.sp
+                        )
                         Spacer(Modifier.height(9.dp))
                         Text(
                             stringResource(id = R.string.amigossc_eliminar_confirm),
-                            color = Color(0xFFB7B7D1),
+                            color = cs.onSurfaceVariant,
                             fontSize = 15.sp
                         )
                         Spacer(Modifier.height(22.dp))
@@ -520,13 +542,11 @@ fun AmigosScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 border = ButtonDefaults.outlinedButtonBorder.copy(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                    )
+                                    brush = gradientBorder
                                 ),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     containerColor = Color.Transparent,
-                                    contentColor = Color.White
+                                    contentColor = cs.onSurface
                                 ),
                                 modifier = Modifier
                                     .weight(1f)
@@ -534,7 +554,7 @@ fun AmigosScreen(
                             ) {
                                 Text(
                                     stringResource(id = R.string.gen_cancelar),
-                                    color = Color.White,
+                                    color = cs.onSurface,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -548,13 +568,13 @@ fun AmigosScreen(
                                 border = ButtonDefaults.outlinedButtonBorder.copy(
                                     width = 2.dp,
                                     brush = Brush.horizontalGradient(
-                                        listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
+                                        listOf(cs.error, cs.secondary)
                                     )
                                 ),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     containerColor = Color.Transparent,
-                                    contentColor = Color(0xFFFF7675)
+                                    contentColor = cs.error
                                 ),
                                 modifier = Modifier
                                     .weight(1f)
@@ -562,7 +582,7 @@ fun AmigosScreen(
                             ) {
                                 Text(
                                     stringResource(id = R.string.gen_eliminar),
-                                    color = Color(0xFFFF7675),
+                                    color = cs.error,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -573,6 +593,7 @@ fun AmigosScreen(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomSheetContent(
@@ -582,6 +603,9 @@ private fun BottomSheetContent(
     agregarUiState: AgregarAmigoViewModel.UiState,
     agregarAmigoViewModel: AgregarAmigoViewModel
 ) {
+    val cs = MaterialTheme.colorScheme
+    val gradientBorder = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+
     var amigoUidInput by remember { mutableStateOf("") }
     var showToast by remember { mutableStateOf(false) }
 
@@ -604,19 +628,17 @@ private fun BottomSheetContent(
                 .clip(RoundedCornerShape(10.dp))
                 .border(
                     width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                    ),
+                    brush = gradientBorder,
                     shape = RoundedCornerShape(10.dp)
                 )
-                .background(Color(0xFF23273D))
+                .background(cs.surfaceVariant)
                 .padding(12.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(userUid ?: stringResource(id = R.string.gen_cargando), color = Color.White, fontSize = 15.sp)
+                Text(userUid ?: stringResource(id = R.string.gen_cargando), color = cs.onSurface, fontSize = 15.sp)
                 Spacer(Modifier.width(8.dp))
                 IconButton(onClick = {
                     userUid?.let {
@@ -624,7 +646,7 @@ private fun BottomSheetContent(
                         showToast = true
                     }
                 }) {
-                    Icon(Icons.Default.ContentCopy, contentDescription = stringResource(id = R.string.gen_copiar_uid), tint = Color(0xFF8F5CFF))
+                    Icon(Icons.Default.ContentCopy, contentDescription = stringResource(id = R.string.gen_copiar_uid), tint = cs.secondary)
                 }
             }
         }
@@ -637,17 +659,15 @@ private fun BottomSheetContent(
                 .clip(RoundedCornerShape(10.dp))
                 .border(
                     width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                    ),
+                    brush = gradientBorder,
                     shape = RoundedCornerShape(10.dp)
                 )
-                .background(Color(0xFF23273D))
+                .background(cs.surfaceVariant)
                 .padding(vertical = 12.dp)
         ) {
             Text(
                 stringResource(id = R.string.amigossc_buscar_uid),
-                color = Color.White,
+                color = cs.onSurface,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier.align(Alignment.Center)
@@ -659,23 +679,26 @@ private fun BottomSheetContent(
         OutlinedTextField(
             value = amigoUidInput,
             onValueChange = { amigoUidInput = it },
-            label = { Text(stringResource(id = R.string.amigossc_uid_amigo), color = Color(0xFF8F5CFF)) },
+            label = { Text(stringResource(id = R.string.amigossc_uid_amigo), color = cs.secondary) },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp)),
             shape = RoundedCornerShape(10.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = Color(0xFF191A23),
-                focusedBorderColor = Color(0xFF8F5CFF),
-                unfocusedBorderColor = Color(0xFF23273D)
+                containerColor = MaterialTheme.colorScheme.surface,
+                focusedBorderColor = cs.secondary,
+                unfocusedBorderColor = cs.surfaceVariant,
+                cursorColor = cs.onSurface,
+                focusedLabelColor = cs.secondary,
+                unfocusedLabelColor = cs.onSurfaceVariant,
             ),
             trailingIcon = {
                 IconButton(onClick = {
                     val clip = clipboard.getText()
                     if (clip != null) amigoUidInput = clip.text
                 }) {
-                    Icon(Icons.Default.ContentPaste, contentDescription = stringResource(id = R.string.gen_pegar_uid), tint = Color(0xFF8F5CFF))
+                    Icon(Icons.Default.ContentPaste, contentDescription = stringResource(id = R.string.gen_pegar_uid), tint = cs.secondary)
                 }
             }
         )
@@ -691,16 +714,14 @@ private fun BottomSheetContent(
             shape = RoundedCornerShape(10.dp),
             border = ButtonDefaults.outlinedButtonBorder.copy(
                 width = 2.dp,
-                brush = Brush.horizontalGradient(
-                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                )
+                brush = gradientBorder
             ),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color(0xFF23273D),
-                contentColor = Color.White
+                containerColor = cs.surfaceVariant,
+                contentColor = cs.onSurface
             )
         ) {
-            Text(stringResource(id = R.string.gen_buscar), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(stringResource(id = R.string.gen_buscar), color = cs.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
 
         when (agregarUiState) {
@@ -713,17 +734,21 @@ private fun BottomSheetContent(
                         .clip(RoundedCornerShape(13.dp))
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorder,
                             shape = RoundedCornerShape(13.dp)
                         )
-                        .background(Color(0xFF23273D))
+                        .background(cs.surfaceVariant)
                         .padding(18.dp)
                 ) {
                     Column {
-                        Text(stringResource(id = R.string.amigossc_nombre_label, usuario.nombreUsuario), color = Color(0xFFB7B7D1))
-                        Text(stringResource(id = R.string.amigossc_uid_label, usuario.uid), color = Color(0xFFB7B7D1))
+                        Text(
+                            stringResource(id = R.string.amigossc_nombre_label, usuario.nombreUsuario),
+                            color = cs.onSurfaceVariant
+                        )
+                        Text(
+                            stringResource(id = R.string.amigossc_uid_label, usuario.uid),
+                            color = cs.onSurfaceVariant
+                        )
                         Spacer(Modifier.height(10.dp))
                         Row(
                             Modifier.fillMaxWidth(),
@@ -737,17 +762,20 @@ private fun BottomSheetContent(
                                 shape = RoundedCornerShape(10.dp),
                                 border = ButtonDefaults.outlinedButtonBorder.copy(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                    )
+                                    brush = gradientBorder
                                 ),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = Color(0xFF23273D),
-                                    contentColor = Color.White
+                                    containerColor = cs.surfaceVariant,
+                                    contentColor = cs.onSurface
                                 ),
                                 modifier = Modifier.height(44.dp)
                             ) {
-                                Text(stringResource(id = R.string.amigossc_si_enviar_solicitud), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(
+                                    stringResource(id = R.string.amigossc_si_enviar_solicitud),
+                                    color = cs.onSurface,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
                             }
 
                         }
@@ -758,14 +786,14 @@ private fun BottomSheetContent(
                 Spacer(Modifier.height(18.dp))
                 Text(
                     text = stringResource(id = (agregarUiState as AgregarAmigoViewModel.UiState.Error).resId),
-                    color = Color.Red
+                    color = cs.error
                 )
             }
             is AgregarAmigoViewModel.UiState.Exito -> {
                 Spacer(Modifier.height(18.dp))
                 Text(
                     stringResource(id = R.string.amigossc_solicitud_enviada),
-                    color = Color(0xFF2ecc71)
+                    color = cs.primary
                 )
             }
             else -> {}
@@ -773,5 +801,3 @@ private fun BottomSheetContent(
         Spacer(Modifier.height(12.dp))
     }
 }
-
-

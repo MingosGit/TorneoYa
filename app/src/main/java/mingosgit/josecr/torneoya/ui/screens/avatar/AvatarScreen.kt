@@ -1,4 +1,3 @@
-// Archivo: AvatarScreen.kt
 package mingosgit.josecr.torneoya.ui.screens.avatar
 
 import androidx.compose.foundation.Image
@@ -38,19 +37,16 @@ fun AvatarScreen(
     globalUserViewModel: GlobalUserViewModel
 ) {
     val totalAvatares = 21
-    val avatarList = listOf(0) + (1..totalAvatares)  // 0 será el placeholder
+    val avatarList = listOf(0) + (1..totalAvatares)
     val context = LocalContext.current
 
     val avatarActual by globalUserViewModel.avatar.collectAsState()
     var selectedAvatar by remember { mutableStateOf(avatarActual ?: 1) }
     var guardando by remember { mutableStateOf(false) }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
+    val cs = MaterialTheme.colorScheme
+    val gradientBorder = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+    val modernBackground = TorneoYaPalette.backgroundGradient
 
     val scope = rememberCoroutineScope()
 
@@ -60,7 +56,7 @@ fun AvatarScreen(
                 title = {
                     Text(
                         text = stringResource(id = R.string.AvatSC_title),
-                        color = Color.White,
+                        color = cs.onBackground,
                         fontSize = 23.sp,
                         fontWeight = FontWeight.Black
                     )
@@ -73,29 +69,24 @@ fun AvatarScreen(
                             .clip(CircleShape)
                             .border(
                                 width = 2.dp,
-                                brush = Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                ),
+                                brush = gradientBorder,
                                 shape = CircleShape
                             )
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                                )
-                            )
+                            .background(cs.surfaceVariant)
                             .clickable { navController.popBackStack() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             painter = painterResource(id = android.R.drawable.ic_menu_close_clear_cancel),
                             contentDescription = stringResource(id = R.string.gen_cerrar),
-                            tint = Color(0xFF8F5CFF),
+                            tint = cs.secondary,
                             modifier = Modifier.size(22.dp)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = Color.Transparent,
+                    titleContentColor = cs.onSurface
                 )
             )
         },
@@ -104,12 +95,11 @@ fun AvatarScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(brush = modernBackground)
+                .background(modernBackground)
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(28.dp))
-            // AVATAR GRANDE SELECCIONADO
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -117,14 +107,12 @@ fun AvatarScreen(
                     .clip(CircleShape)
                     .border(
                         width = 5.dp,
-                        brush = Brush.horizontalGradient(
-                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                        ),
+                        brush = gradientBorder,
                         shape = CircleShape
                     )
                     .background(
                         Brush.radialGradient(
-                            colors = listOf(Color(0xFF23273D), Color(0xFF1B1D29)),
+                            colors = listOf(cs.surfaceVariant, cs.background),
                             radius = 210f
                         )
                     )
@@ -147,14 +135,13 @@ fun AvatarScreen(
             Spacer(modifier = Modifier.height(18.dp))
             Text(
                 text = stringResource(id = R.string.AvatSC_select_avatar),
-                color = Color(0xFFF7F7FF),
+                color = cs.onBackground,
                 fontSize = 21.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(8.dp)
             )
             Spacer(modifier = Modifier.height(6.dp))
 
-            // GRID DE AVATARES
             Box(
                 Modifier
                     .weight(1f)
@@ -193,16 +180,16 @@ fun AvatarScreen(
                                     .border(
                                         width = if (selectedAvatar == avatarNum) 3.5.dp else 2.dp,
                                         brush = if (selectedAvatar == avatarNum)
-                                            Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet))
+                                            gradientBorder
                                         else
-                                            Brush.horizontalGradient(listOf(Color(0xFF3E4160), Color(0xFF20243B))),
+                                            Brush.horizontalGradient(listOf(cs.outline, cs.surfaceVariant)),
                                         shape = CircleShape
                                     )
                                     .background(
                                         if (selectedAvatar == avatarNum)
-                                            Brush.radialGradient(listOf(Color(0x221968FF), Color.Transparent), radius = 55f)
+                                            Brush.radialGradient(listOf(cs.primary.copy(alpha = 0.15f), Color.Transparent), radius = 55f)
                                         else
-                                            Brush.radialGradient(listOf(Color(0x2223243D), Color.Transparent), radius = 55f)
+                                            Brush.radialGradient(listOf(cs.surfaceVariant.copy(alpha = 0.15f), Color.Transparent), radius = 55f)
                                     )
                                     .clickable {
                                         if (selectedAvatar != avatarNum) selectedAvatar = avatarNum
@@ -220,7 +207,6 @@ fun AvatarScreen(
                     .padding(horizontal = 30.dp),
                 horizontalArrangement = Arrangement.spacedBy(19.dp)
             ) {
-                // CANCELAR BUTTON
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -228,28 +214,21 @@ fun AvatarScreen(
                         .clip(RoundedCornerShape(15.dp))
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorder,
                             shape = RoundedCornerShape(15.dp)
                         )
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                            )
-                        )
+                        .background(cs.surfaceVariant)
                         .clickable { navController.popBackStack() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = stringResource(id = R.string.gen_cancelar),
-                        color = Color.White,
+                        color = cs.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                 }
 
-                // GUARDAR BUTTON SOLO BORDE, SIN FONDO
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -257,9 +236,7 @@ fun AvatarScreen(
                         .clip(RoundedCornerShape(15.dp))
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorder,
                             shape = RoundedCornerShape(15.dp)
                         )
                         .background(Color.Transparent)
@@ -276,7 +253,7 @@ fun AvatarScreen(
                 ) {
                     Text(
                         text = if (guardando) stringResource(id = R.string.gen_guardando) else stringResource(id = R.string.gen_guardar),
-                        color = TorneoYaPalette.blue,
+                        color = cs.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
