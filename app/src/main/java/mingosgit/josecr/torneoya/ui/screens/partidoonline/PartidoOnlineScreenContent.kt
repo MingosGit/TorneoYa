@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.R
@@ -187,30 +188,106 @@ fun PartidoOnlineScreenContent(
         val nombreB = partidoAdd?.nombreEquipoB ?: "Equipo B"
         val uid = partidoAdd?.uid
         val yaExiste = sortedPartidos.any { it.uid == uid }
+
         if (yaExiste) {
             LaunchedEffect(showAddConfirmDialog) {
                 showAddConfirmDialog = null
                 searchError = errorYaTienesAcceso
             }
         } else if (partidoAdd != null) {
-            AlertDialog(
-                onDismissRequest = { showAddConfirmDialog = null },
-                title = { Text(stringResource(id = R.string.ponline_agregar_partido_titulo), fontWeight = FontWeight.Bold, color = cs.onSurface) },
-                text = { Text(String.format(stringResource(id = R.string.ponline_agregar_partido_confirmacion), nombreA, nombreB), color = cs.onSurfaceVariant) },
-                confirmButton = {
-                    Button(onClick = {
-                        scope.launch { partidoViewModel.agregarPartidoALista(partidoAdd) }
-                        showAddConfirmDialog = null
-                        searchText = ""
-                        searchResults = emptyList()
-                        showSearchDropdown = false
-                    }) { Text(stringResource(id = R.string.ponline_agregar)) }
-                },
-                dismissButton = {
-                    OutlinedButton(onClick = { showAddConfirmDialog = null }) { Text(stringResource(id = R.string.gen_cancelar)) }
-                },
-                containerColor = cs.surfaceVariant
-            )
+            Dialog(onDismissRequest = { showAddConfirmDialog = null }) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
+                            shape = RoundedCornerShape(18.dp)
+                        )
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        )
+                ) {
+                    Column(
+                        Modifier.padding(horizontal = 22.dp, vertical = 26.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.ponline_agregar_partido_titulo),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                        Spacer(Modifier.height(11.dp))
+                        Text(
+                            text = String.format(
+                                stringResource(id = R.string.ponline_agregar_partido_confirmacion),
+                                nombreA, nombreB
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
+                            fontSize = 15.sp
+                        )
+                        uid?.let {
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                text = "UID: $it",
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                fontSize = 13.sp
+                            )
+                        }
+                        Spacer(Modifier.height(22.dp))
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch { partidoViewModel.agregarPartidoALista(partidoAdd) }
+                                    showAddConfirmDialog = null
+                                    searchText = ""
+                                    searchResults = emptyList()
+                                    showSearchDropdown = false
+                                },
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+                                ),
+                                shape = RoundedCornerShape(11.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.ponline_agregar),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(Modifier.width(14.dp))
+                            OutlinedButton(
+                                onClick = { showAddConfirmDialog = null },
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    width = 2.dp,
+                                    brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+                                ),
+                                shape = RoundedCornerShape(11.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.gen_cancelar),
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
