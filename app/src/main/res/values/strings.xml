@@ -338,6 +338,27 @@
     <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="login_success_message">¡Sesión iniciada correctamente!</string>
     <string name="login_reset_success">Correo de recuperación enviado. Revisa tu email.</string>
+    <!-- Errores de autenticación  -->
+    <string name="auth_unknown_error">Error desconocido</string>
+    <string name="auth_generic_error">Se ha producido un error de autenticación</string>
+    <string name="auth_network_error">Error de red. Comprueba tu conexión.</string>
+    <string name="auth_too_many_requests">Demasiados intentos. Inténtalo de nuevo más tarde.</string>
+    <string name="auth_operation_not_allowed">Esta operación no está permitida.</string>
+    <string name="auth_account_exists_with_different_credential">Ya existe una cuenta con otro método de acceso.</string>
+
+    <string name="auth_weak_password">La contraseña es demasiado débil. Usa al menos 6 caracteres.</string>
+    <string name="auth_invalid_credentials">Credenciales no válidas.</string>
+    <string name="auth_invalid_email">El correo electrónico no tiene un formato válido.</string>
+    <string name="auth_wrong_password">La contraseña es incorrecta.</string>
+    <string name="auth_invalid_verification_code">El código de verificación no es válido.</string>
+    <string name="auth_invalid_verification_id">El ID de verificación no es válido.</string>
+
+    <string name="auth_invalid_user">Usuario no válido o inexistente.</string>
+    <string name="auth_user_disabled">Esta cuenta de usuario está deshabilitada.</string>
+    <string name="auth_user_not_found">No existe ningún usuario con ese correo.</string>
+    <string name="auth_user_token_expired">La credencial del usuario ha caducado. Vuelve a iniciar sesión.</string>
+    <string name="auth_user_collision">Ya existe una cuenta con el mismo correo electrónico.</string>
+
 
     <!--- ===== MI CUENTA SCREEN ===== -->
     <string name="micuenta_title">Mi Cuenta</string>
@@ -365,6 +386,8 @@
     <string name="register_contraseña_label">Contraseña</string>
     <string name="register_registrar_button">Registrar</string>
     <string name="register_ya_tienes_cuenta">¿Ya tienes cuenta? Inicia sesión</string>
+    <string name="register_success_message">Registro correcto. Revisa tu correo para confirmar la cuenta.</string>
+    <string name="auth_email_already_in_use">El correo ya está registrado.</string>
 
 
     <!-- ===== USUARIO SCREEN ===== -->
@@ -411,4 +434,22 @@ Disfruta del fútbol tanto como yo disfruté creando esta app para ti.</string>
     <string name="theme_system">Tema del sistema</string>
 
 
+
+    <!-- ConfirmarCorreoScreen -->
+    <string name="confirmar_correo_titulo">Confirma tu correo</string>
+    <string name="confirmar_correo_mensaje">
+        Te hemos enviado un correo de confirmación a:
+        %1$s
+
+        Por favor confirma y luego pulsa el botón de abajo.
+    </string>
+    <string name="confirmar_correo_btn_verificado">Ya verificado</string>
+    <string name="confirmar_correo_btn_reenviar">Reenviar correo de verificación</string>
+    <string name="confirmar_correo_reenviado">Correo de verificación reenviado.</string>
+    <string name="confirmar_correo_no_verificado">Aún no has verificado tu correo.</string>
+    <string name="confirmar_correo_error_comprobar">Error al comprobar.</string>
+    <string name="confirmar_correo_sesion_expirada">Sesión expirada, vuelve a registrarte.</string>
+
+    <!-- Gen -->
+    <string name="gen_email_desc">Correo</string>
 </resources>

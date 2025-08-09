@@ -340,6 +340,25 @@
     <string name="login_forgot_password">Forgot your password?</string>
     <string name="login_success_message">Signed in successfully!</string>
     <string name="login_reset_success">Recovery email sent. Check your inbox.</string>
+    <string name="auth_unknown_error">Unknown error</string>
+    <string name="auth_generic_error">An authentication error has occurred</string>
+    <string name="auth_network_error">Network error. Please check your connection.</string>
+    <string name="auth_too_many_requests">Too many attempts. Please try again later.</string>
+    <string name="auth_operation_not_allowed">This operation is not allowed.</string>
+    <string name="auth_account_exists_with_different_credential">An account already exists with a different sign-in method.</string>
+
+    <string name="auth_weak_password">The password is too weak. Use at least 6 characters.</string>
+    <string name="auth_invalid_credentials">Invalid credentials.</string>
+    <string name="auth_invalid_email">The email address is not in a valid format.</string>
+    <string name="auth_wrong_password">The password is incorrect.</string>
+    <string name="auth_invalid_verification_code">The verification code is invalid.</string>
+    <string name="auth_invalid_verification_id">The verification ID is invalid.</string>
+
+    <string name="auth_invalid_user">Invalid or non-existent user.</string>
+    <string name="auth_user_disabled">This user account has been disabled.</string>
+    <string name="auth_user_not_found">No user exists with that email.</string>
+    <string name="auth_user_token_expired">The user\'s credential has expired. Please sign in again.</string>
+    <string name="auth_user_collision">An account with the same email address already exists.</string>
 
     <!--- ===== MY ACCOUNT SCREEN ===== -->
     <string name="micuenta_title">My Account</string>
@@ -368,6 +387,8 @@
     <string name="register_contraseña_label">Password</string>
     <string name="register_registrar_button">Register</string>
     <string name="register_ya_tienes_cuenta">Already have an account? Sign in</string>
+    <string name="register_success_message">Registration successful. Check your email to confirm your account.</string>
+    <string name="auth_email_already_in_use">The email is already registered.</string>
 
     <!-- ===== USER SCREEN ===== -->
     <string name="usuario_perfil_title">Profile</string>

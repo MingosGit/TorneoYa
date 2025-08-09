@@ -44,22 +44,22 @@
 
     <!-- AmigosScreen -->
     <string name="amigossc_acceso_titulo">Accés a Amics</string>
-    <string name="amigossc_acceso_desc">Inicia sessió per accedir a la teva llista d`amics, enviar sol·licituds i gestionar contactes.</string>
-    <string name="amigossc_cuenta_local">Prefereixes usar un compte local?&#10;Pots configurar-lo a Ajustos d`Usuari.</string>
+    <string name="amigossc_acceso_desc">Inicia sessió per accedir a la teva llista d\'amics, enviar sol·licituds i gestionar contactes.</string>
+    <string name="amigossc_cuenta_local">Prefereixes usar un compte local?&#10;Pots configurar-lo a Ajustos d\'Usuari.</string>
     <string name="amigossc_titulo">Amics</string>
-    <string name="amigossc_solicitudes">Sol·licituds d`amistat</string>
+    <string name="amigossc_solicitudes">Sol·licituds d\'amistat</string>
     <string name="amigossc_no_amigos">Encara no tens amics</string>
-    <string name="amigossc_copiar_codigo">Copiar codi d`amic</string>
+    <string name="amigossc_copiar_codigo">Copiar codi d\'amic</string>
     <string name="amigossc_añadir_amigo">Afegir amic</string>
     <string name="amigossc_buscar_uid">Cercar per UID</string>
-    <string name="amigossc_uid_amigo">UID de l`amic</string>
+    <string name="amigossc_uid_amigo">UID de l\'amic</string>
     <string name="amigossc_nombre_label">Nom: %1$s</string>
     <string name="amigossc_uid_label">UID: %1$s</string>
     <string name="amigossc_si_enviar_solicitud">Sí, enviar sol·licitud</string>
     <string name="amigossc_solicitud_enviada">Sol·licitud enviada!</string>
     <string name="amigossc_eliminar_confirm">Estàs segur que vols eliminar aquest amic? Aquesta acció no es pot desfer.</string>
     <string name="amigossc_opciones">Opcions</string>
-    <string name="amigossc_solicitudes_desc">Veure sol·licituds d`amistat</string>
+    <string name="amigossc_solicitudes_desc">Veure sol·licituds d\'amistat</string>
     <string name="amigos_err_self_add">No et pots afegir a tu mateix.</string>
     <string name="amigos_err_user_not_found">No existeix cap usuari amb aquest UID.</string>
     <string name="amigos_err_invalid_user">Usuari no vàlid.</string>
@@ -68,9 +68,9 @@
     <string name="amigos_err_send">Error en enviar la sol·licitud.</string>
 
     <!-- ===== SOL·LICITUDS PENDENTS SCREEN ===== -->
-    <string name="solpensc_titulo">Sol·licituds d`amistat</string>
+    <string name="solpensc_titulo">Sol·licituds d\'amistat</string>
     <string name="solpensc_no_solicitudes_titulo">No tens sol·licituds pendents</string>
-    <string name="solpensc_no_solicitudes_desc">Quan algú t`enviï una sol·licitud d`amistat, apareixerà aquí.</string>
+    <string name="solpensc_no_solicitudes_desc">Quan algú t\'enviï una sol·licitud d\'amistat, apareixerà aquí.</string>
 
     <!-- ===== AVATAR SCREEN ===== -->
     <string name="AvatSC_title">Tria el teu avatar</string>
@@ -82,7 +82,7 @@
     <!-- ===== HOME SCREEN ===== -->
     <string name="home_bienvenido_torneoya">Benvingut a TorneoYa</string>
     <string name="home_organiza_disfruta">Organitza i gaudeix dels teus partits.\n\nInicia sessió o crea el teu compte per començar.</string>
-    <string name="home_cuenta_local">Prefereixes un compte local?\nAccedeix des d`ajustos d`Usuari.</string>
+    <string name="home_cuenta_local">Prefereixes un compte local?\nAccedeix des d\'ajustos d\'Usuari.</string>
     <string name="home_hola_usuario">Hola, %1$s!</string>
     <string name="home_resumen_actividad">Resum de la teva activitat</string>
     <string name="home_proximo_partido_titulo">Pròxim partit online</string>
@@ -152,8 +152,8 @@
     <string name="adminroles_dar_rol_admin">Donar rol admin</string>
     <string name="adminroles_quitar_acceso">Treure accés</string>
     <string name="adminroles_confirmar_eliminacion">Confirmar eliminació</string>
-    <string name="adminroles_confirmar_eliminacion_admin">Estàs segur d`eliminar completament aquest administrador?</string>
-    <string name="adminroles_confirmar_eliminacion_usuario">Estàs segur de treure l`accés a aquest usuari?</string>
+    <string name="adminroles_confirmar_eliminacion_admin">Estàs segur d\'eliminar completament aquest administrador?</string>
+    <string name="adminroles_confirmar_eliminacion_usuario">Estàs segur de treure l\'accés a aquest usuari?</string>
 
     <!-- ===== ASIGNAR JUGADORS ONLINE SCREEN ===== -->
     <string name="asignjug_title">Assignar jugadors</string>
@@ -163,7 +163,7 @@
     <string name="asignjug_modo_aleatorio">Aleatori</string>
     <string name="asignjug_jugadores_equipo_a">Jugadors Equip A</string>
     <string name="asignjug_jugadores_equipo_b">Jugadors Equip B</string>
-    <string name="asignjug_poner_todos_aleatorio">Posa tots els jugadors, s`assignaran aleatòriament</string>
+    <string name="asignjug_poner_todos_aleatorio">Posa tots els jugadors, s\'assignaran aleatòriament</string>
     <string name="asignjug_agregar_jugador">Afegir jugador</string>
     <string name="asignjug_jugador_num">Jugador %1$d</string>
     <string name="asignjug_elegir_jugador">Triar jugador</string>
@@ -178,7 +178,7 @@
     <string name="crearpartido_seleccionar_fecha">Seleccionar data</string>
     <string name="crearpartido_seleccionar_hora">Seleccionar hora</string>
     <string name="crearpartido_falta_fecha">Falta la data</string>
-    <string name="crearpartido_falta_hora">Falta l`hora</string>
+    <string name="crearpartido_falta_hora">Falta l\'hora</string>
     <string name="crearpartido_numero_partes">Nº de parts</string>
     <string name="crearpartido_min_por_parte">Min/part</string>
     <string name="crearpartido_descanso_min">Descans (min)</string>
@@ -218,7 +218,7 @@
     <string name="ponline_inicia_sesion_o_crea_cuenta">Inicia sessió o crea el teu compte per veure i organitzar partits online.</string>
     <string name="ponline_boton_iniciar_sesion">Iniciar sessió</string>
     <string name="ponline_boton_crear_cuenta">Crear compte</string>
-    <string name="ponline_cuenta_local_ajustes">Prefereixes un compte local?\nAccedeix des d`ajustos d`Usuari.</string>
+    <string name="ponline_cuenta_local_ajustes">Prefereixes un compte local?\nAccedeix des d\'ajustos d\'Usuari.</string>
     <string name="ponline_duplicar">Duplicar</string>
     <string name="ponline_eliminar_partido_titulo">Eliminar partit?</string>
     <string name="ponline_eliminar_partido_confirmacion">Estàs segur que vols eliminar el partit &quot;%1$s vs %2$s&quot;?</string>
@@ -246,8 +246,8 @@
     <string name="ponlinecom_desc_refresh_comments">Actualitzar comentaris</string>
     <string name="ponlinecom_desc_send">Enviar</string>
     <string name="ponlinecom_text_no_comments">Sense comentaris</string>
-    <string name="ponlinecom_desc_like">M`agrada</string>
-    <string name="ponlinecom_desc_dislike">No m`agrada</string>
+    <string name="ponlinecom_desc_like">M\'agrada</string>
+    <string name="ponlinecom_desc_dislike">No m\'agrada</string>
     <string name="ponlinecom_user_you">Tu</string>
 
     <!--- ====== PARTIT PESTANYA ENQUESTES SCREEN ====== -->
@@ -256,7 +256,7 @@
     <string name="ponlineenc_text_no_surveys">Sense enquestes</string>
     <string name="ponlineenc_label_create_survey">Crear nova enquesta</string>
     <string name="ponlineenc_desc_expand_collapse">Expandir/Col·lapsar</string>
-    <string name="ponlineenc_label_survey_question">Pregunta de l`enquesta</string>
+    <string name="ponlineenc_label_survey_question">Pregunta de l\'enquesta</string>
     <string name="ponlineenc_label_option">Opció %1$d</string>
     <string name="ponlineenc_button_add_option">+ Opció</string>
     <string name="ponlineenc_button_remove_option">- Opció</string>
@@ -273,14 +273,14 @@
     <string name="ponlinejug_btn_ok">OK</string>
     <string name="ponlinejug_title_friends">Amics</string>
     <string name="ponlinejug_menu_request_friendship">Solicitar amistat</string>
-    <string name="ponlinejug_msg_must_be_logged_in">Has d`estar loguejat per enviar sol·licituds.</string>
+    <string name="ponlinejug_msg_must_be_logged_in">Has d\'estar loguejat per enviar sol·licituds.</string>
     <string name="ponlinejug_msg_local_player_no_account">Aquest jugador és local i no té compte online.</string>
     <string name="ponlinejug_msg_cannot_send_to_self">No et pots enviar una sol·licitud a tu mateix.</string>
-    <string name="ponlinejug_msg_user_not_found">No s`ha trobat un usuari online amb aquest nom.</string>
+    <string name="ponlinejug_msg_user_not_found">No s\'ha trobat un usuari online amb aquest nom.</string>
     <string name="ponlinejug_msg_already_friend">Aquest usuari ja és el teu amic!</string>
-    <string name="ponlinejug_msg_request_already_sent">Ja has enviat una sol·licitud d`amistat a aquest usuari.</string>
+    <string name="ponlinejug_msg_request_already_sent">Ja has enviat una sol·licitud d\'amistat a aquest usuari.</string>
     <string name="ponlinejug_msg_error_retrieving_user">Error recuperant el teu usuari.</string>
-    <string name="ponlinejug_msg_request_sent">Sol·licitud d`amistat enviada a %1$s!</string>
+    <string name="ponlinejug_msg_request_sent">Sol·licitud d\'amistat enviada a %1$s!</string>
     <string name="ponlinejug_msg_error_sending_request">Error enviant sol·licitud: %1$s</string>
 
     <!--- ====== PARTIT PESTANYA SCREEN ====== -->
@@ -297,11 +297,11 @@
     <string name="ponline_dialog_no_permissions_title">Sense permisos</string>
     <string name="ponline_dialog_no_permissions_message">No tens permisos per administrar aquest partit.</string>
     <string name="ponline_dialog_stop_viewing_title">Deixar de visualitzar aquest partit?</string>
-    <string name="ponline_dialog_stop_viewing_message">Ja no podràs visualitzar aquest partit. Podràs tornar a veure`l cercant-lo pel seu UID.</string>
+    <string name="ponline_dialog_stop_viewing_message">Ja no podràs visualitzar aquest partit. Podràs tornar a veure\'l cercant-lo pel seu UID.</string>
     <string name="ponline_dialog_stop_viewing_confirm">Sí, deixar de visualitzar</string>
 
     <!--- ====== AMICS SCREEN ====== -->
-    <string name="ponfilamigo_title_profile">Perfil de l`amic</string>
+    <string name="ponfilamigo_title_profile">Perfil de l\'amic</string>
     <string name="ponfilamigo_label_goals">Gols</string>
     <string name="ponfilamigo_label_assists">Assistències</string>
     <string name="ponfilamigo_label_average">Promig</string>
@@ -313,14 +313,14 @@
     <string name="ajustes_mi_cuenta_local">El meu compte local</string>
     <string name="ajustes_idioma">Idioma</string>
     <string name="ajustes_notificaciones">Notificacions</string>
-    <string name="ajustes_tema_app">Tema de l`app</string>
+    <string name="ajustes_tema_app">Tema de l\'app</string>
     <string name="ajustes_datos_privacidad">Dades i privacitat</string>
     <string name="ajustes_ayuda">Ajuda</string>
     <string name="ajustes_creditos">Crèdits</string>
-    <string name="ajustes_sobre_aplicacion">Sobre l`aplicació</string>
+    <string name="ajustes_sobre_aplicacion">Sobre l\'aplicació</string>
 
     <string name="ajustes_dialog_login_title">Inicia sessió</string>
-    <string name="ajustes_dialog_login_message">Has d`iniciar sessió o registrar-te per accedir al teu compte online.</string>
+    <string name="ajustes_dialog_login_message">Has d\'iniciar sessió o registrar-te per accedir al teu compte online.</string>
     <string name="ajustes_register">Registrar-me</string>
 
     <!--- ===== ESTADÍSTIQUES JUGADOR SCREEN ===== -->
@@ -336,17 +336,36 @@
     <string name="login_email_label">Correu electrònic</string>
     <string name="login_password_label">Contrasenya</string>
     <string name="login_button_enter">Entrar</string>
-    <string name="login_no_account">No tens compte? Registra`t</string>
+    <string name="login_no_account">No tens compte? Registra\'t</string>
     <string name="login_forgot_password">Has oblidat la contrasenya?</string>
     <string name="login_success_message">Sessió iniciada correctament!</string>
     <string name="login_reset_success">Correu de recuperació enviat. Revisa el teu email.</string>
+    <string name="auth_unknown_error">Error desconegut</string>
+    <string name="auth_generic_error">S\'ha produït un error d\'autenticació</string>
+    <string name="auth_network_error">Error de xarxa. Comprova la teva connexió.</string>
+    <string name="auth_too_many_requests">Massa intents. Torna-ho a provar més tard.</string>
+    <string name="auth_operation_not_allowed">Aquesta operació no està permesa.</string>
+    <string name="auth_account_exists_with_different_credential">Ja existeix un compte amb un altre mètode d\'accés.</string>
+
+    <string name="auth_weak_password">La contrasenya és massa feble. Utilitza almenys 6 caràcters.</string>
+    <string name="auth_invalid_credentials">Credencials no vàlides.</string>
+    <string name="auth_invalid_email">L\'adreça de correu electrònic no té un format vàlid.</string>
+    <string name="auth_wrong_password">La contrasenya és incorrecta.</string>
+    <string name="auth_invalid_verification_code">El codi de verificació no és vàlid.</string>
+    <string name="auth_invalid_verification_id">L\'identificador de verificació no és vàlid.</string>
+
+    <string name="auth_invalid_user">Usuari no vàlid o inexistent.</string>
+    <string name="auth_user_disabled">Aquest compte d\'usuari està desactivat.</string>
+    <string name="auth_user_not_found">No existeix cap usuari amb aquest correu.</string>
+    <string name="auth_user_token_expired">La credencial de l\'usuari ha caducat. Torna a iniciar sessió.</string>
+    <string name="auth_user_collision">Ja existeix un compte amb la mateixa adreça de correu electrònic.</string>
 
     <!--- ===== EL MEU COMPTE SCREEN ===== -->
     <string name="micuenta_title">El Meu Compte</string>
     <string name="micuenta_email_content_description">Correu electrònic</string>
-    <string name="micuenta_nombre_de_usuario_label">Nom d`usuari</string>
+    <string name="micuenta_nombre_de_usuario_label">Nom d\'usuari</string>
     <string name="micuenta_cambiar_label">Canviar</string>
-    <string name="micuenta_nuevo_nombre_de_usuario_label">Nou nom d`usuari</string>
+    <string name="micuenta_nuevo_nombre_de_usuario_label">Nou nom d\'usuari</string>
     <string name="micuenta_restablecer_contraseña_label">Restablir contrasenya</string>
     <string name="micuenta_restablecer_contraseña_enviando">Et enviarem un correu per restablir</string>
     <string name="micuenta_restablecer_contraseña_mensaje">Correu de restabliment de contrasenya enviat.</string>
@@ -355,7 +374,7 @@
     <string name="micuenta_eliminar_cuenta_label">Eliminar compte</string>
     <string name="micuenta_eliminar_cuenta_descripcion">Aquesta acció és irreversible. Totes les teves dades seran eliminades.</string>
     <string name="micuenta_eliminar_cuenta_dialog_title">Eliminar compte</string>
-    <string name="micuenta_eliminar_cuenta_dialog_message">S`eliminaran tots els teus partits creats. Vols continuar?</string>
+    <string name="micuenta_eliminar_cuenta_dialog_message">S\'eliminaran tots els teus partits creats. Vols continuar?</string>
     <string name="micuenta_confirmar_cerrar_sesion_title">Tancar sessió?</string>
     <string name="micuenta_confirmar_cerrar_sesion_message">Estàs segur que vols tancar sessió?</string>
     <string name="micuenta_si_button">SI</string>
@@ -363,11 +382,14 @@
     <!-- ===== REGISTER SCREEN ===== -->
     <string name="register_crear_cuenta">Crear Compte</string>
     <string name="register_unete_comunidad">Uneix-te a la comunitat de TorneoYa</string>
-    <string name="register_nombre_usuario_label">Nom d`usuari únic</string>
+    <string name="register_nombre_usuario_label">Nom d\'usuari únic</string>
     <string name="register_email_label">Correu electrònic</string>
     <string name="register_contraseña_label">Contrasenya</string>
     <string name="register_registrar_button">Registrar</string>
     <string name="register_ya_tienes_cuenta">Ja tens compte? Inicia sessió</string>
+    <string name="register_success_message">Registre correcte. Revisa el teu correu per confirmar el compte.</string>
+    <string name="auth_email_already_in_use">El correu ja està registrat.</string>
+
 
     <!-- ===== USUARI SCREEN ===== -->
     <string name="usuario_perfil_title">Perfil</string>

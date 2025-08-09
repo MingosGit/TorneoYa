@@ -40,50 +40,79 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun cargarNombreUsuarioOnlineSiSesionActiva() {
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null && user.isEmailVerified) {
-            _sesionOnlineActiva.value = true
-            viewModelScope.launch {
-                val db = FirebaseFirestore.getInstance()
-                val usuarioSnap = db.collection("usuarios").document(user.uid).get().await()
-                val nombreUsuario = usuarioSnap.getString("nombreUsuario")
-                _nombreUsuarioOnline.value = nombreUsuario
-                _avatar.value = usuarioSnap.getLong("avatar")?.toInt()
-                cargarEstadisticasUsuario(user.uid)
+        viewModelScope.launch {
+            val auth = FirebaseAuth.getInstance()
+            val user = auth.currentUser
+            if (user == null) {
+                resetEstado()
+                return@launch
             }
-        } else {
-            _nombreUsuarioOnline.value = null
-            _sesionOnlineActiva.value = false
-            _goles.value = null
-            _asistencias.value = null
-            _partidosJugados.value = null
-            _promedioGoles.value = null
-            _avatar.value = null
+
+            // Asegura estado fresco de verificación
+            try {
+                user.reload().await()
+            } catch (_: Exception) {
+                // Si falla reload, trata como no verificado/no válido
+            }
+
+            if (user.isEmailVerified) {
+                _sesionOnlineActiva.value = true
+                try {
+                    val db = FirebaseFirestore.getInstance()
+                    val usuarioSnap = db.collection("usuarios").document(user.uid).get().await()
+                    val nombreUsuario = usuarioSnap.getString("nombreUsuario")
+                    _nombreUsuarioOnline.value = nombreUsuario
+                    _avatar.value = usuarioSnap.getLong("avatar")?.toInt()
+                    cargarEstadisticasUsuario(user.uid)
+                } catch (_: Exception) {
+                    // Si algo falla, no tumbar sesión, pero evita crashear
+                }
+            } else {
+                // Si NO está verificado, no hay sesión "activa" en la app
+                auth.signOut()
+                resetEstado()
+            }
         }
+    }
+
+    private fun resetEstado() {
+        _nombreUsuarioOnline.value = null
+        _sesionOnlineActiva.value = false
+        _goles.value = null
+        _asistencias.value = null
+        _partidosJugados.value = null
+        _promedioGoles.value = null
+        _avatar.value = null
     }
 
     fun cargarEstadisticasUsuario(uid: String) {
         viewModelScope.launch {
             val db = FirebaseFirestore.getInstance()
-            // Goles
-            val golesSnapshot = db.collection("goleadores")
-                .whereEqualTo("jugadorUid", uid)
-                .get().await()
-            val golesCount = golesSnapshot.size()
-            // Asistencias
-            val asistenciasSnapshot = db.collection("goleadores")
-                .whereEqualTo("asistenciaJugadorUid", uid)
-                .get().await()
-            val asistenciasCount = asistenciasSnapshot.size()
-            // Partidos jugados: leer el contador del usuario
-            val usuarioSnap = db.collection("usuarios").document(uid).get().await()
-            val partidosJugados = usuarioSnap.getLong("partidosJugados")?.toInt() ?: 0
-            val promedio = if (partidosJugados > 0) golesCount.toDouble() / partidosJugados.toDouble() else 0.0
+            try {
+                // Goles
+                val golesSnapshot = db.collection("goleadores")
+                    .whereEqualTo("jugadorUid", uid)
+                    .get().await()
+                val golesCount = golesSnapshot.size()
 
-            _goles.value = golesCount
-            _asistencias.value = asistenciasCount
-            _partidosJugados.value = partidosJugados
-            _promedioGoles.value = promedio
+                // Asistencias
+                val asistenciasSnapshot = db.collection("goleadores")
+                    .whereEqualTo("asistenciaJugadorUid", uid)
+                    .get().await()
+                val asistenciasCount = asistenciasSnapshot.size()
+
+                // Partidos jugados
+                val usuarioSnap = db.collection("usuarios").document(uid).get().await()
+                val partidosJugados = usuarioSnap.getLong("partidosJugados")?.toInt() ?: 0
+                val promedio = if (partidosJugados > 0) golesCount.toDouble() / partidosJugados.toDouble() else 0.0
+
+                _goles.value = golesCount
+                _asistencias.value = asistenciasCount
+                _partidosJugados.value = partidosJugados
+                _promedioGoles.value = promedio
+            } catch (_: Exception) {
+                // Ignora errores de red/datos aquí
+            }
         }
     }
 
@@ -97,7 +126,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                     .update("avatar", avatar)
                     .await()
                 _avatar.value = avatar
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Maneja el error si lo necesitas
             }
         }
@@ -106,13 +135,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
     fun cerrarSesionOnline() {
         viewModelScope.launch {
             FirebaseAuth.getInstance().signOut()
-            _nombreUsuarioOnline.value = null
-            _sesionOnlineActiva.value = false
-            _goles.value = null
-            _asistencias.value = null
-            _partidosJugados.value = null
-            _promedioGoles.value = null
-            _avatar.value = null
+            resetEstado()
             delay(200)
             reiniciarApp()
         }
@@ -182,7 +205,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                         }
                 }
 
-                // Eliminar de partidos: jugadoresEquipoA, jugadoresEquipoB, administradores, usuariosConAcceso
+                // Eliminar de partidos
                 val partidosSnapshot = db.collection("partidos").get().await()
                 for (partidoDoc in partidosSnapshot.documents) {
                     val partidoRef = db.collection("partidos").document(partidoDoc.id)

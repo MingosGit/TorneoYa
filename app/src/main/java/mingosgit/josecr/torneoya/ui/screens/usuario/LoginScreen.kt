@@ -76,7 +76,6 @@ fun LoginScreen(
     val loginState by loginViewModel.loginState.collectAsState()
     val resetPasswordState by loginViewModel.resetPasswordState.collectAsState()
 
-    // Paleta y colores alineados con UsuarioScreen/ModernTorneoYaTheme
     val modernBackground = TorneoYaPalette.backgroundGradient
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
@@ -108,7 +107,6 @@ fun LoginScreen(
             .fillMaxSize()
             .background(modernBackground)
     ) {
-        // Selector de idioma
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -368,8 +366,9 @@ fun LoginScreen(
             ) {
                 when (loginState) {
                     is LoginState.Error -> {
+                        val res = (loginState as LoginState.Error).resId
                         Text(
-                            text = (loginState as LoginState.Error).message,
+                            text = stringResource(id = res),
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = 12.dp)
                         )
@@ -383,7 +382,6 @@ fun LoginScreen(
                         val nombreUsuarioOnline = (loginState as LoginState.Success).usuario.nombreUsuario
                         LaunchedEffect(Unit) {
                             globalUserViewModel.setNombreUsuarioOnline(nombreUsuarioOnline)
-                            // ⬇️ Evitar llamada a reiniciarApp() que falla por nombre manglado
                             navController.navigate("usuario") {
                                 popUpTo(0) { inclusive = true }
                                 launchSingleTop = true
@@ -414,8 +412,9 @@ fun LoginScreen(
                         )
                     }
                     is ResetPasswordState.Error -> {
+                        val res = (resetPasswordState as ResetPasswordState.Error).resId
                         Text(
-                            text = (resetPasswordState as ResetPasswordState.Error).message,
+                            text = stringResource(id = res),
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = 8.dp)
                         )
