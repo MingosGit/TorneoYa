@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -102,22 +103,18 @@ fun RegisterScreen(
         return
     }
 
-    // Validación granular y mensaje acorde a lo que falta
-    val passwordErrorMessage = remember(password) {
+    // SOLO IDS DE STRING (localizable); se renderizan con stringResource(...)
+    val passwordErrorResId = remember(password) {
         when {
             password.isEmpty() -> null
-            password.length < MIN_PASSWORD_LENGTH ->
-                context.getString(R.string.auth_password_min_length, MIN_PASSWORD_LENGTH)
-            !password.any { it.isUpperCase() } ->
-                context.getString(R.string.auth_password_need_uppercase)
-            !password.any { it.isLowerCase() } ->
-                context.getString(R.string.auth_password_need_lowercase)
-            !password.any { it.isDigit() } ->
-                context.getString(R.string.auth_password_need_digit)
+            password.length < MIN_PASSWORD_LENGTH -> R.string.auth_password_min_length
+            !password.any { it.isUpperCase() } -> R.string.auth_password_need_uppercase
+            !password.any { it.isLowerCase() } -> R.string.auth_password_need_lowercase
+            !password.any { it.isDigit() } -> R.string.auth_password_need_digit
             else -> null
         }
     }
-    val isPasswordValid = passwordErrorMessage == null
+    val isPasswordValid = passwordErrorResId == null
 
     Box(
         Modifier
@@ -295,23 +292,25 @@ fun RegisterScreen(
                     ),
                 visualTransformation = PasswordVisualTransformation(),
                 supportingText = {
-                    if (passwordErrorMessage != null) {
-                        Text(
-                            text = passwordErrorMessage,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                    passwordErrorResId?.let { resId ->
+                        val msg =
+                            if (resId == R.string.auth_password_min_length)
+                                stringResource(resId, MIN_PASSWORD_LENGTH)
+                            else
+                                stringResource(resId)
+                        Text(text = msg, color = MaterialTheme.colorScheme.error)
                     }
                 },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = Color.Transparent,
-                    focusedBorderColor = if (passwordErrorMessage == null) blue else MaterialTheme.colorScheme.error,
-                    unfocusedBorderColor = if (passwordErrorMessage == null) blue.copy(alpha = 0.6f) else MaterialTheme.colorScheme.error,
+                    focusedBorderColor = if (passwordErrorResId == null) blue else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (passwordErrorResId == null) blue.copy(alpha = 0.6f) else MaterialTheme.colorScheme.error,
                     cursorColor = blue,
                 )
             )
             Spacer(modifier = Modifier.height(20.dp))
             val canRegister = registerState != RegisterState.Loading &&
-                    email.isNotBlank() && nombreUsuario.isNotBlank() && passwordErrorMessage == null
+                    email.isNotBlank() && nombreUsuario.isNotBlank() && passwordErrorResId == null
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
