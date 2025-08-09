@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 private val cardShape = RoundedCornerShape(16.dp)
@@ -36,7 +37,8 @@ private val cardShape = RoundedCornerShape(16.dp)
 @Composable
 fun AjustesScreen(
     navController: NavController,
-    globalUserViewModel: GlobalUserViewModel
+    globalUserViewModel: GlobalUserViewModel,
+    useDarkTheme: Boolean
 ) {
     val miCuentaStr = stringResource(id = R.string.ajustes_mi_cuenta)
     val miCuentaLocalStr = stringResource(id = R.string.ajustes_mi_cuenta_local)
@@ -84,11 +86,8 @@ fun AjustesScreen(
             mutedText = colorScheme.onSurfaceVariant
         )
     }
+    val modernBackground = TorneoYaPalette.backgroundGradient
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to colorScheme.background,
-        1.0f to colorScheme.surface
-    )
 
     Scaffold(
         containerColor = Color.Transparent,

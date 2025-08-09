@@ -3,6 +3,7 @@ package mingosgit.josecr.torneoya.ui.navigation
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,10 +17,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
+    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
     val items = listOf(
@@ -28,11 +31,18 @@ fun BottomNavigationBar(
         BottomNavItem.Amigos,
         BottomNavItem.Usuario
     )
+
+    val bottomBarColor = if (!isDarkTheme) {
+        TorneoYaPalette.lightBottomBarColor
+    } else {
+        TorneoYaPalette.darkBottomBarColor
+    }
+
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
     Surface(
-        color = MaterialTheme.colorScheme.surface,
+        color = bottomBarColor,
         tonalElevation = 3.dp,
         shadowElevation = 12.dp,
         modifier = modifier
@@ -41,7 +51,7 @@ fun BottomNavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(62.dp)
-                .background(MaterialTheme.colorScheme.surface),
+                .background(bottomBarColor),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {

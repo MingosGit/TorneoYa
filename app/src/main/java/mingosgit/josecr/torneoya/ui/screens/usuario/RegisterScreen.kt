@@ -49,13 +49,8 @@ fun RegisterScreen(
     var navegarAConfirmarCorreo by remember { mutableStateOf(false) }
 
     val blue = TorneoYaPalette.blue
-    val purple = TorneoYaPalette.violet
-    val backgroundBrush = Brush.verticalGradient(
-        0.0f to Color(0xFF181B26),
-        0.25f to Color(0xFF22263B),
-        0.7f to Color(0xFF1A1E29),
-        1.0f to Color(0xFF161622)
-    )
+    val violet = TorneoYaPalette.violet
+    val backgroundBrush = TorneoYaPalette.backgroundGradient
 
     val context = LocalContext.current
     val currentLocale = remember { mutableStateOf(Locale.getDefault().language) }
@@ -85,6 +80,7 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
+        // Selector de idioma
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,14 +97,15 @@ fun RegisterScreen(
                             .clip(CircleShape)
                             .border(
                                 width = 2.dp,
-                                brush = Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                ),
+                                brush = Brush.horizontalGradient(listOf(blue, violet)),
                                 shape = CircleShape
                             )
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 )
                             )
                             .clickable {
@@ -130,7 +127,7 @@ fun RegisterScreen(
                             Box(
                                 modifier = Modifier
                                     .matchParentSize()
-                                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), CircleShape)
                             )
                         }
                     }
@@ -148,14 +145,14 @@ fun RegisterScreen(
             Spacer(Modifier.height(12.dp))
             Surface(
                 shape = CircleShape,
-                color = purple.copy(alpha = 0.10f),
+                color = violet.copy(alpha = 0.10f),
                 shadowElevation = 0.dp,
                 modifier = Modifier.size(74.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = stringResource(id = R.string.register_crear_cuenta),
-                    tint = purple,
+                    tint = violet,
                     modifier = Modifier
                         .padding(18.dp)
                         .fillMaxSize()
@@ -166,14 +163,14 @@ fun RegisterScreen(
 
             Text(
                 text = stringResource(id = R.string.register_crear_cuenta),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = stringResource(id = R.string.register_unete_comunidad),
-                color = Color(0xFFB7B7D1),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -183,22 +180,27 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = nombreUsuario,
                 onValueChange = { nombreUsuario = it.trim() },
-                label = { Text(stringResource(id = R.string.register_nombre_usuario_label), color = purple) },
+                label = { Text(stringResource(id = R.string.register_nombre_usuario_label), color = violet) },
                 singleLine = true,
                 leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = purple)
+                    Icon(Icons.Default.Person, contentDescription = null, tint = violet)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ),
                         RoundedCornerShape(17.dp)
                     ),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = Color.Transparent,
-                    focusedBorderColor = purple,
-                    unfocusedBorderColor = purple.copy(alpha = 0.6f),
-                    cursorColor = purple,
+                    focusedBorderColor = violet,
+                    unfocusedBorderColor = violet.copy(alpha = 0.6f),
+                    cursorColor = violet,
                 )
             )
             Spacer(Modifier.height(10.dp))
@@ -213,7 +215,12 @@ fun RegisterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ),
                         RoundedCornerShape(17.dp)
                     ),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -235,7 +242,12 @@ fun RegisterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ),
                         RoundedCornerShape(17.dp)
                     ),
                 visualTransformation = PasswordVisualTransformation(),
@@ -254,11 +266,16 @@ fun RegisterScreen(
                     .clip(RoundedCornerShape(15.dp))
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(purple, blue)),
+                        brush = Brush.horizontalGradient(listOf(violet, blue)),
                         shape = RoundedCornerShape(15.dp)
                     )
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
                     )
                     .clickable(enabled = registerState != RegisterState.Loading && email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank()) {
                         registerViewModel.register(email, password, nombreUsuario)
@@ -269,7 +286,10 @@ fun RegisterScreen(
                     stringResource(id = R.string.register_registrar_button),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    color = if (registerState != RegisterState.Loading && email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank()) Color.White else Color.White.copy(alpha = 0.4f)
+                    color = if (registerState != RegisterState.Loading && email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank())
+                        MaterialTheme.colorScheme.onBackground
+                    else
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -280,11 +300,16 @@ fun RegisterScreen(
                     .clip(RoundedCornerShape(15.dp))
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(blue, purple)),
+                        brush = Brush.horizontalGradient(listOf(blue, violet)),
                         shape = RoundedCornerShape(15.dp)
                     )
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
                     )
                     .clickable {
                         registerViewModel.clearState()
@@ -313,7 +338,10 @@ fun RegisterScreen(
                         )
                     }
                     RegisterState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.padding(top = 12.dp), color = purple)
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(top = 12.dp),
+                            color = violet
+                        )
                     }
                     else -> Unit
                 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var homeViewModel: HomeViewModel
 
     override fun attachBaseContext(newBase: Context) {
-        val sharedPref = newBase.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val sharedPref = newBase.getSharedPreferences("settings", MODE_PRIVATE)
         val language = sharedPref.getString("app_language", "es") ?: "es"
         val localeUpdatedContext = updateLocale(newBase, language)
         super.attachBaseContext(localeUpdatedContext)
@@ -52,7 +53,11 @@ class MainActivity : ComponentActivity() {
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         setContent {
-            var isDarkTheme by rememberSaveable { mutableStateOf(true) }
+            val sharedPref = getSharedPreferences("settings", MODE_PRIVATE)
+
+            var isDarkTheme by rememberSaveable {
+                mutableStateOf(sharedPref.getBoolean("dark_theme", true))
+            }
 
             ModernTorneoYaTheme(useDarkTheme = isDarkTheme) {
                 val navController = rememberNavController()
@@ -102,10 +107,13 @@ class MainActivity : ComponentActivity() {
                     else -> false
                 }
 
-                androidx.compose.material3.Scaffold(
+                Scaffold(
                     bottomBar = {
                         if (showBottomBar) {
-                            BottomNavigationBar(navController, modifier = Modifier.navigationBarsPadding())
+                            BottomNavigationBar(
+                                navController, modifier = Modifier.navigationBarsPadding(),
+                                isDarkTheme = isDarkTheme
+                            )
                         }
                     },
                     modifier = Modifier.fillMaxSize()
@@ -124,7 +132,10 @@ class MainActivity : ComponentActivity() {
                             globalUserViewModel = globalUserViewModel,
                             homeViewModel = homeViewModel,
                             isDarkTheme = isDarkTheme,
-                            onThemeChange = { newValue -> isDarkTheme = newValue }
+                            onThemeChange = { newValue ->
+                                isDarkTheme = newValue
+                                sharedPref.edit().putBoolean("dark_theme", newValue).apply()
+                            }
                         )
                     }
                 }

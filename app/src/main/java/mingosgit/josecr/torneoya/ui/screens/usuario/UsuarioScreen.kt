@@ -1,6 +1,5 @@
 package mingosgit.josecr.torneoya.ui.screens.usuario
 
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -112,12 +109,8 @@ fun UsuarioScreen(
         }
     }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
+    val modernBackground = TorneoYaPalette.backgroundGradient
+
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
     val accent = TorneoYaPalette.accent
@@ -160,7 +153,9 @@ fun UsuarioScreen(
             violet = violet,
             rojo = rojo,
             accent = accent,
-            background = Color(0xFF191A23),
+            background = Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.surface,
+                MaterialTheme.colorScheme.surfaceVariant
+            )),
             lightText = lightText,
             mutedText = mutedText
         )
@@ -200,7 +195,7 @@ fun UsuarioScreen(
                     stringResource(id = R.string.usuario_perfil_title),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 6.dp)
@@ -217,7 +212,10 @@ fun UsuarioScreen(
                             )
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 )
                             )
                             .clickable { showCerrarSesionDialog = true }
@@ -248,7 +246,10 @@ fun UsuarioScreen(
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
                             )
                         )
                 ) {
@@ -278,7 +279,10 @@ fun UsuarioScreen(
                     )
                     .background(
                         Brush.horizontalGradient(
-                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
                         )
                     )
                     .let { baseModifier ->
@@ -316,26 +320,33 @@ fun UsuarioScreen(
                     text = if (!nombreUsuarioOnline.isNullOrBlank()) "${stringResource(id = R.string.usuario_hola)}, $nombreUsuarioOnline" else stringResource(id = R.string.usuario_hola),
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
             } else {
                 Text(
                     text = stringResource(id = R.string.usuario_bienvenido),
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
                 Spacer(Modifier.height(5.dp))
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF22243A))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        )
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = stringResource(id = R.string.usuario_sin_sesion_online),
                         fontSize = 13.sp,
-                        color = mutedText,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -352,7 +363,14 @@ fun UsuarioScreen(
                             shape = RoundedCornerShape(17.dp)
                         )
                         .clip(RoundedCornerShape(17.dp))
-                        .background(Color(0xFF23273D))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        )
                 ) {
                     Column(
                         modifier = Modifier.padding(vertical = 16.dp, horizontal = 10.dp)
@@ -363,28 +381,28 @@ fun UsuarioScreen(
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(stringResource(id = R.string.usuario_goles_label), color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.usuario_goles_label), color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     goles?.toString() ?: "-",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 26.sp,
                                     fontWeight = FontWeight.Black
                                 )
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(stringResource(id = R.string.usuario_asistencias_label), color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.usuario_asistencias_label), color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     asistencias?.toString() ?: "-",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 26.sp,
                                     fontWeight = FontWeight.Black
                                 )
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(stringResource(id = R.string.usuario_promedio_label), color = accent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.usuario_promedio_label), color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     if (promedioGoles != null) String.format("%.2f", promedioGoles) else "-",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 26.sp,
                                     fontWeight = FontWeight.Black
                                 )
@@ -397,7 +415,7 @@ fun UsuarioScreen(
                             ) {
                                 Text(
                                     text = stringResource(id = R.string.usuario_partidos_jugados_prefix) + partidosJugados.toString(),
-                                    color = mutedText,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
@@ -432,7 +450,10 @@ fun UsuarioScreen(
                             )
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 )
                             )
                             .clickable { navController.navigate("login") },
@@ -440,7 +461,7 @@ fun UsuarioScreen(
                     ) {
                         Text(
                             stringResource(id = R.string.gen_iniciar_sesion),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
@@ -460,7 +481,10 @@ fun UsuarioScreen(
                             )
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 )
                             )
                             .clickable { navController.navigate("register") },
@@ -488,7 +512,7 @@ private fun CustomCerrarSesionDialog(
     violet: Color,
     rojo: Color,
     accent: Color,
-    background: Color,
+    background: Brush,
     lightText: Color,
     mutedText: Color
 ) {
@@ -503,7 +527,14 @@ private fun CustomCerrarSesionDialog(
                     shape = RoundedCornerShape(18.dp)
                 )
                 .clip(RoundedCornerShape(18.dp))
-                .background(background)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                )
         ) {
             Column(
                 Modifier
@@ -512,14 +543,14 @@ private fun CustomCerrarSesionDialog(
             ) {
                 Text(
                     text = stringResource(id = R.string.usuario_confirmar_cerrar_sesion_title),
-                    color = lightText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
                 Spacer(Modifier.height(11.dp))
                 Text(
                     text = stringResource(id = R.string.usuario_confirmar_cerrar_sesion_message),
-                    color = mutedText,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                     fontSize = 15.sp
                 )
                 Spacer(Modifier.height(25.dp))
@@ -554,7 +585,7 @@ private fun CustomCerrarSesionDialog(
                     ) {
                         Text(
                             stringResource(id = R.string.gen_cancelar),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontWeight = FontWeight.SemiBold
                         )
                     }

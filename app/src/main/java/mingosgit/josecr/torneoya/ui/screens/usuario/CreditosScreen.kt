@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
@@ -25,22 +24,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 private val cardShape = RoundedCornerShape(16.dp)
-private val modernBackground = Brush.verticalGradient(
-    0.0f to Color(0xFF1B1D29),
-    0.28f to Color(0xFF212442),
-    0.58f to Color(0xFF191A23),
-    1.0f to Color(0xFF14151B)
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreditosScreen(navController: NavController) {
-    val lightText = Color(0xFFF7F7FF)
-    val cardBg = Color(0xFF22243B)
-    val violet = Color(0xFF8F5CFF)
-    val blue = Color(0xFF296DFF)
+    val lightText = MaterialTheme.colorScheme.onBackground
+    val cardBg = MaterialTheme.colorScheme.surface
+    val violet = TorneoYaPalette.violet
+    val blue = TorneoYaPalette.blue
+    val modernBackground = TorneoYaPalette.backgroundGradient
     val uriHandler = LocalUriHandler.current
     val gradientBluePurple = Brush.horizontalGradient(listOf(blue, violet))
 

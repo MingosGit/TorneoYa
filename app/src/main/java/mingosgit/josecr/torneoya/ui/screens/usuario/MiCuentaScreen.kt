@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.ajustes
+package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,16 +63,12 @@ fun MiCuentaScreen(
     var editandoNombre by remember { mutableStateOf(false) }
     var nuevoNombre by remember { mutableStateOf(TextFieldValue("")) }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.25f to Color(0xFF22263B),
-        0.6f to Color(0xFF1A1E29),
-        1.0f to Color(0xFF161622)
-    )
+    // Colors aligned with the app theme
+    val modernBackground = TorneoYaPalette.backgroundGradient
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
-    val lightText = Color(0xFFF7F7FF)
-    val mutedText = Color(0xFFB7B7D1)
+    val lightText = MaterialTheme.colorScheme.onBackground
+    val mutedText = MaterialTheme.colorScheme.onSurfaceVariant
 
     LaunchedEffect(Unit) { viewModel.cargarDatos() }
     LaunchedEffect(nombreUsuario) {
@@ -120,7 +117,10 @@ fun MiCuentaScreen(
                     )
                     .background(
                         Brush.horizontalGradient(
-                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
                         )
                     )
                     .padding(0.dp)
@@ -203,7 +203,10 @@ fun MiCuentaScreen(
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
                             )
                         )
                         .clickable {
@@ -268,7 +271,10 @@ fun MiCuentaScreen(
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
                             )
                         )
                         .padding(vertical = 20.dp, horizontal = 15.dp)
@@ -384,7 +390,7 @@ fun MiCuentaScreen(
                 title = stringResource(id = R.string.micuenta_eliminar_cuenta_label),
                 icon = Icons.Filled.Delete,
                 description = stringResource(id = R.string.micuenta_eliminar_cuenta_descripcion),
-                borderColor = Color(0xFFF44336),
+                borderColor = MaterialTheme.colorScheme.error,
                 onClick = { viewModel.confirmarEliminarCuentaDialog(true) },
                 lightText = lightText
             )
@@ -401,10 +407,10 @@ fun MiCuentaScreen(
                 },
                 blue = TorneoYaPalette.blue,
                 violet = TorneoYaPalette.violet,
-                rojo = Color(0xFFFF2D55),
-                background = Color(0xFF22243B),
-                lightText = Color(0xFFF7F7FF),
-                mutedText = Color(0xFFB7B7D1)
+                rojo = MaterialTheme.colorScheme.error,
+                background = MaterialTheme.colorScheme.surface,
+                lightText = MaterialTheme.colorScheme.onBackground,
+                mutedText = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -416,11 +422,11 @@ fun MiCuentaScreen(
                         .padding(horizontal = 18.dp)
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(listOf(Color(0xFFF44336), violet)),
+                            brush = Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.error, violet)),
                             shape = RoundedCornerShape(18.dp)
                         )
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF22243B))
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
                     Column(
                         Modifier
@@ -429,7 +435,7 @@ fun MiCuentaScreen(
                     ) {
                         Text(
                             text = stringResource(id = R.string.micuenta_eliminar_cuenta_dialog_title),
-                            color = Color(0xFFF44336),
+                            color = MaterialTheme.colorScheme.error,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         )
@@ -450,15 +456,15 @@ fun MiCuentaScreen(
                                     viewModel.eliminarCuentaYDatos()
                                     viewModel.confirmarEliminarCuentaDialog(false)
                                 },
-                                borderGradient = Brush.horizontalGradient(listOf(Color(0xFFF44336), violet)),
-                                textColor = Color(0xFFF44336)
+                                borderGradient = Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.error, violet)),
+                                textColor = MaterialTheme.colorScheme.error
                             )
                             Spacer(Modifier.width(14.dp))
                             GradientBorderButton(
                                 text = stringResource(id = R.string.gen_cancelar),
                                 onClick = { viewModel.confirmarEliminarCuentaDialog(false) },
                                 borderGradient = Brush.horizontalGradient(listOf(blue, violet)),
-                                textColor = Color.White
+                                textColor = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     }
@@ -472,7 +478,7 @@ fun MiCuentaScreen(
 @Composable
 fun GradientCircleIcon(
     borderColor: Color,
-    iconVector: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    iconVector: ImageVector? = null,
     iconRes: Int? = null,
     size: Dp = 41.dp,
     iconSize: Dp = 25.dp
@@ -486,7 +492,7 @@ fun GradientCircleIcon(
                 shape = CircleShape
             )
             .background(
-                color = Color(0xFF181A23),
+                color = MaterialTheme.colorScheme.background,
                 shape = CircleShape
             ),
         contentAlignment = Alignment.Center
@@ -502,7 +508,9 @@ fun GradientCircleIcon(
             Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
-                modifier = Modifier.size(iconSize).clip(CircleShape)
+                modifier = Modifier
+                    .size(iconSize)
+                    .clip(CircleShape)
             )
         }
     }
@@ -529,12 +537,12 @@ fun GradientBorderButton(
 @Composable
 fun AccountMenuButton(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     description: String,
     borderColor: Color,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    lightText: Color = Color.White
+    lightText: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Box(
         modifier = Modifier
@@ -550,7 +558,10 @@ fun AccountMenuButton(
             )
             .background(
                 Brush.horizontalGradient(
-                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                    listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
             )
             .clickable(enabled = enabled) { onClick() },
@@ -637,9 +648,9 @@ private fun CustomCerrarSesionDialog(
                 ) {
                     OutlinedButton(
                         onClick = onConfirm,
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 2.dp,
-                            brush = Brush.horizontalGradient(listOf(rojo, violet))
+                        border = BorderStroke(
+                            2.dp,
+                            Brush.horizontalGradient(listOf(rojo, violet))
                         ),
                         shape = RoundedCornerShape(11.dp),
                         modifier = Modifier.weight(1f)
@@ -653,16 +664,16 @@ private fun CustomCerrarSesionDialog(
                     Spacer(Modifier.width(14.dp))
                     OutlinedButton(
                         onClick = onDismiss,
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 2.dp,
-                            brush = Brush.horizontalGradient(listOf(blue, violet))
+                        border = BorderStroke(
+                            2.dp,
+                            Brush.horizontalGradient(listOf(blue, violet))
                         ),
                         shape = RoundedCornerShape(11.dp),
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
                             stringResource(id = R.string.gen_cancelar),
-                            color = Color.White,
+                            color = lightText,
                             fontWeight = FontWeight.SemiBold
                         )
                     }

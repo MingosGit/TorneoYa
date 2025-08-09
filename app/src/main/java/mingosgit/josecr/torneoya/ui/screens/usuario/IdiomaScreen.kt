@@ -56,6 +56,14 @@ fun IdiomaScreen(
         R.drawable.flag_uk
     )
 
+    val blue = TorneoYaPalette.blue
+    val violet = TorneoYaPalette.violet
+    val backgroundGradient = TorneoYaPalette.backgroundGradient
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val onBackground = MaterialTheme.colorScheme.onBackground
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -71,15 +79,11 @@ fun IdiomaScreen(
                                 .clip(CircleShape)
                                 .border(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                    ),
+                                    brush = Brush.horizontalGradient(listOf(blue, violet)),
                                     shape = CircleShape
                                 )
                                 .background(
-                                    Brush.horizontalGradient(
-                                        listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                                    )
+                                    Brush.horizontalGradient(listOf(surfaceColor, surfaceVariant))
                                 )
                                 .clickable { navController.popBackStack() },
                             contentAlignment = Alignment.Center
@@ -87,14 +91,14 @@ fun IdiomaScreen(
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = "ATRAS",
-                                tint = Color(0xFF8F5CFF),
+                                tint = violet,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
                         Spacer(Modifier.width(15.dp))
                         Text(
                             text = stringResource(id = R.string.ajustes_idioma),
-                            color = Color.White,
+                            color = onBackground,
                             fontWeight = FontWeight.Black,
                             fontSize = 27.sp
                         )
@@ -109,14 +113,7 @@ fun IdiomaScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.0f to Color(0xFF1B1D29),
-                        0.28f to Color(0xFF212442),
-                        0.58f to Color(0xFF191A23),
-                        1.0f to Color(0xFF14151B)
-                    )
-                )
+                .background(backgroundGradient)
                 .padding(innerPadding)
         ) {
             Column(
@@ -138,15 +135,11 @@ fun IdiomaScreen(
                                 .clip(CircleShape)
                                 .border(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                    ),
+                                    brush = Brush.horizontalGradient(listOf(blue, violet)),
                                     shape = CircleShape
                                 )
                                 .background(
-                                    Brush.horizontalGradient(
-                                        listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                                    )
+                                    Brush.horizontalGradient(listOf(surfaceColor, surfaceVariant))
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -165,15 +158,11 @@ fun IdiomaScreen(
                                 .clip(cardShape)
                                 .border(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                    ),
+                                    brush = Brush.horizontalGradient(listOf(blue, violet)),
                                     shape = cardShape
                                 )
                                 .background(
-                                    Brush.horizontalGradient(
-                                        listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                                    )
+                                    Brush.horizontalGradient(listOf(surfaceColor, surfaceVariant))
                                 )
                                 .clickable {
                                     val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -199,7 +188,7 @@ fun IdiomaScreen(
                                     Text(
                                         text = idioma,
                                         fontSize = 17.sp,
-                                        color = Color(0xFFF7F7FF),
+                                        color = onBackground,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.weight(1f)
                                     )
@@ -209,9 +198,7 @@ fun IdiomaScreen(
                                                 .size(26.dp)
                                                 .border(
                                                     width = 2.dp,
-                                                    brush = Brush.horizontalGradient(
-                                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                                    ),
+                                                    brush = Brush.horizontalGradient(listOf(blue, violet)),
                                                     shape = CircleShape
                                                 )
                                                 .background(Color.Transparent),
@@ -220,7 +207,7 @@ fun IdiomaScreen(
                                             Icon(
                                                 imageVector = Icons.Default.Check,
                                                 contentDescription = "Seleccionado",
-                                                tint = TorneoYaPalette.blue,
+                                                tint = blue,
                                                 modifier = Modifier.size(17.dp)
                                             )
                                         }

@@ -2,19 +2,46 @@ package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import android.app.Activity
 import android.content.Context
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,11 +56,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
-import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
-import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
-import mingosgit.josecr.torneoya.viewmodel.usuario.ResetPasswordState
-import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.LoginState
+import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
+import mingosgit.josecr.torneoya.viewmodel.usuario.ResetPasswordState
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,17 +72,17 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
     val loginState by loginViewModel.loginState.collectAsState()
     val resetPasswordState by loginViewModel.resetPasswordState.collectAsState()
 
+    // Paleta y colores alineados con UsuarioScreen/ModernTorneoYaTheme
+    val modernBackground = TorneoYaPalette.backgroundGradient
     val blue = TorneoYaPalette.blue
-    val purple = TorneoYaPalette.violet
-    val backgroundBrush = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.25f to Color(0xFF22263B),
-        0.7f to Color(0xFF1A1E29),
-        1.0f to Color(0xFF161622)
-    )
+    val violet = TorneoYaPalette.violet
+
+    val enterEnabled = loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6
+    val resetEnabled = email.isNotBlank() && resetPasswordState != ResetPasswordState.Loading
 
     val loginTitle = stringResource(id = R.string.login_title)
     val loginSubtitle = stringResource(id = R.string.login_subtitle)
@@ -79,8 +106,9 @@ fun LoginScreen(
     Box(
         Modifier
             .fillMaxSize()
-            .background(backgroundBrush)
+            .background(modernBackground)
     ) {
+        // Selector de idioma
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -97,14 +125,15 @@ fun LoginScreen(
                             .clip(CircleShape)
                             .border(
                                 width = 2.dp,
-                                brush = Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                ),
+                                brush = Brush.horizontalGradient(listOf(blue, violet)),
                                 shape = CircleShape
                             )
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 )
                             )
                             .clickable {
@@ -126,7 +155,7 @@ fun LoginScreen(
                             Box(
                                 modifier = Modifier
                                     .matchParentSize()
-                                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.2f), CircleShape)
                             )
                         }
                     }
@@ -142,16 +171,17 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(16.dp))
+
             Surface(
                 shape = CircleShape,
-                color = blue.copy(alpha = 0.13f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.13f),
                 shadowElevation = 0.dp,
                 modifier = Modifier.size(76.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = stringResource(id = R.string.gen_iniciar_sesion),
-                    tint = blue,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(17.dp)
                 )
             }
@@ -160,14 +190,14 @@ fun LoginScreen(
 
             Text(
                 text = loginTitle,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Black
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = loginSubtitle,
-                color = Color(0xFFB7B7D1),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
             )
@@ -177,22 +207,35 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
-                label = { Text(emailLabel, color = blue) },
+                label = { Text(emailLabel, color = MaterialTheme.colorScheme.primary) },
                 singleLine = true,
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.MailOutline, contentDescription = emailLabel, tint = blue)
+                    Icon(
+                        imageVector = Icons.Default.MailOutline,
+                        contentDescription = emailLabel,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ),
                         RoundedCornerShape(17.dp)
                     ),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = Color.Transparent,
                     focusedBorderColor = blue,
-                    unfocusedBorderColor = blue.copy(alpha = 0.6f),
+                    unfocusedBorderColor = blue.copy(alpha = 0.65f),
                     cursorColor = blue,
+                    focusedLabelColor = blue,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    focusedLeadingIconColor = blue,
+                    unfocusedLeadingIconColor = blue
                 )
             )
 
@@ -201,23 +244,36 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text(passwordLabel, color = purple) },
+                label = { Text(passwordLabel, color = MaterialTheme.colorScheme.secondary) },
                 singleLine = true,
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Lock, contentDescription = passwordLabel, tint = purple)
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = passwordLabel,
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))),
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ),
                         RoundedCornerShape(17.dp)
                     ),
                 visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = Color.Transparent,
-                    focusedBorderColor = purple,
-                    unfocusedBorderColor = purple.copy(alpha = 0.6f),
-                    cursorColor = purple,
+                    focusedBorderColor = violet,
+                    unfocusedBorderColor = violet.copy(alpha = 0.65f),
+                    cursorColor = violet,
+                    focusedLabelColor = violet,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    focusedLeadingIconColor = violet,
+                    unfocusedLeadingIconColor = violet
                 )
             )
 
@@ -230,13 +286,18 @@ fun LoginScreen(
                     .clip(RoundedCornerShape(15.dp))
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(blue, purple)),
+                        brush = Brush.horizontalGradient(listOf(blue, violet)),
                         shape = RoundedCornerShape(15.dp)
                     )
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
                     )
-                    .clickable(enabled = loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6) {
+                    .clickable(enabled = enterEnabled) {
                         loginViewModel.login(email, password)
                     },
                 contentAlignment = Alignment.Center
@@ -245,7 +306,8 @@ fun LoginScreen(
                     enterButtonText,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    color = if (loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6) Color.White else Color.White.copy(alpha = 0.4f)
+                    color = if (enterEnabled) MaterialTheme.colorScheme.onBackground
+                    else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
             }
 
@@ -258,11 +320,16 @@ fun LoginScreen(
                     .clip(RoundedCornerShape(15.dp))
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(blue, purple)),
+                        brush = Brush.horizontalGradient(listOf(blue, violet)),
                         shape = RoundedCornerShape(15.dp)
                     )
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
                     )
                     .clickable {
                         loginViewModel.clearState()
@@ -281,12 +348,15 @@ fun LoginScreen(
 
             TextButton(
                 onClick = { loginViewModel.enviarCorreoRestablecerPassword(email) },
-                enabled = email.isNotBlank() && resetPasswordState != ResetPasswordState.Loading,
-                modifier = Modifier.align(Alignment.End)
+                enabled = resetEnabled,
+                modifier = Modifier.align(Alignment.End),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = violet,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             ) {
                 Text(
                     forgotPasswordText,
-                    color = purple,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -313,11 +383,18 @@ fun LoginScreen(
                         val nombreUsuarioOnline = (loginState as LoginState.Success).usuario.nombreUsuario
                         LaunchedEffect(Unit) {
                             globalUserViewModel.setNombreUsuarioOnline(nombreUsuarioOnline)
-                            globalUserViewModel.reiniciarApp()
+                            // ⬇️ Evitar llamada a reiniciarApp() que falla por nombre manglado
+                            navController.navigate("usuario") {
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
+                            }
                         }
                     }
                     LoginState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.padding(top = 12.dp), color = blue)
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(top = 12.dp),
+                            color = blue
+                        )
                     }
                     else -> Unit
                 }
@@ -332,7 +409,7 @@ fun LoginScreen(
                     is ResetPasswordState.Success -> {
                         Text(
                             text = resetSuccessMessage,
-                            color = purple,
+                            color = violet,
                             modifier = Modifier.padding(top = 8.dp)
                         )
                     }
@@ -344,7 +421,10 @@ fun LoginScreen(
                         )
                     }
                     ResetPasswordState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.padding(top = 8.dp), color = purple)
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(top = 8.dp),
+                            color = violet
+                        )
                     }
                     else -> Unit
                 }

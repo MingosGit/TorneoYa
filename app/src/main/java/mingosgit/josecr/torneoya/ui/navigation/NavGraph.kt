@@ -41,7 +41,7 @@ import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.firebase.AmigoFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 import mingosgit.josecr.torneoya.ui.screens.usuario.AjustesScreen
-import mingosgit.josecr.torneoya.ui.screens.ajustes.MiCuentaScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.MiCuentaScreen
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
@@ -131,9 +131,11 @@ fun NavGraph(
         }
         composable(route = "theme") {
             ThemeScreen(
+                navController = navController,
                 currentThemeDark = isDarkTheme,
                 onThemeChange = onThemeChange
             )
+
         }
         composable(
             route = "administrar_partido_online/{partidoUid}",
@@ -272,8 +274,10 @@ fun NavGraph(
         composable("ajustes") {
             AjustesScreen(
                 navController = navController,
-                globalUserViewModel = globalUserViewModel
+                globalUserViewModel = globalUserViewModel,
+                useDarkTheme = isDarkTheme
             )
+
         }
 
         composable("mi_cuenta") {
