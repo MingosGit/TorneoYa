@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,14 +31,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.EncuestaOnlineConResultadosConAvatar
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.mutedText // <<-- IMPORT NECESARIO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: String) {
+    val cs = MaterialTheme.colorScheme
+
     val state by vm.comentariosEncuestasState.collectAsState()
     var pregunta by remember { mutableStateOf("") }
     var opciones = remember { mutableStateListOf("", "") }
@@ -67,12 +68,10 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                 .padding(top = 12.dp, end = 12.dp)
                 .size(38.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF23273D))
+                .background(cs.surfaceVariant)
                 .border(
                     width = 1.6.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                    ),
+                    brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                     shape = CircleShape
                 )
                 .zIndex(2f)
@@ -80,7 +79,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
             Icon(
                 imageVector = Icons.Default.Refresh,
                 contentDescription = stringResource(id = R.string.ponlineenc_desc_refresh_surveys),
-                tint = Color(0xFF8F5CFF),
+                tint = cs.secondary,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -97,7 +96,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                         .padding(top = 32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = cs.primary)
                 }
             } else {
                 Box(modifier = Modifier.weight(1f)) {
@@ -125,7 +124,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                     .padding(vertical = 9.dp, horizontal = 5.dp)
                                     .shadow(6.dp, RoundedCornerShape(17.dp)),
                                 shape = RoundedCornerShape(17.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1F2E))
+                                colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant)
                             ) {
                                 Column(
                                     modifier = Modifier.padding(vertical = 15.dp, horizontal = 15.dp)
@@ -138,7 +137,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                             avatar = encuestaConResultados.avatar,
                                             nombre = encuesta.creadorNombre,
                                             background = Brush.horizontalGradient(
-                                                listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)
+                                                listOf(cs.secondary, cs.primary)
                                             )
                                         )
                                         Spacer(Modifier.width(10.dp))
@@ -146,18 +145,18 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                             encuesta.pregunta,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 17.sp,
-                                            color = Color.White,
+                                            color = cs.onSurface,
                                             modifier = Modifier.weight(1f)
                                         )
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(7.dp))
-                                                .background(TorneoYaPalette.chipBgDark)
+                                                .background(cs.surface)
                                                 .padding(horizontal = 11.dp, vertical = 3.dp)
                                         ) {
                                             Text(
                                                 text = stringResource(id = R.string.ponlineenc_text_votes, totalVotos),
-                                                color = TorneoYaPalette.accent,
+                                                color = cs.tertiary,
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Medium
                                             )
@@ -176,11 +175,11 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                     .border(
                                                         width = 2.dp,
                                                         brush = if (seleccionado)
-                                                            Brush.horizontalGradient(listOf(TorneoYaPalette.violet, TorneoYaPalette.accent))
-                                                        else Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF23273D))),
+                                                            Brush.horizontalGradient(listOf(cs.secondary, cs.tertiary))
+                                                        else Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surfaceVariant)),
                                                         shape = RoundedCornerShape(10.dp)
                                                     )
-                                                    .background(Color(0xFF23273D))
+                                                    .background(cs.surfaceVariant)
                                                     .clickable {
                                                         if (seleccionada != idx) {
                                                             vm.votarUnicoEnEncuesta(encuesta.uid, idx, usuarioUid)
@@ -199,8 +198,8 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                             }
                                                         },
                                                         colors = RadioButtonDefaults.colors(
-                                                            selectedColor = TorneoYaPalette.violet,
-                                                            unselectedColor = TorneoYaPalette.mutedText
+                                                            selectedColor = cs.secondary,
+                                                            unselectedColor = cs.outline
                                                         ),
                                                         modifier = Modifier.size(22.dp)
                                                     )
@@ -209,14 +208,14 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                         modifier = Modifier
                                                             .weight(1f)
                                                             .padding(start = 3.dp),
-                                                        color = Color.White,
+                                                        color = cs.onSurface,
                                                         fontSize = 16.sp,
                                                         fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal
                                                     )
                                                     Spacer(Modifier.width(10.dp))
                                                     Text(
                                                         "$porcentaje%",
-                                                        color = TorneoYaPalette.accent,
+                                                        color = cs.tertiary,
                                                         fontSize = 14.sp,
                                                         fontWeight = FontWeight.Bold
                                                     )
@@ -229,8 +228,8 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                         .align(Alignment.BottomStart)
                                                         .padding(top = 5.dp)
                                                         .clip(RoundedCornerShape(6.dp)),
-                                                    color = if (seleccionado) TorneoYaPalette.violet else TorneoYaPalette.blue,
-                                                    trackColor = Color(0xFF161622)
+                                                    color = if (seleccionado) cs.secondary else cs.primary,
+                                                    trackColor = cs.surface
                                                 )
                                             }
                                         }
@@ -258,7 +257,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                         .animateContentSize(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF23273D)),
+                    colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant),
                     onClick = { expandedCrear = !expandedCrear }
                 ) {
                     Column(
@@ -272,14 +271,14 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                 stringResource(id = R.string.ponlineenc_label_create_survey),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
-                                color = Color.White,
+                                color = cs.onSurface,
                                 modifier = Modifier.weight(1f)
                             )
                             IconButton(onClick = { expandedCrear = !expandedCrear }) {
                                 Icon(
                                     imageVector = if (expandedCrear) Icons.Default.Close else Icons.Default.Add,
                                     contentDescription = stringResource(id = R.string.ponlineenc_desc_expand_collapse),
-                                    tint = TorneoYaPalette.violet
+                                    tint = cs.secondary
                                 )
                             }
                         }
@@ -295,7 +294,15 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                     label = { Text(stringResource(id = R.string.ponlineenc_label_survey_question)) },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp)
+                                        .padding(vertical = 8.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = cs.mutedText,
+                                        unfocusedBorderColor = cs.mutedText,
+                                        disabledBorderColor = cs.mutedText,
+                                        errorBorderColor = MaterialTheme.colorScheme.error,
+                                        focusedLabelColor = cs.mutedText,
+                                        unfocusedLabelColor = cs.mutedText
+                                    )
                                 )
                                 opciones.forEachIndexed { idx, valor ->
                                     OutlinedTextField(
@@ -304,7 +311,15 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         label = { Text(stringResource(id = R.string.ponlineenc_label_option, idx + 1)) },
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 2.dp)
+                                            .padding(vertical = 2.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = cs.mutedText,
+                                            unfocusedBorderColor = cs.mutedText,
+                                            disabledBorderColor = cs.mutedText,
+                                            errorBorderColor = MaterialTheme.colorScheme.error,
+                                            focusedLabelColor = cs.mutedText,
+                                            unfocusedLabelColor = cs.mutedText
+                                        )
                                     )
                                 }
                                 Row(
@@ -317,7 +332,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         OutlinedColorButton(
                                             text = stringResource(id = R.string.ponlineenc_button_add_option),
                                             borderBrush = Brush.horizontalGradient(
-                                                listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)
+                                                listOf(cs.secondary, cs.primary)
                                             ),
                                             onClick = { opciones.add("") }
                                         )
@@ -325,7 +340,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         OutlinedColorButton(
                                             text = stringResource(id = R.string.ponlineenc_button_remove_option),
                                             borderBrush = Brush.horizontalGradient(
-                                                listOf(Color(0xFFFA6767), TorneoYaPalette.accent)
+                                                listOf(cs.error, cs.tertiary)
                                             ),
                                             onClick = { opciones.removeAt(opciones.size - 1) }
                                         )
@@ -333,7 +348,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                 OutlinedColorButton(
                                     text = stringResource(id = R.string.ponlineenc_button_launch_survey),
                                     borderBrush = Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
+                                        listOf(cs.tertiary, cs.secondary)
                                     ),
                                     modifier = Modifier
                                         .align(Alignment.End)
@@ -379,6 +394,8 @@ fun OutlinedColorButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val cs = MaterialTheme.colorScheme
+
     Box(
         modifier = modifier
             .defaultMinSize(minHeight = 38.dp)
@@ -397,7 +414,7 @@ fun OutlinedColorButton(
     ) {
         Text(
             text = text,
-            color = TorneoYaPalette.violet,
+            color = cs.secondary,
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp
         )

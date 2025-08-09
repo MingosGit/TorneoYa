@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,8 +25,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.firebase.GoleadorFirebase
 import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun PartidoTabEventosOnline(
@@ -35,7 +34,7 @@ fun PartidoTabEventosOnline(
     uiState: mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState,
     reloadKey: Int = 0
 ) {
-    val context = LocalContext.current
+    val cs = MaterialTheme.colorScheme
     val descReloadGoals = stringResource(id = R.string.ponlineeve_desc_reload_goals)
     val iconGoal = stringResource(id = R.string.ponlineeve_icon_goal)
     val iconAssist = stringResource(id = R.string.ponlineeve_icon_assist)
@@ -144,13 +143,11 @@ fun PartidoTabEventosOnline(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            IconButton(
-                onClick = { recargar() }
-            ) {
+            IconButton(onClick = { recargar() }) {
                 Icon(
                     Icons.Default.Refresh,
                     contentDescription = descReloadGoals,
-                    tint = TorneoYaPalette.blue
+                    tint = cs.primary
                 )
             }
         }
@@ -161,7 +158,7 @@ fun PartidoTabEventosOnline(
                     .fillMaxWidth()
                     .padding(top = 32.dp),
                 contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+            ) { CircularProgressIndicator(color = cs.primary) }
             return@Column
         }
 
@@ -169,7 +166,7 @@ fun PartidoTabEventosOnline(
             Text(
                 text = textNoEvents,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TorneoYaPalette.mutedText,
+                color = cs.mutedText,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             return@Column
@@ -196,29 +193,23 @@ fun PartidoTabEventosOnline(
                                 .weight(4f)
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(
-                                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue.copy(alpha = 0.18f), Color.Transparent)),
+                                    brush = Brush.horizontalGradient(listOf(cs.primary.copy(alpha = 0.18f), cs.surface)),
                                     shape = RoundedCornerShape(16.dp)
                                 )
                                 .border(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                                    brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                                     shape = RoundedCornerShape(16.dp)
                                 )
                                 .padding(vertical = 11.dp, horizontal = 16.dp)
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.Start
-                            ) {
+                            Column(horizontalAlignment = Alignment.Start) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = iconGoal,
-                                        fontSize = 20.sp,
-                                        modifier = Modifier.padding(end = 6.dp)
-                                    )
+                                    Text(text = iconGoal, fontSize = 20.sp, modifier = Modifier.padding(end = 6.dp))
                                     Text(
                                         text = evento.jugador,
                                         fontWeight = FontWeight.Bold,
-                                        color = TorneoYaPalette.blue,
+                                        color = cs.primary,
                                         fontSize = 16.sp,
                                         modifier = Modifier.padding(end = 4.dp)
                                     )
@@ -233,7 +224,7 @@ fun PartidoTabEventosOnline(
                                             text = evento.asistente!!,
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = TorneoYaPalette.accent
+                                            color = cs.tertiary
                                         )
                                     }
                                 }
@@ -252,12 +243,12 @@ fun PartidoTabEventosOnline(
                         evento.minuto?.let {
                             Text(
                                 text = "${it}'",
-                                color = TorneoYaPalette.mutedText,
+                                color = cs.mutedText,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 15.sp,
                                 modifier = Modifier
                                     .background(
-                                        color = Color(0x1A3B4252),
+                                        color = cs.surfaceVariant,
                                         shape = RoundedCornerShape(8.dp)
                                     )
                                     .padding(horizontal = 7.dp, vertical = 2.dp)
@@ -271,32 +262,26 @@ fun PartidoTabEventosOnline(
                                 .weight(4f)
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(
-                                    brush = Brush.horizontalGradient(listOf(Color.Transparent, TorneoYaPalette.violet.copy(alpha = 0.18f))),
+                                    brush = Brush.horizontalGradient(listOf(cs.surface, cs.secondary.copy(alpha = 0.18f))),
                                     shape = RoundedCornerShape(16.dp)
                                 )
                                 .border(
                                     width = 2.dp,
-                                    brush = Brush.horizontalGradient(listOf(TorneoYaPalette.violet, TorneoYaPalette.blue)),
+                                    brush = Brush.horizontalGradient(listOf(cs.secondary, cs.primary)),
                                     shape = RoundedCornerShape(16.dp)
                                 )
                                 .padding(vertical = 11.dp, horizontal = 16.dp)
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.End
-                            ) {
+                            Column(horizontalAlignment = Alignment.End) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = evento.jugador,
                                         fontWeight = FontWeight.Bold,
-                                        color = TorneoYaPalette.violet,
+                                        color = cs.secondary,
                                         fontSize = 16.sp,
                                         modifier = Modifier.padding(end = 4.dp)
                                     )
-                                    Text(
-                                        text = iconGoal,
-                                        fontSize = 20.sp,
-                                        modifier = Modifier.padding(start = 6.dp)
-                                    )
+                                    Text(text = iconGoal, fontSize = 20.sp, modifier = Modifier.padding(start = 6.dp))
                                 }
                                 if (!evento.asistente.isNullOrBlank()) {
                                     Row(
@@ -310,7 +295,7 @@ fun PartidoTabEventosOnline(
                                             text = evento.asistente!!,
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = TorneoYaPalette.accent
+                                            color = cs.tertiary
                                         )
                                         Text(text = iconAssist, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
                                     }

@@ -9,16 +9,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun PartidoTabsOnline(
@@ -28,6 +27,7 @@ fun PartidoTabsOnline(
     partidoUid: String,
     golesReloadKey: Int = 0
 ) {
+    val cs = MaterialTheme.colorScheme
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf(
         stringResource(id = R.string.ponlinetabs_jugadores),
@@ -45,13 +45,13 @@ fun PartidoTabsOnline(
                 .tabIndicatorOffset(tabPositions[selectedTabIndex])
                 .height(5.dp)
                 .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
-                .background(TorneoYaPalette.blue)
+                .background(cs.primary)
         )
     }
 
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
-        containerColor = Color(0xFF23273D),
+        containerColor = cs.surfaceVariant,
         edgePadding = 0.dp,
         indicator = { tabPositions -> customIndicator(tabPositions) },
         divider = {}
@@ -61,7 +61,7 @@ fun PartidoTabsOnline(
             val tabModifier = Modifier
                 .padding(vertical = 3.dp, horizontal = 3.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color(0xFF23273D))
+                .background(cs.surfaceVariant)
 
             Tab(
                 selected = isSelected,
@@ -79,14 +79,14 @@ fun PartidoTabsOnline(
                     }
                 },
                 modifier = tabModifier,
-                selectedContentColor = TorneoYaPalette.blue,
-                unselectedContentColor = Color(0xFFB7B7D1),
+                selectedContentColor = cs.primary,
+                unselectedContentColor = cs.mutedText,
                 text = {
                     Text(
                         text = title,
                         fontSize = 16.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) TorneoYaPalette.blue else Color(0xFFB7B7D1),
+                        color = if (isSelected) cs.primary else cs.mutedText,
                         modifier = Modifier.padding(vertical = 2.dp, horizontal = 8.dp)
                     )
                 }
@@ -101,7 +101,7 @@ fun PartidoTabsOnline(
                 .fillMaxWidth()
                 .height(180.dp),
             contentAlignment = Alignment.Center
-        ) { CircularProgressIndicator(color = TorneoYaPalette.blue) }
+        ) { CircularProgressIndicator(color = cs.primary) }
     } else {
         when (selectedTabIndex) {
             0 -> PartidoTabJugadoresOnline(uiState)

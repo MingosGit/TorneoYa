@@ -21,10 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -34,6 +30,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
+import mingosgit.josecr.torneoya.ui.theme.mutedText
+import mingosgit.josecr.torneoya.ui.theme.text
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,33 +84,37 @@ fun VisualizarPartidoOnlineScreen(
         }
     }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
+    val cs = MaterialTheme.colorScheme
+    val gradientBorderPrimary = Brush.horizontalGradient(
+        listOf(cs.primary, cs.secondary)
+    )
+    val gradientBorderDestructive = Brush.horizontalGradient(
+        listOf(cs.error, cs.secondary)
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(modernBackground)
+            .background(TorneoYaPalette.backgroundGradient)
     ) {
         Scaffold(
-            containerColor = Color.Transparent,
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = {
                         Text(
                             text = title,
-                            color = Color.White,
+                            color = cs.text,
                             fontSize = 27.sp,
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.padding(start = 2.dp)
                         )
                     },
                     colors = TopAppBarDefaults.smallTopAppBarColors(
-                        containerColor = Color.Transparent
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        titleContentColor = cs.onSurface,
+                        navigationIconContentColor = cs.onSurface,
+                        actionIconContentColor = cs.onSurface
                     ),
                     actions = {
                         Row(
@@ -123,17 +128,10 @@ fun VisualizarPartidoOnlineScreen(
                                     .clip(CircleShape)
                                     .border(
                                         width = 2.dp,
-                                        brush = Brush.horizontalGradient(
-                                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                        ),
+                                        brush = gradientBorderPrimary,
                                         shape = CircleShape
                                     )
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                                        ),
-                                        shape = CircleShape
-                                    ),
+                                    .background(cs.surfaceVariant, shape = CircleShape),
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText(title, partidoUid)
@@ -144,7 +142,7 @@ fun VisualizarPartidoOnlineScreen(
                                 Icon(
                                     imageVector = Icons.Default.Share,
                                     contentDescription = descShareUid,
-                                    tint = Color(0xFF8F5CFF),
+                                    tint = cs.secondary,
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
@@ -154,17 +152,10 @@ fun VisualizarPartidoOnlineScreen(
                                     .clip(CircleShape)
                                     .border(
                                         width = 2.dp,
-                                        brush = Brush.horizontalGradient(
-                                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                        ),
+                                        brush = gradientBorderPrimary,
                                         shape = CircleShape
                                     )
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                                        ),
-                                        shape = CircleShape
-                                    ),
+                                    .background(cs.surfaceVariant, shape = CircleShape),
                                 onClick = {
                                     scope.launch {
                                         val firestore = FirebaseFirestore.getInstance()
@@ -183,11 +174,10 @@ fun VisualizarPartidoOnlineScreen(
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = descAdminPartido,
-                                    tint = Color(0xFF8F5CFF),
+                                    tint = cs.secondary,
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
-                            // AHORA TAMBIÉN SE MUESTRA PARA ADMIN (INCLUYE CREADOR)
                             if (esAdmin || !esCreador) {
                                 IconButton(
                                     modifier = Modifier
@@ -195,23 +185,16 @@ fun VisualizarPartidoOnlineScreen(
                                         .clip(CircleShape)
                                         .border(
                                             width = 2.dp,
-                                            brush = Brush.horizontalGradient(
-                                                listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
-                                            ),
+                                            brush = gradientBorderDestructive,
                                             shape = CircleShape
                                         )
-                                        .background(
-                                            Brush.horizontalGradient(
-                                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
-                                            ),
-                                            shape = CircleShape
-                                        ),
+                                        .background(cs.surfaceVariant, shape = CircleShape),
                                     onClick = { showDejarDeVerDialog = true }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.ExitToApp,
                                         contentDescription = descStopViewing,
-                                        tint = Color(0xFFFF7675),
+                                        tint = cs.error,
                                         modifier = Modifier.size(25.dp)
                                     )
                                 }
@@ -243,13 +226,13 @@ fun VisualizarPartidoOnlineScreen(
                             modifier = Modifier
                                 .padding(16.dp)
                                 .align(Alignment.CenterHorizontally),
-                            containerColor = Color(0xFF23273D),
-                            contentColor = Color.White,
+                            containerColor = cs.surface,
+                            contentColor = cs.onSurface,
                             shape = RoundedCornerShape(17.dp)
                         ) {
                             Text(
                                 text = stringResource(id = R.string.gen_uid_copiado),
-                                color = Color(0xFFB7B7D1),
+                                color = cs.mutedText,
                                 fontSize = 16.sp
                             )
                         }
@@ -272,12 +255,10 @@ fun VisualizarPartidoOnlineScreen(
                         .wrapContentHeight()
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorderPrimary,
                             shape = RoundedCornerShape(22.dp)
                         )
-                        .background(Color(0xFF23273D), shape = RoundedCornerShape(22.dp))
+                        .background(cs.surface, shape = RoundedCornerShape(22.dp))
                         .padding(horizontal = 24.dp, vertical = 26.dp)
                 ) {
                     Column(
@@ -285,33 +266,31 @@ fun VisualizarPartidoOnlineScreen(
                     ) {
                         Text(
                             text = dialogNoPermTitle,
-                            color = Color.White,
+                            color = cs.text,
                             fontWeight = FontWeight.Black,
                             fontSize = 21.sp
                         )
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
                             text = dialogNoPermMsg,
-                            color = Color(0xFFB7B7D1),
+                            color = cs.mutedText,
                             fontSize = 15.sp
                         )
                         Spacer(modifier = Modifier.height(23.dp))
                         Button(
                             onClick = { showPermisoDialog = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                             contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                             shape = RoundedCornerShape(13.dp),
                             border = androidx.compose.foundation.BorderStroke(
                                 2.dp,
-                                Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                )
+                                gradientBorderPrimary
                             ),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                         ) {
                             Text(
                                 text = btnOk,
-                                color = TorneoYaPalette.blue,
+                                color = cs.primary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
                             )
@@ -336,12 +315,10 @@ fun VisualizarPartidoOnlineScreen(
                         .wrapContentHeight()
                         .border(
                             width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                            ),
+                            brush = gradientBorderPrimary,
                             shape = RoundedCornerShape(22.dp)
                         )
-                        .background(Color(0xFF23273D), shape = RoundedCornerShape(22.dp))
+                        .background(cs.surface, shape = RoundedCornerShape(22.dp))
                         .padding(horizontal = 24.dp, vertical = 26.dp)
                 ) {
                     Column(
@@ -349,14 +326,14 @@ fun VisualizarPartidoOnlineScreen(
                     ) {
                         Text(
                             text = dialogStopViewingTitle,
-                            color = Color.White,
+                            color = cs.text,
                             fontWeight = FontWeight.Black,
                             fontSize = 21.sp
                         )
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
                             text = dialogStopViewingMsg,
-                            color = Color(0xFFB7B7D1),
+                            color = cs.mutedText,
                             fontSize = 15.sp
                         )
                         Spacer(modifier = Modifier.height(23.dp))
@@ -368,11 +345,9 @@ fun VisualizarPartidoOnlineScreen(
                             Button(
                                 onClick = {
                                     if (esAdmin) {
-                                        // Admin/creador: solo abandonar la pantalla (no se toca la lista de acceso)
                                         showDejarDeVerDialog = false
                                         navController.popBackStack()
                                     } else {
-                                        // Usuario con acceso: se le quita el acceso y se sale
                                         vm.dejarDeVerPartido(usuarioUid) {
                                             showDejarDeVerDialog = false
                                             navController.popBackStack()
@@ -380,20 +355,18 @@ fun VisualizarPartidoOnlineScreen(
                                     }
                                 },
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                                 contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                                 shape = RoundedCornerShape(13.dp),
                                 border = androidx.compose.foundation.BorderStroke(
                                     2.dp,
-                                    Brush.horizontalGradient(
-                                        listOf(Color(0xFFFF7675), TorneoYaPalette.violet)
-                                    )
+                                    gradientBorderDestructive
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                             ) {
                                 Text(
                                     text = dialogStopViewingConfirm,
-                                    color = Color(0xFFFF7675),
+                                    color = cs.error,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 )
@@ -403,20 +376,18 @@ fun VisualizarPartidoOnlineScreen(
                                 modifier = Modifier.weight(1f),
                                 border = androidx.compose.foundation.BorderStroke(
                                     2.dp,
-                                    Brush.horizontalGradient(
-                                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                                    )
+                                    gradientBorderPrimary
                                 ),
                                 shape = RoundedCornerShape(13.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = Color.Transparent,
-                                    contentColor = TorneoYaPalette.blue
+                                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                    contentColor = cs.primary
                                 ),
                                 contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp)
                             ) {
                                 Text(
                                     btnOk,
-                                    color = TorneoYaPalette.blue,
+                                    color = cs.primary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 )

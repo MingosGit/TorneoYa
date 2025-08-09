@@ -7,21 +7,22 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
 @Composable
 fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
+    val cs = MaterialTheme.colorScheme
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -36,7 +37,7 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
                 .padding(end = 6.dp)
                 .background(
                     brush = Brush.radialGradient(
-                        listOf(TorneoYaPalette.blue.copy(alpha = 0.21f), Color.Transparent)
+                        listOf(cs.primary.copy(alpha = 0.21f), cs.background.copy(alpha = 0f))
                     ),
                     shape = CircleShape
                 )
@@ -46,12 +47,12 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
                     .fillMaxWidth()
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                        brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                         shape = RoundedCornerShape(14.dp)
                     )
                     .background(
                         brush = Brush.horizontalGradient(
-                            listOf(Color(0xFF212442), Color(0xFF23273D))
+                            listOf(cs.surfaceVariant, cs.surface)
                         ),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -62,7 +63,7 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
                     text = uiState.nombreEquipoA,
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = cs.onSurface,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     softWrap = false,
@@ -77,7 +78,7 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
             text = "VS",
             fontSize = 16.sp,
             fontWeight = FontWeight.Black,
-            color = TorneoYaPalette.violet,
+            color = cs.secondary,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .align(Alignment.CenterVertically),
@@ -90,7 +91,7 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
                 .padding(start = 6.dp)
                 .background(
                     brush = Brush.radialGradient(
-                        listOf(TorneoYaPalette.accent.copy(alpha = 0.18f), Color.Transparent)
+                        listOf(cs.tertiary.copy(alpha = 0.18f), cs.background.copy(alpha = 0f))
                     ),
                     shape = CircleShape
                 )
@@ -100,12 +101,12 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
                     .fillMaxWidth()
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)),
+                        brush = Brush.horizontalGradient(listOf(cs.tertiary, cs.secondary)),
                         shape = RoundedCornerShape(14.dp)
                     )
                     .background(
                         brush = Brush.horizontalGradient(
-                            listOf(Color(0xFF23273D), Color(0xFF212442))
+                            listOf(cs.surface, cs.surfaceVariant)
                         ),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -116,7 +117,7 @@ fun PartidoEquiposHeaderOnline(uiState: VisualizarPartidoOnlineUiState) {
                     text = uiState.nombreEquipoB,
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = cs.onSurface,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     softWrap = false,

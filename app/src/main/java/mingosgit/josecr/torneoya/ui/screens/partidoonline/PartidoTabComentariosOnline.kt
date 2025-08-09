@@ -33,12 +33,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: String) {
+    val cs = MaterialTheme.colorScheme
     val state by vm.comentariosEncuestasState.collectAsState()
     var textoComentario by remember { mutableStateOf("") }
     val usuarioNombre = stringResource(id = R.string.ponlinecom_user_you)
@@ -48,7 +49,6 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
-    // PRIMERA CARGA
     LaunchedEffect(Unit) {
         isLoading = true
         scope.launch {
@@ -57,7 +57,6 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         }
     }
 
-    // AUTO SCROLL AL AGREGAR NUEVO COMENTARIO
     val oldComentariosSize = remember { mutableStateOf(0) }
     LaunchedEffect(comentariosSize) {
         if (comentariosSize > oldComentariosSize.value) {
@@ -67,7 +66,6 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Input, Recargar y Enviar, todos en el mismo Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,7 +92,18 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                             isLoading = false
                         }
                     }
-                })
+                }),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = cs.mutedText,
+                    unfocusedBorderColor = cs.mutedText,
+                    disabledBorderColor = cs.mutedText,
+                    errorBorderColor = cs.error,
+                    focusedLabelColor = cs.mutedText,
+                    unfocusedLabelColor = cs.mutedText,
+                    cursorColor = cs.primary,
+                    focusedTextColor = cs.onSurface,
+                    unfocusedTextColor = cs.onSurface
+                )
             )
             IconButton(
                 onClick = {
@@ -111,7 +120,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = stringResource(id = R.string.ponlinecom_desc_refresh_comments),
-                    tint = TorneoYaPalette.blue
+                    tint = cs.primary
                 )
             }
             OutlinedIconSendButton(
@@ -135,7 +144,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                     .padding(top = 32.dp),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = cs.primary)
             }
         } else {
             val comentariosOrdenados = state.comentarios.sortedByDescending { it.comentario.fechaHora }
@@ -150,9 +159,9 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
             ) {
                 items(comentariosOrdenados) { comentarioConVotos ->
                     val votoColor = when {
-                        comentarioConVotos.miVoto == 1 -> TorneoYaPalette.blue
-                        comentarioConVotos.miVoto == -1 -> Color(0xFFFA6767)
-                        else -> Color(0xFF23273D)
+                        comentarioConVotos.miVoto == 1 -> cs.primary
+                        comentarioConVotos.miVoto == -1 -> cs.error
+                        else -> cs.surfaceVariant
                     }
                     Row(
                         modifier = Modifier
@@ -165,8 +174,8 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                             nombre = comentarioConVotos.comentario.usuarioNombre,
                             background = Brush.verticalGradient(
                                 listOf(
-                                    Color(0xFF23273D).copy(alpha = 0.88f),
-                                    TorneoYaPalette.violet.copy(alpha = 0.80f)
+                                    cs.surfaceVariant.copy(alpha = 0.88f),
+                                    cs.secondary.copy(alpha = 0.80f)
                                 )
                             )
                         )
@@ -176,11 +185,11 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                 .fillMaxWidth()
                                 .shadow(3.dp, RoundedCornerShape(17.dp)),
                             shape = RoundedCornerShape(17.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF20243B)),
+                            colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant),
                             border = BorderStroke(
                                 2.dp,
                                 Brush.horizontalGradient(
-                                    listOf(votoColor, TorneoYaPalette.violet, Color(0xFF20243B))
+                                    listOf(votoColor, cs.secondary, cs.surfaceVariant)
                                 )
                             )
                         ) {
@@ -192,14 +201,14 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                     Text(
                                         text = comentarioConVotos.comentario.usuarioNombre,
                                         fontWeight = FontWeight.Bold,
-                                        color = TorneoYaPalette.accent,
+                                        color = cs.tertiary,
                                         fontSize = 15.sp,
                                         modifier = Modifier.weight(1f)
                                     )
                                     Text(
                                         text = comentarioConVotos.comentario.fechaHora,
                                         fontSize = 11.sp,
-                                        color = TorneoYaPalette.mutedText,
+                                        color = cs.mutedText,
                                         textAlign = TextAlign.End
                                     )
                                 }
@@ -207,7 +216,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                 Text(
                                     text = comentarioConVotos.comentario.texto,
                                     fontSize = 16.sp,
-                                    color = Color.White,
+                                    color = cs.onSurface,
                                     modifier = Modifier.padding(top = 1.dp, bottom = 3.dp)
                                 )
                                 Row(
@@ -231,18 +240,18 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                             imageVector = Icons.Filled.ThumbUp,
                                             contentDescription = stringResource(id = R.string.ponlinecom_desc_like),
                                             tint = if (comentarioConVotos.miVoto == 1)
-                                                TorneoYaPalette.blue
+                                                cs.primary
                                             else
-                                                TorneoYaPalette.mutedText,
+                                                cs.mutedText,
                                             modifier = Modifier.size(19.dp)
                                         )
                                     }
                                     Text(
                                         text = comentarioConVotos.likes.toString(),
                                         color = if (comentarioConVotos.miVoto == 1)
-                                            TorneoYaPalette.blue
+                                            cs.primary
                                         else
-                                            TorneoYaPalette.mutedText,
+                                            cs.mutedText,
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 14.sp
                                     )
@@ -263,18 +272,18 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                             imageVector = Icons.Filled.ThumbDown,
                                             contentDescription = stringResource(id = R.string.ponlinecom_desc_dislike),
                                             tint = if (comentarioConVotos.miVoto == -1)
-                                                Color(0xFFFA6767)
+                                                cs.error
                                             else
-                                                TorneoYaPalette.mutedText,
+                                                cs.mutedText,
                                             modifier = Modifier.size(19.dp)
                                         )
                                     }
                                     Text(
                                         text = comentarioConVotos.dislikes.toString(),
                                         color = if (comentarioConVotos.miVoto == -1)
-                                            Color(0xFFFA6767)
+                                            cs.error
                                         else
-                                            TorneoYaPalette.mutedText,
+                                            cs.mutedText,
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 14.sp
                                     )
@@ -288,7 +297,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                         Text(
                             text = stringResource(id = R.string.ponlinecom_text_no_comments),
                             fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = cs.onSurfaceVariant,
                             modifier = Modifier
                                 .padding(vertical = 32.dp)
                                 .fillMaxWidth(),
@@ -306,6 +315,7 @@ fun OutlinedIconSendButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val cs = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .defaultMinSize(minHeight = 38.dp)
@@ -313,7 +323,7 @@ fun OutlinedIconSendButton(
             .padding(start = 3.dp)
             .border(
                 width = 2.dp,
-                brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                 shape = RoundedCornerShape(13.dp)
             )
             .background(Color.Transparent)
@@ -328,7 +338,7 @@ fun OutlinedIconSendButton(
             Icon(
                 imageVector = Icons.Filled.Send,
                 contentDescription = stringResource(id = R.string.ponlinecom_desc_send),
-                tint = if (enabled) TorneoYaPalette.violet else TorneoYaPalette.mutedText,
+                tint = if (enabled) cs.secondary else cs.mutedText,
                 modifier = Modifier.size(22.dp)
             )
         }

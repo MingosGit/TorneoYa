@@ -3,12 +3,12 @@ package mingosgit.josecr.torneoya.ui.splash
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -18,23 +18,17 @@ import kotlinx.coroutines.delay
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun SplashScreen(
     navController: NavHostController,
     setHomeLoaded: (nombreUsuario: String) -> Unit
 ) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF1B1D29),
-            Color(0xFF212442),
-            Color(0xFF191A23),
-            Color(0xFF14151B)
-        )
-    )
-
+    val cs = MaterialTheme.colorScheme
+    val gradient = TorneoYaPalette.backgroundGradient
     val context = LocalContext.current
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -75,17 +69,17 @@ fun SplashScreen(
                 text = context.getString(R.string.splash_app_name),
                 fontWeight = FontWeight.Black,
                 fontSize = 34.sp,
-                color = Color.White,
+                color = cs.onBackground
             )
             Spacer(Modifier.height(30.dp))
             CircularProgressIndicator(
-                color = TorneoYaPalette.blue,
+                color = cs.primary,
                 strokeWidth = 4.dp
             )
             Spacer(Modifier.height(18.dp))
             Text(
                 text = error ?: context.getString(R.string.splash_iniciando_sesion),
-                color = Color(0xFFB7B7D1),
+                color = cs.mutedText,
                 fontSize = 17.sp
             )
         }

@@ -3,44 +3,44 @@ package mingosgit.josecr.torneoya.ui.screens.partidoonline
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.R
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
 @Composable
 fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
+    val cs = MaterialTheme.colorScheme
 
     val (borderBrush, textColor) = when (uiState.estado) {
         "Finalizado" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFFD32F2F), TorneoYaPalette.violet)),
-            Color(0xFFD32F2F)
+            Brush.horizontalGradient(listOf(cs.error, cs.secondary)),
+            cs.error
         )
         "Jugando" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFFFFD600), TorneoYaPalette.violet)),
-            Color(0xFFFFA000)
+            Brush.horizontalGradient(listOf(cs.tertiary, cs.secondary)),
+            cs.tertiary
         )
         "Descanso" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFF43A047), TorneoYaPalette.violet)),
-            Color(0xFF43A047)
+            Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
+            cs.primary
         )
         "Previa" -> Pair(
-            Brush.horizontalGradient(listOf(Color(0xFF43A047), TorneoYaPalette.violet)),
-            Color(0xFF43A047)
+            Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
+            cs.primary
         )
         else -> Pair(
-            Brush.horizontalGradient(listOf(TorneoYaPalette.violet, TorneoYaPalette.violet)),
-            TorneoYaPalette.violet
+            Brush.horizontalGradient(listOf(cs.secondary, cs.secondary)),
+            cs.secondary
         )
     }
 

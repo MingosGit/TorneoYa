@@ -23,7 +23,7 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun PartidoOnlineScreen(
@@ -31,14 +31,16 @@ fun PartidoOnlineScreen(
     partidoViewModel: PartidoOnlineViewModel
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
+    val cs = MaterialTheme.colorScheme
 
     if (currentUser == null) {
         val modernBackground = Brush.verticalGradient(
-            0.0f to Color(0xFF1B1D29),
-            0.28f to Color(0xFF212442),
-            0.58f to Color(0xFF191A23),
-            1.0f to Color(0xFF14151B)
+            0.0f to cs.background,
+            0.28f to cs.surface,
+            0.58f to cs.surfaceVariant,
+            1.0f to cs.background
         )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -53,14 +55,14 @@ fun PartidoOnlineScreen(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFF296DFF).copy(alpha = 0.13f),
+                    color = cs.primary.copy(alpha = 0.13f),
                     shadowElevation = 0.dp,
                     modifier = Modifier.size(85.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Logo",
-                        tint = Color(0xFF296DFF),
+                        tint = cs.primary,
                         modifier = Modifier.padding(22.dp)
                     )
                 }
@@ -69,19 +71,20 @@ fun PartidoOnlineScreen(
                     text = stringResource(R.string.ponline_acceso_partidos_online),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White
+                    color = cs.onBackground
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.ponline_inicia_sesion_o_crea_cuenta),
                     fontSize = 16.sp,
-                    color = Color(0xFFB7B7D1),
+                    color = cs.mutedText,
                     lineHeight = 22.sp,
                     modifier = Modifier.padding(horizontal = 8.dp),
                     fontWeight = FontWeight.Normal
                 )
                 Spacer(Modifier.height(32.dp))
 
+                // Botón Iniciar sesión
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -90,13 +93,13 @@ fun PartidoOnlineScreen(
                         .border(
                             width = 2.dp,
                             brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                listOf(cs.primary, cs.secondary)
                             ),
                             shape = RoundedCornerShape(15.dp)
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(cs.surfaceVariant, cs.surface)
                             )
                         )
                         .clickable { navController.navigate("login") },
@@ -104,7 +107,7 @@ fun PartidoOnlineScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.ponline_boton_iniciar_sesion),
-                        color = Color.White,
+                        color = cs.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -112,6 +115,7 @@ fun PartidoOnlineScreen(
 
                 Spacer(Modifier.height(11.dp))
 
+                // Botón Crear cuenta
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -120,13 +124,13 @@ fun PartidoOnlineScreen(
                         .border(
                             width = 2.dp,
                             brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                listOf(cs.primary, cs.secondary)
                             ),
                             shape = RoundedCornerShape(15.dp)
                         )
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                listOf(cs.surfaceVariant, cs.surface)
                             )
                         )
                         .clickable { navController.navigate("register") },
@@ -134,7 +138,7 @@ fun PartidoOnlineScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.ponline_boton_crear_cuenta),
-                        color = TorneoYaPalette.blue,
+                        color = cs.primary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
                     )
@@ -144,7 +148,7 @@ fun PartidoOnlineScreen(
                 Text(
                     text = stringResource(R.string.ponline_cuenta_local_ajustes),
                     fontSize = 14.sp,
-                    color = Color(0xFFB7B7D1),
+                    color = cs.mutedText,
                     fontWeight = FontWeight.Normal,
                     modifier = Modifier
                         .fillMaxWidth()

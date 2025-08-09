@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -36,11 +37,8 @@ import mingosgit.josecr.torneoya.R
 fun PartidoTabJugadoresOnline(
     uiState: VisualizarPartidoOnlineUiState
 ) {
-    val context = LocalContext.current
+    val cs = MaterialTheme.colorScheme
     val textNoPlayers = stringResource(id = R.string.ponlinejug_text_no_players)
-    val btnOk = stringResource(id = R.string.ponlinejug_btn_ok)
-    val titleFriends = stringResource(id = R.string.ponlinejug_title_friends)
-    val menuRequestFriendship = stringResource(id = R.string.ponlinejug_menu_request_friendship)
 
     Row(
         modifier = Modifier
@@ -53,7 +51,7 @@ fun PartidoTabJugadoresOnline(
             borderBrush = Brush.horizontalGradient(
                 listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
             ),
-            dropdownOffset = DpOffset((-140).dp, (-10).dp), // Izquierda
+            dropdownOffset = DpOffset((-140).dp, (-10).dp),
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 8.dp)
@@ -64,7 +62,7 @@ fun PartidoTabJugadoresOnline(
             borderBrush = Brush.horizontalGradient(
                 listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
             ),
-            dropdownOffset = DpOffset(180.dp, (-10).dp), // Derecha
+            dropdownOffset = DpOffset(180.dp, (-10).dp),
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 8.dp)
@@ -81,6 +79,7 @@ private fun EquipoColumnWithFriendship(
     dropdownOffset: DpOffset,
     modifier: Modifier = Modifier
 ) {
+    val cs = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var expandedIndex by remember { mutableStateOf<Int?>(null) }
@@ -109,7 +108,7 @@ private fun EquipoColumnWithFriendship(
             text = nombreEquipo,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = TorneoYaPalette.violet,
+            color = cs.primary,
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -120,7 +119,7 @@ private fun EquipoColumnWithFriendship(
             modifier = Modifier
                 .padding(vertical = 4.dp)
                 .height(2.dp)
-                .background(TorneoYaPalette.violet)
+                .background(cs.primary)
         )
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
@@ -135,8 +134,8 @@ private fun EquipoColumnWithFriendship(
                         .background(
                             brush = Brush.horizontalGradient(
                                 listOf(
-                                    Color(0xFF23273D),
-                                    Color(0xFF1C1D25)
+                                    cs.surface,
+                                    cs.background
                                 )
                             ),
                             shape = RoundedCornerShape(13.dp)
@@ -162,7 +161,7 @@ private fun EquipoColumnWithFriendship(
                         Text(
                             text = jugadorNombre,
                             fontSize = 16.sp,
-                            color = Color.White,
+                            color = cs.onSurface,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.align(Alignment.Center)
@@ -178,7 +177,8 @@ private fun EquipoColumnWithFriendship(
                             onClick = {
                                 sendingSolicitud = true
                                 scope.launch {
-                                    val res = enviarSolicitudAmistadSiProcede(jugadorNombre, context,
+                                    val res = enviarSolicitudAmistadSiProcede(
+                                        jugadorNombre, context,
                                         msgMustBeLoggedIn,
                                         msgLocalPlayerNoAccount,
                                         msgCannotSendToSelf,
@@ -203,7 +203,7 @@ private fun EquipoColumnWithFriendship(
                     Text(
                         text = textNoPlayers,
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = cs.mutedText,
                         modifier = Modifier
                             .padding(vertical = 12.dp)
                             .fillMaxWidth(),
@@ -223,7 +223,7 @@ private fun EquipoColumnWithFriendship(
                         .border(
                             width = 2.dp,
                             brush = Brush.horizontalGradient(
-                                listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                listOf(cs.primary, cs.secondary)
                             ),
                             shape = RoundedCornerShape(10.dp)
                         )
@@ -237,7 +237,7 @@ private fun EquipoColumnWithFriendship(
                     ) {
                         Text(
                             btnOk,
-                            color = TorneoYaPalette.blue,
+                            color = cs.primary,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -246,7 +246,7 @@ private fun EquipoColumnWithFriendship(
             title = {
                 Text(
                     titleFriends,
-                    color = TorneoYaPalette.violet,
+                    color = cs.secondary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
@@ -254,17 +254,17 @@ private fun EquipoColumnWithFriendship(
             text = {
                 Text(
                     mensajeDialog ?: "",
-                    color = Color.White,
+                    color = cs.onSurface,
                     fontSize = 16.sp
                 )
             },
             shape = RoundedCornerShape(18.dp),
-            containerColor = Color(0xFF23273D),
+            containerColor = cs.surface,
             modifier = Modifier
                 .border(
                     width = 2.dp,
                     brush = Brush.horizontalGradient(
-                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                        listOf(cs.primary, cs.secondary)
                     ),
                     shape = RoundedCornerShape(18.dp)
                 )
@@ -280,6 +280,7 @@ private fun AmistadDropdownMenu(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val cs = MaterialTheme.colorScheme
     val menuText = stringResource(id = R.string.ponlinejug_menu_request_friendship)
     DropdownMenu(
         expanded = true,
@@ -294,7 +295,7 @@ private fun AmistadDropdownMenu(
             .clip(RoundedCornerShape(12.dp))
             .background(
                 brush = Brush.horizontalGradient(
-                    listOf(Color(0xFF222441), Color(0xFF242348))
+                    listOf(cs.surfaceVariant, cs.surface)
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -303,7 +304,7 @@ private fun AmistadDropdownMenu(
             text = {
                 Text(
                     menuText,
-                    color = TorneoYaPalette.blue,
+                    color = cs.primary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp
                 )

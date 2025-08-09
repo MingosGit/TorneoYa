@@ -32,12 +32,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoConNombresOnline
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 enum class EstadoPartido(val displayRes: Int) {
     TODOS(R.string.ponline_todos),
@@ -52,6 +53,8 @@ fun PartidoOnlineScreenContent(
     navController: NavController,
     partidoViewModel: PartidoOnlineViewModel
 ) {
+    val cs = MaterialTheme.colorScheme
+
     val cargandoPartidos by partidoViewModel.cargandoPartidos.collectAsState()
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) { partidoViewModel.cargarPartidosConNombres() }
@@ -119,10 +122,10 @@ fun PartidoOnlineScreenContent(
     }
 
     val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
+        0.0f to cs.background,
+        0.28f to cs.surface,
+        0.58f to cs.surfaceVariant,
+        1.0f to cs.background
     )
 
     val partidosFiltrados = remember(partidos, estadoSeleccionado) {
@@ -155,7 +158,7 @@ fun PartidoOnlineScreenContent(
             onDismissRequest = { showOptionsSheet = false },
             dragHandle = null,
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            containerColor = Color(0xFF23273D)
+            containerColor = cs.surfaceVariant
         ) {
             Column(
                 Modifier
@@ -166,9 +169,15 @@ fun PartidoOnlineScreenContent(
                 val partidoSel = partidoSeleccionado
                 if (partidoSel != null) {
                     ListItem(
-                        headlineContent = { Text(stringResource(id = R.string.ponline_duplicar), fontWeight = FontWeight.Medium, color = Color(0xFF8F5CFF)) },
+                        headlineContent = {
+                            Text(
+                                stringResource(id = R.string.ponline_duplicar),
+                                fontWeight = FontWeight.Medium,
+                                color = cs.secondary
+                            )
+                        },
                         leadingContent = {
-                            Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color(0xFF8F5CFF))
+                            Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = cs.secondary)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -190,18 +199,21 @@ fun PartidoOnlineScreenContent(
             val uid = partidoSel.uid
             AlertDialog(
                 onDismissRequest = { showConfirmDialog = false },
-                title = { Text(stringResource(id = R.string.ponline_eliminar_partido_titulo), fontWeight = FontWeight.Bold) },
-                text = { Text(String.format(stringResource(id = R.string.ponline_eliminar_partido_confirmacion), nombreA, nombreB)) },
+                title = { Text(stringResource(id = R.string.ponline_eliminar_partido_titulo), fontWeight = FontWeight.Bold, color = cs.onSurface) },
+                text = { Text(String.format(stringResource(id = R.string.ponline_eliminar_partido_confirmacion), nombreA, nombreB), color = cs.onSurfaceVariant) },
                 confirmButton = {
-                    Button(colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = cs.error, contentColor = cs.onPrimary),
                         onClick = {
                             showConfirmDialog = false
                             scope.launch { partidoViewModel.eliminarPartido(uid) }
-                        }) { Text(stringResource(id = R.string.gen_eliminar), color = Color.White) }
+                        }
+                    ) { Text(stringResource(id = R.string.gen_eliminar)) }
                 },
                 dismissButton = {
                     OutlinedButton(onClick = { showConfirmDialog = false }) { Text(stringResource(id = R.string.gen_cancelar)) }
-                }
+                },
+                containerColor = cs.surfaceVariant
             )
         }
     }
@@ -220,8 +232,8 @@ fun PartidoOnlineScreenContent(
         } else if (partidoAdd != null) {
             AlertDialog(
                 onDismissRequest = { showAddConfirmDialog = null },
-                title = { Text(stringResource(id = R.string.ponline_agregar_partido_titulo), fontWeight = FontWeight.Bold) },
-                text = { Text(String.format(stringResource(id = R.string.ponline_agregar_partido_confirmacion), nombreA, nombreB)) },
+                title = { Text(stringResource(id = R.string.ponline_agregar_partido_titulo), fontWeight = FontWeight.Bold, color = cs.onSurface) },
+                text = { Text(String.format(stringResource(id = R.string.ponline_agregar_partido_confirmacion), nombreA, nombreB), color = cs.onSurfaceVariant) },
                 confirmButton = {
                     Button(onClick = {
                         scope.launch { partidoViewModel.agregarPartidoALista(partidoAdd) }
@@ -233,7 +245,8 @@ fun PartidoOnlineScreenContent(
                 },
                 dismissButton = {
                     OutlinedButton(onClick = { showAddConfirmDialog = null }) { Text(stringResource(id = R.string.gen_cancelar)) }
-                }
+                },
+                containerColor = cs.surfaceVariant
             )
         }
     }
@@ -245,11 +258,11 @@ fun PartidoOnlineScreenContent(
                 modifier = Modifier
                     .padding(bottom = 1.dp, end = 1.dp)
                     .clip(RoundedCornerShape(17.dp))
-                    .background(Color(0xCC23273D))
+                    .background(cs.surfaceVariant.copy(alpha = 0.8f))
                     .border(
                         width = 2.dp,
                         brush = Brush.horizontalGradient(
-                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                            listOf(cs.primary, cs.secondary)
                         ),
                         shape = RoundedCornerShape(17.dp)
                     )
@@ -265,14 +278,14 @@ fun PartidoOnlineScreenContent(
                     Icon(
                         imageVector = Icons.Default.SportsSoccer,
                         contentDescription = stringResource(id = R.string.ponline_crear_partido),
-                        tint = Color(0xFF296DFF),
+                        tint = cs.primary,
                         modifier = Modifier.size(29.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         stringResource(id = R.string.ponline_crear_partido),
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF296DFF),
+                        color = cs.primary,
                         fontSize = 16.sp
                     )
                 }
@@ -282,7 +295,7 @@ fun PartidoOnlineScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(modernBackground)
+                .background(TorneoYaPalette.backgroundGradient)
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
@@ -294,7 +307,7 @@ fun PartidoOnlineScreenContent(
                 text = stringResource(id = R.string.gen_partidos_online),
                 fontSize = 27.sp,
                 fontWeight = FontWeight.Black,
-                color = Color.White,
+                color = cs.onBackground,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
@@ -307,19 +320,19 @@ fun PartidoOnlineScreenContent(
                 OutlinedButton(
                     onClick = { showSearchDropdown = !showSearchDropdown },
                     shape = RoundedCornerShape(17.dp),
-                    border = BorderStroke(2.dp, Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet))),
+                    border = BorderStroke(2.dp, Brush.horizontalGradient(listOf(cs.primary, cs.secondary))),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25))).toBrushColor(),
-                        contentColor = Color(0xFF296DFF)
+                        containerColor = Color.Transparent,
+                        contentColor = cs.primary
                     ),
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .height(44.dp)
                         .defaultMinSize(minWidth = 140.dp)
                 ) {
-                    Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.gen_buscar), modifier = Modifier.size(22.dp), tint = Color(0xFF296DFF))
+                    Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.gen_buscar), modifier = Modifier.size(22.dp), tint = cs.primary)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(id = R.string.ponline_buscar_por_uid), color = Color(0xFF296DFF), fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.ponline_buscar_por_uid), color = cs.primary, fontWeight = FontWeight.Bold)
                 }
 
                 DropdownMenu(
@@ -327,7 +340,7 @@ fun PartidoOnlineScreenContent(
                     onDismissRequest = { showSearchDropdown = false },
                     modifier = Modifier
                         .fillMaxWidth(0.98f)
-                        .background(Color(0xFF23273D))
+                        .background(cs.surfaceVariant)
                 ) {
                     Column(
                         modifier = Modifier
@@ -346,24 +359,28 @@ fun PartidoOnlineScreenContent(
                                     searchText = it
                                     searchError = null
                                 },
-                                placeholder = { Text(stringResource(id = R.string.ponline_uid_del_partido), color = Color(0xFFB7B7D1), fontSize = 16.sp) },
+                                placeholder = { Text(stringResource(id = R.string.ponline_uid_del_partido), color = cs.mutedText, fontSize = 16.sp) },
                                 singleLine = true,
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
                                     focusedIndicatorColor = Color.Transparent,
-                                    cursorColor = TorneoYaPalette.blue
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    cursorColor = cs.primary,
+                                    focusedTextColor = cs.onSurface,
+                                    unfocusedTextColor = cs.onSurface
                                 ),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(13.dp))
                                     .border(
                                         width = 2.dp,
-                                        brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                                        brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                                         shape = RoundedCornerShape(13.dp)
                                     )
                                     .background(
-                                        Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                                        Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
                                     )
                                     .padding(horizontal = 10.dp)
                             )
@@ -379,14 +396,14 @@ fun PartidoOnlineScreenContent(
                                 modifier = Modifier
                                     .size(42.dp)
                                     .clip(RoundedCornerShape(11.dp))
-                                    .background(Color(0xFF23273D))
+                                    .background(cs.surfaceVariant)
                                     .border(
                                         width = 1.6.dp,
-                                        brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                                        brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                                         shape = RoundedCornerShape(11.dp)
                                     )
                             ) {
-                                Icon(Icons.Default.ContentPaste, contentDescription = stringResource(id = R.string.gen_pegar_uid), tint = Color(0xFF8F5CFF), modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.ContentPaste, contentDescription = stringResource(id = R.string.gen_pegar_uid), tint = cs.secondary, modifier = Modifier.size(24.dp))
                             }
                             Spacer(Modifier.width(7.dp))
                             IconButton(
@@ -404,14 +421,14 @@ fun PartidoOnlineScreenContent(
                                 modifier = Modifier
                                     .size(42.dp)
                                     .clip(RoundedCornerShape(11.dp))
-                                    .background(Color(0xFF23273D))
+                                    .background(cs.surfaceVariant)
                                     .border(
                                         width = 1.6.dp,
-                                        brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                                        brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                                         shape = RoundedCornerShape(11.dp)
                                     )
                             ) {
-                                Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.gen_buscar), tint = Color(0xFF8F5CFF), modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.gen_buscar), tint = cs.secondary, modifier = Modifier.size(24.dp))
                             }
 
                         }
@@ -419,16 +436,17 @@ fun PartidoOnlineScreenContent(
                         Spacer(modifier = Modifier.height(6.dp))
                         if (searchLoading) {
                             CircularProgressIndicator(
-                                color = TorneoYaPalette.blue,
+                                color = cs.primary,
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
-                                    .size(22.dp)
+                                    .size(22.dp),
+                                strokeWidth = 3.dp
                             )
                         }
                         if (searchError != null) {
                             Text(
                                 searchError ?: "",
-                                color = Color.Red,
+                                color = cs.error,
                                 fontSize = 14.sp,
                                 modifier = Modifier.padding(top = 4.dp)
                             )
@@ -437,10 +455,10 @@ fun PartidoOnlineScreenContent(
                             searchResults.forEach { p ->
                                 ListItem(
                                     headlineContent = {
-                                        Text("${p.nombreEquipoA} vs ${p.nombreEquipoB}", fontWeight = FontWeight.SemiBold, color = Color.White)
+                                        Text("${p.nombreEquipoA} vs ${p.nombreEquipoB}", fontWeight = FontWeight.SemiBold, color = cs.onSurface)
                                     },
                                     supportingContent = {
-                                        Text("UID: ${p.uid}", fontSize = 13.sp, color = Color(0xFFB7B7D1))
+                                        Text("UID: ${p.uid}", fontSize = 13.sp, color = cs.onSurfaceVariant)
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -472,10 +490,10 @@ fun PartidoOnlineScreenContent(
                                 contentDescription = null,
                                 modifier = Modifier.size(19.dp),
                                 tint = when (estadoSeleccionado) {
-                                    EstadoPartido.TODOS -> TorneoYaPalette.mutedText
-                                    EstadoPartido.PREVIA -> Color(0xFF97E993)
-                                    EstadoPartido.JUGANDO -> Color(0xFFFFB531)
-                                    EstadoPartido.FINALIZADO -> Color(0xFFF97373)
+                                    EstadoPartido.TODOS -> cs.mutedText
+                                    EstadoPartido.PREVIA -> cs.primary
+                                    EstadoPartido.JUGANDO -> cs.tertiary
+                                    EstadoPartido.FINALIZADO -> cs.error
                                 }
                             )
                             Spacer(Modifier.width(6.dp))
@@ -483,24 +501,24 @@ fun PartidoOnlineScreenContent(
                                 stringResource(id = estadoSeleccionado.displayRes),
                                 fontWeight = FontWeight.Bold,
                                 color = when (estadoSeleccionado) {
-                                    EstadoPartido.TODOS -> TorneoYaPalette.mutedText
-                                    EstadoPartido.PREVIA -> Color(0xFF97E993)
-                                    EstadoPartido.JUGANDO -> Color(0xFFFFB531)
-                                    EstadoPartido.FINALIZADO -> Color(0xFFF97373)
+                                    EstadoPartido.TODOS -> cs.mutedText
+                                    EstadoPartido.PREVIA -> cs.primary
+                                    EstadoPartido.JUGANDO -> cs.tertiary
+                                    EstadoPartido.FINALIZADO -> cs.error
                                 }
                             )
                         }
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = Color(0xFF22243A),
-                        selectedContainerColor = Color(0xFF23273D),
-                        labelColor = Color.White
+                        containerColor = cs.surfaceVariant,
+                        selectedContainerColor = cs.surfaceVariant,
+                        labelColor = cs.onSurface
                     ),
                     border = BorderStroke(1.2.dp, when (estadoSeleccionado) {
-                        EstadoPartido.TODOS -> TorneoYaPalette.mutedText
-                        EstadoPartido.PREVIA -> Color(0xFF97E993)
-                        EstadoPartido.JUGANDO -> Color(0xFFFFB531)
-                        EstadoPartido.FINALIZADO -> Color(0xFFF97373)
+                        EstadoPartido.TODOS -> cs.mutedText
+                        EstadoPartido.PREVIA -> cs.primary
+                        EstadoPartido.JUGANDO -> cs.tertiary
+                        EstadoPartido.FINALIZADO -> cs.error
                     }),
                     modifier = Modifier.height(38.dp)
                 )
@@ -532,22 +550,22 @@ fun PartidoOnlineScreenContent(
                                 Icons.Default.Sort,
                                 contentDescription = null,
                                 modifier = Modifier.size(19.dp),
-                                tint = TorneoYaPalette.blue
+                                tint = cs.primary
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 "${stringResource(id = sortOption)} ${if (ascending) stringResource(id = R.string.ponline_ascendente) else stringResource(id = R.string.ponline_descendente)}",
                                 fontWeight = FontWeight.Bold,
-                                color = TorneoYaPalette.blue
+                                color = cs.primary
                             )
                         }
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = Color(0xFF22243A),
-                        selectedContainerColor = Color(0xFF23273D),
-                        labelColor = Color.White
+                        containerColor = cs.surfaceVariant,
+                        selectedContainerColor = cs.surfaceVariant,
+                        labelColor = cs.onSurface
                     ),
-                    border = BorderStroke(1.2.dp, TorneoYaPalette.blue),
+                    border = BorderStroke(1.2.dp, cs.primary),
                     modifier = Modifier.height(38.dp)
                 )
                 DropdownMenu(
@@ -586,14 +604,14 @@ fun PartidoOnlineScreenContent(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(
-                            color = Color(0xFF296DFF),
+                            color = cs.primary,
                             strokeWidth = 3.dp,
                             modifier = Modifier.size(46.dp)
                         )
                         Spacer(Modifier.height(16.dp))
                         Text(
                             text = stringResource(id = R.string.ponline_cargando_partidos),
-                            color = Color(0xFFB7B7D1),
+                            color = cs.mutedText,
                             fontSize = 17.sp
                         )
                     }
@@ -616,11 +634,11 @@ fun PartidoOnlineScreenContent(
                             .clip(RoundedCornerShape(17.dp))
                             .border(
                                 width = 2.dp,
-                                brush = Brush.horizontalGradient(listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)),
+                                brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                                 shape = RoundedCornerShape(17.dp)
                             )
                             .background(
-                                Brush.horizontalGradient(listOf(Color(0xFF23273D), Color(0xFF1C1D25)))
+                                Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
                             )
                             .combinedClickable(
                                 onClick = {
@@ -645,21 +663,21 @@ fun PartidoOnlineScreenContent(
                                     text = "$nombreA  vs  $nombreB",
                                     fontSize = 19.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color.White
+                                    color = cs.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = "${stringResource(id = R.string.ponline_fecha)}: $fecha  -  Inicio: $horaInicio  -  Fin: $horaFin",
                                     fontSize = 13.sp,
-                                    color = Color(0xFFB7B7D1)
+                                    color = MaterialTheme.colorScheme.mutedText
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 val estado = obtenerEstadoPartido(partido)
                                 val (chipBg, chipText, chipBorder, chipLabel) = when (estado) {
-                                    EstadoPartido.PREVIA -> Quadruple(Color(0xFF222F1C), Color(0xFF97E993), Color(0xFF97E993), stringResource(id = R.string.ponline_previa))
-                                    EstadoPartido.JUGANDO -> Quadruple(Color(0xFF352D15), Color(0xFFFFB531), Color(0xFFFFB531), stringResource(id = R.string.ponline_en_juego))
-                                    EstadoPartido.FINALIZADO -> Quadruple(Color(0xFF2F2322), Color(0xFFF97373), Color(0xFFF97373), stringResource(id = R.string.ponline_finalizado))
-                                    else -> Quadruple(Color(0xFF23273D), Color(0xFFB7B7D1), Color.Transparent, "")
+                                    EstadoPartido.PREVIA -> Quadruple(cs.surface, cs.primary, cs.primary, stringResource(id = R.string.ponline_previa))
+                                    EstadoPartido.JUGANDO -> Quadruple(cs.surface, cs.tertiary, cs.tertiary, stringResource(id = R.string.ponline_en_juego))
+                                    EstadoPartido.FINALIZADO -> Quadruple(cs.surface, cs.error, cs.error, stringResource(id = R.string.ponline_finalizado))
+                                    else -> Quadruple(cs.surfaceVariant, cs.mutedText, Color.Transparent, "")
                                 }
                                 AssistChip(
                                     onClick = { },
@@ -684,7 +702,7 @@ fun PartidoOnlineScreenContent(
                             Icon(
                                 imageVector = Icons.Default.ArrowUpward,
                                 contentDescription = stringResource(id = R.string.ponline_ver),
-                                tint = Color(0xFF8F5CFF),
+                                tint = cs.secondary,
                                 modifier = Modifier
                                     .size(30.dp)
                                     .padding(start = 8.dp)

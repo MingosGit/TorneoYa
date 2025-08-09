@@ -8,29 +8,31 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun PartidoGolesHeaderOnline(
     uiState: VisualizarPartidoOnlineUiState,
     onRecargarGoles: (() -> Unit)? = null
 ) {
+    val cs = MaterialTheme.colorScheme
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp, horizontal = 14.dp), // Agrega padding lateral aquí
+            .padding(vertical = 6.dp, horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -42,15 +44,13 @@ fun PartidoGolesHeaderOnline(
                 .shadow(2.dp, RoundedCornerShape(14.dp))
                 .background(
                     brush = Brush.horizontalGradient(
-                        listOf(Color(0xFF191A23), Color(0xFF23273D))
+                        listOf(cs.surface, cs.surfaceVariant)
                     ),
                     shape = RoundedCornerShape(14.dp)
                 )
                 .border(
                     width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                    ),
+                    brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                     shape = RoundedCornerShape(14.dp)
                 )
                 .padding(vertical = 4.dp, horizontal = 6.dp)
@@ -59,13 +59,13 @@ fun PartidoGolesHeaderOnline(
                 text = "${uiState.golesEquipoA}",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
+                color = cs.onSurface,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
         }
 
-        // Botón recargar en el centro
+        // Botón recargar
         if (onRecargarGoles != null) {
             IconButton(
                 onClick = { onRecargarGoles() },
@@ -73,21 +73,19 @@ fun PartidoGolesHeaderOnline(
                     .padding(horizontal = 8.dp)
                     .size(34.dp)
                     .background(
-                        color = Color(0xFF23273D),
+                        color = cs.surfaceVariant,
                         shape = RoundedCornerShape(50)
                     )
                     .border(
                         width = 1.5.dp,
-                        brush = Brush.horizontalGradient(
-                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
-                        ),
+                        brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
                         shape = RoundedCornerShape(50)
                     )
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Recargar goles",
-                    tint = Color(0xFF8F5CFF),
+                    tint = cs.secondary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -103,15 +101,13 @@ fun PartidoGolesHeaderOnline(
                 .shadow(2.dp, RoundedCornerShape(14.dp))
                 .background(
                     brush = Brush.horizontalGradient(
-                        listOf(Color(0xFF23273D), Color(0xFF191A23))
+                        listOf(cs.surfaceVariant, cs.surface)
                     ),
                     shape = RoundedCornerShape(14.dp)
                 )
                 .border(
                     width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(TorneoYaPalette.accent, TorneoYaPalette.violet)
-                    ),
+                    brush = Brush.horizontalGradient(listOf(cs.tertiary, cs.secondary)),
                     shape = RoundedCornerShape(14.dp)
                 )
                 .padding(vertical = 4.dp, horizontal = 6.dp)
@@ -120,7 +116,7 @@ fun PartidoGolesHeaderOnline(
                 text = "${uiState.golesEquipoB}",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
+                color = cs.onSurface,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
