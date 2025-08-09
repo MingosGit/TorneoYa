@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.ThumbDown
@@ -48,6 +49,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val comentariosLoaded = remember(comentariosSize) { comentariosSize > 0 }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val creadorUid by vm.partidoCreadorUid.collectAsState(initial = null)
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -163,6 +165,10 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                         comentarioConVotos.miVoto == -1 -> cs.error
                         else -> cs.surfaceVariant
                     }
+                    val puedeEliminar = remember(creadorUid, comentarioConVotos.comentario.usuarioUid, usuarioUid) {
+                        val cUid = creadorUid ?: ""
+                        usuarioUid == comentarioConVotos.comentario.usuarioUid || usuarioUid == cUid
+                    }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -211,6 +217,25 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                         color = cs.mutedText,
                                         textAlign = TextAlign.End
                                     )
+                                    if (puedeEliminar) {
+                                        IconButton(
+                                            onClick = {
+                                                scope.launch {
+                                                    vm.eliminarComentario(comentarioConVotos.comentario.uid, usuarioUid)
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .padding(start = 2.dp)
+                                                .size(28.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Delete,
+                                                contentDescription = "Eliminar comentario",
+                                                tint = cs.error,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
                                 }
                                 Spacer(Modifier.height(2.dp))
                                 Text(

@@ -59,10 +59,15 @@ class VisualizarPartidoOnlineViewModel(
     private val _comentariosEncuestasState = MutableStateFlow(VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares())
     val comentariosEncuestasState: StateFlow<VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares> = _comentariosEncuestasState
 
+    private val _partidoCreadorUid = MutableStateFlow<String?>(null)
+    val partidoCreadorUid: StateFlow<String?> = _partidoCreadorUid
+
     fun cargarDatos(usuarioUid: String? = null) {
         viewModelScope.launch {
             val partido = repo.obtenerPartido(partidoUid)
             if (partido != null) {
+                _partidoCreadorUid.value = partido.creadorUid
+
                 val equipoA = partido.equipoAId.let { repo.obtenerEquipo(it) }
                 val equipoB = partido.equipoBId.let { repo.obtenerEquipo(it) }
 
@@ -175,6 +180,13 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    fun eliminarComentario(comentarioUid: String, usuarioUid: String) {
+        viewModelScope.launch {
+            repo.eliminarComentarioSiAutorizado(comentarioUid, usuarioUid)
+            cargarComentariosEncuestas(usuarioUid)
+        }
+    }
+
     fun agregarEncuesta(
         pregunta: String,
         opciones: List<String>,
@@ -212,7 +224,6 @@ class VisualizarPartidoOnlineViewModel(
                 }
         }
     }
-
 
     suspend fun getVotoUsuarioEncuesta(encuestaUid: String, usuarioUid: String): Int? {
         return repo.obtenerVotoUsuarioEncuesta(encuestaUid, usuarioUid)
@@ -286,6 +297,7 @@ class VisualizarPartidoOnlineViewModel(
             return InfoMinutoParte("-", "-", 0)
         }
     }
+
     fun dejarDeVerPartido(usuarioUid: String, onFinish: () -> Unit) {
         viewModelScope.launch {
             repo.quitarUsuarioDeAcceso(partidoUid, usuarioUid)

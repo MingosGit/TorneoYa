@@ -64,6 +64,7 @@ class PartidoFirebaseRepository {
         )
         db.collection("partidos").add(datos).await()
     }
+
     suspend fun quitarUsuarioDeAcceso(partidoUid: String, usuarioUid: String) {
         db.collection("partidos").document(partidoUid)
             .update("usuariosConAcceso", com.google.firebase.firestore.FieldValue.arrayRemove(usuarioUid))
@@ -343,6 +344,37 @@ class PartidoFirebaseRepository {
 
         // 5) Borrar el partido
         db.collection("partidos").document(partidoUid).delete().await()
+    }
+
+    /**
+     * Permite eliminar un comentario si lo solicita su autor o el creador del partido.
+     * También elimina todos los votos asociados al comentario.
+     */
+    suspend fun eliminarComentarioSiAutorizado(comentarioUid: String, solicitanteUid: String) {
+        // Obtener comentario
+        val comentarioSnap = db.collection("comentarios").document(comentarioUid).get().await()
+        if (!comentarioSnap.exists()) return
+
+        val autorComentarioUid = comentarioSnap.getString("usuarioUid") ?: ""
+        val partidoUid = comentarioSnap.getString("partidoUid") ?: ""
+
+        // Obtener creador del partido
+        val partidoSnap = db.collection("partidos").document(partidoUid).get().await()
+        val creadorPartidoUid = partidoSnap.getString("creadorUid") ?: ""
+
+        // Verificación de permisos: autor del comentario o creador del partido
+        if (solicitanteUid != autorComentarioUid && solicitanteUid != creadorPartidoUid) {
+            throw SecurityException("No tienes permisos para eliminar este comentario.")
+        }
+
+        // Borrar votos del comentario
+        val votos = db.collection("comentario_votos")
+            .whereEqualTo("comentarioUid", comentarioUid)
+            .get().await()
+        deleteDocsInChunks(votos.documents.map { it.reference.path })
+
+        // Borrar comentario
+        db.collection("comentarios").document(comentarioUid).delete().await()
     }
 
     // --- Helpers ---
