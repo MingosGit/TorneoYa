@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,6 +59,8 @@ import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterState
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
 import java.util.Locale
+
+private const val MIN_PASSWORD_LENGTH = 6
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,6 +101,23 @@ fun RegisterScreen(
         )
         return
     }
+
+    // Validación granular y mensaje acorde a lo que falta
+    val passwordErrorMessage = remember(password) {
+        when {
+            password.isEmpty() -> null
+            password.length < MIN_PASSWORD_LENGTH ->
+                context.getString(R.string.auth_password_min_length, MIN_PASSWORD_LENGTH)
+            !password.any { it.isUpperCase() } ->
+                context.getString(R.string.auth_password_need_uppercase)
+            !password.any { it.isLowerCase() } ->
+                context.getString(R.string.auth_password_need_lowercase)
+            !password.any { it.isDigit() } ->
+                context.getString(R.string.auth_password_need_digit)
+            else -> null
+        }
+    }
+    val isPasswordValid = passwordErrorMessage == null
 
     Box(
         Modifier
@@ -277,16 +294,24 @@ fun RegisterScreen(
                         RoundedCornerShape(17.dp)
                     ),
                 visualTransformation = PasswordVisualTransformation(),
+                supportingText = {
+                    if (passwordErrorMessage != null) {
+                        Text(
+                            text = passwordErrorMessage,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = Color.Transparent,
-                    focusedBorderColor = blue,
-                    unfocusedBorderColor = blue.copy(alpha = 0.6f),
+                    focusedBorderColor = if (passwordErrorMessage == null) blue else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (passwordErrorMessage == null) blue.copy(alpha = 0.6f) else MaterialTheme.colorScheme.error,
                     cursorColor = blue,
                 )
             )
             Spacer(modifier = Modifier.height(20.dp))
             val canRegister = registerState != RegisterState.Loading &&
-                    email.isNotBlank() && password.length >= 6 && nombreUsuario.isNotBlank()
+                    email.isNotBlank() && nombreUsuario.isNotBlank() && passwordErrorMessage == null
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

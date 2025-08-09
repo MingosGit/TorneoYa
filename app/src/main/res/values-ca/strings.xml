@@ -437,4 +437,28 @@ Gaudeix del futbol tant com jo he gaudit creant aquesta aplicació per a tu.</st
     <string name="theme_dark">Tema fosc</string>
     <string name="theme_system">Tema del sistema</string>
 
+    <string name="confirmar_correo_btn_verificado">Ja verificat</string>
+    <string name="confirmar_correo_btn_reenviar">Reenviar correu de verificació</string>
+    <string name="confirmar_correo_reenviado">Correu de verificació reenviat.</string>
+    <string name="confirmar_correo_no_verificado">Encara no has verificat el teu correu.</string>
+    <string name="confirmar_correo_error_comprobar">Error en comprovar.</string>
+    <string name="confirmar_correo_sesion_expirada">Sessió expirada, torna a registrar-te.</string>
+    <string name="confirmar_correo_titulo">Confirma el teu correu</string>
+    <string name="confirmar_correo_mensaje">
+        T\'hem enviat un correu de confirmació a:
+        %1$s
+
+        Si us plau, confirma'l i després prem el botó de sota.
+    </string>
+    <!-- Gen -->
+    <string name="gen_email_desc">Correu</string>
+
+    <!-- Reglas de contraseña -->
+    <string name="auth_password_min_length">Ha de tenir almenys %1$d caràcters</string>
+    <string name="auth_password_need_uppercase">Ha de contenir almenys una majúscula</string>
+    <string name="auth_password_need_lowercase">Ha de contenir almenys una minúscula</string>
+    <string name="auth_password_need_digit">Ha de contenir almenys un número</string>
+    <string name="auth_password_requirements_generic">La contrasenya no compleix els requisits.</string>
+
+
 </resources>

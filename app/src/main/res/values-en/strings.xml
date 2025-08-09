@@ -435,4 +435,31 @@ Enjoy football as much as I enjoyed creating this app for you.</string>
     <string name="theme_dark">Dark theme</string>
     <string name="theme_system">System theme</string>
 
+
+    <string name="confirmar_correo_titulo">Confirm your email</string>
+    <string name="confirmar_correo_mensaje">
+        We have sent a confirmation email to:
+        %1$s
+
+        Please confirm it and then press the button below.
+    </string>
+
+    <string name="confirmar_correo_btn_verificado">Already verified</string>
+    <string name="confirmar_correo_btn_reenviar">Resend verification email</string>
+    <string name="confirmar_correo_reenviado">Verification email resent.</string>
+    <string name="confirmar_correo_no_verificado">You haven\'t verified your email yet.</string>
+    <string name="confirmar_correo_error_comprobar">Error while checking.</string>
+    <string name="confirmar_correo_sesion_expirada">Session expired, please register again.</string>
+
+    <!-- Gen -->
+    <string name="gen_email_desc">Email</string>
+
+    <!-- Password rules -->
+    <string name="auth_password_min_length">Must be at least %1$d characters</string>
+    <string name="auth_password_need_uppercase">Must contain at least one uppercase letter</string>
+    <string name="auth_password_need_lowercase">Must contain at least one lowercase letter</string>
+    <string name="auth_password_need_digit">Must contain at least one number</string>
+    <string name="auth_password_requirements_generic">The password does not meet the requirements.</string>
+
+
 </resources>

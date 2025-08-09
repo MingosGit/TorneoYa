@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 
+private const val MIN_PASSWORD_LENGTH = 6
+
 class RegisterViewModel(
     private val repository: UsuarioAuthRepository
 ) : ViewModel() {
@@ -23,6 +25,10 @@ class RegisterViewModel(
     val registerState: StateFlow<RegisterState> = _registerState
 
     fun register(email: String, password: String, nombreUsuario: String) {
+        if (!isPasswordValid(password)) {
+            _registerState.value = RegisterState.Error(R.string.auth_password_requirements_generic)
+            return
+        }
         _registerState.value = RegisterState.Loading
         viewModelScope.launch {
             val result = repository.register(email, password, nombreUsuario)
@@ -38,13 +44,21 @@ class RegisterViewModel(
         _registerState.value = RegisterState.Empty
     }
 
+    private fun isPasswordValid(pwd: String): Boolean {
+        if (pwd.length < MIN_PASSWORD_LENGTH) return false
+        if (!pwd.any { it.isUpperCase() }) return false
+        if (!pwd.any { it.isLowerCase() }) return false
+        if (!pwd.any { it.isDigit() }) return false
+        return true
+    }
+
     @StringRes
     private fun mapAuthExceptionToStringRes(throwable: Throwable?): Int {
         if (throwable == null) return R.string.auth_unknown_error
 
         return when (throwable) {
             is FirebaseAuthWeakPasswordException ->
-                R.string.auth_weak_password
+                R.string.auth_password_requirements_generic
             is FirebaseAuthUserCollisionException ->
                 R.string.auth_email_already_in_use
             is FirebaseAuthInvalidCredentialsException -> {
