@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.theme
+package mingosgit.josecr.torneoya.ui.screens.usuario
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,21 +23,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 private val cardShape = RoundedCornerShape(16.dp)
 
+/** themeMode: 0=Sistema, 1=Claro, 2=Oscuro */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeScreen(
     navController: NavController,
     currentThemeDark: Boolean,
-    onThemeChange: (Boolean) -> Unit
+    currentMode: Int,
+    onThemeChange: (Int) -> Unit
 ) {
-    var selectedDark by rememberSaveable { mutableStateOf(currentThemeDark) }
+    var selectedMode by rememberSaveable { mutableStateOf(currentMode) }
 
-    LaunchedEffect(currentThemeDark) {
-        selectedDark = currentThemeDark
-    }
+    LaunchedEffect(currentMode) { selectedMode = currentMode }
 
     val colorScheme = MaterialTheme.colorScheme
     val modernBackground = TorneoYaPalette.backgroundGradient
@@ -55,7 +56,9 @@ fun ThemeScreen(
                             icon = Icons.Default.ArrowBack,
                             contentDescription = "Volver",
                             onClick = { navController.popBackStack() },
-                            gradient = Brush.horizontalGradient(listOf(colorScheme.primary, colorScheme.secondary))
+                            gradient = Brush.horizontalGradient(
+                                listOf(colorScheme.primary, colorScheme.secondary)
+                            )
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
@@ -87,23 +90,34 @@ fun ThemeScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 ThemeOptionCard(
-                    title = stringResource(id = R.string.theme_light),
-                    selected = !selectedDark,
+                    title = stringResource(id = R.string.theme_system),
+                    selected = selectedMode == 0,
                     onClick = {
-                        if (selectedDark) {
-                            selectedDark = false
-                            onThemeChange(false)
+                        if (selectedMode != 0) {
+                            selectedMode = 0
+                            onThemeChange(0)
+                        }
+                    },
+                    colorScheme = colorScheme
+                )
+                ThemeOptionCard(
+                    title = stringResource(id = R.string.theme_light),
+                    selected = selectedMode == 1,
+                    onClick = {
+                        if (selectedMode != 1) {
+                            selectedMode = 1
+                            onThemeChange(1)
                         }
                     },
                     colorScheme = colorScheme
                 )
                 ThemeOptionCard(
                     title = stringResource(id = R.string.theme_dark),
-                    selected = selectedDark,
+                    selected = selectedMode == 2,
                     onClick = {
-                        if (!selectedDark) {
-                            selectedDark = true
-                            onThemeChange(true)
+                        if (selectedMode != 2) {
+                            selectedMode = 2
+                            onThemeChange(2)
                         }
                     },
                     colorScheme = colorScheme
@@ -157,33 +171,3 @@ private fun ThemeOptionCard(
     }
 }
 
-@Composable
-fun GradientBorderedIconButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String?,
-    onClick: () -> Unit,
-    gradient: Brush,
-    size: androidx.compose.ui.unit.Dp = 38.dp,
-    iconSize: androidx.compose.ui.unit.Dp = 21.dp
-) {
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(CircleShape)
-            .border(
-                width = 2.5.dp,
-                brush = gradient,
-                shape = CircleShape
-            )
-            .background(Color.Transparent)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            icon,
-            contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.size(iconSize)
-        )
-    }
-}

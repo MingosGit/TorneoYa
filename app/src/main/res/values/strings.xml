@@ -406,6 +406,7 @@ Disfruta del fútbol tanto como yo disfruté creando esta app para ti.</string>
     <string name="idioma_english">English</string>
     <string name="theme_light">Tema claro</string>
     <string name="theme_dark">Tema oscuro</string>
+    <string name="theme_system">Tema del sistema</string>
 
 
 </resources>

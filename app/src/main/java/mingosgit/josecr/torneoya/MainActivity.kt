@@ -5,15 +5,16 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -23,9 +24,9 @@ import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.*
 import mingosgit.josecr.torneoya.ui.navigation.*
 import mingosgit.josecr.torneoya.ui.theme.ModernTorneoYaTheme
-import mingosgit.josecr.torneoya.viewmodel.usuario.*
-import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.ui.screens.home.HomeViewModel
+import mingosgit.josecr.torneoya.viewmodel.partido.*
+import mingosgit.josecr.torneoya.viewmodel.usuario.*
 import androidx.core.view.WindowCompat
 import android.graphics.Color as AndroidColor
 import java.util.Locale
@@ -34,8 +35,13 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var homeViewModel: HomeViewModel
 
+    companion object {
+        private const val PREFS = "settings"
+        private const val THEME_MODE_KEY = "theme_mode" // 0=system, 1=light, 2=dark
+    }
+
     override fun attachBaseContext(newBase: Context) {
-        val sharedPref = newBase.getSharedPreferences("settings", MODE_PRIVATE)
+        val sharedPref = newBase.getSharedPreferences(PREFS, MODE_PRIVATE)
         val language = sharedPref.getString("app_language", "es") ?: "es"
         val localeUpdatedContext = updateLocale(newBase, language)
         super.attachBaseContext(localeUpdatedContext)
@@ -53,13 +59,17 @@ class MainActivity : ComponentActivity() {
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         setContent {
-            val sharedPref = getSharedPreferences("settings", MODE_PRIVATE)
+            val sharedPref = getSharedPreferences(PREFS, MODE_PRIVATE)
 
-            var isDarkTheme by rememberSaveable {
-                mutableStateOf(sharedPref.getBoolean("dark_theme", true))
+            val systemIsDark = isSystemInDarkTheme()
+            var themeMode by rememberSaveable { mutableStateOf(sharedPref.getInt(THEME_MODE_KEY, 2)) } // 0 sys,1 light,2 dark (DEFAULT: DARK)
+            val useDarkTheme = when (themeMode) {
+                1 -> false
+                2 -> true
+                else -> systemIsDark
             }
 
-            ModernTorneoYaTheme(useDarkTheme = isDarkTheme) {
+            ModernTorneoYaTheme(useDarkTheme = useDarkTheme) {
                 val navController = rememberNavController()
                 val context = this@MainActivity
                 val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
@@ -67,7 +77,6 @@ class MainActivity : ComponentActivity() {
                 val db = AppDatabase.getInstance(context)
                 val usuarioLocalRepository = UsuarioLocalRepository(db.usuarioLocalDao())
                 val jugadorRepository = JugadorRepository(db.jugadorDao())
-                val partidoEquipoJugadorRepository = PartidoEquipoJugadorRepository(db.partidoEquipoJugadorDao())
 
                 val partidoRepository = PartidoRepository(
                     db.partidoDao(),
@@ -103,7 +112,6 @@ class MainActivity : ComponentActivity() {
                     BottomNavItem.Amigos.route,
                     BottomNavItem.Usuario.route -> true
                     "partido_online" -> true
-                    "visualizar_partido_online/{partidoUid}" -> false
                     else -> false
                 }
 
@@ -111,8 +119,9 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         if (showBottomBar) {
                             BottomNavigationBar(
-                                navController, modifier = Modifier.navigationBarsPadding(),
-                                isDarkTheme = isDarkTheme
+                                navController,
+                                modifier = Modifier.navigationBarsPadding(),
+                                isDarkTheme = useDarkTheme
                             )
                         }
                     },
@@ -131,11 +140,12 @@ class MainActivity : ComponentActivity() {
                             equipoRepository = equipoRepository,
                             globalUserViewModel = globalUserViewModel,
                             homeViewModel = homeViewModel,
-                            isDarkTheme = isDarkTheme,
-                            onThemeChange = { newValue ->
-                                isDarkTheme = newValue
-                                sharedPref.edit().putBoolean("dark_theme", newValue).apply()
-                            }
+                            isDarkTheme = useDarkTheme,
+                            onThemeChange = { newMode: Int ->
+                                themeMode = newMode
+                                sharedPref.edit().putInt(THEME_MODE_KEY, newMode).apply()
+                            },
+                            themeMode = themeMode
                         )
                     }
                 }

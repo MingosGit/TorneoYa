@@ -47,7 +47,7 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
-import androidx.activity.ComponentActivity // <--- añade este import arriba
+import androidx.activity.ComponentActivity
 import mingosgit.josecr.torneoya.ui.screens.avatar.AvatarScreen
 import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
 import mingosgit.josecr.torneoya.ui.screens.home.NotificacionesScreen
@@ -55,7 +55,7 @@ import mingosgit.josecr.torneoya.ui.screens.perfilamigo.PerfilAmigoScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.CreditosScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.IdiomaScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.PartidosListaBusquedaScreen
-import mingosgit.josecr.torneoya.ui.theme.ThemeScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ThemeScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 
 @Composable
@@ -68,9 +68,10 @@ fun NavGraph(
     equipoRepository: EquipoRepository,
     globalUserViewModel: GlobalUserViewModel = viewModel(),
     amigosViewModel: AmigosViewModel = viewModel(),
-    onThemeChange: (Boolean) -> Unit,
+    onThemeChange: (Int) -> Unit,
     agregarAmigoViewModel: AgregarAmigoViewModel = viewModel(),
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    themeMode: Int
 ) {
     val owner = LocalViewModelStoreOwner.current ?: error("No ViewModelStoreOwner")
     val context = LocalContext.current
@@ -133,9 +134,9 @@ fun NavGraph(
             ThemeScreen(
                 navController = navController,
                 currentThemeDark = isDarkTheme,
+                currentMode = themeMode,
                 onThemeChange = onThemeChange
             )
-
         }
         composable(
             route = "administrar_partido_online/{partidoUid}",
