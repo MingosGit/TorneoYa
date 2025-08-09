@@ -49,6 +49,7 @@ fun VisualizarPartidoOnlineScreen(
     var showCopiedMessage by remember { mutableStateOf(false) }
     var showPermisoDialog by remember { mutableStateOf(false) }
     var showDejarDeVerDialog by remember { mutableStateOf(false) }
+    var showEsCreadorNoSalirDialog by remember { mutableStateOf(false) }
     val eliminado by vm.eliminado.collectAsState()
     val uiState by vm.uiState.collectAsState()
 
@@ -66,6 +67,8 @@ fun VisualizarPartidoOnlineScreen(
     val dialogStopViewingMsg = stringResource(id = R.string.ponline_dialog_stop_viewing_message)
     val dialogStopViewingConfirm = stringResource(id = R.string.ponline_dialog_stop_viewing_confirm)
     val btnOk = stringResource(id = R.string.gen_cerrar)
+    val dialogEsCreadorNoSalirTitle = stringResource(id = R.string.parequban_avisocreador)
+    val dialogEsCreadorNoSalirMsg = stringResource(id = R.string.parequeban_no_puedes)
 
     LaunchedEffect(partidoUid, usuarioUid) {
         val firestore = FirebaseFirestore.getInstance()
@@ -178,7 +181,7 @@ fun VisualizarPartidoOnlineScreen(
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
-                            if (esAdmin || !esCreador) {
+                            if (!esCreador) {
                                 IconButton(
                                     modifier = Modifier
                                         .size(46.dp)
@@ -190,6 +193,26 @@ fun VisualizarPartidoOnlineScreen(
                                         )
                                         .background(cs.surfaceVariant, shape = CircleShape),
                                     onClick = { showDejarDeVerDialog = true }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ExitToApp,
+                                        contentDescription = descStopViewing,
+                                        tint = cs.error,
+                                        modifier = Modifier.size(25.dp)
+                                    )
+                                }
+                            } else {
+                                IconButton(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(CircleShape)
+                                        .border(
+                                            width = 2.dp,
+                                            brush = gradientBorderDestructive,
+                                            shape = CircleShape
+                                        )
+                                        .background(cs.surfaceVariant, shape = CircleShape),
+                                    onClick = { showEsCreadorNoSalirDialog = true }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.ExitToApp,
@@ -241,7 +264,7 @@ fun VisualizarPartidoOnlineScreen(
             }
         )
 
-        // ----------- POPUP PERMISOS -----------
+        // POPUP permisos
         if (showPermisoDialog) {
             Box(
                 modifier = Modifier
@@ -261,47 +284,76 @@ fun VisualizarPartidoOnlineScreen(
                         .background(cs.surface, shape = RoundedCornerShape(22.dp))
                         .padding(horizontal = 24.dp, vertical = 26.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = dialogNoPermTitle,
-                            color = cs.text,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 21.sp
-                        )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(dialogNoPermTitle, color = cs.text, fontWeight = FontWeight.Black, fontSize = 21.sp)
                         Spacer(modifier = Modifier.height(14.dp))
-                        Text(
-                            text = dialogNoPermMsg,
-                            color = cs.mutedText,
-                            fontSize = 15.sp
-                        )
+                        Text(dialogNoPermMsg, color = cs.mutedText, fontSize = 15.sp)
                         Spacer(modifier = Modifier.height(23.dp))
                         Button(
                             onClick = { showPermisoDialog = false },
                             colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                             contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                             shape = RoundedCornerShape(13.dp),
-                            border = androidx.compose.foundation.BorderStroke(
-                                2.dp,
-                                gradientBorderPrimary
-                            ),
+                            border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderPrimary),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                         ) {
-                            Text(
-                                text = btnOk,
-                                color = cs.primary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
+                            Text(btnOk, color = cs.primary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
                     }
                 }
             }
         }
-        // ----------- FIN POPUP PERMISOS -----------
 
-        // ----------- POPUP DEJAR DE VISUALIZAR -----------
+        // POPUP creador no puede salir
+        if (showEsCreadorNoSalirDialog) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .border(
+                            width = 2.dp,
+                            brush = gradientBorderDestructive,
+                            shape = RoundedCornerShape(22.dp)
+                        )
+                        .background(cs.surface, shape = RoundedCornerShape(22.dp))
+                        .padding(horizontal = 24.dp, vertical = 26.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = dialogEsCreadorNoSalirMsg,
+                            color = cs.text,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 21.sp
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = dialogEsCreadorNoSalirTitle,
+                            color = cs.mutedText,
+                            fontSize = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(23.dp))
+                        Button(
+                            onClick = { showEsCreadorNoSalirDialog = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+                            shape = RoundedCornerShape(13.dp),
+                            border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderDestructive),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        ) {
+                            Text(btnOk, color = cs.error, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        }
+                    }
+                }
+            }
+        }
+
+        // POPUP dejar de visualizar
         if (showDejarDeVerDialog) {
             Box(
                 modifier = Modifier
@@ -321,21 +373,10 @@ fun VisualizarPartidoOnlineScreen(
                         .background(cs.surface, shape = RoundedCornerShape(22.dp))
                         .padding(horizontal = 24.dp, vertical = 26.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = dialogStopViewingTitle,
-                            color = cs.text,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 21.sp
-                        )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(dialogStopViewingTitle, color = cs.text, fontWeight = FontWeight.Black, fontSize = 21.sp)
                         Spacer(modifier = Modifier.height(14.dp))
-                        Text(
-                            text = dialogStopViewingMsg,
-                            color = cs.mutedText,
-                            fontSize = 15.sp
-                        )
+                        Text(dialogStopViewingMsg, color = cs.mutedText, fontSize = 15.sp)
                         Spacer(modifier = Modifier.height(23.dp))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -358,26 +399,15 @@ fun VisualizarPartidoOnlineScreen(
                                 colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                                 contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                                 shape = RoundedCornerShape(13.dp),
-                                border = androidx.compose.foundation.BorderStroke(
-                                    2.dp,
-                                    gradientBorderDestructive
-                                ),
+                                border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderDestructive),
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                             ) {
-                                Text(
-                                    text = dialogStopViewingConfirm,
-                                    color = cs.error,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
+                                Text(dialogStopViewingConfirm, color = cs.error, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                             OutlinedButton(
                                 onClick = { showDejarDeVerDialog = false },
                                 modifier = Modifier.weight(1f),
-                                border = androidx.compose.foundation.BorderStroke(
-                                    2.dp,
-                                    gradientBorderPrimary
-                                ),
+                                border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderPrimary),
                                 shape = RoundedCornerShape(13.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     containerColor = androidx.compose.ui.graphics.Color.Transparent,
@@ -385,18 +415,12 @@ fun VisualizarPartidoOnlineScreen(
                                 ),
                                 contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp)
                             ) {
-                                Text(
-                                    btnOk,
-                                    color = cs.primary,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
+                                Text(btnOk, color = cs.primary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                         }
                     }
                 }
             }
         }
-        // ----------- FIN POPUP DEJAR DE VISUALIZAR -----------
     }
 }

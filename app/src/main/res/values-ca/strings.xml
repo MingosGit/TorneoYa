@@ -210,6 +210,8 @@
     <!--- ====== VISUALITZAR PARTIT ONLINE SCREEN ====== -->
     <string name="parequban_estado">Estat: %1$s</string>
     <string name="parequban_descanso">Descans</string>
+    <string name="parequban_avisocreador">Ets el creador d’aquest partit. Per deixar de participar, l’has d’eliminar.</string>
+    <string name="parequeban_no_puedes">No pots sortir</string>
 
     <!--- ====== PARTIT ONLINE SCREEN ====== -->
     <string name="ponline_acceso_partidos_online">Accés a Partits Online</string>
@@ -408,4 +410,9 @@ Gaudeix del futbol tant com jo he gaudit creant aquesta aplicació per a tu.</st
     <string name="idioma_espanol">Español</string>
     <string name="idioma_catala">Català</string>
     <string name="idioma_english">English</string>
+
+    <string name="theme_light">Tema clar</string>
+    <string name="theme_dark">Tema fosc</string>
+    <string name="theme_system">Tema del sistema</string>
+
 </resources>

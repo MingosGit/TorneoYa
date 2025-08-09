@@ -210,6 +210,8 @@
     <!--- ====== VIEW ONLINE MATCH SCREEN ====== -->
     <string name="parequban_estado">Status: %1$s</string>
     <string name="parequban_descanso">Half-time</string>
+    <string name="parequban_avisocreador">You are the creator of this match. To stop participating, you must delete it.</string>
+    <string name="parequeban_no_puedes">You cannot leave</string>
 
     <!--- ====== ONLINE MATCH SCREEN ====== -->
     <string name="ponline_acceso_partidos_online">Access Online Matches</string>
@@ -407,4 +409,9 @@ Enjoy football as much as I enjoyed creating this app for you.</string>
     <string name="idioma_espanol">Spanish</string>
     <string name="idioma_catala">Catalan</string>
     <string name="idioma_english">English</string>
+
+    <string name="theme_light">Light theme</string>
+    <string name="theme_dark">Dark theme</string>
+    <string name="theme_system">System theme</string>
+
 </resources>

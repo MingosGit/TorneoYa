@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
 fun BottomNavigationBar(
@@ -58,7 +59,7 @@ fun BottomNavigationBar(
             items.forEach { item ->
                 val selected = currentRoute == item.route
                 val color by animateColorAsState(
-                    if (selected) MaterialTheme.colorScheme.primary else Color.Gray,
+                    if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.mutedText,
                     label = "nav-item"
                 )
 

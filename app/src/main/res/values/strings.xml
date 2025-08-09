@@ -208,6 +208,8 @@
     <!--- ====== VISUALIZAR PARTIDO ONLINE SCREEN ====== -->
     <string name="parequban_estado">Estado: %1$s</string>
     <string name="parequban_descanso">Descanso</string>
+    <string name="parequban_avisocreador">Eres el creador de este partido. Para dejar de participar, debes eliminarlo.</string>
+    <string name="parequeban_no_puedes">No puedes salir</string>"
 
     <!--- ====== PARTIDO ONLINE SCREEN ====== -->
     <string name="ponline_acceso_partidos_online">Acceso a Partidos Online</string>

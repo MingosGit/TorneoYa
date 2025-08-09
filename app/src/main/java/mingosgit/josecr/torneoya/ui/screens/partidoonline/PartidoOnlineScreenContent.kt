@@ -153,43 +153,6 @@ fun PartidoOnlineScreenContent(
         }
     }
 
-    if (showOptionsSheet && partidoSeleccionado != null) {
-        ModalBottomSheet(
-            onDismissRequest = { showOptionsSheet = false },
-            dragHandle = null,
-            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            containerColor = cs.surfaceVariant
-        ) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp, horizontal = 24.dp)
-            ) {
-                // Safe smart cast workaround
-                val partidoSel = partidoSeleccionado
-                if (partidoSel != null) {
-                    ListItem(
-                        headlineContent = {
-                            Text(
-                                stringResource(id = R.string.ponline_duplicar),
-                                fontWeight = FontWeight.Medium,
-                                color = cs.secondary
-                            )
-                        },
-                        leadingContent = {
-                            Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = cs.secondary)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showOptionsSheet = false
-                                scope.launch { partidoViewModel.duplicarPartido(partidoSel.uid) }
-                            }
-                    )
-                }
-            }
-        }
-    }
 
     if (showConfirmDialog && partidoSeleccionado != null) {
         val partidoSel = partidoSeleccionado
