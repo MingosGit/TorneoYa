@@ -10,17 +10,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,11 +48,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
-
+import mingosgit.josecr.torneoya.ui.theme.text
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 private fun NavController.popBackStack(times: Int) {
     repeat(times) { if (!popBackStack()) return }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdministrarPartidoOnlineScreen(
@@ -111,16 +126,11 @@ fun AdministrarPartidoOnlineScreen(
         Box(
             Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.0f to Color(0xFF1B1D29),
-                        0.28f to Color(0xFF212442),
-                        0.58f to Color(0xFF191A23),
-                        1.0f to Color(0xFF14151B)
-                    )
-                ),
+                .background(TorneoYaPalette.backgroundGradient),
             contentAlignment = Alignment.Center
-        ) { CircularProgressIndicator(color = TorneoYaPalette.blue) }
+        ) {
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        }
         return
     }
 
@@ -131,14 +141,7 @@ fun AdministrarPartidoOnlineScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    0.0f to Color(0xFF1B1D29),
-                    0.28f to Color(0xFF212442),
-                    0.58f to Color(0xFF191A23),
-                    1.0f to Color(0xFF14151B)
-                )
-            )
+            .background(TorneoYaPalette.backgroundGradient)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // HEADER
@@ -156,13 +159,19 @@ fun AdministrarPartidoOnlineScreen(
                             .clip(CircleShape)
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                                    listOf(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.colorScheme.surface
+                                    )
                                 )
                             )
                             .border(
                                 width = 2.dp,
                                 brush = Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.secondary
+                                    )
                                 ),
                                 shape = CircleShape
                             )
@@ -170,8 +179,7 @@ fun AdministrarPartidoOnlineScreen(
                         Icon(
                             Icons.Filled.KeyboardArrowLeft,
                             contentDescription = stringResource(R.string.gen_volver),
-                            tint = TorneoYaPalette.violet,
-                            modifier = Modifier.size(27.dp)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                 }
@@ -179,20 +187,43 @@ fun AdministrarPartidoOnlineScreen(
                 Text(
                     text = stringResource(R.string.adminp_title),
                     fontSize = 22.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.text,
                     fontWeight = FontWeight.Black
                 )
                 Spacer(Modifier.weight(1f))
                 if (esCreador) {
-                    IconButton(onClick = {
-                        navController?.navigate("administrar_roles_online/$partidoUid")
-                    }) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = stringResource(R.string.adminp_administrar_roles_desc),
-                            tint = TorneoYaPalette.blue
+                    IconButton(
+                        onClick = {
+                            navController?.navigate("administrar_roles_online/$partidoUid")
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.colorScheme.surface
+                                    )
+                                )
+                            )
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.secondary
+                                    )
+                                ),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Text(
+                            text = "👤",
+                            fontSize = 22.sp
                         )
                     }
+
                 }
             }
 
@@ -207,7 +238,7 @@ fun AdministrarPartidoOnlineScreen(
                 item {
                     Text(
                         text = stringResource(R.string.adminp_uid_fecha, partidoUid, fecha),
-                        color = Color(0xFFB7B7D1),
+                        color = MaterialTheme.colorScheme.mutedText,
                         fontSize = 15.sp
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -233,12 +264,12 @@ fun AdministrarPartidoOnlineScreen(
                             },
                             onDismiss = { showDatePicker = false },
                             onDateSelected = { cal ->
-                                val fecha = "%02d-%02d-%04d".format(
+                                val fechaSel = "%02d-%02d-%04d".format(
                                     cal.get(Calendar.DAY_OF_MONTH),
                                     cal.get(Calendar.MONTH) + 1,
                                     cal.get(Calendar.YEAR)
                                 )
-                                viewModel.setFechaEditable(fecha)
+                                viewModel.setFechaEditable(fechaSel)
                             }
                         )
                         Spacer(Modifier.height(8.dp))
@@ -267,17 +298,26 @@ fun AdministrarPartidoOnlineScreen(
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setNumeroPartesEditable(it) } },
                             label = { Text(stringResource(R.string.adminp_label_num_partes)) },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            )
                         )
+
                         Spacer(Modifier.height(8.dp))
 
                         // Minutos por parte
                         OutlinedTextField(
                             value = tiempoPorParteEditable.toString(),
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoPorParteEditable(it) } },
-                            label = { Text(stringResource(R.string.adminp_label_minutos_por_parte)) },
+                            label = { Text(stringResource(R.string.adminp_label_minutos_por_parte),color = MaterialTheme.colorScheme.mutedText) },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            )
                         )
                         Spacer(Modifier.height(8.dp))
 
@@ -285,9 +325,13 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = tiempoDescansoEditable.toString(),
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoDescansoEditable(it) } },
-                            label = { Text(stringResource(R.string.adminp_label_minutos_descanso)) },
+                            label = { Text(stringResource(R.string.adminp_label_minutos_descanso),color = MaterialTheme.colorScheme.mutedText) },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            )
                         )
                         Spacer(Modifier.height(8.dp))
                         ModernMainButton(
@@ -309,8 +353,12 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = nombreEquipoAEditable,
                             onValueChange = { viewModel.setNombreEquipoAEditable(it) },
-                            label = { Text(stringResource(R.string.adminp_label_nombre_equipo_a)) },
-                            modifier = Modifier.weight(1f)
+                            label = { Text(stringResource(R.string.adminp_label_nombre_equipo_a),color = MaterialTheme.colorScheme.mutedText) },
+                            modifier = Modifier.weight(1f),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            )
                         )
                         Spacer(Modifier.width(8.dp))
                         ModernMainButton(
@@ -332,8 +380,12 @@ fun AdministrarPartidoOnlineScreen(
                         OutlinedTextField(
                             value = nombreEquipoBEditable,
                             onValueChange = { viewModel.setNombreEquipoBEditable(it) },
-                            label = { Text(stringResource(R.string.adminp_label_nombre_equipo_b)) },
-                            modifier = Modifier.weight(1f)
+                            label = { Text(stringResource(R.string.adminp_label_nombre_equipo_b),color = MaterialTheme.colorScheme.mutedText) },
+                            modifier = Modifier.weight(1f),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            )
                         )
                         Spacer(Modifier.width(8.dp))
                         ModernMainButton(
@@ -347,7 +399,12 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
-                    Text(stringResource(R.string.adminp_goles_registrados), color = TorneoYaPalette.violet, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(R.string.adminp_goles_registrados),
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -364,11 +421,14 @@ fun AdministrarPartidoOnlineScreen(
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clip(RoundedCornerShape(11.dp))
-                            .background(Color(0xFF23273D))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .border(
                                 width = 1.3.dp,
                                 brush = Brush.horizontalGradient(
-                                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.secondary
+                                    )
                                 ),
                                 shape = RoundedCornerShape(11.dp)
                             )
@@ -380,23 +440,30 @@ fun AdministrarPartidoOnlineScreen(
                                     (gol.minuto?.let { " (${it}') " } ?: "") +
                                     (asistenciaNombre?.let { "Asist: $asistenciaNombre" } ?: ""),
                             modifier = Modifier.weight(1f),
-                            color = Color(0xFFF7F7FF)
+                            color = MaterialTheme.colorScheme.text
                         )
                         IconButton(
-                            onClick = {
-                                viewModel.borrarGol(gol)
-                            }
+                            onClick = { viewModel.borrarGol(gol) }
                         ) {
-                            Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.adminp_btn_quitar_gol), tint = Color(0xFFF25A6D))
+                            Icon(
+                                Icons.Default.Remove,
+                                contentDescription = stringResource(R.string.adminp_btn_quitar_gol),
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
 
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Divider(color = Color(0xFF353659))
+                    Divider(color = MaterialTheme.colorScheme.outline)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(stringResource(R.string.adminp_btn_agregar_gol), color = TorneoYaPalette.violet, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(R.string.adminp_btn_agregar_gol),
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -410,8 +477,16 @@ fun AdministrarPartidoOnlineScreen(
                             readOnly = true,
                             value = if (equipoSeleccionado == "A") nombreEquipoA else nombreEquipoB,
                             onValueChange = {},
-                            label = { Text(stringResource(R.string.adminp_label_equipo)) },
-                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            ),
+                            label = { Text(stringResource(R.string.adminp_label_equipo),color = MaterialTheme.colorScheme.mutedText) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipo) },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+
                         )
                         ExposedDropdownMenu(
                             expanded = expandedEquipo,
@@ -453,9 +528,16 @@ fun AdministrarPartidoOnlineScreen(
                             readOnly = true,
                             value = jugadorSeleccionado?.nombre ?: "",
                             onValueChange = {},
-                            label = { Text(stringResource(R.string.adminp_label_jugador)) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            ),
+                            label = { Text(stringResource(R.string.adminp_label_jugador),color = MaterialTheme.colorScheme.mutedText) },
                             placeholder = { Text(stringResource(R.string.adminp_placeholder_seleccionar_jugador)) },
-                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJugador) },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
                         )
                         ExposedDropdownMenu(
                             expanded = expandedJugador,
@@ -475,11 +557,16 @@ fun AdministrarPartidoOnlineScreen(
                             }
                             if (jugadoresManual.isNotEmpty()) {
                                 if (jugadoresOnline.isNotEmpty()) {
-                                    Divider(color = Color(0xFF353659))
+                                    Divider(color = MaterialTheme.colorScheme.outline)
                                 }
                                 jugadoresManual.forEach { jugador ->
                                     DropdownMenuItem(
-                                        text = { Text(jugador.nombre + " (manual)", color = Color(0xFFB7B7D1)) },
+                                        text = {
+                                            Text(
+                                                jugador.nombre + " (manual)",
+                                                color = MaterialTheme.colorScheme.mutedText
+                                            )
+                                        },
                                         onClick = {
                                             jugadorSeleccionado = jugador
                                             asistenciaSeleccionada = null
@@ -503,10 +590,21 @@ fun AdministrarPartidoOnlineScreen(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = minuto,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                            ),
                             onValueChange = { minuto = it.filter { c -> c.isDigit() }.take(3) },
-                            label = { Text(stringResource(R.string.adminp_label_minuto)) },
+                            label = {
+                                Text(
+                                    stringResource(R.string.adminp_label_minuto),
+                                    color = MaterialTheme.colorScheme.mutedText
+                                )
+                            },
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                            ),
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -518,10 +616,27 @@ fun AdministrarPartidoOnlineScreen(
                                 readOnly = true,
                                 value = asistenciaSeleccionada?.nombre ?: "",
                                 onValueChange = {},
-                                label = { Text(stringResource(R.string.adminp_label_asistencia_opcional)) },
-                                placeholder = { Text(stringResource(R.string.adminp_placeholder_sin_asistencia)) },
+                                label = {
+                                    Text(
+                                        stringResource(R.string.adminp_label_asistencia_opcional),
+                                        color = MaterialTheme.colorScheme.mutedText
+                                    )
+                                },
+                                placeholder = {
+                                    Text(
+                                        stringResource(R.string.adminp_placeholder_sin_asistencia),
+                                        color = MaterialTheme.colorScheme.mutedText
+                                    )
+                                },
                                 enabled = jugadorSeleccionado != null,
-                                modifier = Modifier.menuAnchor().weight(1f)
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAsistente) },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .weight(1f),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
+                                    unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
+                                )
                             )
                             ExposedDropdownMenu(
                                 expanded = expandedAsistente,
@@ -547,11 +662,16 @@ fun AdministrarPartidoOnlineScreen(
                                 }
                                 if (asistentesPosiblesManual.isNotEmpty()) {
                                     if (asistentesPosiblesOnline.isNotEmpty()) {
-                                        Divider(color = Color(0xFF353659))
+                                        Divider(color = MaterialTheme.colorScheme.outline)
                                     }
                                     asistentesPosiblesManual.forEach { jugador ->
                                         DropdownMenuItem(
-                                            text = { Text(jugador.nombre + " (manual)", color = Color(0xFFB7B7D1)) },
+                                            text = {
+                                                Text(
+                                                    jugador.nombre + " (manual)",
+                                                    color = MaterialTheme.colorScheme.mutedText
+                                                )
+                                            },
                                             onClick = {
                                                 asistenciaSeleccionada = jugador
                                                 expandedAsistente = false
@@ -561,7 +681,9 @@ fun AdministrarPartidoOnlineScreen(
                                 }
                             }
                         }
+
                     }
+
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -622,11 +744,11 @@ fun AdministrarPartidoOnlineScreen(
                 // ======== NUEVA SECCIÓN: ELIMINAR PARTIDO (SOLO CREADOR) ========
                 if (esCreador) {
                     item {
-                        Divider(color = Color(0xFF353659))
+                        Divider(color = MaterialTheme.colorScheme.outline)
                         Spacer(Modifier.height(12.dp))
                         Text(
                             text = stringResource(R.string.adminp_eliminar_partido),
-                            color = Color(0xFFF25A6D),
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.align(Alignment.Start)
@@ -637,36 +759,34 @@ fun AdministrarPartidoOnlineScreen(
                             enabled = !deleting,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(if (deleting) "Eliminando..." else stringResource(R.string.adminp_eliminar_partido),)
+                            Text(if (deleting) "Eliminando..." else stringResource(R.string.adminp_eliminar_partido))
                         }
                         Spacer(Modifier.height(24.dp))
                     }
                 }
 
-
-
                 if (showDialog) {
                     item {
                         AlertDialog(
                             onDismissRequest = { showDialog = false },
-                            title = { Text(stringResource(R.string.adminp_dialog_confirmar_cambios_titulo), color = Color.White) },
-                            text = { Text(stringResource(R.string.adminp_dialog_confirmar_cambios_mensaje), color = Color(0xFFB7B7D1)) },
-                            containerColor = Color(0xFF1C1D25),
+                            title = { Text(stringResource(R.string.adminp_dialog_confirmar_cambios_titulo), color = MaterialTheme.colorScheme.text) },
+                            text = { Text(stringResource(R.string.adminp_dialog_confirmar_cambios_mensaje), color = MaterialTheme.colorScheme.mutedText) },
+                            containerColor = MaterialTheme.colorScheme.surface,
                             confirmButton = {
                                 TextButton(
                                     onClick = { navController?.popBackStack() }
-                                ) { Text(stringResource(R.string.gen_guardar), color = TorneoYaPalette.blue) }
+                                ) { Text(stringResource(R.string.gen_guardar), color = MaterialTheme.colorScheme.primary) }
                             },
                             dismissButton = {
                                 OutlinedButton(onClick = { showDialog = false }) {
-                                    Text(stringResource(R.string.gen_cancelar), color = TorneoYaPalette.violet)
+                                    Text(stringResource(R.string.gen_cancelar), color = MaterialTheme.colorScheme.secondary)
                                 }
                             }
                         )
                     }
                 }
-
             }
+
             DeleteMatchDialog(
                 visible = showDeleteDialog && esCreador,
                 deleting = deleting,
@@ -688,6 +808,7 @@ fun AdministrarPartidoOnlineScreen(
         }
     }
 }
+
 @Composable
 private fun DeleteMatchDialog(
     visible: Boolean,
@@ -706,23 +827,26 @@ private fun DeleteMatchDialog(
                 .border(
                     width = 2.dp,
                     brush = Brush.horizontalGradient(
-                        listOf(Color(0xFFF25A6D), TorneoYaPalette.violet) // borde popup rojo -> morado
+                        listOf(
+                            MaterialTheme.colorScheme.error,
+                            MaterialTheme.colorScheme.secondary
+                        )
                     ),
                     shape = RoundedCornerShape(16.dp)
                 )
-                .background(Color(0xFF1C1D25))
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(20.dp)
         ) {
             Text(
                 text = stringResource(R.string.adminp_eliminar_partido),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.text,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = stringResource(R.string.adminp_desc_eliminar_partido),
-                color = Color(0xFFB7B7D1),
+                color = MaterialTheme.colorScheme.mutedText,
                 fontSize = 14.sp
             )
 
@@ -732,7 +856,7 @@ private fun DeleteMatchDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // IZQUIERDA: CANCELAR (borde degradado azul -> morado)
+                // IZQUIERDA: CANCELAR
                 ModernOutlineButton(
                     enabled = !deleting,
                     onClick = onDismiss,
@@ -746,7 +870,7 @@ private fun DeleteMatchDialog(
                     )
                 }
                 Spacer(Modifier.width(12.dp))
-                // DERECHA: ELIMINAR (borde degradado rojo -> morado, texto rojo)
+                // DERECHA: ELIMINAR
                 ModernDangerOutlineButton(
                     enabled = !deleting,
                     onClick = onConfirm,
@@ -756,7 +880,7 @@ private fun DeleteMatchDialog(
                 ) {
                     Text(
                         text = if (deleting) "Eliminando..." else stringResource(R.string.gen_eliminar),
-                        color = Color(0xFFF25A6D),
+                        color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -781,13 +905,19 @@ fun ModernMainButton(
             .border(
                 width = 2.dp,
                 brush = Brush.horizontalGradient(
-                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                    listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
+                    )
                 ),
                 shape = RoundedCornerShape(13.dp)
             )
             .background(
                 Brush.horizontalGradient(
-                    listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                    listOf(
+                        MaterialTheme.colorScheme.surfaceVariant,
+                        MaterialTheme.colorScheme.surface
+                    )
                 )
             )
             .clickable(enabled = enabled) { onClick() },
@@ -798,7 +928,10 @@ fun ModernMainButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CompositionLocalProvider(
-                LocalContentColor provides if (enabled) Color.White else Color(0xFFB7B7D1),
+                androidx.compose.material3.LocalContentColor provides if (enabled)
+                    MaterialTheme.colorScheme.text
+                else
+                    MaterialTheme.colorScheme.mutedText,
                 content = { content() }
             )
         }
@@ -819,11 +952,14 @@ fun ModernOutlineButton(
             .border(
                 width = 2.dp,
                 brush = Brush.horizontalGradient(
-                    listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                    listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
+                    )
                 ),
                 shape = RoundedCornerShape(13.dp)
             )
-            .background(Color.Transparent)
+            .background(androidx.compose.ui.graphics.Color.Transparent)
             .clickable(enabled = enabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -832,14 +968,16 @@ fun ModernOutlineButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CompositionLocalProvider(
-                LocalContentColor provides TorneoYaPalette.blue.copy(alpha = if (enabled) 1f else 0.45f),
+                androidx.compose.material3.LocalContentColor provides MaterialTheme.colorScheme.primary.copy(
+                    alpha = if (enabled) 1f else 0.45f
+                ),
                 content = { content() }
             )
         }
     }
 }
 
-// Botón de peligro (rojo)
+// Botón de peligro (usa error del esquema)
 @Composable
 fun ModernDangerButton(
     onClick: () -> Unit,
@@ -847,6 +985,7 @@ fun ModernDangerButton(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit
 ) {
+    val error = MaterialTheme.colorScheme.error
     Box(
         modifier = modifier
             .height(45.dp)
@@ -854,13 +993,16 @@ fun ModernDangerButton(
             .border(
                 width = 2.dp,
                 brush = Brush.horizontalGradient(
-                    listOf(Color(0xFFF25A6D), Color(0xFFFF8DA1))
+                    listOf(error, error.copy(alpha = 0.6f))
                 ),
                 shape = RoundedCornerShape(13.dp)
             )
             .background(
                 Brush.horizontalGradient(
-                    listOf(Color(0xFF3A1E25), Color(0xFF2A171C))
+                    listOf(
+                        error.copy(alpha = 0.25f),
+                        error.copy(alpha = 0.18f)
+                    )
                 )
             )
             .clickable(enabled = enabled) { onClick() },
@@ -871,12 +1013,16 @@ fun ModernDangerButton(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CompositionLocalProvider(
-                LocalContentColor provides if (enabled) Color(0xFFFFDCE2) else Color(0x66FFDCE2),
+                androidx.compose.material3.LocalContentColor provides if (enabled)
+                    MaterialTheme.colorScheme.text
+                else
+                    MaterialTheme.colorScheme.text.copy(alpha = 0.4f),
                 content = { content() }
             )
         }
     }
 }
+
 @Composable
 fun ModernDangerOutlineButton(
     onClick: () -> Unit,
@@ -884,6 +1030,7 @@ fun ModernDangerOutlineButton(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit
 ) {
+    val error = MaterialTheme.colorScheme.error
     Box(
         modifier = modifier
             .height(45.dp)
@@ -891,11 +1038,11 @@ fun ModernDangerOutlineButton(
             .border(
                 width = 2.dp,
                 brush = Brush.horizontalGradient(
-                    listOf(Color(0xFFF25A6D), TorneoYaPalette.violet)
+                    listOf(error, MaterialTheme.colorScheme.secondary)
                 ),
                 shape = RoundedCornerShape(13.dp)
             )
-            .background(Color.Transparent)
+            .background(androidx.compose.ui.graphics.Color.Transparent)
             .clickable(enabled = enabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -904,7 +1051,7 @@ fun ModernDangerOutlineButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CompositionLocalProvider(
-                LocalContentColor provides if (enabled) Color(0xFFF25A6D) else Color(0x66F25A6D),
+                androidx.compose.material3.LocalContentColor provides if (enabled) error else error.copy(alpha = 0.4f),
                 content = { content() }
             )
         }

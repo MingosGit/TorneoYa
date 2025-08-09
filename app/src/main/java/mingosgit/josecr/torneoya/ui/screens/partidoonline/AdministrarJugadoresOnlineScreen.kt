@@ -1,12 +1,8 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -20,10 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,15 +26,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import mingosgit.josecr.torneoya.R
-import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
 import mingosgit.josecr.torneoya.data.firebase.JugadorFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.text
+import mingosgit.josecr.torneoya.ui.theme.mutedText
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
 
 @Composable
 fun AdministrarJugadoresOnlineScreen(
     navController: NavController,
     vm: AdministrarJugadoresOnlineViewModel
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     LaunchedEffect(Unit) { vm.cargarJugadoresExistentes() }
     val miUid = FirebaseAuth.getInstance().currentUser?.uid
     var idxParaEliminar by remember { mutableStateOf<Int?>(null) }
@@ -49,17 +45,10 @@ fun AdministrarJugadoresOnlineScreen(
     val equipoANombre by remember { derivedStateOf { vm.equipoANombre } }
     val equipoBNombre by remember { derivedStateOf { vm.equipoBNombre } }
 
-    val modernBackground = Brush.verticalGradient(
-        0.0f to Color(0xFF1B1D29),
-        0.28f to Color(0xFF212442),
-        0.58f to Color(0xFF191A23),
-        1.0f to Color(0xFF14151B)
-    )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = modernBackground)
+            .background(brush = TorneoYaPalette.backgroundGradient)
     ) {
         Column(
             modifier = Modifier
@@ -75,14 +64,14 @@ fun AdministrarJugadoresOnlineScreen(
             ) {
                 Surface(
                     shape = RoundedCornerShape(18.dp),
-                    color = Color(0xFF22243A),
+                    color = colorScheme.surfaceVariant,
                     shadowElevation = 11.dp,
                     modifier = Modifier.size(44.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Group,
                         contentDescription = stringResource(R.string.adminj_contentdesc_icono),
-                        tint = TorneoYaPalette.blue,
+                        tint = colorScheme.primary,
                         modifier = Modifier.padding(11.dp)
                     )
                 }
@@ -90,7 +79,7 @@ fun AdministrarJugadoresOnlineScreen(
                 Text(
                     stringResource(R.string.adminj_title),
                     fontSize = 23.sp,
-                    color = Color.White,
+                    color = colorScheme.text,
                     fontWeight = FontWeight.Black
                 )
             }
@@ -107,14 +96,14 @@ fun AdministrarJugadoresOnlineScreen(
                 EquipoGradientButton(
                     text = equipoANombre,
                     selected = vm.equipoSeleccionado.value == "A",
-                    color = TorneoYaPalette.blue,
+                    color = colorScheme.primary,
                     onClick = { vm.equipoSeleccionado.value = "A" },
                     modifier = Modifier.weight(1f)
                 )
                 EquipoGradientButton(
                     text = equipoBNombre,
                     selected = vm.equipoSeleccionado.value == "B",
-                    color = Color(0xFFFF7675),
+                    color = colorScheme.error,
                     onClick = { vm.equipoSeleccionado.value = "B" },
                     modifier = Modifier.weight(1f)
                 )
@@ -123,9 +112,12 @@ fun AdministrarJugadoresOnlineScreen(
             val jugadores = if (vm.equipoSeleccionado.value == "A") vm.equipoAJugadores else vm.equipoBJugadores
 
             Text(
-                text = stringResource(R.string.adminj_texto_jugadores_equipo, if (vm.equipoSeleccionado.value == "A") equipoANombre else equipoBNombre),
+                text = stringResource(
+                    R.string.adminj_texto_jugadores_equipo,
+                    if (vm.equipoSeleccionado.value == "A") equipoANombre else equipoBNombre
+                ),
                 fontSize = 17.sp,
-                color = Color(0xFFB7B7D1),
+                color = colorScheme.mutedText,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(top = 17.dp, bottom = 7.dp, start = 2.dp)
@@ -136,11 +128,11 @@ fun AdministrarJugadoresOnlineScreen(
                     .weight(1f)
                     .padding(horizontal = 2.dp)
                     .clip(RoundedCornerShape(15.dp))
-                    .background(Color(0xFF22243A).copy(alpha = 0.70f))
+                    .background(colorScheme.surfaceVariant.copy(alpha = 0.70f))
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(
-                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                        brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            listOf(colorScheme.primary, colorScheme.secondary)
                         ),
                         shape = RoundedCornerShape(15.dp)
                     )
@@ -165,19 +157,26 @@ fun AdministrarJugadoresOnlineScreen(
                                 onValueChange = { newValue ->
                                     if (idx == jugadores.size) {
                                         if (newValue.isNotBlank()) {
-                                            vm.agregarJugador(JugadorFirebase(nombre = newValue), vm.equipoSeleccionado.value)
+                                            vm.agregarJugador(
+                                                JugadorFirebase(nombre = newValue),
+                                                vm.equipoSeleccionado.value
+                                            )
                                         }
                                     } else {
                                         if (newValue.isEmpty()) {
                                             idxParaEliminar = idx
                                         } else {
-                                            vm.cambiarNombreJugador(idx, vm.equipoSeleccionado.value, newValue)
+                                            vm.cambiarNombreJugador(
+                                                idx,
+                                                vm.equipoSeleccionado.value,
+                                                newValue
+                                            )
                                         }
                                     }
                                 },
                                 label = {
-                                    if (idx == jugadores.size) Text(stringResource(R.string.adminj_label_agregar_jugador))
-                                    else Text(stringResource(R.string.adminj_label_jugador, idx + 1))
+                                    if (idx == jugadores.size) Text(stringResource(R.string.adminj_label_agregar_jugador), color = colorScheme.mutedText)
+                                    else Text(stringResource(R.string.adminj_label_jugador, idx + 1), color = colorScheme.mutedText)
                                 },
                                 singleLine = false,
                                 minLines = 1,
@@ -186,12 +185,17 @@ fun AdministrarJugadoresOnlineScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF1C1D25))
+                                    .background(colorScheme.surface)
                                     .heightIn(min = 51.dp),
                                 textStyle = LocalTextStyle.current.copy(
-                                    color = Color.White,
+                                    color = colorScheme.mutedText,
                                     fontSize = 16.sp,
                                     lineHeight = 20.sp
+                                ),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = colorScheme.mutedText,
+                                    unfocusedBorderColor = colorScheme.mutedText,
+                                    cursorColor = colorScheme.mutedText
                                 ),
                                 enabled = true
                             )
@@ -202,7 +206,7 @@ fun AdministrarJugadoresOnlineScreen(
                                 Icon(
                                     Icons.Default.ArrowDropDown,
                                     contentDescription = stringResource(R.string.adminj_contentdesc_elegir_jugador),
-                                    tint = TorneoYaPalette.violet
+                                    tint = colorScheme.secondary
                                 )
                             }
                             DropdownMenu(
@@ -212,23 +216,32 @@ fun AdministrarJugadoresOnlineScreen(
                                 OutlinedTextField(
                                     value = searchQuery,
                                     onValueChange = { searchQuery = it },
-                                    label = { Text(stringResource(R.string.gen_buscar)) },
+                                    label = { Text(stringResource(R.string.gen_buscar), color = colorScheme.mutedText) },
                                     singleLine = true,
+                                    textStyle = LocalTextStyle.current.copy(
+                                        color = colorScheme.mutedText
+                                    ),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = colorScheme.mutedText,
+                                        unfocusedBorderColor = colorScheme.mutedText,
+                                        cursorColor = colorScheme.mutedText
+                                    ),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
+
                                 vm.jugadoresDisponiblesManual(vm.equipoSeleccionado.value, idx)
                                     .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
                                     .forEach { jugador ->
                                         DropdownMenuItem(
                                             text = {
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Text(jugador.nombre, color = Color.White)
+                                                    Text(jugador.nombre, color = colorScheme.text)
                                                     if (miUid != null && jugador.uid == miUid) {
                                                         Text(
                                                             " /Tú",
-                                                            color = TorneoYaPalette.blue,
+                                                            color = colorScheme.primary,
                                                             fontSize = 13.sp,
                                                             modifier = Modifier.padding(start = 4.dp)
                                                         )
@@ -255,7 +268,7 @@ fun AdministrarJugadoresOnlineScreen(
                                     Icon(
                                         imageVector = Icons.Default.Delete,
                                         contentDescription = stringResource(R.string.adminj_texto_titulo_eliminar),
-                                        tint = Color(0xFFF25A6D)
+                                        tint = colorScheme.error
                                     )
                                 }
                             }
@@ -264,18 +277,18 @@ fun AdministrarJugadoresOnlineScreen(
                         if (idxParaEliminar == idx) {
                             AlertDialog(
                                 onDismissRequest = { idxParaEliminar = null },
-                                title = { Text(stringResource(R.string.adminj_texto_titulo_eliminar), color = Color.White) },
-                                text = { Text(stringResource(R.string.adminj_texto_mensaje_eliminar), color = Color(0xFFB7B7D1)) },
-                                containerColor = Color(0xFF1C1D25),
+                                title = { Text(stringResource(R.string.adminj_texto_titulo_eliminar), color = colorScheme.text) },
+                                text = { Text(stringResource(R.string.adminj_texto_mensaje_eliminar), color = colorScheme.mutedText) },
+                                containerColor = colorScheme.surface,
                                 confirmButton = {
                                     TextButton(onClick = {
                                         vm.eliminarJugador(idx, vm.equipoSeleccionado.value)
                                         idxParaEliminar = null
-                                    }) { Text(stringResource(R.string.gen_eliminar), color = Color(0xFFF25A6D)) }
+                                    }) { Text(stringResource(R.string.gen_eliminar), color = colorScheme.error) }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { idxParaEliminar = null }) {
-                                        Text(stringResource(R.string.gen_cancelar), color = TorneoYaPalette.violet)
+                                        Text(stringResource(R.string.gen_cancelar), color = colorScheme.secondary)
                                     }
                                 }
                             )
@@ -292,14 +305,14 @@ fun AdministrarJugadoresOnlineScreen(
                     .clip(RoundedCornerShape(15.dp))
                     .border(
                         width = 2.dp,
-                        brush = Brush.horizontalGradient(
-                            listOf(TorneoYaPalette.blue, TorneoYaPalette.violet)
+                        brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            listOf(colorScheme.primary, colorScheme.secondary)
                         ),
                         shape = RoundedCornerShape(15.dp)
                     )
                     .background(
-                        Brush.horizontalGradient(
-                            listOf(Color(0xFF23273D), Color(0xFF1C1D25))
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            listOf(colorScheme.surfaceVariant, colorScheme.surface)
                         )
                     )
                     .clickable {
@@ -312,7 +325,7 @@ fun AdministrarJugadoresOnlineScreen(
             ) {
                 Text(
                     stringResource(R.string.adminj_boton_guardar_volver),
-                    color = Color.White,
+                    color = colorScheme.text,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp
                 )

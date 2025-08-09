@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ButtonDefaults
@@ -52,6 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.viewmodel.amigos.AgregarAmigoViewModel
 import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
@@ -380,7 +382,7 @@ fun AmigosScreen(
                                     Text(
                                         text = stringResource(id = R.string.amigossc_uid_label, amigo.uid),
                                         fontSize = 13.sp,
-                                        color = cs.onSurfaceVariant,
+                                        color = MaterialTheme.colorScheme.mutedText,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -747,7 +749,7 @@ private fun BottomSheetContent(
                         )
                         Text(
                             stringResource(id = R.string.amigossc_uid_label, usuario.uid),
-                            color = cs.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.mutedText
                         )
                         Spacer(Modifier.height(10.dp))
                         Row(
