@@ -1,5 +1,7 @@
 package mingosgit.josecr.torneoya.ui.screens.usuario
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,7 +11,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,11 +21,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
@@ -66,7 +68,8 @@ fun AjustesScreen(
     var mostrarAlerta by remember { mutableStateOf(false) }
 
     val colorScheme = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
+    val modernBackground = TorneoYaPalette.backgroundGradient
+    val context = LocalContext.current
 
     if (mostrarAlerta) {
         CustomAjustesAlertDialog(
@@ -86,8 +89,6 @@ fun AjustesScreen(
             mutedText = colorScheme.onSurfaceVariant
         )
     }
-    val modernBackground = TorneoYaPalette.backgroundGradient
-
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -99,14 +100,14 @@ fun AjustesScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         GradientBorderedIconButton(
-                            icon = Icons.Default.ArrowBack,
+                            icon = Icons.Filled.ArrowBack,
                             contentDescription = "Volver",
                             onClick = { navController.popBackStack() },
                             gradient = Brush.horizontalGradient(listOf(colorScheme.primary, colorScheme.secondary))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            stringResource(id = R.string.ajustes_title),
+                            text = stringResource(id = R.string.ajustes_title),
                             color = colorScheme.onBackground,
                             fontWeight = FontWeight.Bold,
                             fontSize = 28.sp
@@ -135,7 +136,7 @@ fun AjustesScreen(
                         .padding(horizontal = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    itemsIndexed(opciones) { i, opcion ->
+                    itemsIndexed(opciones) { _, opcion ->
                         val leftColor = colorScheme.primary.copy(alpha = 0.8f)
                         Surface(
                             modifier = Modifier
@@ -161,6 +162,15 @@ fun AjustesScreen(
                                         miCuentaLocalStr -> navController.navigate("cuenta_local")
                                         idiomaStr -> navController.navigate("idioma_screen")
                                         temaAppStr -> navController.navigate("theme")
+                                        datosPrivacidadStr -> {
+                                            val intent = Intent(
+                                                Intent.ACTION_VIEW,
+                                                Uri.parse("https://mingosgit.github.io/privacy-policy.html")
+                                            )
+                                            context.startActivity(intent)
+                                        }
+                                        ayudaStr -> navController.navigate("ayuda_screen")
+                                        sobreAppStr -> navController.navigate("sobre_app")
                                     }
                                 },
                             color = colorScheme.surfaceVariant,
@@ -243,14 +253,14 @@ private fun CustomAjustesAlertDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    stringResource(id = R.string.ajustes_dialog_login_title),
+                    text = stringResource(id = R.string.ajustes_dialog_login_title),
                     color = lightText,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                 )
                 Spacer(Modifier.height(11.dp))
                 Text(
-                    stringResource(id = R.string.ajustes_dialog_login_message),
+                    text = stringResource(id = R.string.ajustes_dialog_login_message),
                     color = mutedText,
                     fontSize = 15.sp
                 )
@@ -272,7 +282,11 @@ private fun CustomAjustesAlertDialog(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text(stringResource(id = R.string.gen_iniciar_sesion), color = violet, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = stringResource(id = R.string.gen_iniciar_sesion),
+                                color = violet,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                     OutlinedButton(
@@ -288,7 +302,11 @@ private fun CustomAjustesAlertDialog(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text(stringResource(id = R.string.ajustes_register), color = blue, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = stringResource(id = R.string.ajustes_register),
+                                color = blue,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }

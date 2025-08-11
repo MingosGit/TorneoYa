@@ -454,6 +454,10 @@ Disfruta del fútbol tanto como yo disfruté creando esta app para ti.</string>
     <string name="gen_email_desc">Correo</string>
 
 
+    <string name="register_privacy_prefix">Acepto la</string>
+    <string name="register_privacy_link">Política de Privacidad</string>
+    <string name="register_privacy_required">Debes aceptar la Política de Privacidad para crear la cuenta</string>
+
 
     <!-- Reglas de contraseña -->
     <string name="auth_password_min_length">Debe tener al menos %1$d caracteres</string>

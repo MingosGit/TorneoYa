@@ -24,14 +24,32 @@ class RegisterViewModel(
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Empty)
     val registerState: StateFlow<RegisterState> = _registerState
 
-    fun register(email: String, password: String, nombreUsuario: String) {
+    fun register(
+        email: String,
+        password: String,
+        nombreUsuario: String,
+        acceptedPrivacy: Boolean,
+        privacyVersion: String,
+        privacyUrl: String
+    ) {
+        if (!acceptedPrivacy) {
+            _registerState.value = RegisterState.Error(R.string.register_privacy_required)
+            return
+        }
         if (!isPasswordValid(password)) {
             _registerState.value = RegisterState.Error(R.string.auth_password_requirements_generic)
             return
         }
         _registerState.value = RegisterState.Loading
         viewModelScope.launch {
-            val result = repository.register(email, password, nombreUsuario)
+            val result = repository.register(
+                email = email,
+                password = password,
+                nombreUsuario = nombreUsuario,
+                acceptedPrivacy = acceptedPrivacy,
+                privacyVersion = privacyVersion,
+                privacyUrl = privacyUrl
+            )
             _registerState.value = if (result.isSuccess) {
                 RegisterState.Success
             } else {

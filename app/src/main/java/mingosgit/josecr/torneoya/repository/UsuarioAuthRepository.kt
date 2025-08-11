@@ -1,5 +1,6 @@
 package mingosgit.josecr.torneoya.repository
 
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -17,21 +18,55 @@ class UsuarioAuthRepository(
             .await()
         return query.isEmpty
     }
-    suspend fun UsuarioAuthRepository.getUsuarioByUid(uid: String): UsuarioFirebaseEntity? {
-        val snap = this.firestore.collection("usuarios").document(uid).get().await()
+
+    suspend fun getUsuarioByUid(uid: String): UsuarioFirebaseEntity? {
+        val snap = firestore.collection("usuarios").document(uid).get().await()
         return snap.toObject(UsuarioFirebaseEntity::class.java)
     }
-    suspend fun register(email: String, password: String, nombreUsuario: String): Result<Unit> {
+
+    /**
+     * REGISTRO con trazabilidad de aceptación de privacidad.
+     * Debes pasar:
+     * - acceptedPrivacy=true si el usuario marcó la casilla.
+     * - privacyVersion: por ejemplo "2025-08-11" (sincroniza con tu HTML).
+     * - privacyUrl: por ejemplo "https://mingosgit.github.io/privacy-policy.html".
+     */
+    suspend fun register(
+        email: String,
+        password: String,
+        nombreUsuario: String,
+        acceptedPrivacy: Boolean,
+        privacyVersion: String,
+        privacyUrl: String
+    ): Result<Unit> {
         return try {
             if (!isNombreUsuarioDisponible(nombreUsuario)) {
                 return Result.failure(Exception("El nombre de usuario ya existe"))
             }
+            if (!acceptedPrivacy) {
+                return Result.failure(Exception("Debes aceptar la Política de Privacidad"))
+            }
+
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             val uid = authResult.user?.uid ?: throw Exception("No UID encontrado")
-            val usuario = UsuarioFirebaseEntity(uid, email, nombreUsuario)
+
+            val usuario = UsuarioFirebaseEntity(
+                uid = uid,
+                email = email,
+                nombreUsuario = nombreUsuario,
+                avatar = null,
+                partidosJugados = 0,
+                acceptedPrivacy = true,
+                acceptedPrivacyAt = Timestamp.now(),
+                privacyVersion = privacyVersion,
+                privacyUrl = privacyUrl
+            )
+
             firestore.collection("usuarios").document(uid).set(usuario).await()
+
             // ENVÍA CORREO DE VERIFICACIÓN AL USUARIO
             authResult.user?.sendEmailVerification()?.await()
+
             Result.success(Unit)
         } catch (e: Exception) {
             println("Register ERROR: ${e.message}")
@@ -43,7 +78,6 @@ class UsuarioAuthRepository(
         return try {
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
             val user = authResult.user
-            // VERIFICAR QUE EL CORREO ESTÁ VERIFICADO
             if (user != null && !user.isEmailVerified) {
                 auth.signOut()
                 throw Exception("Debes verificar tu correo antes de iniciar sesión. Revisa tu email.")
