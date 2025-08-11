@@ -453,6 +453,9 @@ Enjoy football as much as I enjoyed creating this app for you.</string>
 
     <!-- Gen -->
     <string name="gen_email_desc">Email</string>
+    <string name="register_privacy_prefix">I accept the</string>
+    <string name="register_privacy_link">Privacy Policy</string>
+    <string name="register_privacy_required">You must accept the Privacy Policy to create the account</string>
 
     <!-- Password rules -->
     <string name="auth_password_min_length">Must be at least %1$d characters</string>

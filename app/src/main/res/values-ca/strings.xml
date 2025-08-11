@@ -452,7 +452,9 @@ Gaudeix del futbol tant com jo he gaudit creant aquesta aplicació per a tu.</st
     </string>
     <!-- Gen -->
     <string name="gen_email_desc">Correu</string>
-
+    <string name="register_privacy_prefix">Accepto la</string>
+    <string name="register_privacy_link">Política de Privacitat</string>
+    <string name="register_privacy_required">Has d'acceptar la Política de Privacitat per crear el compte</string>
     <!-- Reglas de contraseña -->
     <string name="auth_password_min_length">Ha de tenir almenys %1$d caràcters</string>
     <string name="auth_password_need_uppercase">Ha de contenir almenys una majúscula</string>
