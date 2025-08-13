@@ -1,25 +1,37 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -109,6 +121,7 @@ fun AdministrarRolesOnlineScreen(
                 }
                 items(administradores, key = { it.uid }) { usuario ->
                     UsuarioCard(
+                        uid = usuario.uid,
                         nombre = usuario.nombre,
                         colorBadge = cs.primary,
                         iconMain = Icons.Default.KeyboardArrowDown,
@@ -130,6 +143,7 @@ fun AdministrarRolesOnlineScreen(
                 }
                 items(usuariosConAcceso, key = { it.uid }) { usuario ->
                     UsuarioCard(
+                        uid = usuario.uid,
                         nombre = usuario.nombre,
                         colorBadge = cs.tertiary,
                         iconMain = Icons.Default.KeyboardArrowUp,
@@ -204,8 +218,10 @@ private fun SectionHeader(text: String) {
     )
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun UsuarioCard(
+    uid: String,
     nombre: String,
     colorBadge: Color,
     iconMain: androidx.compose.ui.graphics.vector.ImageVector,
@@ -222,6 +238,9 @@ private fun UsuarioCard(
     )
     val bgBrush = Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
 
+    val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -230,6 +249,14 @@ private fun UsuarioCard(
             .clip(RoundedCornerShape(14.dp))
             .border(2.dp, borderBrush, RoundedCornerShape(14.dp))
             .background(bgBrush)
+            .combinedClickable(
+                onClick = {},
+                onLongClick = {
+                    clipboard.setText(AnnotatedString(uid))
+                    Toast
+                        .makeText(context, context.getString(R.string.gen_uid_copiado), Toast.LENGTH_SHORT)                        .show()
+                }
+            )
             .padding(horizontal = 16.dp, vertical = 9.dp)
     ) {
         Box(
@@ -246,6 +273,23 @@ private fun UsuarioCard(
             color = if (admin) cs.primary else cs.text
         )
         Spacer(Modifier.weight(1f))
+
+        // Botón para copiar UID explícitamente
+        IconButton(
+            onClick = {
+                clipboard.setText(AnnotatedString(uid))
+                Toast
+                    .makeText(context, "UID copiado al portapapeles", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ContentCopy,
+                contentDescription = "Copiar UID",
+                tint = cs.secondary
+            )
+        }
+
         IconButton(onClick = onMainClick) {
             Icon(iconMain, contentDescription = iconMainDesc, tint = colorBadge)
         }

@@ -464,6 +464,9 @@ Enjoy football as much as I enjoyed creating this app for you.</string>
     <string name="auth_password_need_digit">Must contain at least one number</string>
     <string name="auth_password_requirements_generic">The password does not meet the requirements.</string>
     <string name="ponline_dejar_de_ver_partido">Stop watching the match</string>
+    <string name="datepicker_quick_nextweek">Next week</string>
+    <string name="datepicker_quick_tomorrow">Tomorrow</string>
+    <string name="datepicker_quick_today">Today</string>
 
 
 </resources>

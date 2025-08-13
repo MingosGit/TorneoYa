@@ -462,6 +462,9 @@ Gaudeix del futbol tant com jo he gaudit creant aquesta aplicació per a tu.</st
     <string name="auth_password_need_digit">Ha de contenir almenys un número</string>
     <string name="auth_password_requirements_generic">La contrasenya no compleix els requisits.</string>
     <string name="ponline_dejar_de_ver_partido">Deixar de veure el partit</string>
+    <string name="datepicker_quick_nextweek">Setmana vinent</string>
+    <string name="datepicker_quick_tomorrow">Demà</string>
+    <string name="datepicker_quick_today">Avui</string>
 
 
 </resources>
