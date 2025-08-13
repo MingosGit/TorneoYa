@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,16 +41,9 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.R
-import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
-
-data class HomeProximoPartidoUi(
-    val partido: PartidoFirebase,
-    val nombreEquipoA: String,
-    val nombreEquipoB: String
-)
 
 @Composable
 fun HomeScreen(
@@ -59,6 +54,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val proximoPartidoUi by viewModel.proximoPartidoUi.collectAsState()
     val cargandoProx by viewModel.cargandoProx.collectAsState()
+    val unreadCount by viewModel.unreadCount.collectAsState()
 
     val globalUserViewModel: GlobalUserViewModel = viewModel()
     LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() }
@@ -97,7 +93,7 @@ fun HomeScreen(
             .fillMaxSize()
             .background(brush = modernBackground)
     ) {
-        // Botón notificaciones
+        // Botón notificaciones con badge
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,6 +116,27 @@ fun HomeScreen(
                     tint = cs.secondary,
                     modifier = Modifier.size(25.dp)
                 )
+
+                // Badge de no leídas
+                AnimatedVisibility(visible = unreadCount > 0, enter = fadeIn(), exit = fadeOut()) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 6.dp, y = (-6).dp)
+                            .size(18.dp)
+                            .clip(CircleShape)
+                            .background(cs.error),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
         }
 
@@ -197,7 +214,9 @@ fun HomeScreen(
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.mutedText,
                     fontWeight = FontWeight.Normal,
-                    modifier = Modifier.fillMaxWidth().padding(top = 18.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 18.dp),
                     lineHeight = 19.sp
                 )
             }
@@ -228,7 +247,9 @@ fun HomeScreen(
                         Image(
                             painter = painterResource(id = avatarRes),
                             contentDescription = stringResource(id = R.string.gen_avatar_desc),
-                            modifier = Modifier.size(46.dp).clip(CircleShape)
+                            modifier = Modifier
+                                .size(46.dp)
+                                .clip(CircleShape)
                         )
                     } else {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
