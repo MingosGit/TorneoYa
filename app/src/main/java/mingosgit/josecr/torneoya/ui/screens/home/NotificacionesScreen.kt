@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
@@ -154,11 +157,17 @@ fun NotificacionesScreen(
                     }
                     else -> {
                         val lista = if (!mostrarLeidas) noLeidas else leidas
-                        Column(
+                        val listState = rememberLazyListState()
+                        LazyColumn(
+                            state = listState,
                             verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(vertical = 4.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            lista.forEach { noti ->
+                            items(
+                                items = lista,
+                                key = { it.uid }
+                            ) { noti ->
                                 NotificacionCard(
                                     noti = noti,
                                     onArchivar = {
@@ -172,6 +181,7 @@ fun NotificacionesScreen(
                                     } else null
                                 )
                             }
+                            item { Spacer(modifier = Modifier.height(4.dp)) }
                         }
                     }
                 }
