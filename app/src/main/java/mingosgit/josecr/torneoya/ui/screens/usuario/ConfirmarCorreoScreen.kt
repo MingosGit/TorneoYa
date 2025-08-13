@@ -49,6 +49,7 @@ fun ConfirmarCorreoScreen(
 
     var loading by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
+    var infoMsg by remember { mutableStateOf<String?>(null) } // <--- mensaje informativo (no rojo)
 
     Box(
         modifier = Modifier
@@ -120,12 +121,25 @@ fun ConfirmarCorreoScreen(
 
                     Spacer(Modifier.height(14.dp))
 
+                    // Mensaje de error (rojo)
                     AnimatedVisibility(visible = errorMsg != null, enter = fadeIn(), exit = fadeOut()) {
                         Text(
                             text = errorMsg.orEmpty(),
                             color = cs.error,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    // Mensaje informativo (NO rojo)
+                    AnimatedVisibility(visible = infoMsg != null, enter = fadeIn(), exit = fadeOut()) {
+                        Text(
+                            text = infoMsg.orEmpty(),
+                            color = cs.primary, // color amigable, no rojo
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 4.dp),
                             textAlign = TextAlign.Center
                         )
@@ -144,6 +158,7 @@ fun ConfirmarCorreoScreen(
                             .clickable(enabled = !loading) {
                                 loading = true
                                 errorMsg = null
+                                infoMsg = null
                                 val auth = FirebaseAuth.getInstance()
                                 val user = auth.currentUser
                                 if (user != null) {
@@ -193,7 +208,9 @@ fun ConfirmarCorreoScreen(
                             .clickable {
                                 val auth = FirebaseAuth.getInstance()
                                 auth.currentUser?.sendEmailVerification()
-                                errorMsg = context.getString(R.string.confirmar_correo_reenviado)
+                                errorMsg = null
+                                infoMsg = context.getString(R.string.confirmar_correo_reenviado) +
+                                        " · Revisa tu carpeta de SPAM."
                             },
                         contentAlignment = Alignment.Center
                     ) {
