@@ -7,13 +7,16 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.data.database.AppDatabase
+import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebaseRepository
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
-import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
-import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebaseRepository
-import mingosgit.josecr.torneoya.data.database.AppDatabase
+import mingosgit.josecr.torneoya.data.home.HomeCacheStore
+import mingosgit.josecr.torneoya.data.home.HomeCachedStats
+import mingosgit.josecr.torneoya.data.session.SessionStore
 
 data class HomeUiState(
     val nombreUsuario: String = "",
@@ -33,10 +36,12 @@ class HomeViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
-    // Repos locales dentro del VM para evitar factory personalizado
     private val partidoRepo: PartidoFirebaseRepository = PartidoFirebaseRepository()
     private val notificacionRepo: NotificacionFirebaseRepository = NotificacionFirebaseRepository()
     private val appDb by lazy { AppDatabase.getInstance(getApplication()) }
+
+    private val sessionStore = SessionStore(getApplication())
+    private val homeCacheStore = HomeCacheStore(getApplication())
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -51,6 +56,23 @@ class HomeViewModel(
     val unreadCount: StateFlow<Int> = _unreadCount.asStateFlow()
 
     init {
+        // Carga inicial desde caché
+        viewModelScope.launch {
+            sessionStore.session.collect { s ->
+                _uiState.value = _uiState.value.copy(nombreUsuario = s.nombreUsuario.ifBlank { "" })
+            }
+        }
+        viewModelScope.launch {
+            homeCacheStore.stats.collect { stats ->
+                _uiState.value = _uiState.value.copy(
+                    partidosTotales = stats.partidosTotales,
+                    equiposTotales = stats.equiposTotales,
+                    jugadoresTotales = stats.jugadoresTotales,
+                    amigosTotales = stats.amigosTotales
+                )
+            }
+        }
+
         cargarDatosOnline()
         cargarProximoPartido()
         cargarUnreadCount()
@@ -66,105 +88,122 @@ class HomeViewModel(
         viewModelScope.launch {
             val user = FirebaseAuth.getInstance().currentUser
             if (user == null) {
-                _uiState.value = HomeUiState()
-                _unreadCount.value = 0
                 return@launch
             }
             val uid = user.uid
             val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            try {
+                val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
+                val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: _uiState.value.nombreUsuario
 
-            // Nombre usuario
-            val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
-            val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: "Usuario"
+                SessionStore(getApplication()).upsert(
+                    uid = uid,
+                    email = user.email ?: "",
+                    nombreUsuario = nombreUsuario,
+                    avatar = usuarioSnap.getLong("avatar")?.toInt() ?: -1
+                )
 
-            // PARTIDOS
-            val partidosSnap = firestore.collection("partidos").get().await()
-            val partidosPropios = partidosSnap.documents.filter { doc ->
-                (doc.getString("creadorUid") == uid)
-                        || ((doc.get("usuariosConAcceso") as? List<*>)?.contains(uid) == true)
+                val partidosSnap = firestore.collection("partidos").get().await()
+                val partidosPropios = partidosSnap.documents.filter { doc ->
+                    (doc.getString("creadorUid") == uid)
+                            || ((doc.get("usuariosConAcceso") as? List<*>)?.contains(uid) == true)
+                }
+                val partidosTotales = partidosPropios.size
+
+                val equiposSnap = firestore.collection("equipos").get().await()
+                val equiposPropios = equiposSnap.documents.filter { doc ->
+                    (doc.get("miembros") as? List<*>)?.contains(uid) == true
+                }
+                val equiposTotales = equiposPropios.size
+
+                val jugadoresSnap = firestore.collection("jugadores")
+                    .whereEqualTo("usuarioUid", uid).get().await()
+                val jugadoresTotales = jugadoresSnap.size()
+
+                val amigosSnap = firestore.collection("usuarios").document(uid)
+                    .collection("amigos").get().await()
+                val amigosTotales = amigosSnap.size()
+
+                _uiState.value = HomeUiState(
+                    nombreUsuario = nombreUsuario,
+                    partidosTotales = partidosTotales,
+                    equiposTotales = equiposTotales,
+                    jugadoresTotales = jugadoresTotales,
+                    amigosTotales = amigosTotales
+                )
+                homeCacheStore.save(
+                    HomeCachedStats(
+                        partidosTotales = partidosTotales,
+                        equiposTotales = equiposTotales,
+                        jugadoresTotales = jugadoresTotales,
+                        amigosTotales = amigosTotales
+                    )
+                )
+            } catch (_: Exception) {
+                // Offline: mantener caché
             }
-            val partidosTotales = partidosPropios.size
-
-            // EQUIPOS (ejemplo)
-            val equiposSnap = firestore.collection("equipos").get().await()
-            val equiposPropios = equiposSnap.documents.filter { doc ->
-                (doc.get("miembros") as? List<*>)?.contains(uid) == true
-            }
-            val equiposTotales = equiposPropios.size
-
-            // JUGADORES (solo los tuyos)
-            val jugadoresSnap = firestore.collection("jugadores")
-                .whereEqualTo("usuarioUid", uid).get().await()
-            val jugadoresTotales = jugadoresSnap.size()
-
-            // AMIGOS
-            val amigosSnap = firestore.collection("usuarios").document(uid)
-                .collection("amigos").get().await()
-            val amigosTotales = amigosSnap.size()
-
-            _uiState.value = HomeUiState(
-                nombreUsuario = nombreUsuario,
-                partidosTotales = partidosTotales,
-                equiposTotales = equiposTotales,
-                jugadoresTotales = jugadoresTotales,
-                amigosTotales = amigosTotales
-            )
         }
     }
 
     fun setNombreUsuarioDirecto(nombre: String) {
         _uiState.value = _uiState.value.copy(nombreUsuario = nombre)
+        viewModelScope.launch { sessionStore.upsert(nombreUsuario = nombre) }
     }
 
     private fun cargarProximoPartido() {
         viewModelScope.launch {
             _cargandoProx.value = true
-            val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val userUid = FirebaseAuth.getInstance().currentUser?.uid
+                ?: sessionStore.session.first().uid
             var partidoUi: HomeProximoPartidoUi? = null
-            if (userUid.isNotBlank()) {
-                val partidos = partidoRepo.listarPartidos()
-                    .filter { it.estado == "PREVIA" }
-                    .filter { partido ->
-                        partido.creadorUid == userUid ||
-                                partido.usuariosConAcceso.contains(userUid) ||
-                                partido.administradores.contains(userUid)
-                    }
-                    .map { partido ->
-                        val fechaHora = try {
-                            val partes = partido.fecha.split("-") // DD-MM-YYYY
-                            val fechaNormalizada = "${partes[2]}-${partes[1]}-${partes[0]}" // YYYY-MM-DD
-                            val fechaHoraStr = "$fechaNormalizada ${partido.horaInicio}"
-                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
-                            sdf.parse(fechaHoraStr)?.time ?: Long.MAX_VALUE
-                        } catch (e: Exception) {
-                            Long.MAX_VALUE
+            try {
+                if (userUid.isNotBlank()) {
+                    val partidos = partidoRepo.listarPartidos()
+                        .filter { it.estado == "PREVIA" }
+                        .filter { partido ->
+                            partido.creadorUid == userUid ||
+                                    partido.usuariosConAcceso.contains(userUid) ||
+                                    partido.administradores.contains(userUid)
                         }
-                        Pair(partido, fechaHora)
-                    }
-                    .filter { it.second >= System.currentTimeMillis() }
-                    .sortedBy { it.second }
+                        .map { partido ->
+                            val fechaHora = try {
+                                val partes = partido.fecha.split("-") // DD-MM-YYYY
+                                val fechaNormalizada = "${partes[2]}-${partes[1]}-${partes[0]}" // YYYY-MM-DD
+                                val fechaHoraStr = "$fechaNormalizada ${partido.horaInicio}"
+                                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
+                                sdf.parse(fechaHoraStr)?.time ?: Long.MAX_VALUE
+                            } catch (_: Exception) {
+                                Long.MAX_VALUE
+                            }
+                            Pair(partido, fechaHora)
+                        }
+                        .filter { it.second >= System.currentTimeMillis() }
+                        .sortedBy { it.second }
 
-                val proximoPartido = partidos.firstOrNull()?.first
+                    val proximoPartido = partidos.firstOrNull()?.first
 
-                if (proximoPartido != null) {
-                    val nombreEquipoA = if (proximoPartido.equipoAId.isNotBlank()) {
-                        val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoAId)
-                        eq?.nombre ?: "Equipo A"
-                    } else {
-                        "Equipo A"
+                    if (proximoPartido != null) {
+                        val nombreEquipoA = if (proximoPartido.equipoAId.isNotBlank()) {
+                            val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoAId)
+                            eq?.nombre ?: "Equipo A"
+                        } else {
+                            "Equipo A"
+                        }
+                        val nombreEquipoB = if (proximoPartido.equipoBId.isNotBlank()) {
+                            val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoBId)
+                            eq?.nombre ?: "Equipo B"
+                        } else {
+                            "Equipo B"
+                        }
+                        partidoUi = HomeProximoPartidoUi(
+                            partido = proximoPartido,
+                            nombreEquipoA = nombreEquipoA,
+                            nombreEquipoB = nombreEquipoB
+                        )
                     }
-                    val nombreEquipoB = if (proximoPartido.equipoBId.isNotBlank()) {
-                        val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoBId)
-                        eq?.nombre ?: "Equipo B"
-                    } else {
-                        "Equipo B"
-                    }
-                    partidoUi = HomeProximoPartidoUi(
-                        partido = proximoPartido,
-                        nombreEquipoA = nombreEquipoA,
-                        nombreEquipoB = nombreEquipoB
-                    )
                 }
+            } catch (_: Exception) {
+                // Offline: no romper
             }
             _proximoPartidoUi.value = partidoUi
             _cargandoProx.value = false
@@ -175,18 +214,17 @@ class HomeViewModel(
         viewModelScope.launch {
             val userUid = FirebaseAuth.getInstance().currentUser?.uid
             if (userUid == null) {
-                _unreadCount.value = 0
                 return@launch
             }
-            // Descarga todas las notificaciones (globales + personales)
-            val todas = notificacionRepo.obtenerNotificaciones(userUid)
-
-            // Aplica filtros locales con DAO (archivadas y borradas)
-            val archivadas = appDb.notificacionArchivadaDao().getArchivadasUids().toSet()
-            val borradas = appDb.notificacionBorradaDao().getBorradasUids().toSet()
-
-            val noLeidas = todas.filter { it.uid !in archivadas && it.uid !in borradas }
-            _unreadCount.value = noLeidas.size
+            try {
+                val todas = notificacionRepo.obtenerNotificaciones(userUid)
+                val archivadas = appDb.notificacionArchivadaDao().getArchivadasUids().toSet()
+                val borradas = appDb.notificacionBorradaDao().getBorradasUids().toSet()
+                val noLeidas = todas.filter { it.uid !in archivadas && it.uid !in borradas }
+                _unreadCount.value = noLeidas.size
+            } catch (_: Exception) {
+                // Mantener valor previo
+            }
         }
     }
 }

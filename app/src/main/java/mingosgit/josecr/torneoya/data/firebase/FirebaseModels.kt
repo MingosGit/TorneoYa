@@ -108,13 +108,6 @@ data class GoleadorFirebase(
 
 
 
-@IgnoreExtraProperties
-data class PartidoEquipoJugadorFirebase(
-    val partidoUid: String = "",
-    val equipoUid: String = "",
-    val jugadorUid: String = ""
-)
-
 data class UsuarioFirebaseEntity(
     val uid: String = "",
     val email: String = "",

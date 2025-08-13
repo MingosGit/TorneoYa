@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -76,12 +75,13 @@ fun HomeScreen(
     var showNoSesionScreen by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.nombreUsuario) {
+        // La sesión ahora se basa en caché + online. Si hay nombre cacheado, es sesión activa.
         isLoading = true
         loadingTimeoutReached = false
         showNoSesionScreen = false
 
-        val sesionActiva = uiState.nombreUsuario.isNotBlank() && uiState.nombreUsuario != "Usuario"
-        val delayJob = launch { delay(2000); loadingTimeoutReached = true }
+        val sesionActiva = uiState.nombreUsuario.isNotBlank()
+        val delayJob = launch { delay(1200); loadingTimeoutReached = true }
         while (!sesionActiva && !loadingTimeoutReached) { delay(100) }
         isLoading = false
         showNoSesionScreen = !sesionActiva
@@ -303,7 +303,9 @@ fun HomeScreen(
 
             // Próximo partido / Sin próximos partidos
             if (cargandoProx) {
-                Box(Modifier.fillMaxWidth().padding(vertical = 20.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 20.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = cs.primary, strokeWidth = 2.2.dp, modifier = Modifier.size(26.dp))
                 }
             } else {
