@@ -1,11 +1,13 @@
 package mingosgit.josecr.torneoya.ui.screens.partidoonline
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +40,7 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnline
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: String) {
     val cs = MaterialTheme.colorScheme
@@ -50,6 +53,26 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val creadorUid by vm.partidoCreadorUid.collectAsState(initial = null)
+
+    // --- NUEVO: Estados para solicitud de amistad desde comentarios ---
+    var expandedIndex by remember { mutableStateOf<Int?>(null) }
+    var mensajeDialog by remember { mutableStateOf<String?>(null) }
+    var sendingSolicitud by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val titleFriends = stringResource(id = R.string.ponlinejug_title_friends)
+    val btnOk = stringResource(id = R.string.ponlinejug_btn_ok)
+    val menuRequestFriendship = stringResource(id = R.string.ponlinejug_menu_request_friendship)
+    val msgMustBeLoggedIn = stringResource(id = R.string.ponlinejug_msg_must_be_logged_in)
+    val msgLocalPlayerNoAccount = stringResource(id = R.string.ponlinejug_msg_local_player_no_account)
+    val msgCannotSendToSelf = stringResource(id = R.string.ponlinejug_msg_cannot_send_to_self)
+    val msgUserNotFound = stringResource(id = R.string.ponlinejug_msg_user_not_found)
+    val msgAlreadyFriend = stringResource(id = R.string.ponlinejug_msg_already_friend)
+    val msgRequestAlreadySent = stringResource(id = R.string.ponlinejug_msg_request_already_sent)
+    val msgErrorRetrievingUser = stringResource(id = R.string.ponlinejug_msg_error_retrieving_user)
+    val msgRequestSent = stringResource(id = R.string.ponlinejug_msg_request_sent)
+    val msgErrorSendingRequest = stringResource(id = R.string.ponlinejug_msg_error_sending_request)
+    // -----------------------------------------------------------------
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -159,7 +182,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 state = listState,
                 reverseLayout = false
             ) {
-                items(comentariosOrdenados) { comentarioConVotos ->
+                itemsIndexed(comentariosOrdenados) { idx, comentarioConVotos ->
                     val votoColor = when {
                         comentarioConVotos.miVoto == 1 -> cs.primary
                         comentarioConVotos.miVoto == -1 -> cs.error
@@ -186,134 +209,198 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                             )
                         )
                         Spacer(Modifier.width(12.dp))
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(3.dp, RoundedCornerShape(17.dp)),
-                            shape = RoundedCornerShape(17.dp),
-                            colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant),
-                            border = BorderStroke(
-                                2.dp,
-                                Brush.horizontalGradient(
-                                    listOf(votoColor, cs.secondary, cs.surfaceVariant)
-                                )
-                            )
-                        ) {
-                            Column(
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Card(
                                 modifier = Modifier
-                                    .padding(start = 11.dp, end = 10.dp, top = 10.dp, bottom = 4.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = comentarioConVotos.comentario.usuarioNombre,
-                                        fontWeight = FontWeight.Bold,
-                                        color = cs.tertiary,
-                                        fontSize = 15.sp,
-                                        modifier = Modifier.weight(1f)
+                                    .fillMaxWidth()
+                                    .shadow(3.dp, RoundedCornerShape(17.dp))
+                                    // --- NUEVO: mantener pulsado para menú de amistad ---
+                                    .combinedClickable(
+                                        onClick = {},
+                                        onLongClick = { expandedIndex = idx }
+                                    ),
+                                shape = RoundedCornerShape(17.dp),
+                                colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant),
+                                border = BorderStroke(
+                                    2.dp,
+                                    Brush.horizontalGradient(
+                                        listOf(votoColor, cs.secondary, cs.surfaceVariant)
                                     )
-                                    Text(
-                                        text = comentarioConVotos.comentario.fechaHora,
-                                        fontSize = 11.sp,
-                                        color = cs.mutedText,
-                                        textAlign = TextAlign.End
-                                    )
-                                    if (puedeEliminar) {
-                                        IconButton(
-                                            onClick = {
-                                                scope.launch {
-                                                    vm.eliminarComentario(comentarioConVotos.comentario.uid, usuarioUid)
-                                                }
-                                            },
-                                            modifier = Modifier
-                                                .padding(start = 2.dp)
-                                                .size(28.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Delete,
-                                                contentDescription = "Eliminar comentario",
-                                                tint = cs.error,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                                Spacer(Modifier.height(2.dp))
-                                Text(
-                                    text = comentarioConVotos.comentario.texto,
-                                    fontSize = 16.sp,
-                                    color = cs.onSurface,
-                                    modifier = Modifier.padding(top = 1.dp, bottom = 3.dp)
                                 )
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(
                                     modifier = Modifier
-                                        .padding(top = 2.dp, bottom = 3.dp)
+                                        .padding(start = 11.dp, end = 10.dp, top = 10.dp, bottom = 4.dp)
                                 ) {
-                                    IconButton(
-                                        onClick = {
-                                            if (comentarioConVotos.miVoto != 1) {
-                                                vm.votarComentario(
-                                                    comentarioConVotos.comentario.uid,
-                                                    usuarioUid,
-                                                    1
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = comentarioConVotos.comentario.usuarioNombre,
+                                            fontWeight = FontWeight.Bold,
+                                            color = cs.tertiary,
+                                            fontSize = 15.sp,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            text = comentarioConVotos.comentario.fechaHora,
+                                            fontSize = 11.sp,
+                                            color = cs.mutedText,
+                                            textAlign = TextAlign.End
+                                        )
+                                        if (puedeEliminar) {
+                                            IconButton(
+                                                onClick = {
+                                                    scope.launch {
+                                                        vm.eliminarComentario(comentarioConVotos.comentario.uid, usuarioUid)
+                                                    }
+                                                },
+                                                modifier = Modifier
+                                                    .padding(start = 2.dp)
+                                                    .size(28.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Delete,
+                                                    contentDescription = "Eliminar comentario",
+                                                    tint = cs.error,
+                                                    modifier = Modifier.size(18.dp)
                                                 )
                                             }
-                                        },
-                                        modifier = Modifier.size(29.dp)
+                                        }
+                                    }
+                                    Spacer(Modifier.height(2.dp))
+                                    Text(
+                                        text = comentarioConVotos.comentario.texto,
+                                        fontSize = 16.sp,
+                                        color = cs.onSurface,
+                                        modifier = Modifier.padding(top = 1.dp, bottom = 3.dp)
+                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .padding(top = 2.dp, bottom = 3.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.ThumbUp,
-                                            contentDescription = stringResource(id = R.string.ponlinecom_desc_like),
-                                            tint = if (comentarioConVotos.miVoto == 1)
+                                        IconButton(
+                                            onClick = {
+                                                if (comentarioConVotos.miVoto != 1) {
+                                                    vm.votarComentario(
+                                                        comentarioConVotos.comentario.uid,
+                                                        usuarioUid,
+                                                        1
+                                                    )
+                                                }
+                                            },
+                                            modifier = Modifier.size(29.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.ThumbUp,
+                                                contentDescription = stringResource(id = R.string.ponlinecom_desc_like),
+                                                tint = if (comentarioConVotos.miVoto == 1)
+                                                    cs.primary
+                                                else
+                                                    cs.mutedText,
+                                                modifier = Modifier.size(19.dp)
+                                            )
+                                        }
+                                        Text(
+                                            text = comentarioConVotos.likes.toString(),
+                                            color = if (comentarioConVotos.miVoto == 1)
                                                 cs.primary
                                             else
                                                 cs.mutedText,
-                                            modifier = Modifier.size(19.dp)
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 14.sp
                                         )
-                                    }
-                                    Text(
-                                        text = comentarioConVotos.likes.toString(),
-                                        color = if (comentarioConVotos.miVoto == 1)
-                                            cs.primary
-                                        else
-                                            cs.mutedText,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 14.sp
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    IconButton(
-                                        onClick = {
-                                            if (comentarioConVotos.miVoto != -1) {
-                                                vm.votarComentario(
-                                                    comentarioConVotos.comentario.uid,
-                                                    usuarioUid,
-                                                    -1
-                                                )
-                                            }
-                                        },
-                                        modifier = Modifier.size(29.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.ThumbDown,
-                                            contentDescription = stringResource(id = R.string.ponlinecom_desc_dislike),
-                                            tint = if (comentarioConVotos.miVoto == -1)
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        IconButton(
+                                            onClick = {
+                                                if (comentarioConVotos.miVoto != -1) {
+                                                    vm.votarComentario(
+                                                        comentarioConVotos.comentario.uid,
+                                                        usuarioUid,
+                                                        -1
+                                                    )
+                                                }
+                                            },
+                                            modifier = Modifier.size(29.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.ThumbDown,
+                                                contentDescription = stringResource(id = R.string.ponlinecom_desc_dislike),
+                                                tint = if (comentarioConVotos.miVoto == -1)
+                                                    cs.error
+                                                else
+                                                    cs.mutedText,
+                                                modifier = Modifier.size(19.dp)
+                                            )
+                                        }
+                                        Text(
+                                            text = comentarioConVotos.dislikes.toString(),
+                                            color = if (comentarioConVotos.miVoto == -1)
                                                 cs.error
                                             else
                                                 cs.mutedText,
-                                            modifier = Modifier.size(19.dp)
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 14.sp
                                         )
                                     }
-                                    Text(
-                                        text = comentarioConVotos.dislikes.toString(),
-                                        color = if (comentarioConVotos.miVoto == -1)
-                                            cs.error
-                                        else
-                                            cs.mutedText,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 14.sp
+                                }
+                            }
+
+                            // --- NUEVO: DropdownMenu para enviar solicitud de amistad ---
+                            if (expandedIndex == idx) {
+                                DropdownMenu(
+                                    expanded = true,
+                                    onDismissRequest = { expandedIndex = null },
+                                    modifier = Modifier
+                                        .border(
+                                            2.dp,
+                                            Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
+                                            RoundedCornerShape(12.dp)
+                                        )
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(
+                                            brush = Brush.horizontalGradient(
+                                                listOf(cs.surfaceVariant, cs.surface)
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                ) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                menuRequestFriendship,
+                                                color = cs.primary,
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 14.sp
+                                            )
+                                        },
+                                        enabled = !sendingSolicitud,
+                                        onClick = {
+                                            if (!sendingSolicitud) {
+                                                sendingSolicitud = true
+                                                scope.launch {
+                                                    val res = enviarSolicitudAmistadSiProcede(
+                                                        comentarioConVotos.comentario.usuarioNombre,
+                                                        context,
+                                                        msgMustBeLoggedIn,
+                                                        msgLocalPlayerNoAccount,
+                                                        msgCannotSendToSelf,
+                                                        msgUserNotFound,
+                                                        msgAlreadyFriend,
+                                                        msgRequestAlreadySent,
+                                                        msgErrorRetrievingUser,
+                                                        msgRequestSent,
+                                                        msgErrorSendingRequest
+                                                    )
+                                                    mensajeDialog = res
+                                                    sendingSolicitud = false
+                                                    expandedIndex = null
+                                                }
+                                            }
+                                        }
                                     )
                                 }
                             }
+                            // ----------------------------------------------------------------
                         }
                     }
                 }
@@ -333,6 +420,65 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
             }
         }
     }
+
+    // --- NUEVO: Diálogo con el resultado de la solicitud de amistad ---
+    if (mensajeDialog != null) {
+        AlertDialog(
+            onDismissRequest = { mensajeDialog = null },
+            confirmButton = {
+                Box(
+                    modifier = Modifier
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(
+                                listOf(cs.primary, cs.secondary)
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .clip(RoundedCornerShape(10.dp))
+                ) {
+                    TextButton(
+                        onClick = { mensajeDialog = null },
+                        modifier = Modifier
+                            .defaultMinSize(minWidth = 80.dp)
+                            .background(Color.Transparent, shape = RoundedCornerShape(10.dp))
+                    ) {
+                        Text(
+                            btnOk,
+                            color = cs.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            },
+            title = {
+                Text(
+                    titleFriends,
+                    color = cs.secondary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(
+                    mensajeDialog ?: "",
+                    color = cs.onSurface,
+                    fontSize = 16.sp
+                )
+            },
+            shape = RoundedCornerShape(18.dp),
+            containerColor = cs.surface,
+            modifier = Modifier
+                .border(
+                    width = 2.dp,
+                    brush = Brush.horizontalGradient(
+                        listOf(cs.primary, cs.secondary)
+                    ),
+                    shape = RoundedCornerShape(18.dp)
+                )
+        )
+    }
+    // -----------------------------------------------------------------
 }
 
 @Composable

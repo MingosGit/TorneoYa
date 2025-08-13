@@ -27,7 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
@@ -45,49 +44,28 @@ fun AjustesScreen(
     val miCuentaStr = stringResource(id = R.string.ajustes_mi_cuenta)
     val miCuentaLocalStr = stringResource(id = R.string.ajustes_mi_cuenta_local)
     val idiomaStr = stringResource(id = R.string.ajustes_idioma)
-    val notificacionesStr = stringResource(id = R.string.ajustes_notificaciones)
     val temaAppStr = stringResource(id = R.string.ajustes_tema_app)
     val datosPrivacidadStr = stringResource(id = R.string.ajustes_datos_privacidad)
     val ayudaStr = stringResource(id = R.string.ajustes_ayuda)
     val creditosStr = stringResource(id = R.string.ajustes_creditos)
     val sobreAppStr = stringResource(id = R.string.ajustes_sobre_aplicacion)
 
-    val opciones = listOf(
-        miCuentaStr,
-        miCuentaLocalStr,
-        idiomaStr,
-        notificacionesStr,
-        temaAppStr,
-        datosPrivacidadStr,
-        ayudaStr,
-        creditosStr,
-        sobreAppStr
-    )
-
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
-    var mostrarAlerta by remember { mutableStateOf(false) }
 
     val colorScheme = MaterialTheme.colorScheme
     val modernBackground = TorneoYaPalette.backgroundGradient
     val context = LocalContext.current
 
-    if (mostrarAlerta) {
-        CustomAjustesAlertDialog(
-            onDismiss = { mostrarAlerta = false },
-            onLogin = {
-                mostrarAlerta = false
-                navController.navigate("login")
-            },
-            onRegister = {
-                mostrarAlerta = false
-                navController.navigate("register")
-            },
-            blue = colorScheme.primary,
-            violet = colorScheme.secondary,
-            background = colorScheme.surfaceVariant,
-            lightText = colorScheme.onSurface,
-            mutedText = colorScheme.onSurfaceVariant
-        )
+    val opciones = remember(sesionOnlineActiva) {
+        buildList {
+            if (sesionOnlineActiva) add(miCuentaStr) // Solo si navega a "mi_cuenta"
+            add(miCuentaLocalStr)
+            add(idiomaStr)
+            add(temaAppStr)
+            add(datosPrivacidadStr)
+            add(creditosStr)
+
+        }
     }
 
     Scaffold(
@@ -151,13 +129,7 @@ fun AjustesScreen(
                                 )
                                 .clickable {
                                     when (opcion) {
-                                        miCuentaStr -> {
-                                            if (sesionOnlineActiva) {
-                                                navController.navigate("mi_cuenta")
-                                            } else {
-                                                mostrarAlerta = true
-                                            }
-                                        }
+                                        miCuentaStr -> navController.navigate("mi_cuenta")
                                         creditosStr -> navController.navigate("creditos_screen")
                                         miCuentaLocalStr -> navController.navigate("cuenta_local")
                                         idiomaStr -> navController.navigate("idioma_screen")
@@ -169,8 +141,6 @@ fun AjustesScreen(
                                             )
                                             context.startActivity(intent)
                                         }
-                                        ayudaStr -> navController.navigate("ayuda_screen")
-                                        sobreAppStr -> navController.navigate("sobre_app")
                                     }
                                 },
                             color = colorScheme.surfaceVariant,
@@ -225,92 +195,5 @@ fun GradientBorderedIconButton(
             tint = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.size(iconSize)
         )
-    }
-}
-
-@Composable
-private fun CustomAjustesAlertDialog(
-    onDismiss: () -> Unit,
-    onLogin: () -> Unit,
-    onRegister: () -> Unit,
-    blue: Color,
-    violet: Color,
-    background: Color,
-    lightText: Color,
-    mutedText: Color
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(background)
-        ) {
-            Column(
-                Modifier
-                    .padding(horizontal = 22.dp, vertical = 26.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(id = R.string.ajustes_dialog_login_title),
-                    color = lightText,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-                Spacer(Modifier.height(11.dp))
-                Text(
-                    text = stringResource(id = R.string.ajustes_dialog_login_message),
-                    color = mutedText,
-                    fontSize = 15.sp
-                )
-                Spacer(Modifier.height(25.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    OutlinedButton(
-                        onClick = onLogin,
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 2.dp,
-                            brush = Brush.horizontalGradient(listOf(violet, blue))
-                        ),
-                        shape = RoundedCornerShape(11.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = stringResource(id = R.string.gen_iniciar_sesion),
-                                color = violet,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    OutlinedButton(
-                        onClick = onRegister,
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 2.dp,
-                            brush = Brush.horizontalGradient(listOf(blue, violet))
-                        ),
-                        shape = RoundedCornerShape(11.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 8.dp),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = stringResource(id = R.string.ajustes_register),
-                                color = blue,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-                }
-            }
-        }
     }
 }
