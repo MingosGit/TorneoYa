@@ -1,49 +1,51 @@
-# TorneoYa ⚽  
+<h1 align="center">⚽ TorneoYa</h1>  
 
-**TorneoYa** es una aplicación para Android que te permite organizar y unirte a partidos de fútbol con tus amigos de forma rápida y sencilla.  
-Lleva el marcador en tiempo real, comenta, vota encuestas y consulta estadísticas básicas de tus partidos.  
+<p align="center">
+  <b>Organiza y disfruta partidos de fútbol con tus amigos</b><br/>
+  📅 Marcador en vivo · 🏆 Estadísticas · 💬 Comentarios
+</p>  
 
-![TorneoYa](torneoya.png)  
+<p align="center">
+  <img src="torneoya.png" alt="TorneoYa" width="400"/>
+</p>  
 
 ---
 
-## ✨ Características  
+## ✨ Características principales  
 
-- 📅 **Organiza partidos** en segundos: fecha, hora y visibilidad.  
-- 👥 **Conecta con amigos y grupos** para tener siempre tu equipo listo.  
+- 📅 **Organiza partidos** fácilmente: fecha, hora y visibilidad.  
+- 👥 **Conecta con amigos** para tener siempre equipo.  
 - ⚽ **Marcador en vivo** con goles y asistencias por jugador.  
-- 🏆 **Estadísticas básicas**: MVP, goles y partidos jugados.  
-- 💬 **Comentarios y reacciones** rápidas durante los partidos.  
-- 📊 **Encuestas** para decidir al mejor jugador o votar jugadas polémicas.  
-- 🎨 **Interfaz cuidada**, sin anuncios ni compras integradas.  
+- 🏆 **Estadísticas básicas**: goles, asistencias y partidos jugados.  
+- 💬 **Comentarios y reacciones** durante el partido.  
+- 📊 **Encuestas rápidas**: vota jugadas polémicas o al mejor jugador.  
+- 🎨 **Diseño moderno y limpio**, sin anuncios ni compras integradas.  
 
 ---
 
 ## 📲 Descarga  
 
-- 🔽 [APK directo (última versión)](https://github.com/MingosGit/TorneoYa/releases/latest/download/TorneoYa1.0.apk)  
-- 📦 Pronto en **Google Play**  
+- 🔽 [**Descargar APK (última versión)**](https://github.com/MingosGit/TorneoYa/releases/latest/download/TorneoYa1.0.apk)  
+- 📦 Próximamente en **Google Play**  
 
 ---
 
-## 🚀 Tecnologías utilizadas  
+## 🚀 Tecnologías  
 
-- **Android 10+** con **Kotlin**  
-- **Jetpack Compose** para la interfaz  
-- **Firebase** para notificaciones y sincronización  
-- **Material 3** + paleta de diseño propia  
+- 📱 **Android 10+** con **Kotlin**  
+- 🎨 **Jetpack Compose** + **Material 3**  
+- 🔥 **Firebase** (sincronización y notificaciones)  
+- 🖌️ **Paleta visual personalizada**  
 
 ---
 
-## 🌐 Página oficial  
+## 🌐 Sitio oficial  
 
-👉 [mingosgit.github.io/TorneoYa](https://mingosgit.github.io/TorneoYa)  
+👉 [**mingosgit.github.io/TorneoYa**](https://mingosgit.github.io/TorneoYa)  
 
 ---
 
 ## 📸 Capturas  
-
-*(Ejemplos de pantallas de la app, añade tus imágenes en `/screenshots`)*  
 
 | Inicio | Lista de partidos | Estadísticas |
 |--------|------------------|--------------|
@@ -51,13 +53,13 @@ Lleva el marcador en tiempo real, comenta, vota encuestas y consulta estadístic
 
 ---
 
-## 🤝 Contribuir  
+## 🤝 Cómo contribuir  
 
-1. Haz un **fork** del proyecto  
+1. Haz un **fork** del repo  
 2. Crea una rama: `git checkout -b feature/nueva-funcionalidad`  
-3. Haz commit: `git commit -m 'Agrego nueva funcionalidad'`  
-4. Haz push: `git push origin feature/nueva-funcionalidad`  
-5. Crea un Pull Request  
+3. Commit: `git commit -m 'Agrego nueva funcionalidad'`  
+4. Push: `git push origin feature/nueva-funcionalidad`  
+5. Abre un Pull Request 🚀  
 
 ---
 
