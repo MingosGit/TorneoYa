@@ -47,7 +47,7 @@ Lleva el marcador en tiempo real, comenta, vota encuestas y consulta estadístic
 
 | Inicio | Lista de partidos | Estadísticas |
 |--------|------------------|--------------|
-| ![](screenshots/image1.webp) | ![](screenshots/image2.webp) | ![](screenshots/image3.webp) |  
+| ![](image1.webp) | ![](image2.webp) | ![](image3.webp) |  
 
 ---
 
