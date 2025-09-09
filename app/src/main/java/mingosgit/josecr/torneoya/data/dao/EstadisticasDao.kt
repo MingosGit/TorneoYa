@@ -7,7 +7,7 @@ import mingosgit.josecr.torneoya.data.entities.EstadisticasJugador
 @Dao
 interface EstadisticasDao {
 
-    // Goles, Asistencias y Partidos Jugados para todos los jugadores
+    // Obtiene estadísticas de todos los jugadores (goles, asistencias y partidos jugados)
     @Query("""
         SELECT 
             j.id AS jugadorId,
@@ -26,7 +26,7 @@ interface EstadisticasDao {
     """)
     suspend fun getEstadisticasTodos(): List<EstadisticasJugador>
 
-    // Estadísticas de un jugador específico
+    // Obtiene estadísticas de un jugador específico por su id
     @Query("""
         SELECT 
             j.id AS jugadorId,

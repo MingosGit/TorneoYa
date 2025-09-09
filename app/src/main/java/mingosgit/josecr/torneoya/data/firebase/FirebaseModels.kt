@@ -3,6 +3,8 @@ package mingosgit.josecr.torneoya.data.firebase
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 import com.google.firebase.Timestamp
+
+// Representa un partido almacenado en Firebase
 @IgnoreExtraProperties
 data class PartidoFirebase(
     val uid: String = "",
@@ -17,22 +19,24 @@ data class PartidoFirebase(
     val estado: String = "PREVIA",
     val golesEquipoA: Int = 0,
     val golesEquipoB: Int = 0,
-    val jugadoresEquipoA: List<String> = emptyList(), // UIDs
-    val jugadoresEquipoB: List<String> = emptyList(), // UIDs
-    val nombresManualEquipoA: List<String> = emptyList(), // NUEVO: nombres manuales (sin UID)
-    val nombresManualEquipoB: List<String> = emptyList(), // NUEVO: nombres manuales (sin UID)
+    val jugadoresEquipoA: List<String> = emptyList(), // Jugadores Online equipo A
+    val jugadoresEquipoB: List<String> = emptyList(), // jugadores Online equipo B
+    val nombresManualEquipoA: List<String> = emptyList(), // Nombres manuales equipo A
+    val nombresManualEquipoB: List<String> = emptyList(), // Nombres manuales equipo B
     val creadorUid: String = "",
     val isPublic: Boolean = true,
     val usuariosConAcceso: List<String> = emptyList(),
     val administradores: List<String> = emptyList()
 )
 
+// Representa un equipo en Firebase
 @IgnoreExtraProperties
 data class EquipoFirebase(
     @get:Exclude var uid: String = "",
     val nombre: String = ""
 )
 
+// Representa un jugador en Firebase
 @IgnoreExtraProperties
 data class JugadorFirebase(
     @get:Exclude var uid: String = "",
@@ -41,6 +45,7 @@ data class JugadorFirebase(
     val avatar: Int? = null // null = sin foto de perfil, 1..20 = avatar local
 )
 
+// Representa un comentario en Firebase
 @IgnoreExtraProperties
 data class ComentarioFirebase(
     @get:Exclude var uid: String = "",
@@ -48,18 +53,10 @@ data class ComentarioFirebase(
     val usuarioUid: String = "",
     val usuarioNombre: String = "",
     val texto: String = "",
-    val fechaHora: String = "", // ISO 8601
+    val fechaHora: String = "" // ISO 8601
 )
 
-
-@IgnoreExtraProperties
-data class ComentarioVotoFirebase(
-    @get:Exclude var uid: String = "",
-    val comentarioUid: String = "",
-    val usuarioUid: String = "",
-    val tipo: Int = 0 // 1=like, -1=dislike
-)
-
+// Representa una encuesta en Firebase
 @IgnoreExtraProperties
 data class EncuestaFirebase(
     @get:Exclude var uid: String = "",
@@ -70,30 +67,18 @@ data class EncuestaFirebase(
     val creadorUid: String = ""
 )
 
-
+// Representa una notificación en Firebase
 @IgnoreExtraProperties
 data class NotificacionFirebase(
     @get:Exclude var uid: String = "",
     val tipo: String = "",
     val titulo: String = "",
     val mensaje: String = "",
-    val fechaHora: Timestamp = Timestamp.now(), // USA Timestamp DE FIREBASE
+    val fechaHora: Timestamp = Timestamp.now(), // Fecha y hora de Firebase
     val usuarioUid: String? = null
 )
 
-
-@IgnoreExtraProperties
-data class EventoFirebase(
-    @get:Exclude var uid: String = "",
-    val partidoUid: String = "",
-    val tipo: String = "",
-    val minuto: Int? = null,
-    val equipoUid: String = "",
-    val jugadorUid: String = "",
-    val asistenteUid: String? = null,
-    val fechaHora: String = ""
-)
-
+// Representa un goleador en Firebase
 @IgnoreExtraProperties
 data class GoleadorFirebase(
     @get:Exclude var uid: String = "",
@@ -106,8 +91,7 @@ data class GoleadorFirebase(
     val asistenciaNombreManual: String? = null
 )
 
-
-
+// Representa un usuario en Firebase
 data class UsuarioFirebaseEntity(
     val uid: String = "",
     val email: String = "",
@@ -115,9 +99,9 @@ data class UsuarioFirebaseEntity(
     val avatar: Int? = null, // null = sin foto de perfil, 1..20 = avatar local
     val partidosJugados: Int = 0,
 
-    // Aceptación de privacidad
-    val acceptedPrivacy: Boolean = false,           // ¿aceptó?
-    val acceptedPrivacyAt: Timestamp? = null,       // cuándo aceptó (servidor)
-    val privacyVersion: String? = null,             // versión del texto aceptado (ej. "2025-08-11")
-    val privacyUrl: String? = null                  // URL pública mostrada al aceptar
+    // Datos sobre aceptación de privacidad
+    val acceptedPrivacy: Boolean = false,           // si aceptó
+    val acceptedPrivacyAt: Timestamp? = null,       // cuándo aceptó
+    val privacyVersion: String? = null,             // versión aceptada
+    val privacyUrl: String? = null                  // URL pública de privacidad
 )

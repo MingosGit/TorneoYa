@@ -11,6 +11,6 @@ data class UsuarioFirebaseEntity(
 
     val acceptedPrivacy: Boolean = false,           // ¿aceptó?
     val acceptedPrivacyAt: Timestamp? = null,       // cuándo aceptó (servidor)
-    val privacyVersion: String? = null,             // versión del texto aceptado (ej. "2025-08-11")
+    val privacyVersion: String? = null,             // versión del texto aceptado
     val privacyUrl: String? = null                  // URL pública mostrada al aceptar
 )

@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class UsuarioLocalEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val nombre: String,
-    val fotoPerfilPath: String? = null    // NUEVO CAMPO
+    val fotoPerfilPath: String? = null
 )

@@ -21,6 +21,7 @@ import mingosgit.josecr.torneoya.data.session.SessionStore
 class AuthManager(
     app: Application
 ) {
+    // Constructor de AuthManager, inicializa dependencias y estado de autenticación
     private val appScope = CoroutineScope(Dispatchers.IO + Job())
     private val sessionStore = SessionStore(app.applicationContext)
     private val network = NetworkMonitor(app.applicationContext)
@@ -33,6 +34,7 @@ class AuthManager(
         .stateIn(appScope, SharingStarted.Eagerly, false)
 
     init {
+        // Inicializa el flujo que combina sesión guardada y estado de conexión
         appScope.launch {
             combine(sessionStore.session, _online) { session, online ->
                 session to online
@@ -63,6 +65,7 @@ class AuthManager(
         }
     }
 
+    // Método que valida la sesión online contra Firebase y actualiza el estado
     private suspend fun validateOnline(current: SessionSnapshot) {
         val firebaseUser = auth.currentUser
         if (firebaseUser == null) {
@@ -93,6 +96,7 @@ class AuthManager(
         }
     }
 
+    // Actualiza en caché el perfil del usuario (nombre y avatar)
     suspend fun updateProfileCache(nombreUsuario: String?, avatar: Int?) {
         sessionStore.upsert(
             nombreUsuario = nombreUsuario,
@@ -100,6 +104,7 @@ class AuthManager(
         )
     }
 
+    // Guarda en caché un login con los datos de usuario
     suspend fun cacheLogin(uid: String, email: String, nombreUsuario: String?, avatar: Int?) {
         sessionStore.upsert(
             uid = uid,
@@ -109,6 +114,7 @@ class AuthManager(
         )
     }
 
+    // Cierra sesión localmente y limpia datos de la app
     suspend fun signOutLocalOnly() {
         // Cerrar sesión local y Firebase (cuando haya red). Aquí limpiamos estado de la app.
         try { FirebaseAuth.getInstance().signOut() } catch (_: Exception) {}
@@ -116,5 +122,6 @@ class AuthManager(
         _state.value = AuthState.SignedOut
     }
 
+    // Devuelve el flujo de conectividad online
     fun online(): StateFlow<Boolean> = _online
 }

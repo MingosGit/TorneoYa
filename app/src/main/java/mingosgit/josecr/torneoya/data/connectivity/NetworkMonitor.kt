@@ -12,9 +12,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 class NetworkMonitor(private val context: Context) {
 
+    // Devuelve un flujo que indica si hay conexión a internet
     fun isOnline(): Flow<Boolean> = callbackFlow {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
+        // Obtiene el estado actual de conectividad
         fun current(): Boolean {
             val n = cm.activeNetwork ?: return false
             val caps = cm.getNetworkCapabilities(n) ?: return false
@@ -22,12 +24,15 @@ class NetworkMonitor(private val context: Context) {
                     caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         }
 
+        // Envía al flujo el estado actual de conexión
         trySend(current())
 
+        // Crea la petición de red para escuchar cambios de conectividad
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
 
+        // Callback que reacciona a cambios en la red y actualiza el flujo
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) { trySend(current()) }
             override fun onLost(network: Network) { trySend(current()) }
@@ -38,6 +43,7 @@ class NetworkMonitor(private val context: Context) {
         }
 
         cm.registerNetworkCallback(request, callback)
+        // Cierra y limpia el callback de red al finalizar
         awaitClose { cm.unregisterNetworkCallback(callback) }
     }.distinctUntilChanged()
 }
