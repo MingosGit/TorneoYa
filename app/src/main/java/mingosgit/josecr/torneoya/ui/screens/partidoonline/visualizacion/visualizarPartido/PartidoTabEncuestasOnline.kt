@@ -35,9 +35,15 @@ import kotlinx.coroutines.yield
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.EncuestaOnlineConResultadosConAvatar
 import mingosgit.josecr.torneoya.R
-import mingosgit.josecr.torneoya.ui.theme.mutedText // <<-- IMPORT NECESARIO
+import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Pestaña de encuestas en la visualización online:
+ * - Lista encuestas con resultados y votos en tiempo real
+ * - Permite votar opción única
+ * - Sección para crear una nueva encuesta (pregunta + opciones)
+ */
 @Composable
 fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: String) {
     val cs = MaterialTheme.colorScheme
@@ -54,6 +60,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
 
     Box(modifier = Modifier.fillMaxSize()) {
 
+        // Botón refrescar encuestas
         IconButton(
             onClick = {
                 scope.launch {
@@ -90,6 +97,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                 .fillMaxSize()
         ) {
 
+            // Indicador de carga
             if (isLoading && !encuestasLoaded) {
                 Box(
                     modifier = Modifier
@@ -100,6 +108,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                     CircularProgressIndicator(color = cs.primary)
                 }
             } else {
+                // Lista de encuestas
                 Box(modifier = Modifier.weight(1f)) {
                     LazyColumn(
                         modifier = Modifier
@@ -113,12 +122,16 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                             val votos = encuestaConResultados.votos
                             val totalVotos = votos.sum().coerceAtLeast(1)
                             var seleccionada by remember { mutableStateOf(-1) }
+
+                            // Cargar voto previo del usuario
                             LaunchedEffect(encuesta.uid, usuarioUid) {
                                 scope.launch {
                                     val sel = vm.getVotoUsuarioEncuesta(encuesta.uid, usuarioUid)
                                     seleccionada = sel ?: -1
                                 }
                             }
+
+                            // Tarjeta de encuesta
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -130,6 +143,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                 Column(
                                     modifier = Modifier.padding(vertical = 15.dp, horizontal = 15.dp)
                                 ) {
+                                    // Cabecera con avatar, pregunta y contador de votos
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.fillMaxWidth()
@@ -164,6 +178,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         }
                                     }
                                     Spacer(Modifier.height(14.dp))
+                                    // Opciones de la encuesta
                                     Column {
                                         opcionesList.forEachIndexed { idx, opcion ->
                                             val porcentaje = (votos.getOrNull(idx) ?: 0) * 100 / totalVotos
@@ -221,6 +236,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                         fontWeight = FontWeight.Bold
                                                     )
                                                 }
+                                                // Barra de progreso con votos
                                                 LinearProgressIndicator(
                                                     progress = (votos.getOrNull(idx)?.toFloat() ?: 0f) / totalVotos,
                                                     modifier = Modifier
@@ -238,6 +254,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                 }
                             }
                         }
+                        // Texto si no hay encuestas
                         if (state.encuestas.isEmpty()) {
                             item {
                                 Text(
@@ -253,6 +270,8 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                         }
                     }
                 }
+
+                // Sección crear encuesta
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -289,6 +308,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                     .fillMaxWidth()
                                     .verticalScroll(rememberScrollState())
                             ) {
+                                // Campo pregunta
                                 OutlinedTextField(
                                     value = pregunta,
                                     onValueChange = { pregunta = it },
@@ -305,6 +325,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         unfocusedLabelColor = cs.mutedText
                                     )
                                 )
+                                // Campos de opciones
                                 opciones.forEachIndexed { idx, valor ->
                                     OutlinedTextField(
                                         value = valor,
@@ -323,6 +344,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         )
                                     )
                                 }
+                                // Botones añadir/eliminar opción
                                 Row(
                                     modifier = Modifier
                                         .padding(top = 10.dp)
@@ -346,6 +368,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                             onClick = { opciones.removeAt(opciones.size - 1) }
                                         )
                                 }
+                                // Botón lanzar encuesta
                                 OutlinedColorButton(
                                     text = stringResource(id = R.string.ponlineenc_button_launch_survey),
                                     borderBrush = Brush.horizontalGradient(
@@ -378,7 +401,6 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                         }
                                     }
                                 )
-
                             }
                         }
                     }
@@ -388,6 +410,9 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
     }
 }
 
+/**
+ * Botón con borde de color personalizado para acciones de encuesta
+ */
 @Composable
 fun OutlinedColorButton(
     text: String,

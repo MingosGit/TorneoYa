@@ -5,21 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +25,7 @@ import java.util.Calendar
 
 // ========================== DATE PICKER (AÑOS: ACTUAL..ACTUAL+5) ==========================
 
+/** Diálogo de selección de fecha con accesos rápidos (hoy, mañana, próxima semana) */
 @Composable
 fun CustomDatePickerDialog(
     show: Boolean,
@@ -188,7 +176,7 @@ fun CustomDatePickerDialog(
                     }
                 }
 
-                // Año (solo ACTUAL..ACTUAL+5)
+                // Año
                 Box {
                     LabeledButton(
                         label = stringResource(id = R.string.datepicker_label_year),
@@ -249,6 +237,7 @@ fun CustomDatePickerDialog(
     }
 }
 
+/** Chips con accesos rápidos para elegir fecha (hoy, mañana, próxima semana) */
 @Composable
 private fun QuickDateChips(
     onToday: () -> Unit,
@@ -316,6 +305,7 @@ private fun QuickDateChips(
     }
 }
 
+/** Devuelve el número de días de un mes concreto */
 private fun daysInMonth(year: Int, month: Int): Int {
     return when (month) {
         1, 3, 5, 7, 8, 10, 12 -> 31
@@ -325,17 +315,18 @@ private fun daysInMonth(year: Int, month: Int): Int {
     }
 }
 
+/** Comprueba si un año es bisiesto */
 private fun isLeapYear(year: Int): Boolean {
     return (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0))
 }
 
-// Clickable sin ripple para chips
+/** Extensión para hacer clickable sin ripple */
 private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier =
     this.then(Modifier.pointerInput(Unit) {
         detectTapGestures(onTap = { onClick() })
     })
 
-// Botón con etiqueta arriba + valor destacado
+/** Botón con etiqueta arriba + valor destacado */
 @Composable
 private fun LabeledButton(
     label: String,
@@ -365,6 +356,7 @@ private fun LabeledButton(
 
 // ========================== TIME PICKER (DESPLEGABLES) ==========================
 
+/** Diálogo de selección de hora y minuto mediante desplegables */
 @Composable
 fun CustomTimePickerDialog(
     show: Boolean,

@@ -28,6 +28,13 @@ import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
+/**
+ * Pestaña de eventos (goles/asistencias) en la visualización online:
+ * - Carga eventos desde Firestore (colección goleadores)
+ * - Recupera nombres de jugadores o usuarios
+ * - Muestra lista de goles con minuto, goleador y asistente
+ * - Diferencia visualmente lado equipo A y equipo B
+ */
 @Composable
 fun PartidoTabEventosOnline(
     partidoUid: String,
@@ -50,8 +57,10 @@ fun PartidoTabEventosOnline(
     var triggerReload by remember { mutableStateOf(0) }
     val listState = rememberLazyListState()
 
+    // Función recargar fuerza nuevo LaunchedEffect
     fun recargar() { triggerReload++ }
 
+    // Carga eventos de Firestore
     LaunchedEffect(partidoUid, reloadKey, triggerReload) {
         isLoading = true
         scope.launch {
@@ -76,6 +85,7 @@ fun PartidoTabEventosOnline(
 
             val goles = golesDocs.mapNotNull { it.toObject(GoleadorFirebase::class.java)?.copy(uid = it.id) }
 
+            // Nombres de jugadores o usuarios
             val jugadorUids = goles.mapNotNull { it.jugadorUid.takeIf { u -> !u.isNullOrBlank() } } +
                     goles.mapNotNull { it.asistenciaJugadorUid.takeIf { u -> !u.isNullOrBlank() } }
             val jugadoresDocs = jugadorUids.distinct()
@@ -91,6 +101,7 @@ fun PartidoTabEventosOnline(
             }
             val nombresMap = (jugadoresDocs + usuariosDocs).toMap()
 
+            // Construcción de lista de eventos
             eventos = goles
                 .sortedBy { it.minuto ?: Int.MIN_VALUE }
                 .map { gol ->
@@ -125,6 +136,7 @@ fun PartidoTabEventosOnline(
         }
     }
 
+    // Scroll arriba si hay nuevos eventos
     val eventosSize = eventos.size
     val oldEventosSize = remember { mutableStateOf(0) }
     LaunchedEffect(eventosSize) {
@@ -139,6 +151,7 @@ fun PartidoTabEventosOnline(
             .fillMaxWidth()
             .padding(12.dp)
     ) {
+        // Botón recargar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -152,6 +165,7 @@ fun PartidoTabEventosOnline(
             }
         }
 
+        // Indicador de carga
         if (isLoading) {
             Box(
                 Modifier
@@ -162,6 +176,7 @@ fun PartidoTabEventosOnline(
             return@Column
         }
 
+        // Sin eventos
         if (eventos.isEmpty()) {
             Text(
                 text = textNoEvents,
@@ -172,6 +187,7 @@ fun PartidoTabEventosOnline(
             return@Column
         }
 
+        // Lista de eventos (goles)
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -187,6 +203,7 @@ fun PartidoTabEventosOnline(
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Bloque lado equipo A
                     if (isEquipoA) {
                         Box(
                             modifier = Modifier
@@ -234,6 +251,7 @@ fun PartidoTabEventosOnline(
                         Spacer(modifier = Modifier.weight(4f))
                     }
 
+                    // Minuto al centro
                     Box(
                         modifier = Modifier
                             .weight(2f)
@@ -256,6 +274,7 @@ fun PartidoTabEventosOnline(
                         }
                     }
 
+                    // Bloque lado equipo B
                     if (!isEquipoA) {
                         Box(
                             modifier = Modifier
@@ -311,6 +330,9 @@ fun PartidoTabEventosOnline(
     }
 }
 
+/**
+ * Representa un evento de gol con equipo, jugador, minuto y asistente
+ */
 data class GolEvento(
     val equipoUid: String,
     val jugador: String,

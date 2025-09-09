@@ -11,6 +11,7 @@ import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualiz
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 
+/** Contenido principal de la pantalla de visualización de un partido online */
 @Composable
 fun VisualizarPartidoOnlineContent(
     modifier: Modifier = Modifier,
@@ -26,15 +27,19 @@ fun VisualizarPartidoOnlineContent(
             .fillMaxSize()
             .padding(0.dp)
     ) {
+        // Cabecera con nombres de equipos y marcador
         PartidoEquiposHeaderOnline(uiState)
         Spacer(Modifier.height(10.dp))
+        // Cabecera de goles con botón para recargar
         PartidoGolesHeaderOnline(
             uiState = uiState,
             onRecargarGoles = { golesReloadKey++ }
         )
         Spacer(Modifier.height(10.dp))
+        // Banner que muestra el estado actual del partido
         PartidoEstadoBannerOnline(uiState)
         Spacer(modifier = Modifier.height(20.dp))
+        // Pestañas: jugadores, eventos, comentarios, encuestas
         PartidoTabsOnline(
             uiState = uiState,
             vm = vm,

@@ -33,13 +33,14 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.R
 
+/**
+ * Pestaña que muestra los jugadores de cada equipo en la visualización online
+ * con opción de enviar solicitud de amistad manteniendo pulsado un jugador.
+ */
 @Composable
 fun PartidoTabJugadoresOnline(
     uiState: VisualizarPartidoOnlineUiState
 ) {
-    val cs = MaterialTheme.colorScheme
-    val textNoPlayers = stringResource(id = R.string.ponlinejug_text_no_players)
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -70,6 +71,9 @@ fun PartidoTabJugadoresOnline(
     }
 }
 
+/**
+ * Columna de jugadores de un equipo con menú contextual para enviar solicitud de amistad.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun EquipoColumnWithFriendship(
@@ -104,6 +108,7 @@ private fun EquipoColumnWithFriendship(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Cabecera con nombre del equipo
         Text(
             text = nombreEquipo,
             fontSize = 18.sp,
@@ -121,6 +126,7 @@ private fun EquipoColumnWithFriendship(
                 .height(2.dp)
                 .background(cs.primary)
         )
+        // Lista de jugadores
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -133,10 +139,7 @@ private fun EquipoColumnWithFriendship(
                         .shadow(2.dp, RoundedCornerShape(13.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                listOf(
-                                    cs.surface,
-                                    cs.background
-                                )
+                                listOf(cs.surface, cs.background)
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
@@ -147,9 +150,7 @@ private fun EquipoColumnWithFriendship(
                         )
                         .combinedClickable(
                             onClick = {},
-                            onLongClick = {
-                                expandedIndex = idx
-                            }
+                            onLongClick = { expandedIndex = idx }
                         )
                         .padding(vertical = 9.dp, horizontal = 2.dp)
                 ) {
@@ -168,6 +169,7 @@ private fun EquipoColumnWithFriendship(
                         )
                     }
 
+                    // Menú contextual para enviar solicitud
                     if (expandedIndex == idx) {
                         AmistadDropdownMenu(
                             borderBrush = borderBrush,
@@ -198,6 +200,7 @@ private fun EquipoColumnWithFriendship(
                     }
                 }
             }
+            // Texto cuando no hay jugadores
             if (jugadores.isEmpty()) {
                 item {
                     Text(
@@ -214,6 +217,7 @@ private fun EquipoColumnWithFriendship(
         }
     }
 
+    // Diálogo con resultado de la solicitud
     if (mensajeDialog != null) {
         AlertDialog(
             onDismissRequest = { mensajeDialog = null },
@@ -235,11 +239,7 @@ private fun EquipoColumnWithFriendship(
                             .defaultMinSize(minWidth = 80.dp)
                             .background(Color.Transparent, shape = RoundedCornerShape(10.dp))
                     ) {
-                        Text(
-                            btnOk,
-                            color = cs.primary,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(btnOk, color = cs.primary, fontWeight = FontWeight.Bold)
                     }
                 }
             },
@@ -251,27 +251,21 @@ private fun EquipoColumnWithFriendship(
                     fontSize = 20.sp
                 )
             },
-            text = {
-                Text(
-                    mensajeDialog ?: "",
-                    color = cs.onSurface,
-                    fontSize = 16.sp
-                )
-            },
+            text = { Text(mensajeDialog ?: "", color = cs.onSurface, fontSize = 16.sp) },
             shape = RoundedCornerShape(18.dp),
             containerColor = cs.surface,
-            modifier = Modifier
-                .border(
-                    width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(cs.primary, cs.secondary)
-                    ),
-                    shape = RoundedCornerShape(18.dp)
-                )
+            modifier = Modifier.border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
+                shape = RoundedCornerShape(18.dp)
+            )
         )
     }
 }
 
+/**
+ * Menú desplegable que aparece al mantener pulsado un jugador
+ */
 @Composable
 private fun AmistadDropdownMenu(
     borderBrush: Brush,
@@ -287,16 +281,10 @@ private fun AmistadDropdownMenu(
         onDismissRequest = onDismissRequest,
         offset = offset,
         modifier = Modifier
-            .border(
-                2.dp,
-                borderBrush,
-                RoundedCornerShape(12.dp)
-            )
+            .border(2.dp, borderBrush, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
             .background(
-                brush = Brush.horizontalGradient(
-                    listOf(cs.surfaceVariant, cs.surface)
-                ),
+                brush = Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface)),
                 shape = RoundedCornerShape(12.dp)
             )
     ) {
@@ -315,6 +303,10 @@ private fun AmistadDropdownMenu(
     }
 }
 
+/**
+ * Lógica para comprobar condiciones y enviar solicitud de amistad a otro usuario
+ * según su nombre en Firestore.
+ */
 suspend fun enviarSolicitudAmistadSiProcede(
     jugadorNombre: String,
     context: Context,
@@ -339,23 +331,16 @@ suspend fun enviarSolicitudAmistadSiProcede(
         val userDoc = usersQuery.documents.firstOrNull()
         val uidDestino = userDoc?.getString("uid")
 
-        if (isLocal && (uidDestino == null || uidDestino.isBlank())) {
-            return msgLocalPlayerNoAccount
-        }
-        if (uidDestino == miUid) {
-            return msgCannotSendToSelf
-        }
-        if (uidDestino == null) {
-            return msgUserNotFound
-        }
+        if (isLocal && (uidDestino == null || uidDestino.isBlank())) return msgLocalPlayerNoAccount
+        if (uidDestino == miUid) return msgCannotSendToSelf
+        if (uidDestino == null) return msgUserNotFound
+
         val amigoSnap = db.collection("usuarios").document(miUid).collection("amigos").document(uidDestino).get().await()
-        if (amigoSnap.exists()) {
-            return msgAlreadyFriend
-        }
+        if (amigoSnap.exists()) return msgAlreadyFriend
+
         val solicitudSnap = db.collection("usuarios").document(uidDestino).collection("solicitudes_amistad").document(miUid).get().await()
-        if (solicitudSnap.exists()) {
-            return msgRequestAlreadySent
-        }
+        if (solicitudSnap.exists()) return msgRequestAlreadySent
+
         val miUsuarioSnap = db.collection("usuarios").document(miUid).get().await()
         val miUsuario = miUsuarioSnap.data ?: return msgErrorRetrievingUser
         db.collection("usuarios").document(uidDestino)

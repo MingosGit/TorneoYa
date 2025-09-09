@@ -41,6 +41,13 @@ import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @OptIn(ExperimentalFoundationApi::class)
+/**
+ * Pestaña de comentarios en la visualización online:
+ * - Permite escribir y enviar nuevos comentarios
+ * - Lista comentarios con votos positivos/negativos
+ * - Posibilidad de eliminar (propio o si eres creador)
+ * - Menú contextual para enviar solicitud de amistad
+ */
 @Composable
 fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: String) {
     val cs = MaterialTheme.colorScheme
@@ -54,12 +61,13 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val listState = rememberLazyListState()
     val creadorUid by vm.partidoCreadorUid.collectAsState(initial = null)
 
-    // --- NUEVO: Estados para solicitud de amistad desde comentarios ---
+    // Estados para menú de amistad
     var expandedIndex by remember { mutableStateOf<Int?>(null) }
     var mensajeDialog by remember { mutableStateOf<String?>(null) }
     var sendingSolicitud by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    // Textos de diálogos/menús
     val titleFriends = stringResource(id = R.string.ponlinejug_title_friends)
     val btnOk = stringResource(id = R.string.ponlinejug_btn_ok)
     val menuRequestFriendship = stringResource(id = R.string.ponlinejug_menu_request_friendship)
@@ -72,8 +80,8 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
     val msgErrorRetrievingUser = stringResource(id = R.string.ponlinejug_msg_error_retrieving_user)
     val msgRequestSent = stringResource(id = R.string.ponlinejug_msg_request_sent)
     val msgErrorSendingRequest = stringResource(id = R.string.ponlinejug_msg_error_sending_request)
-    // -----------------------------------------------------------------
 
+    // Cargar comentarios iniciales
     LaunchedEffect(Unit) {
         isLoading = true
         scope.launch {
@@ -82,6 +90,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         }
     }
 
+    // Auto scroll arriba cuando llegan nuevos
     val oldComentariosSize = remember { mutableStateOf(0) }
     LaunchedEffect(comentariosSize) {
         if (comentariosSize > oldComentariosSize.value) {
@@ -90,7 +99,9 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         oldComentariosSize.value = comentariosSize
     }
 
+    // UI principal
     Column(modifier = Modifier.fillMaxSize()) {
+        // Input de comentario + botones refrescar/enviar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -130,6 +141,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                     unfocusedTextColor = cs.onSurface
                 )
             )
+            // Botón refrescar lista de comentarios
             IconButton(
                 onClick = {
                     scope.launch {
@@ -148,6 +160,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                     tint = cs.primary
                 )
             }
+            // Botón enviar comentario
             OutlinedIconSendButton(
                 enabled = textoComentario.isNotBlank() && !isLoading,
                 onClick = {
@@ -162,6 +175,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
             )
         }
 
+        // Estado de carga o lista
         if (isLoading && !comentariosLoaded) {
             Box(
                 modifier = Modifier
@@ -174,6 +188,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         } else {
             val comentariosOrdenados = state.comentarios.sortedByDescending { it.comentario.fechaHora }
 
+            // Lista de comentarios
             LazyColumn(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -188,6 +203,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                         comentarioConVotos.miVoto == -1 -> cs.error
                         else -> cs.surfaceVariant
                     }
+                    // Se puede eliminar si es tuyo o eres creador del partido
                     val puedeEliminar = remember(creadorUid, comentarioConVotos.comentario.usuarioUid, usuarioUid) {
                         val cUid = creadorUid ?: ""
                         usuarioUid == comentarioConVotos.comentario.usuarioUid || usuarioUid == cUid
@@ -198,6 +214,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                             .padding(horizontal = 7.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.Top
                     ) {
+                        // Avatar a la izquierda
                         AvatarComentario(
                             avatar = comentarioConVotos.avatar,
                             nombre = comentarioConVotos.comentario.usuarioNombre,
@@ -209,12 +226,13 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                             )
                         )
                         Spacer(Modifier.width(12.dp))
+                        // Tarjeta del comentario
                         Box(modifier = Modifier.fillMaxWidth()) {
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .shadow(3.dp, RoundedCornerShape(17.dp))
-                                    // --- NUEVO: mantener pulsado para menú de amistad ---
+                                    // Mantener pulsado para menú amistad
                                     .combinedClickable(
                                         onClick = {},
                                         onLongClick = { expandedIndex = idx }
@@ -247,6 +265,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                             textAlign = TextAlign.End
                                         )
                                         if (puedeEliminar) {
+                                            // Botón eliminar comentario
                                             IconButton(
                                                 onClick = {
                                                     scope.launch {
@@ -267,17 +286,20 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                         }
                                     }
                                     Spacer(Modifier.height(2.dp))
+                                    // Texto del comentario
                                     Text(
                                         text = comentarioConVotos.comentario.texto,
                                         fontSize = 16.sp,
                                         color = cs.onSurface,
                                         modifier = Modifier.padding(top = 1.dp, bottom = 3.dp)
                                     )
+                                    // Fila de votos
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier
                                             .padding(top = 2.dp, bottom = 3.dp)
                                     ) {
+                                        // Like
                                         IconButton(
                                             onClick = {
                                                 if (comentarioConVotos.miVoto != 1) {
@@ -310,6 +332,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                             fontSize = 14.sp
                                         )
                                         Spacer(modifier = Modifier.width(16.dp))
+                                        // Dislike
                                         IconButton(
                                             onClick = {
                                                 if (comentarioConVotos.miVoto != -1) {
@@ -345,7 +368,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                 }
                             }
 
-                            // --- NUEVO: DropdownMenu para enviar solicitud de amistad ---
+                            // Menú contextual amistad
                             if (expandedIndex == idx) {
                                 DropdownMenu(
                                     expanded = true,
@@ -400,10 +423,10 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                                     )
                                 }
                             }
-                            // ----------------------------------------------------------------
                         }
                     }
                 }
+                // Mensaje si no hay comentarios
                 if (comentariosOrdenados.isEmpty()) {
                     item {
                         Text(
@@ -421,7 +444,7 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
         }
     }
 
-    // --- NUEVO: Diálogo con el resultado de la solicitud de amistad ---
+    // Diálogo con resultado de solicitud amistad
     if (mensajeDialog != null) {
         AlertDialog(
             onDismissRequest = { mensajeDialog = null },
@@ -478,9 +501,11 @@ fun PartidoTabComentariosOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid
                 )
         )
     }
-    // -----------------------------------------------------------------
 }
 
+/**
+ * Botón de enviar comentario con borde degradado
+ */
 @Composable
 fun OutlinedIconSendButton(
     enabled: Boolean,
@@ -516,6 +541,11 @@ fun OutlinedIconSendButton(
     }
 }
 
+/**
+ * Avatar circular para comentarios:
+ * - Busca recurso avatar_x
+ * - Si no existe, usa placeholder
+ */
 @Composable
 fun AvatarComentario(avatar: Int?, nombre: String, background: Brush) {
     val context = LocalContext.current

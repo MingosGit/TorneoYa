@@ -17,10 +17,16 @@ import androidx.compose.ui.unit.sp
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
+/**
+ * Banner superior que muestra el estado del partido online.
+ * - Cambia color y borde según estado (Finalizado, Jugando, Descanso, Previa)
+ * - A la derecha muestra el minuto actual o texto de descanso
+ */
 @Composable
 fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
     val cs = MaterialTheme.colorScheme
 
+    // Pincel de borde y color de texto según estado
     val (borderBrush, textColor) = when (uiState.estado) {
         "Finalizado" -> Pair(
             Brush.horizontalGradient(listOf(cs.error, cs.secondary)),
@@ -44,6 +50,7 @@ fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
         )
     }
 
+    // Contenedor horizontal con estado y minuto/texto adicional
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -57,6 +64,7 @@ fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        // Texto izquierda: "Estado: X"
         Text(
             text = stringResource(R.string.parequban_estado, uiState.estado),
             modifier = Modifier
@@ -67,6 +75,7 @@ fun PartidoEstadoBannerOnline(uiState: VisualizarPartidoOnlineUiState) {
             color = textColor,
             textAlign = TextAlign.Start
         )
+        // Texto derecha: minuto actual si jugando, "Descanso" si procede
         Text(
             text = when (uiState.estado) {
                 "Jugando" -> "${uiState.minutoActual}"

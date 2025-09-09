@@ -40,24 +40,32 @@ import mingosgit.josecr.torneoya.ui.theme.text
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Pantalla principal que muestra la visualización del partido online y acciones (compartir UID, administrar, dejar de ver).
 fun VisualizarPartidoOnlineScreen(
     partidoUid: String,
     navController: NavController,
     vm: VisualizarPartidoOnlineViewModel,
     usuarioUid: String
 ) {
+    // Contexto y scope para corrutinas.
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // Estados locales para mostrar snackbars y diálogos.
     var showCopiedMessage by remember { mutableStateOf(false) }
     var showPermisoDialog by remember { mutableStateOf(false) }
     var showDejarDeVerDialog by remember { mutableStateOf(false) }
     var showEsCreadorNoSalirDialog by remember { mutableStateOf(false) }
+
+    // Estados del ViewModel.
     val eliminado by vm.eliminado.collectAsState()
     val uiState by vm.uiState.collectAsState()
 
+    // Flags de rol del usuario en el partido.
     var esCreador by remember { mutableStateOf(false) }
     var esAdmin by remember { mutableStateOf(false) }
 
+    // Strings de recursos.
     val title = stringResource(id = R.string.ponline_screen_title)
     val descShareUid = stringResource(id = R.string.ponline_desc_share_uid)
     val descAdminPartido = stringResource(id = R.string.ponline_desc_admin_partido)
@@ -72,6 +80,7 @@ fun VisualizarPartidoOnlineScreen(
     val dialogEsCreadorNoSalirTitle = stringResource(id = R.string.parequban_avisocreador)
     val dialogEsCreadorNoSalirMsg = stringResource(id = R.string.parequeban_no_puedes)
 
+    // Carga inicial de roles del usuario (creador/admin) desde Firestore.
     LaunchedEffect(partidoUid, usuarioUid) {
         val firestore = FirebaseFirestore.getInstance()
         val snap = firestore.collection("partidos").document(partidoUid).get().await()
@@ -81,14 +90,17 @@ fun VisualizarPartidoOnlineScreen(
         esAdmin = (usuarioUid == creadorUid) || administradores.contains(usuarioUid)
     }
 
+    // Dispara la carga de datos del partido para el usuario actual.
     LaunchedEffect(partidoUid) { vm.cargarDatos(usuarioUid) }
 
+    // Si el partido se elimina, vuelve atrás en la navegación.
     LaunchedEffect(eliminado) {
         if (eliminado) {
             navController.popBackStack()
         }
     }
 
+    // Colores y pinceles para bordes con degradado.
     val cs = MaterialTheme.colorScheme
     val gradientBorderPrimary = Brush.horizontalGradient(
         listOf(cs.primary, cs.secondary)
@@ -97,16 +109,20 @@ fun VisualizarPartidoOnlineScreen(
         listOf(cs.error, cs.secondary)
     )
 
+    // Contenedor raíz con fondo degradado de la app.
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(TorneoYaPalette.backgroundGradient)
     ) {
+        // Estructura de pantalla con barra superior y contenido.
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
+                // Barra superior con título y acciones.
                 TopAppBar(
                     title = {
+                        // Título de la pantalla.
                         Text(
                             text = title,
                             color = cs.text,
@@ -122,11 +138,13 @@ fun VisualizarPartidoOnlineScreen(
                         actionIconContentColor = cs.onSurface
                     ),
                     actions = {
+                        // Grupo de botones de acción: compartir, ajustes, salir/dejar de ver.
                         Row(
                             modifier = Modifier.padding(end = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(14.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Botón compartir: copia el UID del partido al portapapeles y muestra snackbar.
                             IconButton(
                                 modifier = Modifier
                                     .size(46.dp)
@@ -151,6 +169,7 @@ fun VisualizarPartidoOnlineScreen(
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
+                            // Botón ajustes: verifica permiso (creador/admin) y navega a administrar; si no, muestra diálogo sin permisos.
                             IconButton(
                                 modifier = Modifier
                                     .size(46.dp)
@@ -183,7 +202,9 @@ fun VisualizarPartidoOnlineScreen(
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
+                            // Botón salir/dejar de ver: cambia según sea creador o no.
                             if (!esCreador) {
+                                // Usuario NO creador: permite dejar de visualizar (abre diálogo de confirmación).
                                 IconButton(
                                     modifier = Modifier
                                         .size(46.dp)
@@ -204,6 +225,7 @@ fun VisualizarPartidoOnlineScreen(
                                     )
                                 }
                             } else {
+                                // Usuario creador: muestra aviso de que no puede salir.
                                 IconButton(
                                     modifier = Modifier
                                         .size(46.dp)
@@ -229,11 +251,13 @@ fun VisualizarPartidoOnlineScreen(
                 )
             },
             content = { innerPadding ->
+                // Contenido principal: datos del partido + snackbar de UID copiado.
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(top = innerPadding.calculateTopPadding())
                 ) {
+                    // Sección que pinta el contenido del partido (marcador, eventos, etc.). Se delega a otro composable.
                     VisualizarPartidoOnlineContent(
                         modifier = Modifier.fillMaxSize(),
                         uiState = uiState,
@@ -242,6 +266,7 @@ fun VisualizarPartidoOnlineScreen(
                         partidoUid = partidoUid
                     )
 
+                    // Snackbar animado que informa de que el UID se ha copiado.
                     AnimatedVisibility(
                         visible = showCopiedMessage,
                         enter = fadeIn(),
@@ -266,7 +291,7 @@ fun VisualizarPartidoOnlineScreen(
             }
         )
 
-        // POPUP permisos
+        // Diálogo: sin permisos para administrar el partido.
         if (showPermisoDialog) {
             Box(
                 modifier = Modifier
@@ -306,7 +331,7 @@ fun VisualizarPartidoOnlineScreen(
             }
         }
 
-        // POPUP creador no puede salir
+        // Diálogo: el creador no puede salir de la visualización.
         if (showEsCreadorNoSalirDialog) {
             Box(
                 modifier = Modifier
@@ -355,7 +380,7 @@ fun VisualizarPartidoOnlineScreen(
             }
         }
 
-        // POPUP dejar de visualizar
+        // Diálogo: dejar de visualizar el partido (confirmación). Si es admin, solo sale; si no, se avisa al VM para dejar de ver.
         if (showDejarDeVerDialog) {
             Box(
                 modifier = Modifier
@@ -385,6 +410,7 @@ fun VisualizarPartidoOnlineScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Confirmar dejar de ver: si es admin, solo navega atrás; si no, llama a vm.dejarDeVerPartido.
                             Button(
                                 onClick = {
                                     if (esAdmin) {
@@ -406,6 +432,7 @@ fun VisualizarPartidoOnlineScreen(
                             ) {
                                 Text(dialogStopViewingConfirm, color = cs.error, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
+                            // Cancelar: cierra el diálogo.
                             OutlinedButton(
                                 onClick = { showDejarDeVerDialog = false },
                                 modifier = Modifier.weight(1f),

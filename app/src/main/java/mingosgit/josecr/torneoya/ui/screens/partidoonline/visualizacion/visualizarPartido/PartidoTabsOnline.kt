@@ -20,6 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.delay
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
+/**
+ * Contenedor con pestañas para visualizar diferentes secciones de un partido online:
+ * - Jugadores
+ * - Eventos
+ * - Comentarios
+ * - Encuestas
+ */
 @Composable
 fun PartidoTabsOnline(
     uiState: VisualizarPartidoOnlineUiState,
@@ -40,6 +47,7 @@ fun PartidoTabsOnline(
     val scope = rememberCoroutineScope()
     var reloadEventos by remember { mutableStateOf(0) }
 
+    // Indicador personalizado de pestaña seleccionada
     val customIndicator = @Composable { tabPositions: List<TabPosition> ->
         TabRowDefaults.Indicator(
             modifier = Modifier
@@ -50,6 +58,7 @@ fun PartidoTabsOnline(
         )
     }
 
+    // Barra de pestañas
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
         containerColor = cs.surfaceVariant,
@@ -70,6 +79,7 @@ fun PartidoTabsOnline(
                     isLoading = true
                     selectedTabIndex = index
                     scope.launch {
+                        // Cargar datos específicos según la pestaña
                         when (index) {
                             0 -> vm.cargarDatos(usuarioUid)
                             1 -> { reloadEventos++ }
@@ -96,6 +106,7 @@ fun PartidoTabsOnline(
     }
     Spacer(modifier = Modifier.height(10.dp))
 
+    // Contenido según pestaña seleccionada
     if (isLoading) {
         Box(
             Modifier
