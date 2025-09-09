@@ -44,49 +44,57 @@ fun UsuarioScreen(
     navController: NavController,
     globalUserViewModel: GlobalUserViewModel
 ) {
+    // Efecto inicial: carga usuario local y nombre online si hay sesión
     LaunchedEffect(Unit) {
         usuarioLocalViewModel.cargarUsuario()
         globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva()
     }
 
+    // Estados observados de viewmodels
     val usuario by usuarioLocalViewModel.usuario.collectAsState()
     val nombreUsuarioOnline by globalUserViewModel.nombreUsuarioOnline.collectAsState()
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState(initial = false)
     val avatar by globalUserViewModel.avatar.collectAsState()
 
+    // UI: diálogos y recorte de imagen
     var showDialog by remember { mutableStateOf(false) }
     var showCerrarSesionDialog by remember { mutableStateOf(false) }
     var cropUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // --- NUEVO: GOLES, ASISTENCIAS Y PROMEDIO ---
+    // Estados para estadísticas del jugador
     var goles by remember { mutableStateOf<Int?>(null) }
     var asistencias by remember { mutableStateOf<Int?>(null) }
     var partidosJugados by remember { mutableStateOf<Int?>(null) }
     var promedioGoles by remember { mutableStateOf<Double?>(null) }
     val context = LocalContext.current
 
+    // Efecto que consulta Firestore cuando hay sesión: calcula goles/asistencias/partidos y promedio
     LaunchedEffect(sesionOnlineActiva, nombreUsuarioOnline) {
         if (sesionOnlineActiva) {
             val user = FirebaseAuth.getInstance().currentUser
             if (user != null) {
                 val uid = user.uid
                 val db = FirebaseFirestore.getInstance()
-                // Goles
+                // Consulta goles del usuario por uid
                 val golesSnapshot = db.collection("goleadores")
                     .whereEqualTo("jugadorUid", uid)
                     .get().await()
                 goles = golesSnapshot.size()
 
-                // Asistencias
+                // Consulta asistencias del usuario por uid
                 val asistenciasSnapshot = db.collection("goleadores")
                     .whereEqualTo("asistenciaJugadorUid", uid)
                     .get().await()
                 asistencias = asistenciasSnapshot.size()
-                // Partidos jugados (al menos un gol o asistencia)
+
+                // Calcula partidos distintos donde tuvo gol o asistencia
                 val partidoGoles = golesSnapshot.documents.mapNotNull { it.getString("partidoUid") }
                 val partidoAsistencias = asistenciasSnapshot.documents.mapNotNull { it.getString("partidoUid") }
                 val partidosSet = (partidoGoles + partidoAsistencias).toSet()
                 partidosJugados = partidosSet.size
+
+                // Calcula promedio de goles por partido
                 promedioGoles = if (partidosJugados ?: 0 > 0) {
                     (goles?.toDouble() ?: 0.0) / (partidosJugados?.toDouble() ?: 1.0)
                 } else {
@@ -94,6 +102,7 @@ fun UsuarioScreen(
                 }
             }
         } else {
+            // Limpia estadísticas si no hay sesión
             goles = null
             asistencias = null
             partidosJugados = null
@@ -101,6 +110,7 @@ fun UsuarioScreen(
         }
     }
 
+    // Launcher para seleccionar imagen de la galería
     val selectImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -109,8 +119,8 @@ fun UsuarioScreen(
         }
     }
 
+    // Paleta y colores de la pantalla
     val modernBackground = TorneoYaPalette.backgroundGradient
-
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
     val accent = TorneoYaPalette.accent
@@ -118,6 +128,7 @@ fun UsuarioScreen(
     val mutedText = TorneoYaPalette.mutedText
     val rojo = Color(0xFFFF2D55)
 
+    // Diálogo para confirmar cambio de foto (lanza selector)
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -139,9 +150,11 @@ fun UsuarioScreen(
         )
     }
 
+    // Diálogo de confirmar cierre de sesión (custom)
     if (showCerrarSesionDialog) {
         CustomCerrarSesionDialog(
             onConfirm = {
+                // Cierra sesión, cierra diálogo y navega a login limpiando backstack
                 globalUserViewModel.cerrarSesionOnline()
                 showCerrarSesionDialog = false
                 navController.navigate("login") {
@@ -161,6 +174,7 @@ fun UsuarioScreen(
         )
     }
 
+    // Si hay uri para recortar, muestra diálogo de recorte y guarda resultado en viewmodel local
     cropUri?.let { uriParaCropear ->
         CropImageDialog(
             uri = uriParaCropear,
@@ -173,6 +187,7 @@ fun UsuarioScreen(
         )
     }
 
+    // Estructura principal de la pantalla
     Scaffold(
         containerColor = Color.Transparent
     ) { padding ->
@@ -183,14 +198,14 @@ fun UsuarioScreen(
                 .padding(horizontal = 0.dp, vertical = 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Fila superior: título, botón cerrar sesión (si hay), icono ajustes
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 18.dp, vertical = 18.dp),
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
+                // Título de pantalla
                 Text(
                     stringResource(id = R.string.usuario_perfil_title),
                     fontSize = 28.sp,
@@ -200,6 +215,7 @@ fun UsuarioScreen(
                         .weight(1f)
                         .padding(start = 6.dp)
                 )
+                // Botón cerrar sesión visible solo con sesión activa
                 if (sesionOnlineActiva) {
                     Box(
                         modifier = Modifier
@@ -232,6 +248,7 @@ fun UsuarioScreen(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                 }
+                // Icono de ajustes: navega a pantalla "ajustes"
                 IconButton(
                     onClick = { navController.navigate("ajustes") },
                     modifier = Modifier
@@ -264,8 +281,10 @@ fun UsuarioScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
+            // Relee avatar para pintar (ya observado arriba)
             val avatar by globalUserViewModel.avatar.collectAsState()
 
+            // Box del avatar: círculo con borde y click para ir a pantalla de avatares si hay sesión
             Box(
                 modifier = Modifier
                     .size(118.dp)
@@ -295,11 +314,13 @@ fun UsuarioScreen(
                 contentAlignment = Alignment.Center
             ) {
                 val context = LocalContext.current
+                // ResId del avatar elegido o placeholder si no hay
                 val avatarRes = if (avatar != null)
                     context.resources.getIdentifier("avatar_${avatar}", "drawable", context.packageName)
                 else
                     context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
 
+                // Dibuja imagen del avatar o fallback emoji
                 if (avatarRes != 0) {
                     Image(
                         painter = painterResource(id = avatarRes),
@@ -315,6 +336,7 @@ fun UsuarioScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Texto de saludo: personalizado si hay sesión, genérico si no
             if (sesionOnlineActiva) {
                 Text(
                     text = if (!nombreUsuarioOnline.isNullOrBlank()) "${stringResource(id = R.string.usuario_hola)}, $nombreUsuarioOnline" else stringResource(id = R.string.usuario_hola),
@@ -330,6 +352,7 @@ fun UsuarioScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Spacer(Modifier.height(5.dp))
+                // Etiqueta informativa de que no hay sesión online
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
@@ -352,6 +375,7 @@ fun UsuarioScreen(
                 }
             }
 
+            // Tarjeta de estadísticas: goles, asistencias, promedio y partidos
             if (sesionOnlineActiva) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Box(
@@ -375,11 +399,13 @@ fun UsuarioScreen(
                     Column(
                         modifier = Modifier.padding(vertical = 16.dp, horizontal = 10.dp)
                     ) {
+                        // Fila con tres métricas principales
                         Row(
                             Modifier
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
+                            // Columna: Goles
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(stringResource(id = R.string.usuario_goles_label), color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
@@ -389,6 +415,7 @@ fun UsuarioScreen(
                                     fontWeight = FontWeight.Black
                                 )
                             }
+                            // Columna: Asistencias
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(stringResource(id = R.string.usuario_asistencias_label), color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
@@ -398,6 +425,7 @@ fun UsuarioScreen(
                                     fontWeight = FontWeight.Black
                                 )
                             }
+                            // Columna: Promedio de goles
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(stringResource(id = R.string.usuario_promedio_label), color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 Text(
@@ -408,6 +436,7 @@ fun UsuarioScreen(
                                 )
                             }
                         }
+                        // Línea inferior con partidos jugados (si hay dato)
                         if (partidosJugados != null) {
                             Row(
                                 Modifier.fillMaxWidth(),
@@ -428,6 +457,7 @@ fun UsuarioScreen(
 
             Spacer(modifier = Modifier.height(26.dp))
 
+            // Botones de acceso si no hay sesión: Iniciar sesión / Crear cuenta
             if (!sesionOnlineActiva) {
                 Column(
                     modifier = Modifier
@@ -436,6 +466,7 @@ fun UsuarioScreen(
                         .widthIn(max = 400.dp),
                     verticalArrangement = Arrangement.spacedBy(11.dp)
                 ) {
+                    // Botón: ir a login
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -467,6 +498,7 @@ fun UsuarioScreen(
                         )
                     }
 
+                    // Botón: ir a registro
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -506,8 +538,8 @@ fun UsuarioScreen(
 
 @Composable
 private fun CustomCerrarSesionDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,   // Acción al confirmar cierre
+    onDismiss: () -> Unit,   // Acción al cancelar
     blue: Color,
     violet: Color,
     rojo: Color,
@@ -516,7 +548,9 @@ private fun CustomCerrarSesionDialog(
     lightText: Color,
     mutedText: Color
 ) {
+    // Diálogo personalizado de confirmación de cierre de sesión
     Dialog(onDismissRequest = onDismiss) {
+        // Contenedor con borde degradado
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -536,6 +570,7 @@ private fun CustomCerrarSesionDialog(
                     )
                 )
         ) {
+            // Contenido del diálogo: título, texto y botones
             Column(
                 Modifier
                     .padding(horizontal = 22.dp, vertical = 26.dp),
@@ -554,10 +589,12 @@ private fun CustomCerrarSesionDialog(
                     fontSize = 15.sp
                 )
                 Spacer(Modifier.height(25.dp))
+                // Fila de botones: Sí / Cancelar
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    // Botón confirmar
                     OutlinedButton(
                         onClick = onConfirm,
                         border = ButtonDefaults.outlinedButtonBorder.copy(
@@ -574,6 +611,7 @@ private fun CustomCerrarSesionDialog(
                         )
                     }
                     Spacer(Modifier.width(14.dp))
+                    // Botón cancelar
                     OutlinedButton(
                         onClick = onDismiss,
                         border = ButtonDefaults.outlinedButtonBorder.copy(

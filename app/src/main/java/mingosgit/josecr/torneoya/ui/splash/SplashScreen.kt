@@ -22,34 +22,43 @@ import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
+/**
+ * Pantalla de splash.
+ * - Comprueba usuario logueado y verificado.
+ * - Carga nombre de usuario desde Firestore si procede.
+ * - Navega a "home" y pasa el nombre a la home mediante setHomeLoaded.
+ */
 @Composable
 fun SplashScreen(
     navController: NavHostController,
     setHomeLoaded: (nombreUsuario: String) -> Unit
 ) {
-    val cs = MaterialTheme.colorScheme
-    val gradient = TorneoYaPalette.backgroundGradient
+    val cs = MaterialTheme.colorScheme                           // Paleta de colores
+    val gradient: Brush = TorneoYaPalette.backgroundGradient     // Degradado de fondo
     val context = LocalContext.current
-    var error by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }      // Mensaje de error opcional
 
+    // Efecto de arranque: decide destino y datos iniciales
     LaunchedEffect(Unit) {
         try {
-            val user = FirebaseAuth.getInstance().currentUser
-            if (user != null && user.isEmailVerified) {
+            val user = FirebaseAuth.getInstance().currentUser    // Usuario actual de Firebase
+            if (user != null && user.isEmailVerified) {          // Si hay usuario y correo verificado
                 val db = FirebaseFirestore.getInstance()
+                // Lee documento del usuario y extrae nombre
                 val usuarioSnap = db.collection("usuarios").document(user.uid).get().await()
                 val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: "Usuario"
-                setHomeLoaded(nombreUsuario)
-                navController.navigate("home") {
+                setHomeLoaded(nombreUsuario)                      // Inyecta nombre a la home
+                navController.navigate("home") {                 // Navega limpiando back stack
                     popUpTo(0) { inclusive = true }
                 }
             } else {
-                setHomeLoaded("")
-                navController.navigate("home") {
+                setHomeLoaded("")                                 // Sin sesión: limpia nombre
+                navController.navigate("home") {                 // Navega a home igualmente
                     popUpTo(0) { inclusive = true }
                 }
             }
         } catch (e: Exception) {
+            // Si falla conexión/lectura, muestra error breve y navega a home tras pequeña espera
             error = context.getString(R.string.splash_error_conexion)
             delay(1200)
             navController.navigate("home") {
@@ -58,27 +67,29 @@ fun SplashScreen(
         }
     }
 
+    // Contenedor principal centrado con fondo en degradado
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(gradient),
         contentAlignment = Alignment.Center
     ) {
+        // Columna con título, loader y texto de estado/error
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = context.getString(R.string.splash_app_name),
+                text = context.getString(R.string.splash_app_name), // Nombre de la app
                 fontWeight = FontWeight.Black,
                 fontSize = 34.sp,
                 color = cs.onBackground
             )
             Spacer(Modifier.height(30.dp))
-            CircularProgressIndicator(
+            CircularProgressIndicator(                              // Indicador de carga
                 color = cs.primary,
                 strokeWidth = 4.dp
             )
             Spacer(Modifier.height(18.dp))
             Text(
-                text = error ?: context.getString(R.string.splash_iniciando_sesion),
+                text = error ?: context.getString(R.string.splash_iniciando_sesion), // Mensaje dinámico
                 color = cs.mutedText,
                 fontSize = 17.sp
             )

@@ -13,11 +13,13 @@ import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 
+// ViewModel para buscar usuarios por UID y enviar solicitudes de amistad
 class AgregarAmigoViewModel(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : ViewModel() {
 
+    // Estado de UI: inactivo, resultado de búsqueda, error o éxito (solicitud enviada)
     sealed class UiState {
         object Idle : UiState()
         data class Busqueda(val usuario: UsuarioFirebaseEntity) : UiState()
@@ -25,16 +27,20 @@ class AgregarAmigoViewModel(
         object Exito : UiState()
     }
 
+    // Flujo del estado de UI
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState
 
+    // Flujo con mi UID actual
     private val _miUid = MutableStateFlow<String?>(null)
     val miUid: StateFlow<String?> = _miUid
 
+    // init: guarda el uid del usuario autenticado (si lo hay)
     init {
         _miUid.value = auth.currentUser?.uid
     }
 
+    // buscarPorUid: consulta Firestore por UID y actualiza el estado con el usuario o error
     fun buscarPorUid(uid: String) {
         _uiState.value = UiState.Idle
         if (uid.isBlank()) return
@@ -62,12 +68,13 @@ class AgregarAmigoViewModel(
         }
     }
 
+    // enviarSolicitud: crea la solicitud de amistad en el usuario destino si no existe ya
     fun enviarSolicitud(uidDestino: String) {
         _uiState.value = UiState.Idle
         val miUidActual = auth.currentUser?.uid ?: return
         viewModelScope.launch {
             try {
-                // Evitar enviar varias veces
+                // Evita duplicados comprobando si ya hay solicitud
                 val solicitudDoc = firestore.collection("usuarios")
                     .document(uidDestino)
                     .collection("solicitudes_amistad")
@@ -77,7 +84,7 @@ class AgregarAmigoViewModel(
                     _uiState.value = UiState.Error(R.string.amigos_err_already_sent)
                     return@launch
                 }
-                // Añade la solicitud a la colección del usuario destino
+                // Carga mis datos y los guarda como documento de solicitud en el destino
                 val miUsuarioSnap = firestore.collection("usuarios").document(miUidActual).get().await()
                 val miUsuario = miUsuarioSnap.toObject(UsuarioFirebaseEntity::class.java)
                 if (miUsuario != null) {
@@ -97,6 +104,7 @@ class AgregarAmigoViewModel(
         }
     }
 
+    // Factory: crea instancias del ViewModel para inyección simple
     @Suppress("UNCHECKED_CAST")
     class Factory : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -104,6 +112,7 @@ class AgregarAmigoViewModel(
         }
     }
 
+    // resetUi: vuelve el estado de UI a Idle
     fun resetUi() {
         _uiState.value = UiState.Idle
     }

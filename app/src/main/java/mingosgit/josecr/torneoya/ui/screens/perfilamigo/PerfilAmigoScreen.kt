@@ -29,25 +29,31 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.R
+import mingosgit.josecr.torneoya.viewmodel.perfilAmigo.PerfilAmigoViewModel
 
 @Composable
+// Pantalla de perfil de un amigo: muestra avatar, stats y permite copiar su UID. Navegación atrás arriba a la izquierda.
 fun PerfilAmigoScreen(
     navController: NavController,
     amigoUid: String,
     viewModel: PerfilAmigoViewModel = viewModel(factory = PerfilAmigoViewModel.Factory(amigoUid))
 ) {
+    // Estado del VM con datos del amigo.
     val state by viewModel.state.collectAsState()
 
+    // Paleta y colores comunes.
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
     val accent = TorneoYaPalette.accent
     val mutedText = MaterialTheme.colorScheme.onSurfaceVariant
     val modernBackground = TorneoYaPalette.backgroundGradient
 
+    // Contexto y control de snackbar/aviso "copiado".
     val context = LocalContext.current
     var showCopiedMessage by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    // Strings de UI.
     val textBack = stringResource(id = R.string.gen_volver)
     val textProfileFriend = stringResource(id = R.string.ponfilamigo_title_profile)
     val textUidCopied = stringResource(id = R.string.gen_uid_copiado)
@@ -56,11 +62,13 @@ fun PerfilAmigoScreen(
     val textAverage = stringResource(id = R.string.ponfilamigo_label_average)
     val textMatchesPlayed = stringResource(id = R.string.ponfilamigo_label_matches_played)
 
+    // Contenedor raíz con fondo degradado.
     Box(
         Modifier
             .fillMaxSize()
             .background(modernBackground)
     ) {
+        // Columna principal centrada.
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -69,6 +77,7 @@ fun PerfilAmigoScreen(
         ) {
             Spacer(modifier = Modifier.height(42.dp))
 
+            // Header con botón volver y copiar UID.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -79,6 +88,7 @@ fun PerfilAmigoScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Botón volver: hace popBackStack.
                     IconButton(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier
@@ -106,6 +116,7 @@ fun PerfilAmigoScreen(
                         )
                     }
 
+                    // Botón copiar UID al portapapeles y mostrar aviso breve.
                     IconButton(
                         onClick = {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -144,6 +155,7 @@ fun PerfilAmigoScreen(
                 }
             }
 
+            // Título de pantalla.
             Text(
                 textProfileFriend,
                 fontWeight = FontWeight.ExtraBold,
@@ -151,6 +163,8 @@ fun PerfilAmigoScreen(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Avatar dentro de marco circular con borde degradado.
             Box(
                 modifier = Modifier
                     .size(110.dp)
@@ -170,6 +184,7 @@ fun PerfilAmigoScreen(
                     ),
                 contentAlignment = Alignment.Center
             ) {
+                // Resuelve el recurso del avatar por nombre; usa placeholder si no hay.
                 val avatarRes = if (state.avatar != null)
                     context.resources.getIdentifier("avatar_${state.avatar}", "drawable", context.packageName)
                 else
@@ -188,6 +203,8 @@ fun PerfilAmigoScreen(
                     Text("👤", fontSize = 54.sp)
                 }
             }
+
+            // Nombre, UID y separación visual.
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 state.nombreUsuario ?: stringResource(id = R.string.gen_amigos),
@@ -201,6 +218,8 @@ fun PerfilAmigoScreen(
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 fontSize = 13.sp
             )
+
+            // Tarjeta con estadísticas (goles, asistencias, promedio, partidos jugados).
             Spacer(modifier = Modifier.height(22.dp))
             Box(
                 modifier = Modifier
@@ -223,6 +242,7 @@ fun PerfilAmigoScreen(
                 Column(
                     modifier = Modifier.padding(vertical = 16.dp, horizontal = 10.dp)
                 ) {
+                    // Fila de métricas principales.
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
@@ -255,6 +275,7 @@ fun PerfilAmigoScreen(
                             )
                         }
                     }
+                    // Línea con partidos jugados (si hay dato).
                     if (state.partidosJugados != null) {
                         Row(
                             Modifier.fillMaxWidth(),
@@ -272,6 +293,8 @@ fun PerfilAmigoScreen(
                 }
             }
         }
+
+        // Aviso inferior "UID copiado" que aparece temporalmente tras pulsar compartir.
         if (showCopiedMessage) {
             Box(
                 Modifier

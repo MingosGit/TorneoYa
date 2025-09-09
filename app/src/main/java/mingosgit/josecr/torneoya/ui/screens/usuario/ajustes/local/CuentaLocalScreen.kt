@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
+// Pantalla principal: fondo con gradiente y columna con cuatro botones de navegación
 fun CuentaLocalScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            // Fondo: gradiente vertical suave entre primaryContainer y background
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
@@ -37,6 +39,7 @@ fun CuentaLocalScreen(navController: NavController) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Título de la sección
         Text(
             text = "Gestión Local",
             fontSize = 30.sp,
@@ -47,6 +50,7 @@ fun CuentaLocalScreen(navController: NavController) {
                 .align(Alignment.CenterHorizontally)
         )
 
+        // Botón: navegar a creación/gestión de partidos locales
         LocalMenuButtonClean(
             title = "Partidos Locales",
             icon = Icons.Filled.SportsSoccer,
@@ -55,6 +59,7 @@ fun CuentaLocalScreen(navController: NavController) {
             onClick = { navController.navigate("partido") }
         )
         Spacer(Modifier.height(20.dp))
+        // Botón: navegar a lista de jugadores personales
         LocalMenuButtonClean(
             title = "Mis Jugadores",
             icon = Icons.Filled.Person,
@@ -63,6 +68,7 @@ fun CuentaLocalScreen(navController: NavController) {
             onClick = { navController.navigate("mis_jugadores") }
         )
         Spacer(Modifier.height(20.dp))
+        // Botón: navegar a gestión de equipos predefinidos
         LocalMenuButtonClean(
             title = "Equipos Predefinidos",
             icon = Icons.Filled.Groups,
@@ -71,6 +77,7 @@ fun CuentaLocalScreen(navController: NavController) {
             onClick = { navController.navigate("equipos_predefinidos") }
         )
         Spacer(Modifier.height(20.dp))
+        // Botón: navegar a administración/consulta de partidos creados
         LocalMenuButtonClean(
             title = "Administrar Partidos",
             icon = Icons.Filled.ListAlt,
@@ -82,6 +89,7 @@ fun CuentaLocalScreen(navController: NavController) {
 }
 
 @Composable
+// Botón de menú sin relleno: icono + textos, borde coloreado, ejecuta onClick
 fun LocalMenuButtonClean(
     title: String,
     icon: ImageVector,
@@ -90,24 +98,26 @@ fun LocalMenuButtonClean(
     onClick: () -> Unit
 ) {
     OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(18.dp),
+        onClick = onClick, // Acción del botón (navegación)
+        shape = RoundedCornerShape(18.dp), // Esquinas redondeadas del botón
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp),
-        border = BorderStroke(2.dp, borderColor),
+        border = BorderStroke(2.dp, borderColor), // Borde con color temático
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = borderColor
+            containerColor = Color.Transparent, // Sin fondo
+            contentColor = borderColor // Color de contenido por defecto
         ),
         // Sin sombra ni fondo ni degradados
     ) {
+        // Fila interna: icono a la izquierda y textos a la derecha
         Row(
             Modifier
                 .fillMaxSize()
                 .padding(start = 8.dp, end = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icono del botón
             Icon(
                 icon,
                 contentDescription = title,
@@ -116,15 +126,18 @@ fun LocalMenuButtonClean(
                     .size(34.dp)
                     .padding(end = 16.dp)
             )
+            // Columna con título y descripción
             Column(
                 Modifier.weight(1f)
             ) {
+                // Título del botón
                 Text(
                     title,
                     fontSize = 19.sp,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     color = borderColor
                 )
+                // Descripción corta del destino/acción
                 Text(
                     text = description,
                     fontSize = 13.sp,

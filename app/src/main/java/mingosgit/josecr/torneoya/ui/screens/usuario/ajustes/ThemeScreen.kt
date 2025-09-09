@@ -24,19 +24,22 @@ import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
+// Forma base de las tarjetas de opciones
 private val cardShape = RoundedCornerShape(16.dp)
 
 /** themeMode: 0=Sistema, 1=Claro, 2=Oscuro */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Pantalla de Tema: muestra 3 opciones (sistema/claro/oscuro) y notifica cambios
 fun ThemeScreen(
-    navController: NavController,
-    currentThemeDark: Boolean,
-    currentMode: Int,
-    onThemeChange: (Int) -> Unit
+    navController: NavController,          // Control de navegación para volver
+    currentThemeDark: Boolean,             // Indica si el tema actual es oscuro (no se usa aquí, pero disponible)
+    currentMode: Int,                      // Modo actual seleccionado
+    onThemeChange: (Int) -> Unit           // Callback al seleccionar un modo
 ) {
+    // Estado local guardable del modo seleccionado
     var selectedMode by rememberSaveable { mutableStateOf(currentMode) }
-
+    // Sincroniza cuando cambia desde fuera
     LaunchedEffect(currentMode) { selectedMode = currentMode }
 
     val colorScheme = MaterialTheme.colorScheme
@@ -45,12 +48,14 @@ fun ThemeScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
+            // Barra superior con botón de volver y título
             TopAppBar(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        // Botón de volver con borde en degradado
                         GradientBorderedIconButton(
                             icon = Icons.Default.ArrowBack,
                             contentDescription = "Volver",
@@ -74,6 +79,7 @@ fun ThemeScreen(
             )
         }
     ) { innerPadding ->
+        // Fondo con gradiente y lista de opciones
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -88,6 +94,7 @@ fun ThemeScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Opción: seguir sistema
                 ThemeOptionCard(
                     title = stringResource(id = R.string.theme_system),
                     selected = selectedMode == 0,
@@ -99,6 +106,7 @@ fun ThemeScreen(
                     },
                     colorScheme = colorScheme
                 )
+                // Opción: claro
                 ThemeOptionCard(
                     title = stringResource(id = R.string.theme_light),
                     selected = selectedMode == 1,
@@ -110,6 +118,7 @@ fun ThemeScreen(
                     },
                     colorScheme = colorScheme
                 )
+                // Opción: oscuro
                 ThemeOptionCard(
                     title = stringResource(id = R.string.theme_dark),
                     selected = selectedMode == 2,
@@ -127,11 +136,12 @@ fun ThemeScreen(
 }
 
 @Composable
+// Tarjeta de opción de tema: radio + texto, con borde degradado y click
 private fun ThemeOptionCard(
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    colorScheme: ColorScheme
+    title: String,               // Texto de la opción
+    selected: Boolean,           // Si está seleccionada
+    onClick: () -> Unit,         // Acción al pulsar
+    colorScheme: ColorScheme     // Paleta para colores
 ) {
     val leftColor = colorScheme.primary.copy(alpha = 0.8f)
     Surface(
@@ -155,11 +165,13 @@ private fun ThemeOptionCard(
                 .padding(vertical = 22.dp, horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // RadioButton que refleja el estado seleccionado
             RadioButton(
                 selected = selected,
                 onClick = onClick
             )
             Spacer(modifier = Modifier.width(8.dp))
+            // Etiqueta de la opción
             Text(
                 text = title,
                 fontSize = 17.sp,
@@ -169,4 +181,3 @@ private fun ThemeOptionCard(
         }
     }
 }
-

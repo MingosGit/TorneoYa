@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+package mingosgit.josecr.torneoya.ui.screens.usuario.loginRegistro
 
 import android.app.Activity
 import android.content.Context
@@ -53,28 +53,44 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterState
 import mingosgit.josecr.torneoya.viewmodel.usuario.RegisterViewModel
 import java.util.Locale
 
+// Longitud mínima de contraseña
 private const val MIN_PASSWORD_LENGTH = 6
+// URL de la política de privacidad que se abre desde el enlace
 private const val PRIVACY_URL = "https://mingosgit.github.io/privacy-policy.html"
+// Versión de la política aceptada y registrada en backend
 private const val PRIVACY_VERSION = "2025-08-11"
 
 @OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Pantalla de registro de usuario.
+ * - Gestiona estados de formulario (email, contraseña, nombre, aceptación privacidad)
+ * - Valida contraseña
+ * - Lanza registro en el ViewModel y muestra feedback (cargando/éxito/error)
+ * - Permite cambiar el idioma (recrea la Activity)
+ * - Navega a la pantalla de confirmar correo tras éxito
+ */
 @Composable
 fun RegisterScreen(
     navController: NavController,
     registerViewModel: RegisterViewModel
 ) {
+    // Estados de entrada del formulario
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var nombreUsuario by remember { mutableStateOf("") }
     var aceptoPrivacidad by remember { mutableStateOf(false) }
 
+    // Observa el estado del registro desde el ViewModel
     val registerState by registerViewModel.registerState.collectAsState()
+    // Flag local para lanzar navegación a confirmación
     var navegarAConfirmarCorreo by remember { mutableStateOf(false) }
 
+    // Colores y degradado del tema
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
     val backgroundBrush = TorneoYaPalette.backgroundGradient
 
+    // Contexto y control de idioma
     val context = LocalContext.current
     val currentLocale = remember { mutableStateOf(Locale.getDefault().language) }
     val languageCodes = listOf("es", "ca", "en")
@@ -84,7 +100,13 @@ fun RegisterScreen(
         R.drawable.flag_uk
     )
 
+    // Si ya hay que navegar a confirmar correo, muestra esa pantalla y corta aquí
     if (navegarAConfirmarCorreo) {
+        /**
+         * Composable de confirmación de correo:
+         * - Muestra instrucciones y espera verificación
+         * - onVerificado limpia estado y navega a "usuario" eliminando "register" del back stack
+         */
         ConfirmarCorreoScreen(
             navController = navController,
             correoElectronico = email,
@@ -98,6 +120,7 @@ fun RegisterScreen(
         return
     }
 
+    // Lógica de validación de contraseña: calcula el mensaje de error según reglas
     val passwordErrorResId = remember(password) {
         when {
             password.isEmpty() -> null
@@ -109,12 +132,14 @@ fun RegisterScreen(
         }
     }
 
+    // Puede registrarse si no está cargando, campos básicos llenos, contraseña válida y privacidad aceptada
     val canRegister = registerState != RegisterState.Loading &&
             email.isNotBlank() &&
             nombreUsuario.isNotBlank() &&
             passwordErrorResId == null &&
             aceptoPrivacidad
 
+    // Construye el texto enlazado hacia la política de privacidad
     val uriHandler = LocalUriHandler.current
     val linkText: AnnotatedString = buildAnnotatedString {
         append(stringResource(id = R.string.register_privacy_prefix) + " ")
@@ -131,11 +156,13 @@ fun RegisterScreen(
         pop()
     }
 
+    // Box raíz: fondo con degradado y contenido centrado
     Box(
         Modifier
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
+        // Row superior derecha: selector de idioma con banderas
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -143,9 +170,12 @@ fun RegisterScreen(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.Top
         ) {
+            // Contenedor de banderas con espaciado
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Itera idiomas y dibuja cada bandera como botón circular
                 languageCodes.forEachIndexed { index, code ->
                     val seleccionado = currentLocale.value == code
+                    // Box bandera: borde degradado, fondo de superficie, click para guardar idioma y recrear
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -171,6 +201,7 @@ fun RegisterScreen(
                             },
                         contentAlignment = Alignment.Center
                     ) {
+                        // Imagen de la bandera
                         Image(
                             painter = painterResource(id = banderas[index]),
                             contentDescription = "Idioma $code",
@@ -178,6 +209,7 @@ fun RegisterScreen(
                                 .fillMaxSize()
                                 .clip(CircleShape)
                         )
+                        // Overlay semitransparente si está seleccionada
                         if (seleccionado) {
                             Box(
                                 modifier = Modifier
@@ -193,6 +225,7 @@ fun RegisterScreen(
             }
         }
 
+        // Columna central: icono, títulos, campos de formulario, botones y feedback
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -201,6 +234,8 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(12.dp))
+
+            // Surface circular con icono de usuario (avatar de la pantalla)
             Surface(
                 shape = CircleShape,
                 color = violet.copy(alpha = 0.10f),
@@ -219,6 +254,7 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(15.dp))
 
+            // Título y subtítulo de la pantalla
             Text(
                 text = stringResource(id = R.string.register_crear_cuenta),
                 color = MaterialTheme.colorScheme.onBackground,
@@ -235,6 +271,7 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(28.dp))
 
+            // Campo: nombre de usuario
             OutlinedTextField(
                 value = nombreUsuario,
                 onValueChange = { nombreUsuario = it.trim() },
@@ -261,7 +298,10 @@ fun RegisterScreen(
                     cursorColor = violet,
                 )
             )
+
             Spacer(Modifier.height(10.dp))
+
+            // Campo: email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
@@ -288,7 +328,10 @@ fun RegisterScreen(
                     cursorColor = blue,
                 )
             )
+
             Spacer(Modifier.height(10.dp))
+
+            // Campo: contraseña con validación y texto de ayuda en caso de error
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -310,6 +353,7 @@ fun RegisterScreen(
                     ),
                 visualTransformation = PasswordVisualTransformation(),
                 supportingText = {
+                    // Muestra el mensaje de error de contraseña si aplica
                     passwordErrorResId?.let { resId ->
                         val msg =
                             if (resId == R.string.auth_password_min_length)
@@ -329,15 +373,18 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(14.dp))
 
+            // Fila: checkbox de aceptación y enlace clicable a la política
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Checkbox de aceptación de privacidad
                 Checkbox(
                     checked = aceptoPrivacidad,
                     onCheckedChange = { aceptoPrivacidad = it }
                 )
                 Spacer(Modifier.width(8.dp))
+                // Texto con link a la política (abre en navegador, con fallback a Intent)
                 Text(
                     text = linkText,
                     color = MaterialTheme.colorScheme.onBackground,
@@ -354,6 +401,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Botón principal de registro (Box estilizado con degradado y borde)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -373,6 +421,7 @@ fun RegisterScreen(
                         )
                     )
                     .clickable(enabled = canRegister) {
+                        // Dispara el registro en el ViewModel con los datos del formulario
                         registerViewModel.register(
                             email = email,
                             password = password,
@@ -384,6 +433,7 @@ fun RegisterScreen(
                     },
                 contentAlignment = Alignment.Center
             ) {
+                // Texto del botón; cambia opacidad si está deshabilitado
                 Text(
                     stringResource(id = R.string.register_registrar_button),
                     fontWeight = FontWeight.Bold,
@@ -397,6 +447,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Botón secundario: volver si ya se tiene cuenta
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -416,6 +467,7 @@ fun RegisterScreen(
                         )
                     )
                     .clickable {
+                        // Limpia estado de ViewModel y vuelve atrás
                         registerViewModel.clearState()
                         navController.popBackStack()
                     },
@@ -428,6 +480,7 @@ fun RegisterScreen(
                 )
             }
 
+            // Bloque de feedback: error / éxito / cargando con animación de aparición
             AnimatedVisibility(
                 visible = registerState is RegisterState.Error
                         || registerState is RegisterState.Success
@@ -437,6 +490,7 @@ fun RegisterScreen(
             ) {
                 when (registerState) {
                     is RegisterState.Error -> {
+                        // Muestra mensaje de error traducido
                         val res = (registerState as RegisterState.Error).resId
                         Text(
                             text = stringResource(id = res),
@@ -445,6 +499,7 @@ fun RegisterScreen(
                         )
                     }
                     RegisterState.Success -> {
+                        // Mensaje de éxito y activa navegación diferida a confirmación
                         Text(
                             text = stringResource(id = R.string.register_success_message),
                             color = violet,
@@ -455,6 +510,7 @@ fun RegisterScreen(
                         }
                     }
                     RegisterState.Loading -> {
+                        // Indicador de carga mientras se procesa el registro
                         CircularProgressIndicator(
                             modifier = Modifier.padding(top = 12.dp),
                             color = violet
@@ -463,6 +519,7 @@ fun RegisterScreen(
                     else -> Unit
                 }
             }
+
             Spacer(Modifier.height(32.dp))
         }
     }

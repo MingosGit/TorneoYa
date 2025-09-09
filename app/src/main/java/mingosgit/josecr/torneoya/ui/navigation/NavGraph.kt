@@ -56,7 +56,7 @@ import mingosgit.josecr.torneoya.ui.screens.partidoonline.administración.Admini
 import mingosgit.josecr.torneoya.ui.screens.perfilamigo.PerfilAmigoScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.CreditosScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.IdiomaScreen
-import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.PartidosListaBusquedaScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.local.PartidosListaBusquedaScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.ThemeScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.AdministrarPartidosViewModel
 

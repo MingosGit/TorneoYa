@@ -44,10 +44,12 @@ import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Pantalla "Mi Cuenta": muestra avatar/datos, permite cambiar nombre, reset de contraseña y acciones de sesión
 fun MiCuentaScreen(
     viewModel: MiCuentaViewModel = viewModel(),
     globalUserViewModel: GlobalUserViewModel
 ) {
+    // Estados del VM
     val email by viewModel.email.collectAsState()
     val nombreUsuario by viewModel.nombreUsuario.collectAsState()
     val confirmarCerrarSesion by viewModel.confirmarCerrarSesion.collectAsState()
@@ -57,25 +59,30 @@ fun MiCuentaScreen(
     val resetTimer by viewModel.resetTimer.collectAsState()
     val showMensajeReset by viewModel.showMensajeReset.collectAsState()
 
+    // Avatar global
     val avatar by globalUserViewModel.avatar.collectAsState()
     val context = LocalContext.current
 
+    // Estados locales de edición de nombre
     var editandoNombre by remember { mutableStateOf(false) }
     var nuevoNombre by remember { mutableStateOf(TextFieldValue("")) }
 
-    // Colors aligned with the app theme
+    // Colores del tema
     val modernBackground = TorneoYaPalette.backgroundGradient
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
     val lightText = MaterialTheme.colorScheme.onBackground
     val mutedText = MaterialTheme.colorScheme.onSurfaceVariant
 
+    // Carga inicial de datos
     LaunchedEffect(Unit) { viewModel.cargarDatos() }
+    // Sincroniza el campo de edición con el nombre actual
     LaunchedEffect(nombreUsuario) {
         if (!editandoNombre && nombreUsuario.isNotBlank()) {
             nuevoNombre = TextFieldValue(nombreUsuario)
         }
     }
+    // Cierra edición tras cambio correcto
     LaunchedEffect(cambioExitoso) {
         if (cambioExitoso) {
             editandoNombre = false
@@ -95,6 +102,7 @@ fun MiCuentaScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Título
             Text(
                 text = stringResource(id = R.string.micuenta_title),
                 fontSize = 29.sp,
@@ -105,7 +113,7 @@ fun MiCuentaScreen(
                     .align(Alignment.CenterHorizontally)
             )
 
-            // Avatar y datos de usuario
+            // Bloque avatar + nombre + email
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -133,7 +141,7 @@ fun MiCuentaScreen(
                         .padding(start = 22.dp, end = 9.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // AVATAR VISUAL
+                    // Avatar (círculo con imagen del usuario o placeholder)
                     val avatarRes = if (avatar == null || avatar == 0) {
                         context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
                     } else {
@@ -155,6 +163,7 @@ fun MiCuentaScreen(
                     }
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
+                        // Nombre del usuario
                         Text(
                             nombreUsuario,
                             fontWeight = FontWeight.Bold,
@@ -163,6 +172,7 @@ fun MiCuentaScreen(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                        // Email con icono
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 Icons.Filled.Email,
@@ -186,7 +196,7 @@ fun MiCuentaScreen(
 
             Spacer(modifier = Modifier.height(26.dp))
 
-            // CAMBIO NOMBRE USUARIO
+            // Fila "Cambiar nombre" (vista cerrada)
             AnimatedVisibility(
                 visible = !editandoNombre,
                 enter = fadeIn(),
@@ -222,6 +232,7 @@ fun MiCuentaScreen(
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Icono editar dentro de círculo
                         GradientCircleIcon(
                             borderColor = blue,
                             iconVector = Icons.Filled.Edit,
@@ -255,6 +266,7 @@ fun MiCuentaScreen(
                 }
             }
 
+            // Fila "Cambiar nombre" (vista abierta con TextField y botones)
             AnimatedVisibility(
                 visible = editandoNombre,
                 enter = fadeIn(),
@@ -281,6 +293,7 @@ fun MiCuentaScreen(
                         .animateContentSize()
                 ) {
                     Column {
+                        // Campo para nuevo nombre
                         OutlinedTextField(
                             value = nuevoNombre,
                             onValueChange = { nuevoNombre = it },
@@ -299,6 +312,7 @@ fun MiCuentaScreen(
                                 cursorColor = blue,
                             )
                         )
+                        // Error de validación si procede
                         if (!errorNombre.isNullOrBlank()) {
                             Text(
                                 text = errorNombre ?: "",
@@ -307,6 +321,7 @@ fun MiCuentaScreen(
                                 modifier = Modifier.padding(top = 2.dp, start = 2.dp)
                             )
                         }
+                        // Acciones cancelar/guardar
                         Row(
                             horizontalArrangement = Arrangement.End,
                             modifier = Modifier
@@ -351,6 +366,7 @@ fun MiCuentaScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Botón: enviar correo de restablecimiento (con temporizador)
             AccountMenuButton(
                 title = if (resetTimer > 0)
                     "${stringResource(id = R.string.micuenta_restablecer_contraseña_label)} ($resetTimer s)"
@@ -362,6 +378,7 @@ fun MiCuentaScreen(
                 enabled = resetTimer == 0,
                 lightText = lightText
             )
+            // Mensaje de confirmación de envío
             AnimatedVisibility(
                 visible = showMensajeReset,
                 enter = fadeIn(),
@@ -377,6 +394,7 @@ fun MiCuentaScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Botón: cerrar sesión (lanza diálogo)
             AccountMenuButton(
                 title = stringResource(id = R.string.micuenta_cerrar_sesion_label),
                 icon = Icons.Filled.Logout,
@@ -386,6 +404,7 @@ fun MiCuentaScreen(
                 lightText = lightText
             )
             Spacer(modifier = Modifier.height(16.dp))
+            // Botón: eliminar cuenta (lanza diálogo)
             AccountMenuButton(
                 title = stringResource(id = R.string.micuenta_eliminar_cuenta_label),
                 icon = Icons.Filled.Delete,
@@ -396,6 +415,7 @@ fun MiCuentaScreen(
             )
         }
 
+        // Diálogo de confirmación de cierre de sesión
         if (confirmarCerrarSesion) {
             CustomCerrarSesionDialog(
                 onConfirm = {
@@ -414,6 +434,7 @@ fun MiCuentaScreen(
             )
         }
 
+        // Diálogo de confirmación de eliminación de cuenta
         if (confirmarEliminarCuenta) {
             Dialog(onDismissRequest = { viewModel.confirmarEliminarCuentaDialog(false) }) {
                 Box(
@@ -450,6 +471,7 @@ fun MiCuentaScreen(
                             Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
+                            // Botón confirmar eliminación
                             GradientBorderButton(
                                 text = stringResource(id = R.string.gen_eliminar),
                                 onClick = {
@@ -460,6 +482,7 @@ fun MiCuentaScreen(
                                 textColor = MaterialTheme.colorScheme.error
                             )
                             Spacer(Modifier.width(14.dp))
+                            // Botón cancelar
                             GradientBorderButton(
                                 text = stringResource(id = R.string.gen_cancelar),
                                 onClick = { viewModel.confirmarEliminarCuentaDialog(false) },
@@ -474,7 +497,7 @@ fun MiCuentaScreen(
     }
 }
 
-// REUTILIZABLE: Icono rodeado de borde gradiente circular, puede ser vectorial o resource
+// Componente: icono dentro de círculo con borde en degradado; acepta ImageVector o resource id
 @Composable
 fun GradientCircleIcon(
     borderColor: Color,
@@ -497,6 +520,7 @@ fun GradientCircleIcon(
             ),
         contentAlignment = Alignment.Center
     ) {
+        // Dibuja vector si existe, si no usa imagen por resource
         if (iconVector != null) {
             Icon(
                 imageVector = iconVector,
@@ -516,6 +540,7 @@ fun GradientCircleIcon(
     }
 }
 
+// Botón con borde en gradiente y texto configurables
 @Composable
 fun GradientBorderButton(
     text: String,
@@ -534,6 +559,7 @@ fun GradientBorderButton(
     }
 }
 
+// Fila de acción de cuenta: icono + título + descripción; clic para ejecutar acción
 @Composable
 fun AccountMenuButton(
     title: String,
@@ -600,10 +626,11 @@ fun AccountMenuButton(
     }
 }
 
+// Diálogo personalizado para confirmar el cierre de sesión
 @Composable
 private fun CustomCerrarSesionDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
+    onConfirm: () -> Unit, // Acepta cerrar sesión
+    onDismiss: () -> Unit, // Cierra el diálogo sin acción
     blue: Color,
     violet: Color,
     rojo: Color,
@@ -646,6 +673,7 @@ private fun CustomCerrarSesionDialog(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    // Botón "Sí"
                     OutlinedButton(
                         onClick = onConfirm,
                         border = BorderStroke(
@@ -662,6 +690,7 @@ private fun CustomCerrarSesionDialog(
                         )
                     }
                     Spacer(Modifier.width(14.dp))
+                    // Botón "Cancelar"
                     OutlinedButton(
                         onClick = onDismiss,
                         border = BorderStroke(

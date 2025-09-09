@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.perfilamigo
+package mingosgit.josecr.torneoya.viewmodel.perfilAmigo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

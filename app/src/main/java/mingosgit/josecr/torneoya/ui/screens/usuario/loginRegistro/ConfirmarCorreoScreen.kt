@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+package mingosgit.josecr.torneoya.ui.screens.usuario.loginRegistro
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -35,10 +35,11 @@ import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
+// Pantalla de confirmación de correo: explica el proceso, permite comprobar verificación y reenviar email
 fun ConfirmarCorreoScreen(
-    navController: NavController,
-    correoElectronico: String,
-    onVerificado: () -> Unit
+    navController: NavController,     // No se usa aquí, pero disponible si se necesita navegar
+    correoElectronico: String,        // Email al que se envió la verificación
+    onVerificado: () -> Unit          // Callback cuando el usuario ya está verificado
 ) {
     val cs = MaterialTheme.colorScheme
     val modernBackground = TorneoYaPalette.backgroundGradient
@@ -47,16 +48,19 @@ fun ConfirmarCorreoScreen(
     }
     val context = LocalContext.current
 
+    // Estados UI: carga, error e info
     var loading by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
-    var infoMsg by remember { mutableStateOf<String?>(null) } // <--- mensaje informativo (no rojo)
+    var infoMsg by remember { mutableStateOf<String?>(null) }
 
+    // Contenedor principal con fondo y padding
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(brush = modernBackground)
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
+        // Columna central con contenido
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -65,7 +69,7 @@ fun ConfirmarCorreoScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Icono centrado
+            // Icono circular de email
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -84,6 +88,7 @@ fun ConfirmarCorreoScreen(
 
             Spacer(Modifier.height(20.dp))
 
+            // Título de la pantalla
             Text(
                 text = stringResource(id = R.string.confirmar_correo_titulo),
                 fontSize = 28.sp,
@@ -94,6 +99,7 @@ fun ConfirmarCorreoScreen(
 
             Spacer(Modifier.height(14.dp))
 
+            // Tarjeta con instrucciones y acciones
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -110,6 +116,7 @@ fun ConfirmarCorreoScreen(
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Mensaje explicativo con el correo del usuario
                     Text(
                         text = stringResource(id = R.string.confirmar_correo_mensaje, correoElectronico),
                         color = MaterialTheme.colorScheme.mutedText,
@@ -121,7 +128,7 @@ fun ConfirmarCorreoScreen(
 
                     Spacer(Modifier.height(14.dp))
 
-                    // Mensaje de error (rojo)
+                    // Mensaje de error (visible solo si hay error)
                     AnimatedVisibility(visible = errorMsg != null, enter = fadeIn(), exit = fadeOut()) {
                         Text(
                             text = errorMsg.orEmpty(),
@@ -133,11 +140,11 @@ fun ConfirmarCorreoScreen(
                         )
                     }
 
-                    // Mensaje informativo (NO rojo)
+                    // Mensaje informativo (reenviado, etc.)
                     AnimatedVisibility(visible = infoMsg != null, enter = fadeIn(), exit = fadeOut()) {
                         Text(
                             text = infoMsg.orEmpty(),
-                            color = cs.primary, // color amigable, no rojo
+                            color = cs.primary,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 4.dp),
@@ -147,7 +154,7 @@ fun ConfirmarCorreoScreen(
 
                     Spacer(Modifier.height(10.dp))
 
-                    // Botón "Ya verificado"
+                    // Botón "Ya verificado": recarga usuario y comprueba isEmailVerified
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -166,7 +173,7 @@ fun ConfirmarCorreoScreen(
                                         .addOnCompleteListener { reloadTask ->
                                             if (reloadTask.isSuccessful) {
                                                 if (user.isEmailVerified) {
-                                                    onVerificado()
+                                                    onVerificado() // Ya verificado: ejecuta callback
                                                 } else {
                                                     errorMsg = context.getString(R.string.confirmar_correo_no_verificado)
                                                 }
@@ -184,6 +191,7 @@ fun ConfirmarCorreoScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         if (loading) {
+                            // Indicador de carga durante la comprobación
                             CircularProgressIndicator(strokeWidth = 2.2.dp, modifier = Modifier.size(22.dp), color = cs.primary)
                         } else {
                             Text(
@@ -197,7 +205,7 @@ fun ConfirmarCorreoScreen(
 
                     Spacer(Modifier.height(12.dp))
 
-                    // Botón "Reenviar"
+                    // Botón "Reenviar": vuelve a enviar el email de verificación
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()

@@ -26,11 +26,14 @@ import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 
+// Forma común para las tarjetas de la pantalla de créditos
 private val cardShape = RoundedCornerShape(16.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Pantalla de Créditos: cabecera con volver, fondo con gradiente y tarjeta con autor + enlaces
 fun CreditosScreen(navController: NavController) {
+    // Colores y recursos de tema usados en la UI
     val lightText = MaterialTheme.colorScheme.onBackground
     val cardBg = MaterialTheme.colorScheme.surface
     val violet = TorneoYaPalette.violet
@@ -42,12 +45,15 @@ fun CreditosScreen(navController: NavController) {
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
+            // Barra superior: botón de volver + título
             TopAppBar(
                 title = {
+                    // Fila: icono de volver + texto del título
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        // Botón de icono con borde degradado para navegar atrás
                         GradientBorderedIconButton(
                             icon = Icons.Default.ArrowBack,
                             contentDescription = stringResource(R.string.creditos_volver),
@@ -55,6 +61,7 @@ fun CreditosScreen(navController: NavController) {
                             gradient = gradientBluePurple
                         )
                         Spacer(modifier = Modifier.width(10.dp))
+                        // Título "Créditos"
                         Text(
                             text = stringResource(R.string.creditos_titulo),
                             color = lightText,
@@ -69,11 +76,13 @@ fun CreditosScreen(navController: NavController) {
             )
         }
     ) { innerPadding ->
+        // Box de fondo: ocupa toda la pantalla y pinta el gradiente principal
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(modernBackground)
         ) {
+            // Columna principal: centra y aplica paddings
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -83,6 +92,7 @@ fun CreditosScreen(navController: NavController) {
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // Tarjeta con borde degradado que agrupa autor, texto y enlaces
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -97,10 +107,12 @@ fun CreditosScreen(navController: NavController) {
                     color = cardBg,
                     tonalElevation = 0.dp
                 ) {
+                    // Contenido de la tarjeta
                     Column(
                         modifier = Modifier.padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Encabezado "Creado por"
                         Text(
                             stringResource(R.string.creditos_creado_por),
                             fontSize = 20.sp,
@@ -108,6 +120,7 @@ fun CreditosScreen(navController: NavController) {
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
+                        // Nombre del autor
                         Text(
                             stringResource(R.string.creditos_nombre_autor),
                             fontSize = 18.sp,
@@ -115,6 +128,7 @@ fun CreditosScreen(navController: NavController) {
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(20.dp))
+                        // Texto de agradecimiento centrado
                         Text(
                             text = stringResource(R.string.creditos_agradecimiento),
                             color = lightText,
@@ -124,6 +138,7 @@ fun CreditosScreen(navController: NavController) {
                         )
                         Spacer(modifier = Modifier.height(20.dp))
 
+                        // Enlace a GitHub
                         CreditLink(
                             text = stringResource(R.string.creditos_github),
                             url = stringResource(R.string.creditos_github_url),
@@ -133,6 +148,7 @@ fun CreditosScreen(navController: NavController) {
                             uriHandler = uriHandler
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        // Enlace a web personal
                         CreditLink(
                             text = stringResource(R.string.creditos_web_personal),
                             url = stringResource(R.string.creditos_web_personal_url),
@@ -142,6 +158,7 @@ fun CreditosScreen(navController: NavController) {
                             uriHandler = uriHandler
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        // Enlace a LinkedIn
                         CreditLink(
                             text = stringResource(R.string.creditos_linkedin),
                             url = stringResource(R.string.creditos_linkedin_url),
@@ -151,6 +168,7 @@ fun CreditosScreen(navController: NavController) {
                             uriHandler = uriHandler
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        // Enlace para enviar email
                         CreditLink(
                             text = stringResource(R.string.creditos_email),
                             url = stringResource(R.string.creditos_email_url),
@@ -167,6 +185,7 @@ fun CreditosScreen(navController: NavController) {
 }
 
 @Composable
+// Botón/enlace con borde degradado que abre una URL en el navegador
 fun CreditLink(
     text: String,
     url: String,
@@ -175,6 +194,7 @@ fun CreditLink(
     textColor: Color,
     uriHandler: UriHandler
 ) {
+    // Box clicable que actúa como botón centrado
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -185,10 +205,11 @@ fun CreditLink(
                 brush = gradient,
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable { uriHandler.openUri(url) }
+            .clickable { uriHandler.openUri(url) } // Acción: abrir el enlace
             .padding(vertical = 14.dp, horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Texto del enlace
         Text(
             text = text,
             color = textColor,

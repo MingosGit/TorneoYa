@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+package mingosgit.josecr.torneoya.ui.screens.usuario.loginRegistro
 
 import android.app.Activity
 import android.content.Context
@@ -65,24 +65,30 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Pantalla de Login: campos email/contraseña, cambio de idioma rápido, acceso, registro y reset de contraseña
 fun LoginScreen(
-    navController: NavController,
-    loginViewModel: LoginViewModel,
-    globalUserViewModel: GlobalUserViewModel
+    navController: NavController,           // Navegación a registro/usuario
+    loginViewModel: LoginViewModel,         // VM de login para manejar estados/acciones
+    globalUserViewModel: GlobalUserViewModel// VM global para persistir datos del usuario en app
 ) {
+    // Estado local de inputs
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Estados del ViewModel (login y reset)
     val loginState by loginViewModel.loginState.collectAsState()
     val resetPasswordState by loginViewModel.resetPasswordState.collectAsState()
 
+    // Paleta/colores de la app
     val modernBackground = TorneoYaPalette.backgroundGradient
     val blue = TorneoYaPalette.blue
     val violet = TorneoYaPalette.violet
 
+    // Habilitación de acciones según estado/validación
     val enterEnabled = loginState != LoginState.Loading && email.isNotBlank() && password.length >= 6
     val resetEnabled = email.isNotBlank() && resetPasswordState != ResetPasswordState.Loading
 
+    // Strings UI
     val loginTitle = stringResource(id = R.string.login_title)
     val loginSubtitle = stringResource(id = R.string.login_subtitle)
     val emailLabel = stringResource(id = R.string.login_email_label)
@@ -93,6 +99,7 @@ fun LoginScreen(
     val loginSuccessMessage = stringResource(id = R.string.login_success_message)
     val resetSuccessMessage = stringResource(id = R.string.login_reset_success)
 
+    // Selector rápido de idioma (cambia preferencia y recrea actividad)
     val context = LocalContext.current
     val currentLocale = remember { mutableStateOf(Locale.getDefault().language) }
     val languageCodes = listOf("es", "ca", "en")
@@ -102,11 +109,13 @@ fun LoginScreen(
         R.drawable.flag_uk
     )
 
+    // Fondo general
     Box(
         Modifier
             .fillMaxSize()
             .background(modernBackground)
     ) {
+        // Fila superior: botones de idioma (banderas)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -161,6 +170,7 @@ fun LoginScreen(
             }
         }
 
+        // Tarjeta central con formulario y acciones
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -170,6 +180,7 @@ fun LoginScreen(
         ) {
             Spacer(Modifier.height(16.dp))
 
+            // Icono redondo superior (candado)
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.13f),
@@ -186,6 +197,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // Título y subtítulo
             Text(
                 text = loginTitle,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -202,6 +214,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(30.dp))
 
+            // Campo email con icono
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
@@ -239,6 +252,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(14.dp))
 
+            // Campo contraseña con icono y ocultación
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -277,6 +291,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(18.dp))
 
+            // Botón "Entrar" (usa login del VM)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -311,6 +326,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Botón "No tengo cuenta" (navega a registro)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -344,6 +360,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(4.dp))
 
+            // Enlace "He olvidado mi contraseña" (envía correo de reset)
             TextButton(
                 onClick = { loginViewModel.enviarCorreoRestablecerPassword(email) },
                 enabled = resetEnabled,
@@ -359,6 +376,7 @@ fun LoginScreen(
                 )
             }
 
+            // Estado de login: error/éxito/cargando
             AnimatedVisibility(
                 visible = loginState is LoginState.Error || loginState is LoginState.Success || loginState is LoginState.Loading,
                 enter = fadeIn(),
@@ -379,6 +397,7 @@ fun LoginScreen(
                             color = blue,
                             modifier = Modifier.padding(top = 12.dp)
                         )
+                        // Navega a "usuario" al completar login y guarda nombre en VM global
                         val nombreUsuarioOnline = (loginState as LoginState.Success).usuario.nombreUsuario
                         LaunchedEffect(Unit) {
                             globalUserViewModel.setNombreUsuarioOnline(nombreUsuarioOnline)
@@ -398,6 +417,7 @@ fun LoginScreen(
                 }
             }
 
+            // Estado de reset de contraseña: éxito/error/cargando
             AnimatedVisibility(
                 visible = resetPasswordState is ResetPasswordState.Success || resetPasswordState is ResetPasswordState.Error || resetPasswordState is ResetPasswordState.Loading,
                 enter = fadeIn(),

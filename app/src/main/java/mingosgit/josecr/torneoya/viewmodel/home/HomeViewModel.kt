@@ -20,6 +20,7 @@ import mingosgit.josecr.torneoya.ui.screens.home.HomeCachedStats
 import mingosgit.josecr.torneoya.data.session.SessionStore
 import java.text.SimpleDateFormat
 
+// Estado de UI del dashboard (nombre y totales)
 data class HomeUiState(
     val nombreUsuario: String = "",
     val partidosTotales: Int = 0,
@@ -28,6 +29,7 @@ data class HomeUiState(
     val amigosTotales: Int = 0
 )
 
+// Modelo para el próximo partido a mostrar en Home
 data class HomeProximoPartidoUi(
     val partido: PartidoFirebase,
     val nombreEquipoA: String,
@@ -38,27 +40,32 @@ class HomeViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
+    // Repos de datos online
     private val partidoRepo: PartidoFirebaseRepository = PartidoFirebaseRepository()
     private val notificacionRepo: NotificacionFirebaseRepository = NotificacionFirebaseRepository()
+    // DB local (Room)
     private val appDb by lazy { AppDatabase.getInstance(getApplication()) }
 
+    // Stores locales (sesión y caché de Home)
     private val sessionStore = SessionStore(getApplication())
     private val homeCacheStore = HomeCacheStore(getApplication())
 
+    // Estado principal de la pantalla
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    // Próximo partido y estado de carga
     private val _proximoPartidoUi = MutableStateFlow<HomeProximoPartidoUi?>(null)
     val proximoPartidoUi: StateFlow<HomeProximoPartidoUi?> = _proximoPartidoUi.asStateFlow()
-
     private val _cargandoProx = MutableStateFlow(true)
     val cargandoProx: StateFlow<Boolean> = _cargandoProx.asStateFlow()
 
+    // Contador de notificaciones sin archivar/borrar
     private val _unreadCount = MutableStateFlow(0)
     val unreadCount: StateFlow<Int> = _unreadCount.asStateFlow()
 
     init {
-        // Carga inicial desde caché
+        // init: carga inicial desde stores (nombre y totales) y lanza refrescos online
         viewModelScope.launch {
             sessionStore.session.collect { s ->
                 _uiState.value = _uiState.value.copy(nombreUsuario = s.nombreUsuario.ifBlank { "" })
@@ -80,12 +87,14 @@ class HomeViewModel(
         cargarUnreadCount()
     }
 
+    // recargarDatos: fuerza actualización de los tres bloques principales
     fun recargarDatos() {
         cargarDatosOnline()
         cargarProximoPartido()
         cargarUnreadCount()
     }
 
+    // cargarDatosOnline: lee Firestore (usuario y colecciones), actualiza UI y guarda en caché
     private fun cargarDatosOnline() {
         viewModelScope.launch {
             val user = FirebaseAuth.getInstance().currentUser
@@ -95,6 +104,7 @@ class HomeViewModel(
             val uid = user.uid
             val firestore = FirebaseFirestore.getInstance()
             try {
+                // Nombre y avatar del usuario
                 val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
                 val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: _uiState.value.nombreUsuario
 
@@ -105,6 +115,7 @@ class HomeViewModel(
                     avatar = usuarioSnap.getLong("avatar")?.toInt() ?: -1
                 )
 
+                // Partidos accesibles por el usuario (creados, con acceso o admin)
                 val partidosSnap = firestore.collection("partidos").get().await()
                 val partidosPropios = partidosSnap.documents.filter { doc ->
                     (doc.getString("creadorUid") == uid)
@@ -112,20 +123,24 @@ class HomeViewModel(
                 }
                 val partidosTotales = partidosPropios.size
 
+                // Equipos donde es miembro
                 val equiposSnap = firestore.collection("equipos").get().await()
                 val equiposPropios = equiposSnap.documents.filter { doc ->
                     (doc.get("miembros") as? List<*>)?.contains(uid) == true
                 }
                 val equiposTotales = equiposPropios.size
 
+                // Jugadores vinculados al usuario
                 val jugadoresSnap = firestore.collection("jugadores")
                     .whereEqualTo("usuarioUid", uid).get().await()
                 val jugadoresTotales = jugadoresSnap.size()
 
+                // Amigos del usuario
                 val amigosSnap = firestore.collection("usuarios").document(uid)
                     .collection("amigos").get().await()
                 val amigosTotales = amigosSnap.size()
 
+                // Actualiza UI y persiste en caché local
                 _uiState.value = HomeUiState(
                     nombreUsuario = nombreUsuario,
                     partidosTotales = partidosTotales,
@@ -142,16 +157,18 @@ class HomeViewModel(
                     )
                 )
             } catch (_: Exception) {
-                // Offline: mantener caché
+                // Offline o fallo: se mantiene lo que haya en caché
             }
         }
     }
 
+    // setNombreUsuarioDirecto: actualiza el nombre en UI y lo guarda en SessionStore
     fun setNombreUsuarioDirecto(nombre: String) {
         _uiState.value = _uiState.value.copy(nombreUsuario = nombre)
         viewModelScope.launch { sessionStore.upsert(nombreUsuario = nombre) }
     }
 
+    // cargarProximoPartido: busca el partido futuro más cercano al que el usuario tiene acceso
     private fun cargarProximoPartido() {
         viewModelScope.launch {
             _cargandoProx.value = true
@@ -161,13 +178,15 @@ class HomeViewModel(
             try {
                 if (userUid.isNotBlank()) {
                     val partidos = partidoRepo.listarPartidos()
-                        .filter { it.estado == "PREVIA" }
+                        .filter { it.estado == "PREVIA" } // solo partidos pendientes
                         .filter { partido ->
+                            // permisos: creador, con acceso o admin
                             partido.creadorUid == userUid ||
                                     partido.usuariosConAcceso.contains(userUid) ||
                                     partido.administradores.contains(userUid)
                         }
                         .map { partido ->
+                            // normaliza fecha DD-MM-YYYY y combina con hora para ordenar por timestamp
                             val fechaHora = try {
                                 val partes = partido.fecha.split("-") // DD-MM-YYYY
                                 val fechaNormalizada = "${partes[2]}-${partes[1]}-${partes[0]}" // YYYY-MM-DD
@@ -179,12 +198,13 @@ class HomeViewModel(
                             }
                             Pair(partido, fechaHora)
                         }
-                        .filter { it.second >= System.currentTimeMillis() }
+                        .filter { it.second >= System.currentTimeMillis() } // solo futuros
                         .sortedBy { it.second }
 
                     val proximoPartido = partidos.firstOrNull()?.first
 
                     if (proximoPartido != null) {
+                        // Resuelve nombres de equipos si hay ids
                         val nombreEquipoA = if (proximoPartido.equipoAId.isNotBlank()) {
                             val eq = partidoRepo.obtenerEquipo(proximoPartido.equipoAId)
                             eq?.nombre ?: "Equipo A"
@@ -205,13 +225,14 @@ class HomeViewModel(
                     }
                 }
             } catch (_: Exception) {
-                // Offline: no romper
+                // Offline o fallo: no se rompe la UI
             }
             _proximoPartidoUi.value = partidoUi
             _cargandoProx.value = false
         }
     }
 
+    // cargarUnreadCount: calcula notificaciones no archivadas ni borradas para el usuario
     private fun cargarUnreadCount() {
         viewModelScope.launch {
             val userUid = FirebaseAuth.getInstance().currentUser?.uid
@@ -225,7 +246,7 @@ class HomeViewModel(
                 val noLeidas = todas.filter { it.uid !in archivadas && it.uid !in borradas }
                 _unreadCount.value = noLeidas.size
             } catch (_: Exception) {
-                // Mantener valor previo
+                // En error, se conserva el valor previo
             }
         }
     }

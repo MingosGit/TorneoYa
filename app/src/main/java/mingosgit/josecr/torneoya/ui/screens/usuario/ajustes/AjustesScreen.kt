@@ -36,11 +36,13 @@ private val cardShape = RoundedCornerShape(16.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Pantalla de Ajustes: lista de opciones (navegación, enlaces) con top bar y fondo de app.
 fun AjustesScreen(
     navController: NavController,
     globalUserViewModel: GlobalUserViewModel,
     useDarkTheme: Boolean
 ) {
+    // Textos de recursos.
     val miCuentaStr = stringResource(id = R.string.ajustes_mi_cuenta)
     val miCuentaLocalStr = stringResource(id = R.string.ajustes_mi_cuenta_local)
     val idiomaStr = stringResource(id = R.string.ajustes_idioma)
@@ -50,12 +52,15 @@ fun AjustesScreen(
     val creditosStr = stringResource(id = R.string.ajustes_creditos)
     val sobreAppStr = stringResource(id = R.string.ajustes_sobre_aplicacion)
 
+    // Estado: si hay sesión online activa para mostrar/ocultar "Mi cuenta".
     val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
 
+    // Colores y contexto.
     val colorScheme = MaterialTheme.colorScheme
     val modernBackground = TorneoYaPalette.backgroundGradient
     val context = LocalContext.current
 
+    // Construcción de la lista de opciones en función de la sesión.
     val opciones = remember(sesionOnlineActiva) {
         buildList {
             if (sesionOnlineActiva) add(miCuentaStr) // Solo si navega a "mi_cuenta"
@@ -64,10 +69,11 @@ fun AjustesScreen(
             add(temaAppStr)
             add(datosPrivacidadStr)
             add(creditosStr)
-
+            // Nota: "ayuda" y "sobre la app" no se usan aquí.
         }
     }
 
+    // Estructura principal con TopAppBar.
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -77,6 +83,7 @@ fun AjustesScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        // Botón volver con borde degradado.
                         GradientBorderedIconButton(
                             icon = Icons.Filled.ArrowBack,
                             contentDescription = "Volver",
@@ -84,6 +91,7 @@ fun AjustesScreen(
                             gradient = Brush.horizontalGradient(listOf(colorScheme.primary, colorScheme.secondary))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
+                        // Título de pantalla.
                         Text(
                             text = stringResource(id = R.string.ajustes_title),
                             color = colorScheme.onBackground,
@@ -98,6 +106,7 @@ fun AjustesScreen(
             )
         }
     ) { innerPadding ->
+        // Fondo con degradado global.
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -108,6 +117,7 @@ fun AjustesScreen(
                     .fillMaxSize()
                     .padding(top = innerPadding.calculateTopPadding())
             ) {
+                // Lista de tarjetas de opción.
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -127,6 +137,7 @@ fun AjustesScreen(
                                     brush = Brush.horizontalGradient(listOf(leftColor, colorScheme.secondary)),
                                     shape = cardShape
                                 )
+                                // Navegación/acciones según la opción pulsada.
                                 .clickable {
                                     when (opcion) {
                                         miCuentaStr -> navController.navigate("mi_cuenta")
@@ -146,6 +157,7 @@ fun AjustesScreen(
                             color = colorScheme.surfaceVariant,
                             tonalElevation = 0.dp
                         ) {
+                            // Contenido de la tarjeta: solo el texto de la opción.
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -168,6 +180,7 @@ fun AjustesScreen(
 }
 
 @Composable
+// Botón circular iconográfico con borde degradado. Reutilizable en la top bar.
 fun GradientBorderedIconButton(
     icon: ImageVector,
     contentDescription: String?,

@@ -11,28 +11,34 @@ import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.data.entities.NotificacionArchivadaEntity
 import mingosgit.josecr.torneoya.data.entities.NotificacionBorradaEntity
 
+// ViewModel de notificaciones: separa no leídas/leídas y gestiona archivado/borrado
 class NotificacionesViewModel(
     private val usuarioUid: String,
     app: Application,
     private val repo: NotificacionFirebaseRepository = NotificacionFirebaseRepository()
 ) : AndroidViewModel(app) {
 
+    // Estado: lista de no leídas
     private val _noLeidas = MutableStateFlow<List<NotificacionFirebase>>(emptyList())
     val noLeidas: StateFlow<List<NotificacionFirebase>> = _noLeidas.asStateFlow()
 
+    // Estado: lista de leídas (archivadas)
     private val _leidas = MutableStateFlow<List<NotificacionFirebase>>(emptyList())
     val leidas: StateFlow<List<NotificacionFirebase>> = _leidas.asStateFlow()
 
+    // Estado: indicador de carga
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
 
+    // DAOs locales para archivadas y borradas
     private val dao = AppDatabase.getInstance(app).notificacionArchivadaDao()
     private val borradasDao = AppDatabase.getInstance(app).notificacionBorradaDao()
 
     init {
-        cargarNotificaciones()
+        cargarNotificaciones() // Al iniciar, carga todas las notificaciones
     }
 
+    // Descarga notificaciones del repo y separa en no leídas / leídas según DB local
     fun cargarNotificaciones() {
         viewModelScope.launch {
             _cargando.value = true
@@ -51,6 +57,7 @@ class NotificacionesViewModel(
         }
     }
 
+    // Archiva una notificación por uid y refresca listas
     fun archivarNotificacion(uid: String) {
         viewModelScope.launch {
             dao.archivar(NotificacionArchivadaEntity(notificacionUid = uid))
@@ -58,6 +65,7 @@ class NotificacionesViewModel(
         }
     }
 
+    // Borra (marca como borrada) una notificación y limpia su posible archivado; refresca
     fun borrarNotificacion(uid: String) {
         viewModelScope.launch {
             borradasDao.borrar(NotificacionBorradaEntity(notificacionUid = uid))

@@ -19,10 +19,13 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.*
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 
 import androidx.navigation.NavGraphBuilder
-import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.AdministrarPartidosScreen
-import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.EstadisticasJugadorScreen
-import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.MisJugadoresScreen
-import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.PartidosListaBusquedaScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.local.AdministrarPartidosScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.local.EstadisticasJugadorScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.local.MisJugadoresScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.local.PartidosListaBusquedaScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.loginRegistro.ConfirmarCorreoScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.loginRegistro.LoginScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.loginRegistro.RegisterScreen
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Suppress("FunctionName")
