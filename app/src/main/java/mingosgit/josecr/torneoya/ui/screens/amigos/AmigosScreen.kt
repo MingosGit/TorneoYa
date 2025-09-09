@@ -61,24 +61,25 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AmigosScreen(
-    navController: NavController,
-    globalUserViewModel: GlobalUserViewModel,
+    navController: NavController,                                   // Navegación entre pantallas
+    globalUserViewModel: GlobalUserViewModel,                       // Estado global de sesión de usuario
     amigosViewModel: AmigosViewModel = viewModel(
         factory = AmigosViewModel.Factory()
-    ),
+    ),                                                              // VM de amigos (lista/solicitudes/acciones)
     agregarAmigoViewModel: AgregarAmigoViewModel = viewModel(
         factory = AgregarAmigoViewModel.Factory()
-    ),
+    ),                                                              // VM para buscar/enviar solicitud por UID
     modifier: Modifier = Modifier,
 ) {
-    val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState()
-    LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() }
-    LaunchedEffect(Unit) { amigosViewModel.cargarAmigosYSolicitudes() }
+    val sesionOnlineActiva by globalUserViewModel.sesionOnlineActiva.collectAsState() // Flag de sesión activa
+    LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() } // Carga datos de usuario si hay sesión
+    LaunchedEffect(Unit) { amigosViewModel.cargarAmigosYSolicitudes() }                    // Carga amigos y solicitudes al entrar
 
     val cs = MaterialTheme.colorScheme
     val gradientBorder = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
     val modernBackground = TorneoYaPalette.backgroundGradient
 
+    // ---- Vista para usuarios sin sesión: CTA a login/registro ----
     if (!sesionOnlineActiva) {
         Box(
             Modifier
@@ -93,7 +94,7 @@ fun AmigosScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Surface(
+                Surface( // Icono grande dentro de círculo decorativo
                     shape = CircleShape,
                     color = cs.primary.copy(alpha = 0.13f),
                     shadowElevation = 0.dp,
@@ -107,7 +108,7 @@ fun AmigosScreen(
                     )
                 }
                 Spacer(Modifier.height(18.dp))
-                Text(
+                Text( // Título y descripción de acceso
                     text = stringResource(id = R.string.amigossc_acceso_titulo),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Black,
@@ -124,7 +125,7 @@ fun AmigosScreen(
                 )
                 Spacer(Modifier.height(32.dp))
 
-                // Botón Iniciar sesión
+                // Botón: ir a Login
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -152,7 +153,7 @@ fun AmigosScreen(
                 }
                 Spacer(Modifier.height(11.dp))
 
-                // Botón Crear cuenta
+                // Botón: ir a Registro
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -181,7 +182,7 @@ fun AmigosScreen(
 
                 Spacer(Modifier.height(26.dp))
 
-                Text(
+                Text( // Nota sobre modo local
                     text = stringResource(id = R.string.amigossc_cuenta_local),
                     fontSize = 14.sp,
                     color = cs.onSurfaceVariant,
@@ -190,21 +191,22 @@ fun AmigosScreen(
                 )
             }
         }
-        return
+        return // Fin de rama sin sesión
     }
 
-    val amigos by amigosViewModel.amigos.collectAsState()
-    val solicitudes by amigosViewModel.solicitudes.collectAsState()
-    val mensaje by amigosViewModel.mensaje.collectAsState()
-    val agregarUiState by agregarAmigoViewModel.uiState.collectAsState()
-    val userUid by agregarAmigoViewModel.miUid.collectAsState()
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showSheet by remember { mutableStateOf(false) }
+    // ---- Estado principal con sesión ----
+    val amigos by amigosViewModel.amigos.collectAsState()           // Lista de amigos
+    val solicitudes by amigosViewModel.solicitudes.collectAsState() // Solicitudes pendientes
+    val mensaje by amigosViewModel.mensaje.collectAsState()         // Mensajes/avisos del VM (no visible aquí)
+    val agregarUiState by agregarAmigoViewModel.uiState.collectAsState() // Estado de búsqueda/solicitud
+    val userUid by agregarAmigoViewModel.miUid.collectAsState()          // UID propio (para copiar/compartir)
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true) // Estado del sheet
+    var showSheet by remember { mutableStateOf(false) }             // Visibilidad del sheet de añadir amigo
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
-    var expandedUid by remember { mutableStateOf<String?>(null) }
-    var showEliminarDialog by remember { mutableStateOf(false) }
-    var uidAEliminar by remember { mutableStateOf<String?>(null) }
+    var expandedUid by remember { mutableStateOf<String?>(null) }   // UID cuyo menú contextual está abierto
+    var showEliminarDialog by remember { mutableStateOf(false) }    // Visibilidad del diálogo eliminar
+    var uidAEliminar by remember { mutableStateOf<String?>(null) }  // UID objetivo a eliminar
 
     Box(
         Modifier
@@ -212,6 +214,7 @@ fun AmigosScreen(
             .background(modernBackground)
     ) {
         Column(Modifier.fillMaxSize()) {
+            // ---- Cabecera con título y acceso a solicitudes ----
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -225,7 +228,7 @@ fun AmigosScreen(
                     color = cs.onBackground,
                     modifier = Modifier.weight(1f)
                 )
-                Box(
+                Box( // Botón redondo: ir a pantalla de solicitudes (con badge si hay)
                     modifier = Modifier
                         .size(46.dp)
                         .clip(CircleShape)
@@ -272,8 +275,9 @@ fun AmigosScreen(
             }
             Spacer(Modifier.height(12.dp))
 
+            // ---- Contenido: lista de amigos o vacío ----
             if (amigos.isEmpty()) {
-                Box(
+                Box( // Mensaje de vacío
                     Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -287,7 +291,7 @@ fun AmigosScreen(
                     )
                 }
             } else {
-                var showToast by remember { mutableStateOf(false) }
+                var showToast by remember { mutableStateOf(false) } // Toast tras copiar
 
                 if (showToast) {
                     LaunchedEffect(Unit) {
@@ -295,14 +299,14 @@ fun AmigosScreen(
                         showToast = false
                     }
                 }
-                LazyColumn(
+                LazyColumn( // Lista de tarjetas de amigo
                     Modifier
                         .fillMaxWidth()
                         .weight(1f)
                         .padding(horizontal = 10.dp)
                 ) {
                     items(amigos) { amigo ->
-                        Surface(
+                        Surface( // Tarjeta de amigo: avatar + nombre + uid + menú
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp, horizontal = 6.dp)
@@ -314,7 +318,7 @@ fun AmigosScreen(
                                 )
                                 .background(cs.surfaceVariant)
                                 .clickable {
-                                    navController.navigate("perfil_amigo/${amigo.uid}")
+                                    navController.navigate("perfil_amigo/${amigo.uid}") // Ir al perfil del amigo
                                 },
                             color = Color.Transparent,
                             shadowElevation = 0.dp
@@ -340,7 +344,7 @@ fun AmigosScreen(
                                             LocalContext.current.packageName
                                         )
 
-                                Box(
+                                Box( // Contenedor del avatar (icono o inicial)
                                     modifier = Modifier
                                         .size(44.dp)
                                         .clip(CircleShape)
@@ -370,7 +374,7 @@ fun AmigosScreen(
                                     }
                                 }
                                 Spacer(Modifier.width(15.dp))
-                                Column(Modifier.weight(1f)) {
+                                Column(Modifier.weight(1f)) { // Nombre y UID
                                     Text(
                                         text = stringResource(id = R.string.amigossc_nombre_label, amigo.nombreUsuario),
                                         fontWeight = FontWeight.SemiBold,
@@ -387,7 +391,7 @@ fun AmigosScreen(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
-                                Box {
+                                Box { // Menú contextual (copiar UID / eliminar)
                                     IconButton(
                                         onClick = { expandedUid = amigo.uid }
                                     ) {
@@ -432,6 +436,7 @@ fun AmigosScreen(
             }
         }
 
+        // ---- Botón flotante: abrir sheet para añadir amigo por UID ----
         OutlinedButton(
             onClick = { showSheet = true },
             modifier = Modifier
@@ -464,11 +469,12 @@ fun AmigosScreen(
             )
         }
 
+        // ---- Sheet para copiar tu UID y buscar/enviar solicitud ----
         if (showSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
                     showSheet = false
-                    agregarAmigoViewModel.resetUi()
+                    agregarAmigoViewModel.resetUi() // Limpia estado del sheet al cerrarse
                 },
                 sheetState = bottomSheetState,
                 shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp),
@@ -489,7 +495,7 @@ fun AmigosScreen(
                 },
                 containerColor = cs.surface
             ) {
-                BottomSheetContent(
+                BottomSheetContent( // Contenido del sheet (tu UID + búsqueda por UID)
                     userUid = userUid,
                     clipboard = clipboard,
                     context = context,
@@ -499,6 +505,7 @@ fun AmigosScreen(
             }
         }
 
+        // ---- Diálogo de confirmación para eliminar amigo ----
         if (showEliminarDialog && uidAEliminar != null) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -536,7 +543,7 @@ fun AmigosScreen(
                             Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            OutlinedButton(
+                            OutlinedButton( // Cancelar y cerrar
                                 onClick = {
                                     showEliminarDialog = false
                                     uidAEliminar = null
@@ -561,7 +568,7 @@ fun AmigosScreen(
                                 )
                             }
                             Spacer(Modifier.width(16.dp))
-                            OutlinedButton(
+                            OutlinedButton( // Confirmar eliminación (llama al VM)
                                 onClick = {
                                     amigosViewModel.eliminarAmigo(uidAEliminar!!)
                                     showEliminarDialog = false
@@ -599,17 +606,17 @@ fun AmigosScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomSheetContent(
-    userUid: String?,
-    clipboard: androidx.compose.ui.platform.ClipboardManager,
-    context: android.content.Context,
-    agregarUiState: AgregarAmigoViewModel.UiState,
-    agregarAmigoViewModel: AgregarAmigoViewModel
+    userUid: String?,                                              // UID propio a mostrar/copiar
+    clipboard: androidx.compose.ui.platform.ClipboardManager,      // Acceso al portapapeles
+    context: android.content.Context,                              // Contexto para Toast
+    agregarUiState: AgregarAmigoViewModel.UiState,                 // Estado (idle/búsqueda/error/éxito)
+    agregarAmigoViewModel: AgregarAmigoViewModel                   // Acciones: buscar y enviar solicitud
 ) {
     val cs = MaterialTheme.colorScheme
     val gradientBorder = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
 
-    var amigoUidInput by remember { mutableStateOf("") }
-    var showToast by remember { mutableStateOf(false) }
+    var amigoUidInput by remember { mutableStateOf("") }           // Texto introducido (UID a buscar)
+    var showToast by remember { mutableStateOf(false) }            // Controla Toast de copiado
 
     if (showToast) {
         LaunchedEffect(Unit) {
@@ -624,6 +631,7 @@ private fun BottomSheetContent(
             .padding(26.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // ---- Caja con tu UID y botón de copiar ----
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -655,6 +663,7 @@ private fun BottomSheetContent(
 
         Spacer(Modifier.height(24.dp))
 
+        // ---- Cabecera de la sección de búsqueda por UID ----
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -678,6 +687,7 @@ private fun BottomSheetContent(
 
         Spacer(Modifier.height(10.dp))
 
+        // ---- Campo para pegar/escribir UID del amigo ----
         OutlinedTextField(
             value = amigoUidInput,
             onValueChange = { amigoUidInput = it },
@@ -705,6 +715,8 @@ private fun BottomSheetContent(
             }
         )
         Spacer(Modifier.height(16.dp))
+
+        // ---- Botón de búsqueda: consulta al VM por UID ----
         OutlinedButton(
             onClick = {
                 agregarAmigoViewModel.buscarPorUid(amigoUidInput)
@@ -726,11 +738,12 @@ private fun BottomSheetContent(
             Text(stringResource(id = R.string.gen_buscar), color = cs.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
 
+        // ---- Resultados/estado de la búsqueda ----
         when (agregarUiState) {
             is AgregarAmigoViewModel.UiState.Busqueda -> {
                 val usuario = (agregarUiState as AgregarAmigoViewModel.UiState.Busqueda).usuario
                 Spacer(Modifier.height(22.dp))
-                Box(
+                Box( // Tarjeta con datos del usuario encontrado y CTA para enviar solicitud
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(13.dp))
@@ -756,7 +769,7 @@ private fun BottomSheetContent(
                             Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            OutlinedButton(
+                            OutlinedButton( // Envía solicitud y limpia input
                                 onClick = {
                                     agregarAmigoViewModel.enviarSolicitud(usuario.uid)
                                     amigoUidInput = ""
@@ -786,19 +799,19 @@ private fun BottomSheetContent(
             }
             is AgregarAmigoViewModel.UiState.Error -> {
                 Spacer(Modifier.height(18.dp))
-                Text(
+                Text( // Mensaje de error de búsqueda/solicitud
                     text = stringResource(id = (agregarUiState as AgregarAmigoViewModel.UiState.Error).resId),
                     color = cs.error
                 )
             }
             is AgregarAmigoViewModel.UiState.Exito -> {
                 Spacer(Modifier.height(18.dp))
-                Text(
+                Text( // Confirmación de solicitud enviada
                     stringResource(id = R.string.amigossc_solicitud_enviada),
                     color = cs.primary
                 )
             }
-            else -> {}
+            else -> { /* Idle / Sin estado visible */ }
         }
         Spacer(Modifier.height(12.dp))
     }

@@ -33,6 +33,7 @@ import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebase
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.ui.theme.mutedText
+import mingosgit.josecr.torneoya.viewmodel.home.NotificacionesViewModel
 
 @Composable
 fun NotificacionesScreen(

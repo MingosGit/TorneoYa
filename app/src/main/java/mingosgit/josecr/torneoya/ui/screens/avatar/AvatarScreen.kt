@@ -33,23 +33,24 @@ import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AvatarScreen(
-    navController: NavController,
-    globalUserViewModel: GlobalUserViewModel
+    navController: NavController,            // Navegación para cerrar/volver
+    globalUserViewModel: GlobalUserViewModel // VM global: lee/escribe avatar del usuario
 ) {
-    val totalAvatares = 21
-    val avatarList = listOf(0) + (1..totalAvatares)
+    val totalAvatares = 21                               // Cantidad total de avatares disponibles
+    val avatarList = listOf(0) + (1..totalAvatares)      // Lista con placeholder (0) + avatares 1..N
     val context = LocalContext.current
 
-    val avatarActual by globalUserViewModel.avatar.collectAsState()
-    var selectedAvatar by remember { mutableStateOf(avatarActual ?: 1) }
-    var guardando by remember { mutableStateOf(false) }
+    val avatarActual by globalUserViewModel.avatar.collectAsState() // Avatar actual desde el VM
+    var selectedAvatar by remember { mutableStateOf(avatarActual ?: 1) } // Selección local en la UI
+    var guardando by remember { mutableStateOf(false) }               // Flag de guardado en curso
 
     val cs = MaterialTheme.colorScheme
-    val gradientBorder = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
-    val modernBackground = TorneoYaPalette.backgroundGradient
+    val gradientBorder = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)) // Borde degradado común
+    val modernBackground = TorneoYaPalette.backgroundGradient                       // Fondo degradado
 
-    val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope() // Alcance para lanzar corrutinas
 
+    // Estructura base con barra superior
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,6 +63,7 @@ fun AvatarScreen(
                     )
                 },
                 navigationIcon = {
+                    // Botón circular para cerrar (volver atrás)
                     Box(
                         modifier = Modifier
                             .padding(start = 8.dp)
@@ -92,6 +94,7 @@ fun AvatarScreen(
         },
         containerColor = Color.Transparent
     ) { paddingValues ->
+        // Contenido principal: preview del avatar + rejilla de selección + acciones
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,6 +103,8 @@ fun AvatarScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(28.dp))
+
+            // Preview grande del avatar seleccionado
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -132,7 +137,10 @@ fun AvatarScreen(
                         .clip(CircleShape)
                 )
             }
+
             Spacer(modifier = Modifier.height(18.dp))
+
+            // Título de sección de selección
             Text(
                 text = stringResource(id = R.string.AvatSC_select_avatar),
                 color = cs.onBackground,
@@ -140,8 +148,10 @@ fun AvatarScreen(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(8.dp)
             )
+
             Spacer(modifier = Modifier.height(6.dp))
 
+            // Rejilla de avatares: placeholder + 1..N
             Box(
                 Modifier
                     .weight(1f)
@@ -149,7 +159,7 @@ fun AvatarScreen(
                     .fillMaxWidth()
             ) {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
+                    columns = GridCells.Fixed(4), // 4 columnas
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
@@ -164,6 +174,7 @@ fun AvatarScreen(
                                 context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
                             }
                         }
+                        // Cada celda: imagen circular con borde resaltado si está seleccionada
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.padding(7.dp)
@@ -192,7 +203,7 @@ fun AvatarScreen(
                                             Brush.radialGradient(listOf(cs.surfaceVariant.copy(alpha = 0.15f), Color.Transparent), radius = 55f)
                                     )
                                     .clickable {
-                                        if (selectedAvatar != avatarNum) selectedAvatar = avatarNum
+                                        if (selectedAvatar != avatarNum) selectedAvatar = avatarNum // Cambia selección
                                     }
                             )
                         }
@@ -201,12 +212,15 @@ fun AvatarScreen(
             }
 
             Spacer(modifier = Modifier.height(18.dp))
+
+            // Botones de acción: cancelar / guardar
             Row(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 30.dp),
                 horizontalArrangement = Arrangement.spacedBy(19.dp)
             ) {
+                // Cancelar: vuelve sin guardar
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -229,6 +243,7 @@ fun AvatarScreen(
                     )
                 }
 
+                // Guardar: envía el avatar seleccionado al VM y cierra
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -245,9 +260,9 @@ fun AvatarScreen(
                         ) {
                             guardando = true
                             scope.launch(Dispatchers.IO) {
-                                globalUserViewModel.cambiarAvatarEnFirebase(selectedAvatar)
+                                globalUserViewModel.cambiarAvatarEnFirebase(selectedAvatar) // Persiste en backend
                             }
-                            navController.popBackStack()
+                            navController.popBackStack() // Cierra pantalla
                         },
                     contentAlignment = Alignment.Center
                 ) {

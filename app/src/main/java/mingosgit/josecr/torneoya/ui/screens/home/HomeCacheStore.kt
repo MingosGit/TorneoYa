@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.data.home
+package mingosgit.josecr.torneoya.ui.screens.home
 
 import android.content.Context
 import androidx.datastore.core.DataStore

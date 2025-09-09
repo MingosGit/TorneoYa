@@ -1,9 +1,10 @@
-package mingosgit.josecr.torneoya.ui.screens.home
+package mingosgit.josecr.torneoya.viewmodel.home
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,9 +15,10 @@ import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.data.firebase.NotificacionFirebaseRepository
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebase
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
-import mingosgit.josecr.torneoya.data.home.HomeCacheStore
-import mingosgit.josecr.torneoya.data.home.HomeCachedStats
+import mingosgit.josecr.torneoya.ui.screens.home.HomeCacheStore
+import mingosgit.josecr.torneoya.ui.screens.home.HomeCachedStats
 import mingosgit.josecr.torneoya.data.session.SessionStore
+import java.text.SimpleDateFormat
 
 data class HomeUiState(
     val nombreUsuario: String = "",
@@ -91,7 +93,7 @@ class HomeViewModel(
                 return@launch
             }
             val uid = user.uid
-            val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            val firestore = FirebaseFirestore.getInstance()
             try {
                 val usuarioSnap = firestore.collection("usuarios").document(uid).get().await()
                 val nombreUsuario = usuarioSnap.getString("nombreUsuario") ?: _uiState.value.nombreUsuario
@@ -170,7 +172,7 @@ class HomeViewModel(
                                 val partes = partido.fecha.split("-") // DD-MM-YYYY
                                 val fechaNormalizada = "${partes[2]}-${partes[1]}-${partes[0]}" // YYYY-MM-DD
                                 val fechaHoraStr = "$fechaNormalizada ${partido.horaInicio}"
-                                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
+                                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm")
                                 sdf.parse(fechaHoraStr)?.time ?: Long.MAX_VALUE
                             } catch (_: Exception) {
                                 Long.MAX_VALUE

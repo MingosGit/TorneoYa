@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.home
+package mingosgit.josecr.torneoya.viewmodel.home
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

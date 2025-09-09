@@ -19,7 +19,7 @@ import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.*
 import mingosgit.josecr.torneoya.ui.screens.amigos.AmigosScreen
 import mingosgit.josecr.torneoya.ui.screens.home.HomeScreen
-import mingosgit.josecr.torneoya.ui.screens.home.HomeViewModel
+import mingosgit.josecr.torneoya.viewmodel.home.HomeViewModel
 import mingosgit.josecr.torneoya.ui.screens.partido.*
 import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.viewmodel.usuario.UsuarioLocalViewModel

@@ -24,7 +24,7 @@ import mingosgit.josecr.torneoya.data.database.AppDatabase
 import mingosgit.josecr.torneoya.repository.*
 import mingosgit.josecr.torneoya.ui.navigation.*
 import mingosgit.josecr.torneoya.ui.theme.ModernTorneoYaTheme
-import mingosgit.josecr.torneoya.ui.screens.home.HomeViewModel
+import mingosgit.josecr.torneoya.viewmodel.home.HomeViewModel
 import mingosgit.josecr.torneoya.viewmodel.partido.*
 import mingosgit.josecr.torneoya.viewmodel.usuario.*
 import androidx.core.view.WindowCompat

@@ -33,18 +33,19 @@ import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SolicitudesPendientesScreen(
-    navController: NavController,
+    navController: NavController, // Controlador de navegación para volver
     amigosViewModel: AmigosViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = AmigosViewModel.Factory()
-    )
+    ) // VM de amigos: expone la lista de solicitudes y acciones aceptar/rechazar
 ) {
-    val solicitudes by amigosViewModel.solicitudes.collectAsState()
+    val solicitudes by amigosViewModel.solicitudes.collectAsState() // Estado reactivo de solicitudes
     val cs = MaterialTheme.colorScheme
     val gradientBorder = remember(cs.primary, cs.secondary) {
-        Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+        Brush.horizontalGradient(listOf(cs.primary, cs.secondary)) // Degradado para bordes
     }
-    val modernBackground = TorneoYaPalette.backgroundGradient
+    val modernBackground = TorneoYaPalette.backgroundGradient // Fondo de la pantalla
 
+    // Scaffold con barra superior personalizada y contenido
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -54,6 +55,7 @@ fun SolicitudesPendientesScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        // Botón circular con borde degradado para volver atrás
                         GradientBorderedIconButton(
                             icon = Icons.Default.ArrowBack,
                             contentDescription = stringResource(id = R.string.gen_volver),
@@ -63,6 +65,7 @@ fun SolicitudesPendientesScreen(
                             background = cs.surfaceVariant
                         )
                         Spacer(modifier = Modifier.width(10.dp))
+                        // Título de la pantalla
                         Text(
                             text = stringResource(id = R.string.solpensc_titulo),
                             color = cs.onBackground,
@@ -78,6 +81,7 @@ fun SolicitudesPendientesScreen(
             )
         }
     ) { innerPadding ->
+        // Fondo general con degradado
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -88,6 +92,7 @@ fun SolicitudesPendientesScreen(
                     .fillMaxSize()
                     .padding(top = innerPadding.calculateTopPadding())
             ) {
+                // Estado vacío: no hay solicitudes
                 if (solicitudes.isEmpty()) {
                     Column(
                         modifier = Modifier
@@ -96,6 +101,7 @@ fun SolicitudesPendientesScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Icono decorativo
                         Surface(
                             shape = CircleShape,
                             color = cs.primary.copy(alpha = 0.13f),
@@ -127,6 +133,7 @@ fun SolicitudesPendientesScreen(
                         )
                     }
                 } else {
+                    // Lista de solicitudes pendientes
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -134,11 +141,13 @@ fun SolicitudesPendientesScreen(
                         verticalArrangement = Arrangement.spacedBy(13.dp)
                     ) {
                         items(solicitudes) { solicitud ->
+                            // Item de solicitud con acciones aceptar/rechazar
                             SolicitudItem(
                                 uid = solicitud.uid,
                                 nombreUsuario = solicitud.nombreUsuario,
                                 avatar = solicitud.avatar,
                                 onAceptar = {
+                                    // Acepta la solicitud construyendo la entidad mínima
                                     amigosViewModel.aceptarSolicitud(
                                         mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity(
                                             uid = solicitud.uid,
@@ -146,7 +155,7 @@ fun SolicitudesPendientesScreen(
                                         )
                                     )
                                 },
-                                onRechazar = { amigosViewModel.rechazarSolicitud(solicitud.uid) }
+                                onRechazar = { amigosViewModel.rechazarSolicitud(solicitud.uid) } // Rechaza por UID
                             )
                         }
                     }
@@ -158,15 +167,16 @@ fun SolicitudesPendientesScreen(
 
 @Composable
 fun GradientBorderedIconButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String?,
-    onClick: () -> Unit,
-    gradient: Brush,
-    size: androidx.compose.ui.unit.Dp = 38.dp,
-    iconSize: androidx.compose.ui.unit.Dp = 21.dp,
-    iconTint: Color = MaterialTheme.colorScheme.onSurface,
-    background: Color = MaterialTheme.colorScheme.surfaceVariant
+    icon: androidx.compose.ui.graphics.vector.ImageVector, // Icono a mostrar
+    contentDescription: String?,                           // Descripción accesible
+    onClick: () -> Unit,                                   // Acción al pulsar
+    gradient: Brush,                                       // Borde con degradado
+    size: androidx.compose.ui.unit.Dp = 38.dp,             // Tamaño del botón
+    iconSize: androidx.compose.ui.unit.Dp = 21.dp,         // Tamaño del icono
+    iconTint: Color = MaterialTheme.colorScheme.onSurface, // Color del icono
+    background: Color = MaterialTheme.colorScheme.surfaceVariant // Fondo del botón
 ) {
+    // Botón circular con borde degradado y contenido centrado
     Box(
         modifier = Modifier
             .size(size)
@@ -191,23 +201,24 @@ fun GradientBorderedIconButton(
 
 @Composable
 fun SolicitudItem(
-    uid: String,
-    nombreUsuario: String,
-    avatar: Int?,
-    onAceptar: () -> Unit,
-    onRechazar: () -> Unit
+    uid: String,                 // UID del solicitante (no se muestra, sirve para acciones)
+    nombreUsuario: String,       // Nombre a mostrar
+    avatar: Int?,                // Índice/ID de avatar opcional
+    onAceptar: () -> Unit,       // Callback al aceptar
+    onRechazar: () -> Unit       // Callback al rechazar
 ) {
     val cs = MaterialTheme.colorScheme
     val gradientBorder = remember(cs.primary, cs.secondary) {
-        Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+        Brush.horizontalGradient(listOf(cs.primary, cs.secondary)) // Degradado borde tarjeta
     }
     val gradientAccept = remember(cs.tertiary, cs.secondary) {
-        Brush.horizontalGradient(listOf(cs.tertiary, cs.secondary))
+        Brush.horizontalGradient(listOf(cs.tertiary, cs.secondary)) // Degradado botón aceptar
     }
     val gradientReject = remember(cs.error, cs.secondary) {
-        Brush.horizontalGradient(listOf(cs.error, cs.secondary))
+        Brush.horizontalGradient(listOf(cs.error, cs.secondary)) // Degradado botón rechazar
     }
 
+    // Tarjeta de solicitud con avatar, nombre y acciones
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -229,12 +240,14 @@ fun SolicitudItem(
         ) {
             val context = LocalContext.current
             val avatarNum = avatar ?: 0
+            // Resuelve el recurso drawable del avatar (o placeholder)
             val avatarResId = remember(avatarNum) {
                 if (avatarNum > 0)
                     context.resources.getIdentifier("avatar_$avatarNum", "drawable", context.packageName)
                 else
                     context.resources.getIdentifier("avatar_placeholder", "drawable", context.packageName)
             }
+            // Contenedor circular del avatar
             Box(
                 modifier = Modifier
                     .size(50.dp)
@@ -254,6 +267,7 @@ fun SolicitudItem(
                     ),
                 contentAlignment = Alignment.Center
             ) {
+                // Muestra icono del avatar o inicial si no hay recurso
                 if (avatarResId != 0) {
                     Icon(
                         painter = painterResource(id = avatarResId),
@@ -273,6 +287,7 @@ fun SolicitudItem(
                 }
             }
             Spacer(Modifier.width(16.dp))
+            // Nombre del usuario solicitante
             Column(
                 Modifier
                     .weight(1f)
@@ -285,6 +300,7 @@ fun SolicitudItem(
                 )
             }
             Spacer(Modifier.width(12.dp))
+            // Botón aceptar (check)
             IconButton(
                 onClick = onAceptar,
                 modifier = Modifier
@@ -304,6 +320,7 @@ fun SolicitudItem(
                 )
             }
             Spacer(Modifier.width(25.dp))
+            // Botón rechazar (equis)
             IconButton(
                 onClick = onRechazar,
                 modifier = Modifier
