@@ -9,34 +9,33 @@ import mingosgit.josecr.torneoya.data.dao.EquipoPredefinidoConJugadores
 import mingosgit.josecr.torneoya.data.entities.EquipoPredefinidoEntity
 import mingosgit.josecr.torneoya.repository.EquipoPredefinidoRepository
 
+// ViewModel para gestionar equipos predefinidos y sus jugadores
 class EquiposPredefinidosViewModel(
     private val repository: EquipoPredefinidoRepository
 ) : ViewModel() {
 
+    // Estado: lista de equipos con sus jugadores
     private val _equipos = MutableStateFlow<List<EquipoPredefinidoConJugadores>>(emptyList())
     val equipos: StateFlow<List<EquipoPredefinidoConJugadores>> = _equipos
 
+    // Al iniciar carga todos los equipos
     init {
         cargarEquipos()
     }
 
+    // Obtiene todos los equipos con sus jugadores desde el repositorio
     fun cargarEquipos() {
         viewModelScope.launch {
             _equipos.value = repository.getAllConJugadores()
         }
     }
 
+    // Vuelve a cargar equipos (alias de cargarEquipos)
     fun recargarEquipos() {
         cargarEquipos()
     }
 
-    fun agregarEquipo(nombre: String) {
-        viewModelScope.launch {
-            repository.insertEquipo(EquipoPredefinidoEntity(nombre = nombre))
-            cargarEquipos()
-        }
-    }
-
+    // Elimina un equipo y refresca la lista
     fun eliminarEquipo(equipo: EquipoPredefinidoEntity) {
         viewModelScope.launch {
             repository.deleteEquipo(equipo)
@@ -44,17 +43,4 @@ class EquiposPredefinidosViewModel(
         }
     }
 
-    fun agregarJugadorAEquipo(equipoId: Long, jugadorId: Long) {
-        viewModelScope.launch {
-            repository.agregarJugador(equipoId, jugadorId)
-            cargarEquipos()
-        }
-    }
-
-    fun quitarJugadorDeEquipo(equipoId: Long, jugadorId: Long) {
-        viewModelScope.launch {
-            repository.quitarJugador(equipoId, jugadorId)
-            cargarEquipos()
-        }
-    }
 }

@@ -13,25 +13,31 @@ import kotlinx.coroutines.delay
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 
+// ViewModel "Mi Cuenta": gestiona perfil, cambios de nombre, cierre de sesión, borrado y reset de contraseña
 class MiCuentaViewModel : ViewModel() {
 
+    // Dependencias Firebase y repos
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
-    private val partidoRepo = PartidoFirebaseRepository()
+    private val partidoRepo = PartidoFirebaseRepository() // (no usado aquí; si lo usas, es para operaciones de partidos)
     private val usuarioAuthRepo = UsuarioAuthRepository()
 
+    // Estado: email del usuario
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email
 
+    // Estado: nombre de usuario visible
     private val _nombreUsuario = MutableStateFlow("")
     val nombreUsuario: StateFlow<String> = _nombreUsuario
 
+    // Estado: diálogos de confirmación
     private val _confirmarCerrarSesion = MutableStateFlow(false)
     val confirmarCerrarSesion: StateFlow<Boolean> = _confirmarCerrarSesion
 
     private val _confirmarEliminarCuenta = MutableStateFlow(false)
     val confirmarEliminarCuenta: StateFlow<Boolean> = _confirmarEliminarCuenta
 
+    // Estado: resultado y errores al cambiar nombre
     private val _errorCambioNombre = MutableStateFlow<String?>(null)
     val errorCambioNombre: StateFlow<String?> = _errorCambioNombre
 
@@ -39,6 +45,7 @@ class MiCuentaViewModel : ViewModel() {
     val cambioNombreExitoso: StateFlow<Boolean> = _cambioNombreExitoso
 
     // ----------- NUEVO: PASSWORD RESET ---------------
+    // Estado: UI para aviso de correo enviado y cuenta atrás de reintento
     private val _showMensajeReset = MutableStateFlow(false)
     val showMensajeReset: StateFlow<Boolean> = _showMensajeReset
 
@@ -47,6 +54,7 @@ class MiCuentaViewModel : ViewModel() {
 
     private var timerJob: Job? = null
 
+    // Carga email y nombre del usuario desde Firestore
     fun cargarDatos() {
         val user = auth.currentUser ?: return
         _email.value = user.email ?: ""
@@ -56,6 +64,7 @@ class MiCuentaViewModel : ViewModel() {
         }
     }
 
+    // Cambia el nombre de usuario si está disponible y actualiza Firestore/estado
     fun cambiarNombreUsuario(nuevoNombre: String) {
         val uid = auth.currentUser?.uid ?: return
         viewModelScope.launch {
@@ -72,32 +81,38 @@ class MiCuentaViewModel : ViewModel() {
         }
     }
 
+    // Limpia el error de cambio de nombre
     fun resetErrorCambioNombre() {
         _errorCambioNombre.value = null
     }
 
+    // Limpia el flag de éxito al cambiar nombre
     fun resetCambioNombreExitoso() {
         _cambioNombreExitoso.value = false
     }
 
+    // Cierra sesión en FirebaseAuth
     fun cerrarSesion() {
         auth.signOut()
     }
 
+    // Muestra/oculta diálogo de confirmación de cierre de sesión
     fun confirmarCerrarSesionDialog(show: Boolean) {
         _confirmarCerrarSesion.value = show
     }
 
+    // Muestra/oculta diálogo de confirmación de eliminación de cuenta
     fun confirmarEliminarCuentaDialog(show: Boolean) {
         _confirmarEliminarCuenta.value = show
     }
 
+    // Elimina la cuenta y todos los datos relacionados del usuario en Firestore y luego borra el usuario de Auth
     fun eliminarCuentaYDatos() {
         val user = auth.currentUser ?: return
         val uid = user.uid
         viewModelScope.launch {
             try {
-                // 1. Eliminar de amigos de otros usuarios
+                // 1. Quitar de amigos de otros usuarios
                 val usuariosSnapshot = firestore.collection("usuarios").get().await()
                 for (usuarioDoc in usuariosSnapshot.documents) {
                     firestore.collection("usuarios").document(usuarioDoc.id)
@@ -108,7 +123,7 @@ class MiCuentaViewModel : ViewModel() {
                         }
                 }
 
-                // 2. Eliminar de equipos
+                // 2. Quitar de equipos
                 val equiposSnapshot = firestore.collection("equipos").get().await()
                 for (equipoDoc in equiposSnapshot.documents) {
                     firestore.collection("equipos").document(equipoDoc.id)
@@ -119,7 +134,7 @@ class MiCuentaViewModel : ViewModel() {
                         }
                 }
 
-                // 3. Eliminar de arrays de partidos y referencias como admin, acceso, etc
+                // 3. Limpiar referencias en arrays de partidos (jugadores/admin/acceso/creador)
                 val partidosSnapshot = firestore.collection("partidos").get().await()
                 for (partidoDoc in partidosSnapshot.documents) {
                     val partidoRef = firestore.collection("partidos").document(partidoDoc.id)
@@ -142,7 +157,7 @@ class MiCuentaViewModel : ViewModel() {
                     partidoRef.update(updates).await()
                 }
 
-                // 4. BORRAR PARTIDOS DONDE EL USUARIO ES CREADOR (Y TODOS SUS DATOS RELACIONADOS)
+                // 4. Borra partidos creados por el usuario y toda su información asociada
                 val partidosCreados = firestore.collection("partidos")
                     .whereEqualTo("creadorUid", uid)
                     .get().await()
@@ -150,46 +165,46 @@ class MiCuentaViewModel : ViewModel() {
                 for (partidoDoc in partidosCreados.documents) {
                     val partidoUid = partidoDoc.id
 
-                    // Borra comentarios del partido
+                    // Comentarios del partido
                     firestore.collection("comentarios")
                         .whereEqualTo("partidoUid", partidoUid)
                         .get().await().documents.forEach {
                             firestore.collection("comentarios").document(it.id).delete().await()
                         }
 
-                    // Borra encuestas del partido
+                    // Encuestas del partido
                     firestore.collection("encuestas")
                         .whereEqualTo("partidoUid", partidoUid)
                         .get().await().documents.forEach {
                             firestore.collection("encuestas").document(it.id).delete().await()
                         }
 
-                    // Borra votos de encuestas del partido
+                    // Votos de encuestas del partido
                     firestore.collection("encuesta_votos")
                         .whereEqualTo("partidoUid", partidoUid)
                         .get().await().documents.forEach {
                             firestore.collection("encuesta_votos").document(it.id).delete().await()
                         }
 
-                    // Borra goles del partido
+                    // Goles del partido
                     firestore.collection("goleadores")
                         .whereEqualTo("partidoUid", partidoUid)
                         .get().await().documents.forEach {
                             firestore.collection("goleadores").document(it.id).delete().await()
                         }
 
-                    // Borra eventos del partido
+                    // Eventos del partido
                     firestore.collection("eventos")
                         .whereEqualTo("partidoUid", partidoUid)
                         .get().await().documents.forEach {
                             firestore.collection("eventos").document(it.id).delete().await()
                         }
 
-                    // Finalmente, borra el partido
+                    // Borrar el partido
                     firestore.collection("partidos").document(partidoUid).delete().await()
                 }
 
-                // 5. Eliminar goles y eventos del usuario
+                // 5. Borrar goles y eventos del usuario
                 firestore.collection("goleadores")
                     .whereEqualTo("jugadorUid", uid)
                     .get().await().documents.forEach {
@@ -211,54 +226,54 @@ class MiCuentaViewModel : ViewModel() {
                         firestore.collection("eventos").document(it.id).delete().await()
                     }
 
-                // 6. Eliminar notificaciones
+                // 6. Borrar notificaciones del usuario
                 firestore.collection("notificaciones")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("notificaciones").document(it.id).delete().await()
                     }
 
-                // 7. Eliminar encuestas creadas por el usuario
+                // 7. Borrar encuestas creadas por el usuario
                 firestore.collection("encuestas")
                     .whereEqualTo("creadorUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("encuestas").document(it.id).delete().await()
                     }
 
-                // 8. Eliminar comentarios del usuario
+                // 8. Borrar comentarios del usuario
                 firestore.collection("comentarios")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("comentarios").document(it.id).delete().await()
                     }
 
-                // 9. Eliminar votos del usuario
+                // 9. Borrar votos en comentarios del usuario
                 firestore.collection("comentario_votos")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("comentario_votos").document(it.id).delete().await()
                     }
 
-                // 10. Eliminar votos de encuestas del usuario
+                // 10. Borrar votos de encuestas del usuario
                 firestore.collection("encuesta_votos")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         firestore.collection("encuesta_votos").document(it.id).delete().await()
                     }
 
-                // 11. Eliminar usuario de la colección usuarios
+                // 11. Borrar documento del usuario
                 firestore.collection("usuarios").document(uid).delete().await()
 
-                // 12. Eliminar usuario de FirebaseAuth
+                // 12. Borrar cuenta de FirebaseAuth
                 user.delete().await()
 
             } catch (e: Exception) {
-                // Manejo de error simple (log, puedes adaptar a tu app)
+                // Manejo básico de error (log/telemetría si procede)
             }
         }
     }
 
-    // --------------- RESTABLECER CONTRASEÑA -------------------
+    // Envía correo de restablecimiento de contraseña y muestra aviso con cuenta atrás
     fun enviarCorreoResetPassword() {
         val correo = _email.value
         if (correo.isBlank() || _resetTimer.value > 0) return
@@ -270,6 +285,7 @@ class MiCuentaViewModel : ViewModel() {
         }
     }
 
+    // Inicia un temporizador de 60s para reintentar el envío del correo
     private fun startResetTimer() {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {

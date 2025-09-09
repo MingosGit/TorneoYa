@@ -14,17 +14,22 @@ import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.auth.AuthManager
 import mingosgit.josecr.torneoya.data.session.SessionStore
 
+// ViewModel global del usuario: expone perfil, sesión y estadísticas
 class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
 
+    // Gestor de autenticación y sesión local
     private val authManager = AuthManager(app)
     private val sessionStore = SessionStore(app.applicationContext)
 
+    // Estado: nombre visible del usuario online (nullable si no hay)
     private val _nombreUsuarioOnline = MutableStateFlow<String?>(null)
     val nombreUsuarioOnline: StateFlow<String?> = _nombreUsuarioOnline.asStateFlow()
 
+    // Estado: si la sesión online/caché está activa
     private val _sesionOnlineActiva = MutableStateFlow(false)
     val sesionOnlineActiva: StateFlow<Boolean> = _sesionOnlineActiva.asStateFlow()
 
+    // Estado: estadísticas básicas
     private val _goles = MutableStateFlow<Int?>(null)
     val goles: StateFlow<Int?> = _goles.asStateFlow()
 
@@ -37,9 +42,11 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
     private val _promedioGoles = MutableStateFlow<Double?>(null)
     val promedioGoles: StateFlow<Double?> = _promedioGoles.asStateFlow()
 
+    // Estado: avatar seleccionado (id de recurso o similar)
     private val _avatar = MutableStateFlow<Int?>(null)
     val avatar: StateFlow<Int?> = _avatar.asStateFlow()
 
+    // Se suscribe al estado de autenticación y actualiza UI; intenta refrescar con red
     init {
         // Observa el estado de autenticación y ajusta banderas sin cerrar sesión por estar offline.
         viewModelScope.launch {
@@ -71,16 +78,19 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // Cambia el nombre mostrado y actualiza la caché local
     fun setNombreUsuarioOnline(nombre: String) {
         _nombreUsuarioOnline.value = nombre
         viewModelScope.launch { authManager.updateProfileCache(nombreUsuario = nombre, avatar = _avatar.value) }
     }
 
+    // Dispara un refresco remoto de perfil/estadísticas si hay red
     fun cargarNombreUsuarioOnlineSiSesionActiva() {
         // Mantener compatibilidad con la llamada existente: ahora solo dispara refresh remoto si hay red.
         viewModelScope.launch { cargarPerfilYStatsRemoto() }
     }
 
+    // Lee perfil y estadísticas del usuario en Firestore y actualiza estados
     private suspend fun cargarPerfilYStatsRemoto() {
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val db = FirebaseFirestore.getInstance()
@@ -92,7 +102,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
             _avatar.value = avatar
             authManager.updateProfileCache(nombreUsuario = nombreUsuario, avatar = avatar)
 
-            // Stats
+            // Stats: cuenta goles, asistencias y calcula promedio por partido
             val golesSnapshot = db.collection("goleadores")
                 .whereEqualTo("jugadorUid", user.uid)
                 .get().await()
@@ -113,6 +123,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // Limpia todo el estado del usuario en memoria
     private fun resetEstado() {
         _nombreUsuarioOnline.value = null
         _sesionOnlineActiva.value = false
@@ -123,6 +134,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         _avatar.value = null
     }
 
+    // Actualiza avatar en Firestore y sincroniza caché
     fun cambiarAvatarEnFirebase(avatar: Int) {
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val uid = user.uid
@@ -137,6 +149,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // Cierra sesión solo en local y reinicia la app
     fun cerrarSesionOnline() {
         viewModelScope.launch {
             authManager.signOutLocalOnly()
@@ -144,6 +157,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // Reinicia el proceso lanzando la actividad principal y saliendo
     internal fun reiniciarApp() {
         val context = getApplication<Application>().applicationContext
         val packageManager = context.packageManager
@@ -153,6 +167,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         Runtime.getRuntime().exit(0)
     }
 
+    // Borra la cuenta y todos sus datos relacionados en Firestore; cierra sesión local al terminar
     fun eliminarCuentaYDatosDelUsuario(
         onSuccess: (() -> Unit)? = null,
         onError: ((Exception) -> Unit)? = null
@@ -164,8 +179,10 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val db = FirebaseFirestore.getInstance()
             try {
+                // Perfil del usuario
                 db.collection("usuarios").document(uid).delete().await()
 
+                // Quita al usuario de la lista de amigos de otros
                 val usuariosSnapshot = db.collection("usuarios").get().await()
                 for (usuarioDoc in usuariosSnapshot.documents) {
                     db.collection("usuarios").document(usuarioDoc.id)
@@ -176,6 +193,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                         }
                 }
 
+                // Comentarios y votos
                 db.collection("comentarios")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
@@ -188,12 +206,14 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                         db.collection("comentariosVotos").document(it.id).delete()
                     }
 
+                // Notificaciones
                 db.collection("notificaciones")
                     .whereEqualTo("usuarioUid", uid)
                     .get().await().documents.forEach {
                         db.collection("notificaciones").document(it.id).delete()
                     }
 
+                // Eliminar del roster de equipos
                 val equiposSnapshot = db.collection("equipos").get().await()
                 for (equipoDoc in equiposSnapshot.documents) {
                     db.collection("equipos").document(equipoDoc.id)
@@ -204,6 +224,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                         }
                 }
 
+                // Limpieza de partidos: listas y creador
                 val partidosSnapshot = db.collection("partidos").get().await()
                 for (partidoDoc in partidosSnapshot.documents) {
                     val partidoRef = db.collection("partidos").document(partidoDoc.id)
@@ -226,6 +247,7 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                     partidoRef.update(updates).await()
                 }
 
+                // Goleadores y eventos relacionados
                 db.collection("goleadores")
                     .whereEqualTo("jugadorUid", uid)
                     .get().await().documents.forEach {
@@ -248,12 +270,14 @@ class GlobalUserViewModel(app: Application) : AndroidViewModel(app) {
                         db.collection("eventos").document(it.id).delete()
                     }
 
+                // Encuestas creadas
                 db.collection("encuestas")
                     .whereEqualTo("creadorUid", uid)
                     .get().await().documents.forEach {
                         db.collection("encuestas").document(it.id).delete()
                     }
 
+                // Elimina cuenta de FirebaseAuth y cierra sesión local
                 user.delete().addOnCompleteListener {
                     if (it.isSuccessful) {
                         onSuccess?.invoke()

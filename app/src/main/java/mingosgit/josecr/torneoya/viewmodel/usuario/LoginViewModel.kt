@@ -16,16 +16,20 @@ import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 import mingosgit.josecr.torneoya.repository.UsuarioAuthRepository
 
+// ViewModel para gestionar login y recuperación de contraseña con Firebase Auth
 class LoginViewModel(
     private val repository: UsuarioAuthRepository
 ) : ViewModel() {
 
+    // Estado de login expuesto a la UI
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Empty)
     val loginState: StateFlow<LoginState> = _loginState
 
+    // Estado de recuperación de contraseña expuesto a la UI
     private val _resetPasswordState = MutableStateFlow<ResetPasswordState>(ResetPasswordState.Empty)
     val resetPasswordState: StateFlow<ResetPasswordState> = _resetPasswordState
 
+    // Inicia sesión con email y contraseña, actualiza estado según resultado
     fun login(email: String, password: String) {
         _loginState.value = LoginState.Loading
         viewModelScope.launch {
@@ -38,6 +42,7 @@ class LoginViewModel(
         }
     }
 
+    // Envía correo para restablecer contraseña y actualiza estado
     fun enviarCorreoRestablecerPassword(email: String) {
         _resetPasswordState.value = ResetPasswordState.Loading
         viewModelScope.launch {
@@ -50,11 +55,13 @@ class LoginViewModel(
         }
     }
 
+    // Limpia los estados para dejar la pantalla en reposo
     fun clearState() {
         _loginState.value = LoginState.Empty
         _resetPasswordState.value = ResetPasswordState.Empty
     }
 
+    // Mapea excepciones de Firebase a recursos de string para mostrar mensajes de error
     @StringRes
     private fun mapAuthExceptionToStringRes(throwable: Throwable?): Int {
         if (throwable == null) return R.string.auth_unknown_error
@@ -95,29 +102,34 @@ class LoginViewModel(
         }
     }
 
+    // Factory para crear el ViewModel con el repositorio inyectado
     class Factory(
         private val repository: UsuarioAuthRepository
     ) : ViewModelProvider.Factory {
+        // Crea LoginViewModel si el tipo solicitado coincide
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
                 return LoginViewModel(repository) as T
             }
+            // Lanza error si se pide un tipo de ViewModel no soportado
             throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }
 
+// Estados de la pantalla de login
 sealed class LoginState {
-    object Empty : LoginState()
-    object Loading : LoginState()
-    data class Success(val usuario: UsuarioFirebaseEntity) : LoginState()
-    data class Error(@StringRes val resId: Int) : LoginState()
+    object Empty : LoginState() // Sin acción en curso
+    object Loading : LoginState() // Operación en progreso
+    data class Success(val usuario: UsuarioFirebaseEntity) : LoginState() // Login correcto
+    data class Error(@StringRes val resId: Int) : LoginState() // Error con recurso de string
 }
 
+// Estados de la pantalla de restablecer contraseña
 sealed class ResetPasswordState {
-    object Empty : ResetPasswordState()
-    object Loading : ResetPasswordState()
-    object Success : ResetPasswordState()
-    data class Error(@StringRes val resId: Int) : ResetPasswordState()
+    object Empty : ResetPasswordState() // Sin acción en curso
+    object Loading : ResetPasswordState() // Operación en progreso
+    object Success : ResetPasswordState() // Correo enviado correctamente
+    data class Error(@StringRes val resId: Int) : ResetPasswordState() // Error con recurso de string
 }
