@@ -42,6 +42,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
+// Enum con los estados posibles de un partido y su string asociado para pintar.
 enum class EstadoPartido(val displayRes: Int) {
     TODOS(R.string.ponline_todos),
     PREVIA(R.string.ponline_previa),
@@ -51,6 +52,7 @@ enum class EstadoPartido(val displayRes: Int) {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
+// Composable principal del listado de Partidos Online: filtros, búsqueda por UID, acciones y navegación.
 fun PartidoOnlineScreenContent(
     navController: NavController,
     partidoViewModel: PartidoOnlineViewModel
@@ -59,11 +61,12 @@ fun PartidoOnlineScreenContent(
 
     val cargandoPartidos by partidoViewModel.cargandoPartidos.collectAsState()
     val scope = rememberCoroutineScope()
-    LaunchedEffect(Unit) { partidoViewModel.cargarPartidosConNombres() }
+    LaunchedEffect(Unit) { partidoViewModel.cargarPartidosConNombres() } // carga inicial de partidos
     val clipboardManager = LocalClipboardManager.current
 
     val partidos by partidoViewModel.partidosConNombres.collectAsState()
 
+    // Estado UI de ordenación, filtros y diálogos/hojas.
     var sortOption by remember { mutableIntStateOf(R.string.ponline_nombre) }
     var ascending by remember { mutableStateOf(true) }
     var expandedSort by remember { mutableStateOf(false) }
@@ -79,11 +82,11 @@ fun PartidoOnlineScreenContent(
     var searchError by remember { mutableStateOf<String?>(null) }
     var showAddConfirmDialog by remember { mutableStateOf<PartidoConNombresOnline?>(null) }
 
-    // NUEVO: diálogos para dejar de ver / creador
+    // Control de diálogos para dejar de ver / bloqueo cuando es creador.
     var showDejarDeVerDialog by remember { mutableStateOf(false) }
     var showEsCreadorNoSalirDialog by remember { mutableStateOf(false) }
 
-    // Strings usados
+    // Strings usados en la UI.
     val errorNoExisteUid = stringResource(id = R.string.ponline_no_existe_uid)
     val errorYaTienesAcceso = stringResource(id = R.string.ponline_ya_tienes_acceso)
     val dialogStopViewingTitle = stringResource(id = R.string.ponline_dialog_stop_viewing_title)
@@ -95,6 +98,7 @@ fun PartidoOnlineScreenContent(
     val dialogEsCreadorNoSalirTitle = stringResource(id = R.string.parequban_avisocreador)
     val dialogEsCreadorNoSalirMsg = stringResource(id = R.string.parequeban_no_puedes)
 
+    // Intenta parsear una fecha en varios formatos aceptados; si no, devuelve null.
     fun parseFecha(fecha: String): LocalDate? {
         val patronesFecha = listOf("yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yyyy")
         for (pf in patronesFecha) {
@@ -105,6 +109,7 @@ fun PartidoOnlineScreenContent(
         }
         return null
     }
+    // Intenta parsear una hora en varios formatos aceptados; si no, devuelve null.
     fun parseHora(hora: String): LocalTime? {
         val patronesHora = listOf("HH:mm", "H:mm")
         for (ph in patronesHora) {
@@ -115,6 +120,7 @@ fun PartidoOnlineScreenContent(
         }
         return null
     }
+    // Calcula el estado del partido (previa, jugando, finalizado) según fecha y horas.
     fun obtenerEstadoPartido(partido: PartidoConNombresOnline): EstadoPartido {
         val hoy = LocalDate.now()
         val ahora = LocalTime.now()
@@ -135,6 +141,7 @@ fun PartidoOnlineScreenContent(
         }
     }
 
+    // Fondo con degradado para la pantalla (no crítico, decorativo).
     val modernBackground = Brush.verticalGradient(
         0.0f to cs.background,
         0.28f to cs.surface,
@@ -142,6 +149,7 @@ fun PartidoOnlineScreenContent(
         1.0f to cs.background
     )
 
+    // Filtro por estado seleccionado y ordenación dinámica.
     val partidosFiltrados = remember(partidos, estadoSeleccionado) {
         if (estadoSeleccionado == EstadoPartido.TODOS) partidos
         else partidos.filter { obtenerEstadoPartido(it) == estadoSeleccionado }
@@ -167,6 +175,7 @@ fun PartidoOnlineScreenContent(
         }
     }
 
+    // Diálogo de confirmación para eliminar un partido de la lista (acción del VM).
     if (showConfirmDialog && partidoSeleccionado != null) {
         val partidoSel = partidoSeleccionado
         if (partidoSel != null) {
@@ -194,6 +203,7 @@ fun PartidoOnlineScreenContent(
         }
     }
 
+    // Diálogo de confirmación para AGREGAR un partido encontrado por UID.
     if (showAddConfirmDialog != null) {
         val partidoAdd = showAddConfirmDialog
         val nombreA = partidoAdd?.nombreEquipoA ?: "Equipo A"
@@ -303,7 +313,7 @@ fun PartidoOnlineScreenContent(
         }
     }
 
-    // NUEVO: hoja de opciones al mantener presionado (incluye "Dejar de ver")
+    // Hoja inferior de opciones al mantener pulsado un partido (incluye "Dejar de ver").
     if (showOptionsSheet && partidoSeleccionado != null) {
         ModalBottomSheet(
             onDismissRequest = { showOptionsSheet = false },
@@ -333,7 +343,7 @@ fun PartidoOnlineScreenContent(
                         .clickable {
                             val partido = partidoSeleccionado ?: return@clickable
                             showOptionsSheet = false
-                            // Verificar si es creador y decidir qué diálogo mostrar
+                            // Comprueba si eres creador para decidir qué diálogo mostrar.
                             scope.launch {
                                 val esCreador = partidoViewModel.esCreador(partido.uid)
                                 if (esCreador) {
@@ -349,8 +359,7 @@ fun PartidoOnlineScreenContent(
         }
     }
 
-    // Diálogo de confirmación "Dejar de ver" (no creador)
-
+    // Diálogo "Dejar de ver" para usuarios que no son creadores.
     if (showDejarDeVerDialog && partidoSeleccionado != null) {
         Dialog(onDismissRequest = { showDejarDeVerDialog = false }) {
             Box(
@@ -390,7 +399,7 @@ fun PartidoOnlineScreenContent(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        // Confirmar (destructivo)
+                        // Confirmar dejar de ver: llama al VM y cierra.
                         OutlinedButton(
                             onClick = {
                                 val uid = partidoSeleccionado!!.uid
@@ -414,7 +423,7 @@ fun PartidoOnlineScreenContent(
                             )
                         }
                         Spacer(Modifier.width(14.dp))
-                        // Cancelar
+                        // Cancelar la acción.
                         OutlinedButton(
                             onClick = { showDejarDeVerDialog = false },
                             border = ButtonDefaults.outlinedButtonBorder.copy(
@@ -439,8 +448,7 @@ fun PartidoOnlineScreenContent(
         }
     }
 
-
-//  aviso creador
+    // Diálogo informativo cuando el creador intenta dejar de ver (no permitido).
     if (showEsCreadorNoSalirDialog) {
         Dialog(onDismissRequest = { showEsCreadorNoSalirDialog = false }) {
             Box(
@@ -499,7 +507,7 @@ fun PartidoOnlineScreenContent(
         }
     }
 
-
+    // Scaffold con FAB para crear partido y contenido principal (lista, filtros, buscador).
     Scaffold(
         containerColor = Color.Transparent,
         floatingActionButton = {
@@ -552,6 +560,7 @@ fun PartidoOnlineScreenContent(
                     top = 26.dp
                 )
         ) {
+            // Título de la pantalla.
             Text(
                 text = stringResource(id = R.string.gen_partidos_online),
                 fontSize = 27.sp,
@@ -560,7 +569,7 @@ fun PartidoOnlineScreenContent(
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
-            // ---- BUSCADOR POR UID ----
+            // BUSCADOR por UID dentro de un desplegable (pegar desde portapapeles y buscar).
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -719,7 +728,7 @@ fun PartidoOnlineScreenContent(
                 }
             }
 
-            // --------- FILTROS --------
+            // Filtros de estado y ordenación.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(18.dp),
@@ -727,7 +736,7 @@ fun PartidoOnlineScreenContent(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
-                // Estado
+                // Filtro por estado del partido.
                 FilterChip(
                     selected = true,
                     onClick = { expandedEstado = true },
@@ -788,7 +797,7 @@ fun PartidoOnlineScreenContent(
                     }
                 }
 
-                // Ordenar
+                // Chip de ordenación (por nombre o fecha y sentido asc/desc).
                 FilterChip(
                     selected = true,
                     onClick = { expandedSort = true },
@@ -844,6 +853,7 @@ fun PartidoOnlineScreenContent(
                     )
                 }
             }
+            // Indicador de carga de partidos.
             if (cargandoPartidos) {
                 Box(
                     Modifier
@@ -867,7 +877,7 @@ fun PartidoOnlineScreenContent(
                 }
                 return@Column
             }
-            // ---- CARD DE PARTIDO ----
+            // Lista de tarjetas de partido con click (ver) y long-click (opciones).
             LazyColumn {
                 items(sortedPartidos) { partido ->
                     val nombreA = partido.nombreEquipoA ?: "Equipo A"
@@ -964,10 +974,10 @@ fun PartidoOnlineScreenContent(
     }
 }
 
-// Helper para devolver 4 valores (como el destructuring de chipBg, chipText, chipBorder, chipLabel)
+// Helper ligero para devolver 4 valores en una misma estructura (para destructuring).
 data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
-// Utilidad para usar Brush horizontal como color de fondo de botón
+// Extensión dummy para poder usar un Brush donde se espera un Color (aquí queda transparente).
 fun Brush.toBrushColor(): Color {
     return Color.Transparent
 }

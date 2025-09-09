@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+package mingosgit.josecr.torneoya.ui.screens.usuario.ajustes
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -202,7 +203,7 @@ fun PartidosListaBusquedaScreen(
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontSize = 16.sp,
                                         color = lightText,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                                        fontWeight = FontWeight.SemiBold
                                     ),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -213,7 +214,7 @@ fun PartidosListaBusquedaScreen(
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontSize = 14.sp,
                                         color = violet,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                        fontWeight = FontWeight.Medium
                                     ),
                                     modifier = Modifier.padding(horizontal = 10.dp)
                                 )
@@ -222,7 +223,7 @@ fun PartidosListaBusquedaScreen(
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontSize = 16.sp,
                                         color = lightText,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                                        fontWeight = FontWeight.SemiBold
                                     ),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -268,7 +269,7 @@ fun PartidosListaBusquedaScreen(
                                         "Goles: ${partido.golesEquipoA} - ${partido.golesEquipoB}",
                                         style = MaterialTheme.typography.labelLarge.copy(
                                             fontSize = 13.5.sp,
-                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                            fontWeight = FontWeight.Bold,
                                             color = accent
                                         )
                                     )

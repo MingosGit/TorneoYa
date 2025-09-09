@@ -26,6 +26,7 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
+// Pantalla de entrada a "Partidos online": si no hay usuario, muestra CTA de login/registro; si hay, delega al listado.
 fun PartidoOnlineScreen(
     navController: NavController,
     partidoViewModel: PartidoOnlineViewModel
@@ -34,6 +35,7 @@ fun PartidoOnlineScreen(
     val cs = MaterialTheme.colorScheme
 
     if (currentUser == null) {
+        // Fondo degradado suave para el estado sin sesión.
         val modernBackground = Brush.verticalGradient(
             0.0f to cs.background,
             0.28f to cs.surface,
@@ -41,6 +43,7 @@ fun PartidoOnlineScreen(
             1.0f to cs.background
         )
 
+        // Vista para usuarios no autenticados con botones a login/registro.
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -53,6 +56,7 @@ fun PartidoOnlineScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Icono decorativo.
                 Surface(
                     shape = CircleShape,
                     color = cs.primary.copy(alpha = 0.13f),
@@ -67,6 +71,7 @@ fun PartidoOnlineScreen(
                     )
                 }
                 Spacer(Modifier.height(18.dp))
+                // Título y subtítulo explicativos.
                 Text(
                     text = stringResource(R.string.ponline_acceso_partidos_online),
                     fontSize = 27.sp,
@@ -84,7 +89,7 @@ fun PartidoOnlineScreen(
                 )
                 Spacer(Modifier.height(32.dp))
 
-                // Botón Iniciar sesión
+                // Botón: navegar a pantalla de login.
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -115,7 +120,7 @@ fun PartidoOnlineScreen(
 
                 Spacer(Modifier.height(11.dp))
 
-                // Botón Crear cuenta
+                // Botón: navegar a pantalla de registro.
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -145,6 +150,7 @@ fun PartidoOnlineScreen(
                 }
 
                 Spacer(Modifier.height(26.dp))
+                // Nota informativa sobre cuenta local/ajustes.
                 Text(
                     text = stringResource(R.string.ponline_cuenta_local_ajustes),
                     fontSize = 14.sp,
@@ -158,6 +164,7 @@ fun PartidoOnlineScreen(
             }
         }
     } else {
+        // Usuario autenticado: muestra el contenido principal (listado y acciones).
         PartidoOnlineScreenContent(
             navController = navController,
             partidoViewModel = partidoViewModel

@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+package mingosgit.josecr.torneoya.ui.screens.usuario.ajustes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+package mingosgit.josecr.torneoya.ui.screens.usuario.ajustes
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize

@@ -35,10 +35,12 @@ import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.ui.theme.text
 
 @Composable
+// Pantalla para crear un partido online: recoge datos, valida y navega a asignar jugadores.
 fun CrearPartidoOnlineScreen(
     navController: NavController,
     viewModel: CreatePartidoOnlineViewModel
 ) {
+    // Estados de formulario (persisten en recomposiciones).
     var equipoA by rememberSaveable { mutableStateOf("") }
     var equipoB by rememberSaveable { mutableStateOf("") }
     var fecha by rememberSaveable { mutableStateOf("") }
@@ -49,15 +51,18 @@ fun CrearPartidoOnlineScreen(
     val numeroJugadores = 5
     var isPublic by rememberSaveable { mutableStateOf(true) }
 
+    // Control de errores y guardado.
     var camposError by rememberSaveable { mutableStateOf(mapOf<String, Boolean>()) }
     var mostrarErrores by rememberSaveable { mutableStateOf(false) }
     var guardando by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
+    // Diálogos de fecha/hora.
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
+    // Valida los campos del formulario y marca errores.
     fun validarCampos(): Boolean {
         val errores = mutableMapOf<String, Boolean>()
         errores["equipoA"] = equipoA.isBlank()
@@ -71,11 +76,13 @@ fun CrearPartidoOnlineScreen(
         return !errores.values.any { it }
     }
 
+    // Colores y pinceles.
     val cs = MaterialTheme.colorScheme
     val gradientPrimary = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
     val gradientError = Brush.horizontalGradient(listOf(cs.error, cs.secondary))
     val fieldBg = Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
 
+    // Layout raíz con fondo de la app.
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -88,6 +95,7 @@ fun CrearPartidoOnlineScreen(
                 .align(Alignment.TopCenter),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            // Título.
             Text(
                 text = stringResource(id = R.string.crearpartido_title),
                 fontSize = 27.sp,
@@ -96,6 +104,7 @@ fun CrearPartidoOnlineScreen(
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
+            // Campo nombre equipo A.
             GradientOutlinedField(
                 value = equipoA,
                 onValueChange = { equipoA = it },
@@ -114,6 +123,7 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(Modifier.height(10.dp))
 
+            // Campo nombre equipo B.
             GradientOutlinedField(
                 value = equipoB,
                 onValueChange = { equipoB = it },
@@ -132,6 +142,7 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(Modifier.height(13.dp))
 
+            // Botones de selección de fecha y hora.
             Row(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -152,6 +163,7 @@ fun CrearPartidoOnlineScreen(
                     height = 58.dp
                 )
             }
+            // Mensajes de error para fecha/hora.
             if (mostrarErrores && (camposError["fecha"] == true || camposError["horaInicio"] == true)) {
                 Row(Modifier.fillMaxWidth()) {
                     if (camposError["fecha"] == true)
@@ -173,6 +185,7 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(modifier = Modifier.height(13.dp))
 
+            // Etiquetas para número de partes / minutos por parte / descanso.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -203,6 +216,7 @@ fun CrearPartidoOnlineScreen(
                 )
             }
 
+            // Campos numéricos (solo dígitos) para partes/tiempos.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -237,6 +251,7 @@ fun CrearPartidoOnlineScreen(
                     height = 52.dp
                 )
             }
+            // Errores de los campos numéricos.
             if (mostrarErrores && (camposError["numeroPartes"] == true || camposError["tiempoPorParte"] == true || camposError["tiempoDescanso"] == true)) {
                 Row(Modifier.fillMaxWidth()) {
                     if (camposError["numeroPartes"] == true)
@@ -265,6 +280,7 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Check de visibilidad pública del partido.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -296,6 +312,7 @@ fun CrearPartidoOnlineScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            // Botón crear + asignar jugadores (muestra loader mientras guarda).
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -357,6 +374,7 @@ fun CrearPartidoOnlineScreen(
             }
         }
 
+        // Diálogo selector de fecha (devuelve texto dd-MM-yyyy).
         CustomDatePickerDialog(
             show = showDatePicker,
             initialDate = Calendar.getInstance(),
@@ -369,6 +387,7 @@ fun CrearPartidoOnlineScreen(
                 )
             }
         )
+        // Diálogo selector de hora (devuelve texto HH:mm).
         CustomTimePickerDialog(
             show = showTimePicker,
             initialHour = horaInicio.takeIf { it.isNotBlank() }?.split(":")?.get(0)?.toIntOrNull()
@@ -384,6 +403,7 @@ fun CrearPartidoOnlineScreen(
 }
 
 @Composable
+// Campo de texto con borde degradado y fondo personalizado; admite error y tipo de teclado.
 fun GradientOutlinedField(
     value: String,
     onValueChange: (String) -> Unit,
@@ -439,6 +459,7 @@ fun GradientOutlinedField(
 }
 
 @Composable
+// Botón estilizado con borde degradado que actúa como disparador (fecha/hora); marca error con color.
 fun GradientButton(
     text: String,
     onClick: () -> Unit,
@@ -472,5 +493,3 @@ fun GradientButton(
         )
     }
 }
-
-

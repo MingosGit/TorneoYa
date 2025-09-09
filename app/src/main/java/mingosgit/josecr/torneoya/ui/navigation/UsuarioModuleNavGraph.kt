@@ -19,6 +19,10 @@ import mingosgit.josecr.torneoya.viewmodel.usuario.*
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 
 import androidx.navigation.NavGraphBuilder
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.AdministrarPartidosScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.EstadisticasJugadorScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.MisJugadoresScreen
+import mingosgit.josecr.torneoya.ui.screens.usuario.ajustes.PartidosListaBusquedaScreen
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Suppress("FunctionName")

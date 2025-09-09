@@ -37,21 +37,25 @@ import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.ui.theme.text
 
 @Composable
+// Pantalla para asignar jugadores a equipos (modo manual o aleatorio) y guardar en BD.
 fun AsignarJugadoresOnlineScreen(
     navController: NavController,
     vm: AsignarJugadoresOnlineViewModel
 ) {
+    // Al entrar, carga la lista de jugadores existentes para usar en los desplegables.
     LaunchedEffect(Unit) {
         vm.cargarJugadoresExistentes()
     }
 
+    // UID del usuario logueado (para marcar "tú" en los menús).
     val miUid = FirebaseAuth.getInstance().currentUser?.uid
+    // Colores y pinceles de la UI.
     val cs = MaterialTheme.colorScheme
     val gradientPrimary = Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
-    val gradientError = Brush.horizontalGradient(listOf(cs.error, cs.secondary))
     val listBg = cs.surface.copy(alpha = 0.62f)
     val fieldBg = Brush.horizontalGradient(listOf(cs.surfaceVariant, cs.surface))
 
+    // Contenedor raíz con fondo degradado de la app.
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -62,7 +66,7 @@ fun AsignarJugadoresOnlineScreen(
                 .fillMaxSize()
                 .padding(horizontal = 22.dp, vertical = 24.dp)
         ) {
-            // HEADER
+            // HEADER: icono + título de pantalla.
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -93,7 +97,7 @@ fun AsignarJugadoresOnlineScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // SELECCIÓN DE EQUIPO
+            // SELECCIÓN DE EQUIPO: alterna entre equipo A y B para editar su lista.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,7 +120,7 @@ fun AsignarJugadoresOnlineScreen(
                 )
             }
 
-            // MODO
+            // SELECCIÓN DE MODO: manual (editas listas por equipo) o aleatorio (lista única para repartir).
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -139,6 +143,7 @@ fun AsignarJugadoresOnlineScreen(
                 )
             }
 
+            // BLOQUE MODO MANUAL: edición directa de jugadores del equipo seleccionado.
             AnimatedVisibility(
                 visible = !vm.modoAleatorio,
                 enter = fadeIn(), exit = fadeOut()
@@ -155,9 +160,11 @@ fun AsignarJugadoresOnlineScreen(
                             .align(Alignment.CenterHorizontally)
                             .padding(top = 10.dp, bottom = 7.dp)
                     )
+                    // Lista de jugadores del equipo activo (A o B).
                     val jugadores =
                         if (vm.equipoSeleccionado == "A") vm.equipoAJugadores else vm.equipoBJugadores
 
+                    // Caja con borde y fondo para la lista editable.
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -169,25 +176,29 @@ fun AsignarJugadoresOnlineScreen(
                                 shape = RoundedCornerShape(14.dp)
                             )
                     ) {
+                        // Lista con filas editables + una fila extra para "agregar".
                         LazyColumn(
                             modifier = Modifier
                                 .padding(12.dp)
                                 .heightIn(min = 100.dp, max = 350.dp)
                                 .fillMaxWidth()
                         ) {
+                            // itemsIndexed: recorre jugadores y añade una fila vacía final.
                             itemsIndexed(jugadores + listOf(JugadorFirebase())) { idx, value ->
-                                var expanded by remember { mutableStateOf(false) }
-                                var searchQuery by remember { mutableStateOf("") }
+                                var expanded by remember { mutableStateOf(false) } // estado menú desplegable
+                                var searchQuery by remember { mutableStateOf("") }  // búsqueda en el menú
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(bottom = 5.dp)
                                 ) {
+                                    // Campo de texto: edita nombre del jugador o crea/elimina según estado.
                                     OutlinedTextField(
                                         value = value.nombre,
                                         onValueChange = { newValue ->
                                             if (idx == jugadores.size) {
+                                                // Fila "agregar": si escribes algo, inserta nuevo jugador.
                                                 if (newValue.isNotBlank()) {
                                                     if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.add(
                                                         JugadorFirebase(nombre = newValue)
@@ -195,6 +206,7 @@ fun AsignarJugadoresOnlineScreen(
                                                     else vm.equipoBJugadores.add(JugadorFirebase(nombre = newValue))
                                                 }
                                             } else {
+                                                // Fila existente: vacío => borra; otro texto => actualiza.
                                                 if (newValue.isEmpty()) {
                                                     if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.removeAt(
                                                         idx
@@ -209,6 +221,7 @@ fun AsignarJugadoresOnlineScreen(
                                             }
                                         },
                                         label = {
+                                            // Etiqueta: "Agregar jugador" en la fila extra; si no, "Jugador #".
                                             Text(
                                                 if (idx == jugadores.size)
                                                     stringResource(id = R.string.asignjug_agregar_jugador)
@@ -240,6 +253,7 @@ fun AsignarJugadoresOnlineScreen(
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(fieldBg)
                                     )
+                                    // Botón para abrir el menú de selección desde jugadores existentes.
                                     IconButton(
                                         onClick = { expanded = true }
                                     ) {
@@ -249,10 +263,12 @@ fun AsignarJugadoresOnlineScreen(
                                             tint = cs.secondary
                                         )
                                     }
+                                    // Menú desplegable con buscador y opciones filtradas.
                                     DropdownMenu(
                                         expanded = expanded,
                                         onDismissRequest = { expanded = false },
                                     ) {
+                                        // Cuadro de búsqueda dentro del menú.
                                         OutlinedTextField(
                                             value = searchQuery,
                                             onValueChange = { searchQuery = it },
@@ -275,6 +291,7 @@ fun AsignarJugadoresOnlineScreen(
                                                 .fillMaxWidth()
                                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                                         )
+                                        // Opciones disponibles según equipo/posición y filtro de búsqueda.
                                         vm.jugadoresDisponiblesManual(vm.equipoSeleccionado, idx)
                                             .filter { it.nombre.contains(searchQuery, ignoreCase = true) }
                                             .forEach { jugador ->
@@ -282,6 +299,7 @@ fun AsignarJugadoresOnlineScreen(
                                                     text = {
                                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                                             Text(jugador.nombre, color = cs.text)
+                                                            // Marca "tú" si coincide tu UID.
                                                             if (miUid != null && jugador.uid == miUid) {
                                                                 Text(
                                                                     stringResource(id = R.string.asignjug_tu),
@@ -293,6 +311,7 @@ fun AsignarJugadoresOnlineScreen(
                                                         }
                                                     },
                                                     onClick = {
+                                                        // Sustituye o añade el jugador seleccionado en la fila actual.
                                                         if (idx == jugadores.size) {
                                                             if (vm.equipoSeleccionado == "A") vm.equipoAJugadores.add(
                                                                 jugador
@@ -315,6 +334,7 @@ fun AsignarJugadoresOnlineScreen(
                     }
                 }
             }
+            // BLOQUE MODO ALEATORIO: introduces una lista común y luego el VM reparte en A/B.
             AnimatedVisibility(
                 visible = vm.modoAleatorio,
                 enter = fadeIn(), exit = fadeOut()
@@ -329,6 +349,7 @@ fun AsignarJugadoresOnlineScreen(
                             .align(Alignment.CenterHorizontally)
                             .padding(vertical = 10.dp)
                     )
+                    // Caja con lista editable de nombres para el reparto aleatorio.
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -346,23 +367,27 @@ fun AsignarJugadoresOnlineScreen(
                                 .heightIn(min = 100.dp, max = 350.dp)
                                 .fillMaxWidth()
                         ) {
+                            // itemsIndexed: recorre la lista y añade fila extra para "agregar".
                             itemsIndexed(vm.listaNombres + listOf(JugadorFirebase())) { idx, value ->
-                                var expanded by remember { mutableStateOf(false) }
-                                var searchQuery by remember { mutableStateOf("") }
+                                var expanded by remember { mutableStateOf(false) } // estado menú desplegable
+                                var searchQuery by remember { mutableStateOf("") }  // filtro de búsqueda
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(bottom = 5.dp)
                                 ) {
+                                    // Campo de texto para editar/añadir/eliminar nombres de la lista común.
                                     OutlinedTextField(
                                         value = value.nombre,
                                         onValueChange = { newValue ->
                                             if (idx == vm.listaNombres.size) {
+                                                // Fila "agregar": inserta si no está en blanco.
                                                 if (newValue.isNotBlank()) {
                                                     vm.listaNombres.add(JugadorFirebase(nombre = newValue))
                                                 }
                                             } else {
+                                                // Fila existente: vacío => borra; otro texto => actualiza.
                                                 if (newValue.isEmpty()) {
                                                     vm.listaNombres.removeAt(idx)
                                                 } else {
@@ -398,6 +423,7 @@ fun AsignarJugadoresOnlineScreen(
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(fieldBg)
                                     )
+                                    // Botón para abrir menú con jugadores existentes y añadirlos rápido.
                                     IconButton(
                                         onClick = { expanded = true }
                                     ) {
@@ -407,6 +433,7 @@ fun AsignarJugadoresOnlineScreen(
                                             tint = cs.secondary
                                         )
                                     }
+                                    // Menú con buscador y candidatos disponibles (según VM).
                                     DropdownMenu(
                                         expanded = expanded,
                                         onDismissRequest = { expanded = false },
@@ -440,6 +467,7 @@ fun AsignarJugadoresOnlineScreen(
                                                     text = {
                                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                                             Text(jugador.nombre, color = cs.text)
+                                                            // Marca "tú" si el UID coincide con el del usuario.
                                                             if (miUid != null && jugador.uid == miUid) {
                                                                 Text(
                                                                     stringResource(id = R.string.asignjug_tu),
@@ -451,6 +479,7 @@ fun AsignarJugadoresOnlineScreen(
                                                         }
                                                     },
                                                     onClick = {
+                                                        // Inserta/sustituye el jugador elegido en la lista común.
                                                         if (idx == vm.listaNombres.size) {
                                                             vm.listaNombres.add(jugador)
                                                         } else {
@@ -471,7 +500,7 @@ fun AsignarJugadoresOnlineScreen(
 
             Spacer(Modifier.height(19.dp))
 
-            // BOTÓN GUARDAR
+            // BOTÓN GUARDAR: si es aleatorio, reparte y pasa a manual; luego guarda en BD y navega.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -489,8 +518,8 @@ fun AsignarJugadoresOnlineScreen(
                         if (vm.modoAleatorio) {
                             val jugadoresLimpios = vm.listaNombres.filter { it.nombre.isNotBlank() }
                             if (jugadoresLimpios.size >= 2) {
-                                vm.repartirAleatoriamente(jugadoresLimpios)
-                                vm.cambiarModo(false)
+                                vm.repartirAleatoriamente(jugadoresLimpios) // reparte entre A/B
+                                vm.cambiarModo(false) // vuelve a manual para revisión
                             }
                         }
                         vm.guardarEnBD {
@@ -515,6 +544,7 @@ fun AsignarJugadoresOnlineScreen(
 }
 
 @Composable
+// Botón con gradiente para seleccionar opciones (equipo o modo); muestra estado 'selected'.
 fun EquipoGradientButton(
     text: String,
     selected: Boolean,
@@ -523,6 +553,7 @@ fun EquipoGradientButton(
     onClick: () -> Unit
 ) {
     val cs = MaterialTheme.colorScheme
+    // Pinceles de borde y fondo según si está seleccionado.
     val borderBrush = if (selected)
         Brush.horizontalGradient(listOf(color, cs.secondary))
     else
@@ -532,6 +563,7 @@ fun EquipoGradientButton(
     else
         Brush.horizontalGradient(listOf(cs.background, cs.surfaceVariant))
 
+    // Caja clicable que actúa como botón estilizado.
     Box(
         modifier = modifier
             .height(45.dp)
@@ -545,6 +577,7 @@ fun EquipoGradientButton(
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
+        // Texto del botón con color/peso según selección.
         Text(
             text,
             color = if (selected) color else cs.mutedText,

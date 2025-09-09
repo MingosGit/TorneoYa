@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.usuario
+package mingosgit.josecr.torneoya.ui.screens.usuario.ajustes
 
 import android.app.Activity
 import android.content.Context
