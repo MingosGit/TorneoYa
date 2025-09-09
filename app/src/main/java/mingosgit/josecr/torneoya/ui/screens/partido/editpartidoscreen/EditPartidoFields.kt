@@ -17,9 +17,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun EditPartidoFields(
     fecha: String,
-    onFechaChange: (String) -> Unit,
     horaInicio: String,
-    onHoraInicioChange: (String) -> Unit,
     numeroPartes: String,
     onNumeroPartesChange: (String) -> Unit,
     tiempoPorParte: String,

@@ -36,13 +36,14 @@ import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.viewmodel.home.NotificacionesViewModel
 
 @Composable
-fun NotificacionesScreen(
+fun NotificacionesScreen( // Pantalla de listado de notificaciones (no leídas/leídas) con acciones
     usuarioUid: String
 ) {
     val cs = MaterialTheme.colorScheme
     val context = LocalContext.current
     val app = context.applicationContext as Application
 
+    // VM con factory manual para inyectar uid y Application
     val viewModel: NotificacionesViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -52,17 +53,17 @@ fun NotificacionesScreen(
         }
     )
 
-    val noLeidas by viewModel.noLeidas.collectAsState()
-    val leidas by viewModel.leidas.collectAsState()
-    val cargando by viewModel.cargando.collectAsState()
-    var mostrarLeidas by remember { mutableStateOf(false) }
+    val noLeidas by viewModel.noLeidas.collectAsState() // Lista de no leídas
+    val leidas by viewModel.leidas.collectAsState()     // Lista de leídas
+    val cargando by viewModel.cargando.collectAsState() // Loader global
+    var mostrarLeidas by remember { mutableStateOf(false) } // Toggle pestaña
 
-    var borrarUid by remember { mutableStateOf<String?>(null) }
-    var borrarTitulo by remember { mutableStateOf<String?>(null) }
+    var borrarUid by remember { mutableStateOf<String?>(null) }     // UID a borrar
+    var borrarTitulo by remember { mutableStateOf<String?>(null) }  // Título para el diálogo
 
     val background = TorneoYaPalette.backgroundGradient
     val gradientPrimarySecondary = remember(cs.primary, cs.secondary) {
-        Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
+        Brush.horizontalGradient(listOf(cs.primary, cs.secondary)) // Degradado para bordes
     }
 
     Box(
@@ -72,6 +73,7 @@ fun NotificacionesScreen(
             .padding(horizontal = 18.dp, vertical = 18.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // Cabecera con título y botón para cambiar entre no leídas/leídas
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -97,6 +99,7 @@ fun NotificacionesScreen(
                     }
                 }
             }
+            // Contenedor principal (loader, vacío o lista)
             Box(modifier = Modifier.weight(1f)) {
                 when {
                     cargando -> {
@@ -109,6 +112,7 @@ fun NotificacionesScreen(
                         }
                     }
                     (!mostrarLeidas && noLeidas.isEmpty()) || (mostrarLeidas && leidas.isEmpty()) -> {
+                        // Estado vacío con icono y textos
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(
@@ -157,6 +161,7 @@ fun NotificacionesScreen(
                         }
                     }
                     else -> {
+                        // Lista de notificaciones según pestaña activa
                         val lista = if (!mostrarLeidas) noLeidas else leidas
                         val listState = rememberLazyListState()
                         LazyColumn(
@@ -169,7 +174,7 @@ fun NotificacionesScreen(
                                 items = lista,
                                 key = { it.uid }
                             ) { noti ->
-                                NotificacionCard(
+                                NotificacionCard( // Tarjeta con título, mensaje, fecha y acciones
                                     noti = noti,
                                     onArchivar = {
                                         viewModel.archivarNotificacion(noti.uid)
@@ -189,6 +194,7 @@ fun NotificacionesScreen(
             }
         }
 
+        // Diálogo de confirmación para borrar notificación
         if (borrarUid != null && borrarTitulo != null) {
             val titulo = borrarTitulo!!
             CustomGradientDialog(
@@ -211,7 +217,7 @@ fun NotificacionesScreen(
 }
 
 @Composable
-fun CustomGradientDialog(
+fun CustomGradientDialog( // Diálogo con borde degradado y dos botones
     title: String,
     message: String,
     confirmText: String,
@@ -234,7 +240,7 @@ fun CustomGradientDialog(
         AlertDialog(
             onDismissRequest = onDismiss,
             confirmButton = {
-                GradientButton(
+                GradientButton( // Botón confirmar (degradado error)
                     text = confirmText,
                     gradient = gradientErrorSecondary,
                     textColor = cs.mutedText,
@@ -242,7 +248,7 @@ fun CustomGradientDialog(
                 )
             },
             dismissButton = {
-                GradientButton(
+                GradientButton( // Botón cancelar (degradado primario-secundario)
                     text = dismissText,
                     gradient = gradientPrimarySecondary,
                     textColor = cs.mutedText,
@@ -285,7 +291,7 @@ fun CustomGradientDialog(
 }
 
 @Composable
-fun GradientButton(
+fun GradientButton( // Botón transparente con borde degradado reutilizable
     text: String,
     gradient: Brush,
     textColor: androidx.compose.ui.graphics.Color,
@@ -331,10 +337,10 @@ fun GradientButton(
 }
 
 @Composable
-fun NotificacionCard(
+fun NotificacionCard( // Tarjeta de notificación con acciones de archivar/borrar
     noti: NotificacionFirebase,
-    onArchivar: (() -> Unit)? = null,
-    onBorrar: (() -> Unit)? = null
+    onArchivar: (() -> Unit)? = null, // Si no es null, muestra botón de marcar leída
+    onBorrar: (() -> Unit)? = null    // Si no es null, muestra botón de eliminar
 ) {
     val cs = MaterialTheme.colorScheme
     val colorAcento = when (noti.tipo) {
@@ -367,7 +373,7 @@ fun NotificacionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
+                Text( // Título de la notificación
                     text = noti.titulo,
                     color = colorAcento,
                     fontWeight = FontWeight.Bold,
@@ -375,6 +381,7 @@ fun NotificacionCard(
                     maxLines = 2,
                     modifier = Modifier.weight(1f)
                 )
+                // Acción contextual: borrar o archivar
                 if (onBorrar != null) {
                     IconButton(
                         onClick = onBorrar,
@@ -400,7 +407,7 @@ fun NotificacionCard(
                 }
             }
             Spacer(Modifier.height(6.dp))
-            Text(
+            Text( // Mensaje de la notificación
                 text = noti.mensaje,
                 color = cs.mutedText,
                 fontSize = 15.sp,
@@ -408,7 +415,7 @@ fun NotificacionCard(
             )
             if (noti.fechaHora != null) {
                 Spacer(Modifier.height(7.dp))
-                Text(
+                Text( // Fecha formateada
                     text = formatTimestamp(noti.fechaHora),
                     color = cs.secondary,
                     fontWeight = FontWeight.SemiBold,
@@ -419,7 +426,7 @@ fun NotificacionCard(
     }
 }
 
-fun formatTimestamp(timestamp: Timestamp?): String {
+fun formatTimestamp(timestamp: Timestamp?): String { // Formatea Timestamp a "yyyy-MM-dd HH:mm"
     if (timestamp == null) return ""
     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
     return sdf.format(Date(timestamp.seconds * 1000))

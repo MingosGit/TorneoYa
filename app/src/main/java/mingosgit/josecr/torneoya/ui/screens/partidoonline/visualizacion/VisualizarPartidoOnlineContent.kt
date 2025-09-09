@@ -1,9 +1,13 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido.PartidoEquiposHeaderOnline
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido.PartidoEstadoBannerOnline
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido.PartidoGolesHeaderOnline
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido.PartidoTabsOnline
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 

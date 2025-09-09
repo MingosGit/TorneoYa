@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.EncuestaOnlineConResultadosConAvatar
 import mingosgit.josecr.torneoya.R
@@ -57,7 +58,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
             onClick = {
                 scope.launch {
                     isLoading = true
-                    kotlinx.coroutines.yield()
+                    yield()
                     delay(150)
                     vm.cargarComentariosEncuestas(usuarioUid)
                     isLoading = false
@@ -369,7 +370,7 @@ fun PartidoTabEncuestasOnline(vm: VisualizarPartidoOnlineViewModel, usuarioUid: 
                                                 opciones.clear(); opciones.addAll(listOf("", ""))
                                                 expandedCrear = false
                                                 isLoading = true
-                                                kotlinx.coroutines.yield()
+                                                yield()
                                                 delay(150)
                                                 vm.cargarComentariosEncuestas(usuarioUid)
                                                 isLoading = false

@@ -9,10 +9,12 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private const val HOME_DS = "home_cache_store"
+private const val HOME_DS = "home_cache_store" // Nombre del DataStore para la pantalla Home
 
+// Extensión de Context para acceder al DataStore de preferencias de Home
 private val Context.homeDataStore: DataStore<Preferences> by preferencesDataStore(name = HOME_DS)
 
+// DTO con las métricas cacheadas que se muestran en Home
 data class HomeCachedStats(
     val partidosTotales: Int = 0,
     val equiposTotales: Int = 0,
@@ -20,7 +22,9 @@ data class HomeCachedStats(
     val amigosTotales: Int = 0
 )
 
+// Capa de acceso a DataStore para leer/guardar las métricas de Home
 class HomeCacheStore(private val appContext: Context) {
+    // Claves de preferencias para cada contador
     private object Keys {
         val PARTIDOS = intPreferencesKey("partidos_totales")
         val EQUIPOS = intPreferencesKey("equipos_totales")
@@ -28,6 +32,7 @@ class HomeCacheStore(private val appContext: Context) {
         val AMIGOS = intPreferencesKey("amigos_totales")
     }
 
+    // Flow que expone las stats leídas desde DataStore mapeadas al modelo
     val stats: Flow<HomeCachedStats> = appContext.homeDataStore.data.map { p ->
         HomeCachedStats(
             partidosTotales = p[Keys.PARTIDOS] ?: 0,
@@ -37,6 +42,7 @@ class HomeCacheStore(private val appContext: Context) {
         )
     }
 
+    // Guarda las stats en DataStore sobrescribiendo los valores actuales
     suspend fun save(stats: HomeCachedStats) {
         appContext.homeDataStore.edit { p ->
             p[Keys.PARTIDOS] = stats.partidosTotales

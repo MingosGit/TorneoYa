@@ -3,7 +3,6 @@ package mingosgit.josecr.torneoya.ui.screens.partidoonline
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -28,10 +27,10 @@ import mingosgit.josecr.torneoya.R
 import java.util.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalTextStyle
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.CustomDatePickerDialog
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.CustomTimePickerDialog
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 import mingosgit.josecr.torneoya.ui.theme.text
 
@@ -372,8 +371,10 @@ fun CrearPartidoOnlineScreen(
         )
         CustomTimePickerDialog(
             show = showTimePicker,
-            initialHour = horaInicio.takeIf { it.isNotBlank() }?.split(":")?.get(0)?.toIntOrNull() ?: 0,
-            initialMinute = horaInicio.takeIf { it.isNotBlank() }?.split(":")?.get(1)?.toIntOrNull() ?: 0,
+            initialHour = horaInicio.takeIf { it.isNotBlank() }?.split(":")?.get(0)?.toIntOrNull()
+                ?: 0,
+            initialMinute = horaInicio.takeIf { it.isNotBlank() }?.split(":")?.get(1)?.toIntOrNull()
+                ?: 0,
             onDismiss = { showTimePicker = false },
             onTimeSelected = { hour, min ->
                 horaInicio = "%02d:%02d".format(hour, min)

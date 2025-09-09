@@ -32,7 +32,7 @@ import mingosgit.josecr.torneoya.viewmodel.amigos.AmigosViewModel
 import mingosgit.josecr.torneoya.viewmodel.equipopredefinido.EquiposPredefinidosViewModel
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import mingosgit.josecr.torneoya.ui.screens.partidoonline.PartidoOnlineScreen
-import mingosgit.josecr.torneoya.ui.screens.partidoonline.VisualizarPartidoOnlineScreen
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.VisualizarPartidoOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.PartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -45,12 +45,14 @@ import mingosgit.josecr.torneoya.ui.screens.usuario.MiCuentaScreen
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarPartidoOnlineViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.LoginViewModel
 import mingosgit.josecr.torneoya.viewmodel.partidoonline.AdministrarJugadoresOnlineViewModel
-import mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarJugadoresOnlineScreen
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.administración.AdministrarJugadoresOnlineScreen
 import mingosgit.josecr.torneoya.viewmodel.usuario.MiCuentaViewModel
 import androidx.activity.ComponentActivity
 import mingosgit.josecr.torneoya.ui.screens.avatar.AvatarScreen
 import mingosgit.josecr.torneoya.ui.screens.cuentaLocal.CuentaLocalScreen
 import mingosgit.josecr.torneoya.ui.screens.home.NotificacionesScreen
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.administración.AdministrarPartidoOnlineScreen
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.administración.AdministrarRolesOnlineScreen
 import mingosgit.josecr.torneoya.ui.screens.perfilamigo.PerfilAmigoScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.CreditosScreen
 import mingosgit.josecr.torneoya.ui.screens.usuario.IdiomaScreen
@@ -154,7 +156,7 @@ fun NavGraph(
                     }
                 }
             )
-            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarPartidoOnlineScreen(
+            AdministrarPartidoOnlineScreen(
                 partidoUid = partidoUid,
                 navController = navController,
                 viewModel = vm,
@@ -213,7 +215,7 @@ fun NavGraph(
                     }
                 }
             )
-            mingosgit.josecr.torneoya.ui.screens.partidoonline.AdministrarRolesOnlineScreen(
+            AdministrarRolesOnlineScreen(
                 partidoUid = partidoUid,
                 navController = navController,
                 vm = vm

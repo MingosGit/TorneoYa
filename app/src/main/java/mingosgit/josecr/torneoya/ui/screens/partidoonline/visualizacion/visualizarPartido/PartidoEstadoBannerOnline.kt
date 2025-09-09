@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*

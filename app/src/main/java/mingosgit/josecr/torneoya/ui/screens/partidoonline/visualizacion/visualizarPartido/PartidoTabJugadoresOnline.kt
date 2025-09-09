@@ -1,6 +1,6 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido
 
-import android.widget.Toast
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -317,7 +317,7 @@ private fun AmistadDropdownMenu(
 
 suspend fun enviarSolicitudAmistadSiProcede(
     jugadorNombre: String,
-    context: android.content.Context,
+    context: Context,
     msgMustBeLoggedIn: String,
     msgLocalPlayerNoAccount: String,
     msgCannotSendToSelf: String,

@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,11 +26,12 @@ import mingosgit.josecr.torneoya.data.firebase.GoleadorFirebase
 import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.ui.theme.mutedText
+import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState
 
 @Composable
 fun PartidoTabEventosOnline(
     partidoUid: String,
-    uiState: mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnlineUiState,
+    uiState: VisualizarPartidoOnlineUiState,
     reloadKey: Int = 0
 ) {
     val cs = MaterialTheme.colorScheme

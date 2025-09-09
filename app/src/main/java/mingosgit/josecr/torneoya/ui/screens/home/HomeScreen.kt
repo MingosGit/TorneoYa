@@ -46,19 +46,20 @@ import mingosgit.josecr.torneoya.viewmodel.home.HomeViewModel
 import mingosgit.josecr.torneoya.viewmodel.usuario.GlobalUserViewModel
 
 @Composable
-fun HomeScreen(
+fun HomeScreen( // Pantalla principal: cabecera, atajos, stats y próximo partido
     viewModel: HomeViewModel,
     navController: NavController
 ) {
     val cs = MaterialTheme.colorScheme
-    val uiState by viewModel.uiState.collectAsState()
-    val proximoPartidoUi by viewModel.proximoPartidoUi.collectAsState()
-    val cargandoProx by viewModel.cargandoProx.collectAsState()
-    val unreadCount by viewModel.unreadCount.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()                 // Estado con nombre y stats cacheadas
+    val proximoPartidoUi by viewModel.proximoPartidoUi.collectAsState() // Info del próximo partido o null
+    val cargandoProx by viewModel.cargandoProx.collectAsState()       // Loader de la sección próximo partido
+    val unreadCount by viewModel.unreadCount.collectAsState()         // Nº notificaciones no leídas
 
     val globalUserViewModel: GlobalUserViewModel = viewModel()
-    LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() }
+    LaunchedEffect(Unit) { globalUserViewModel.cargarNombreUsuarioOnlineSiSesionActiva() } // Intenta hidratar sesión
 
+    // Resolución de avatar actual para la cabecera
     val avatar by globalUserViewModel.avatar.collectAsState()
     val context = LocalContext.current
     val avatarRes = if (avatar != null)
@@ -71,12 +72,12 @@ fun HomeScreen(
         Brush.horizontalGradient(listOf(cs.primary, cs.secondary))
     }
 
+    // Control de splash corto mientras se decide si hay sesión
     var isLoading by remember { mutableStateOf(true) }
     var loadingTimeoutReached by remember { mutableStateOf(false) }
     var showNoSesionScreen by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.nombreUsuario) {
-        // La sesión ahora se basa en caché + online. Si hay nombre cacheado, es sesión activa.
+    LaunchedEffect(uiState.nombreUsuario) { // Espera breve a tener nombre; si no, muestra CTA login/registro
         isLoading = true
         loadingTimeoutReached = false
         showNoSesionScreen = false
@@ -94,7 +95,7 @@ fun HomeScreen(
             .fillMaxSize()
             .background(brush = modernBackground)
     ) {
-        // Botón notificaciones con badge
+        // Botón de notificaciones con badge animado
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,7 +119,6 @@ fun HomeScreen(
                     modifier = Modifier.size(25.dp)
                 )
 
-                // Badge de no leídas
                 AnimatedVisibility(visible = unreadCount > 0, enter = fadeIn(), exit = fadeOut()) {
                     Box(
                         modifier = Modifier
@@ -141,6 +141,7 @@ fun HomeScreen(
             }
         }
 
+        // Loader inicial (cuenta)
         if (isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -156,6 +157,7 @@ fun HomeScreen(
             return
         }
 
+        // Pantalla sin sesión: CTAs login/registro
         if (showNoSesionScreen) {
             Column(
                 modifier = Modifier
@@ -184,7 +186,7 @@ fun HomeScreen(
                     fontWeight = FontWeight.Normal
                 )
                 Spacer(Modifier.height(32.dp))
-                Box(
+                Box( // Ir a login
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
@@ -197,7 +199,7 @@ fun HomeScreen(
                     Text(stringResource(id = R.string.gen_iniciar_sesion), color = MaterialTheme.colorScheme.mutedText, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
                 Spacer(Modifier.height(11.dp))
-                Box(
+                Box( // Ir a registro
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
@@ -210,7 +212,7 @@ fun HomeScreen(
                     Text(stringResource(id = R.string.gen_crear_cuenta), color = MaterialTheme.colorScheme.mutedText, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 }
                 Spacer(Modifier.height(26.dp))
-                Text(
+                Text( // Nota sobre cuenta local
                     text = stringResource(id = R.string.home_cuenta_local),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.mutedText,
@@ -224,12 +226,13 @@ fun HomeScreen(
             return
         }
 
+        // Contenido principal con sesión activa
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-            // Header
+            // Cabecera con avatar, saludo y subtítulo
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -277,7 +280,7 @@ fun HomeScreen(
 
             Spacer(Modifier.height(29.dp))
 
-            // Stats
+            // Estadísticas resumidas
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 StatCircle(Icons.Filled.SportsSoccer, stringResource(id = R.string.gen_partidos), uiState.partidosTotales, cs.primary)
                 StatCircle(Icons.Filled.Group, stringResource(id = R.string.gen_amigos), uiState.amigosTotales, cs.error)
@@ -285,7 +288,7 @@ fun HomeScreen(
 
             Spacer(Modifier.height(31.dp))
 
-            // Quick actions
+            // Atajos rápidos
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -302,7 +305,7 @@ fun HomeScreen(
 
             Spacer(Modifier.height(27.dp))
 
-            // Próximo partido / Sin próximos partidos
+            // Bloque: próximo partido o mensaje de vacío con acciones
             if (cargandoProx) {
                 Box(Modifier
                     .fillMaxWidth()
@@ -368,7 +371,7 @@ fun HomeScreen(
                                     )
                                 }
                                 Spacer(Modifier.height(12.dp))
-                                Box(
+                                Box( // CTA para abrir el partido
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(10.dp))
                                         .border(2.dp, borderBrush, RoundedCornerShape(10.dp))
@@ -392,7 +395,7 @@ fun HomeScreen(
 
                 AnimatedVisibility(visible = proximoPartidoUi == null, enter = fadeIn(), exit = fadeOut()) {
                     val borderBrush = Brush.horizontalGradient(listOf(cs.tertiary, cs.secondary))
-                    Column(
+                    Column( // Estado sin próximos partidos + atajos para crear/buscar
                         Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(17.dp))
@@ -441,7 +444,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun QuickAccessButton(
+fun QuickAccessButton( // Botón de acceso rápido con icono + etiqueta
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     modifier: Modifier = Modifier,
@@ -467,7 +470,7 @@ fun QuickAccessButton(
 }
 
 @Composable
-fun StatCircle(
+fun StatCircle( // Indicador circular de estadística con icono, valor y etiqueta
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: Int,

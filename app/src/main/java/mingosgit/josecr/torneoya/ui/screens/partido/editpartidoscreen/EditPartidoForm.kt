@@ -83,9 +83,7 @@ fun EditPartidoForm(
         )
         EditPartidoFields(
             fecha = fecha,
-            onFechaChange = onFechaChange,
             horaInicio = horaInicio,
-            onHoraInicioChange = onHoraInicioChange,
             numeroPartes = numeroPartes,
             onNumeroPartesChange = onNumeroPartesChange,
             tiempoPorParte = tiempoPorParte,

@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -6,6 +6,7 @@ import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -101,7 +103,7 @@ fun VisualizarPartidoOnlineScreen(
             .background(TorneoYaPalette.backgroundGradient)
     ) {
         Scaffold(
-            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = {
@@ -114,7 +116,7 @@ fun VisualizarPartidoOnlineScreen(
                         )
                     },
                     colors = TopAppBarDefaults.smallTopAppBarColors(
-                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        containerColor = Color.Transparent,
                         titleContentColor = cs.onSurface,
                         navigationIconContentColor = cs.onSurface,
                         actionIconContentColor = cs.onSurface
@@ -291,10 +293,10 @@ fun VisualizarPartidoOnlineScreen(
                         Spacer(modifier = Modifier.height(23.dp))
                         Button(
                             onClick = { showPermisoDialog = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                             shape = RoundedCornerShape(13.dp),
-                            border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderPrimary),
+                            border = BorderStroke(2.dp, gradientBorderPrimary),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                         ) {
                             Text(btnOk, color = cs.primary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -340,10 +342,10 @@ fun VisualizarPartidoOnlineScreen(
                         Spacer(modifier = Modifier.height(23.dp))
                         Button(
                             onClick = { showEsCreadorNoSalirDialog = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                             shape = RoundedCornerShape(13.dp),
-                            border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderDestructive),
+                            border = BorderStroke(2.dp, gradientBorderDestructive),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                         ) {
                             Text(btnOk, color = cs.error, fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -396,10 +398,10 @@ fun VisualizarPartidoOnlineScreen(
                                     }
                                 },
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                                 contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                                 shape = RoundedCornerShape(13.dp),
-                                border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderDestructive),
+                                border = BorderStroke(2.dp, gradientBorderDestructive),
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                             ) {
                                 Text(dialogStopViewingConfirm, color = cs.error, fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -407,10 +409,10 @@ fun VisualizarPartidoOnlineScreen(
                             OutlinedButton(
                                 onClick = { showDejarDeVerDialog = false },
                                 modifier = Modifier.weight(1f),
-                                border = androidx.compose.foundation.BorderStroke(2.dp, gradientBorderPrimary),
+                                border = BorderStroke(2.dp, gradientBorderPrimary),
                                 shape = RoundedCornerShape(13.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                    containerColor = Color.Transparent,
                                     contentColor = cs.primary
                                 ),
                                 contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp)

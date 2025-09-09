@@ -1,6 +1,5 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.administración
 
-import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
@@ -31,14 +29,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import mingosgit.josecr.torneoya.R
 import mingosgit.josecr.torneoya.data.firebase.*
@@ -47,15 +48,19 @@ import java.util.Calendar
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.CustomDatePickerDialog
+import mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.CustomTimePickerDialog
 import mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette
 import mingosgit.josecr.torneoya.ui.theme.text
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
+// Extensión para navegar atrás N veces
 private fun NavController.popBackStack(times: Int) {
     repeat(times) { if (!popBackStack()) return }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+// Pantalla principal para administrar un partido online (fecha/hora, equipos, goles, borrado)
 @Composable
 fun AdministrarPartidoOnlineScreen(
     partidoUid: String,
@@ -63,6 +68,7 @@ fun AdministrarPartidoOnlineScreen(
     viewModel: AdministrarPartidoOnlineViewModel,
     usuarioUid: String
 ) {
+    // ---- Estados expuestos por el ViewModel ----
     val loading by viewModel.loading.collectAsState()
     val partido by viewModel.partido.collectAsState()
     val equipoA by viewModel.equipoA.collectAsState()
@@ -79,30 +85,32 @@ fun AdministrarPartidoOnlineScreen(
     val tiempoPorParteEditable by viewModel.tiempoPorParteEditable.collectAsState()
     val tiempoDescansoEditable by viewModel.tiempoDescansoEditable.collectAsState()
 
-    var showDialog by remember { mutableStateOf(false) }
-    var equipoSeleccionado by remember { mutableStateOf("A") }
-    var jugadorSeleccionado by remember { mutableStateOf<JugadorFirebase?>(null) }
-    var asistenciaSeleccionada by remember { mutableStateOf<JugadorFirebase?>(null) }
-    var minuto by remember { mutableStateOf("") }
-    var expandedEquipo by remember { mutableStateOf(false) }
-    var expandedJugador by remember { mutableStateOf(false) }
-    var expandedAsistente by remember { mutableStateOf(false) }
+    // ---- Estados locales de la pantalla ----
+    var showDialog by remember { mutableStateOf(false) } // diálogo de confirmar guardado/salida
+    var equipoSeleccionado by remember { mutableStateOf("A") } // equipo A/B para alta de gol
+    var jugadorSeleccionado by remember { mutableStateOf<JugadorFirebase?>(null) } // goleador seleccionado
+    var asistenciaSeleccionada by remember { mutableStateOf<JugadorFirebase?>(null) } // asistente seleccionado
+    var minuto by remember { mutableStateOf("") } // minuto del gol
+    var expandedEquipo by remember { mutableStateOf(false) } // menú desplegable equipo
+    var expandedJugador by remember { mutableStateOf(false) } // menú desplegable jugador
+    var expandedAsistente by remember { mutableStateOf(false) } // menú desplegable asistente
 
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) } // diálogo de fecha
+    var showTimePicker by remember { mutableStateOf(false) } // diálogo de hora
     val calendar = Calendar.getInstance()
 
-    var pickedDate by remember { mutableStateOf(fechaEditable) }
-    var pickedHour by remember { mutableStateOf(horaEditable) }
+    var pickedDate by remember { mutableStateOf(fechaEditable) } // copia local de fecha
+    var pickedHour by remember { mutableStateOf(horaEditable) } // copia local de hora
 
-    var esCreador by remember { mutableStateOf(false) }
+    var esCreador by remember { mutableStateOf(false) } // si el usuario es creador del partido
 
     // NUEVO: diálogo y estado para eliminar partido
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var deleting by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val repo = remember { PartidoFirebaseRepository() }
+    var showDeleteDialog by remember { mutableStateOf(false) } // visibilidad del diálogo de borrado
+    var deleting by remember { mutableStateOf(false) } // estado de borrado en curso
+    val scope = rememberCoroutineScope() // scope para corrutinas locales
+    val repo = remember { PartidoFirebaseRepository() } // repo para eliminar partido
 
+    // Mapea nombres manuales a JugadorFirebase "dummy" para listarlos
     val jugadoresManualA = partido?.nombresManualEquipoA?.map { nombre ->
         JugadorFirebase(uid = "", nombre = nombre, email = "")
     } ?: emptyList()
@@ -111,6 +119,7 @@ fun AdministrarPartidoOnlineScreen(
         JugadorFirebase(uid = "", nombre = nombre, email = "")
     } ?: emptyList()
 
+    // Comprueba si el usuario es creador del partido
     LaunchedEffect(partidoUid, usuarioUid) {
         val firestore = FirebaseFirestore.getInstance()
         val snap = firestore.collection("partidos").document(partidoUid).get().await()
@@ -118,10 +127,12 @@ fun AdministrarPartidoOnlineScreen(
         esCreador = usuarioUid == creadorUid
     }
 
+    // Carga/recarga datos del partido al entrar
     LaunchedEffect(partidoUid) {
         viewModel.recargarTodo()
     }
 
+    // Pantalla de carga centrada
     if (loading) {
         Box(
             Modifier
@@ -134,17 +145,20 @@ fun AdministrarPartidoOnlineScreen(
         return
     }
 
+    // ---- Derivados visuales ----
     val nombreEquipoA = equipoA?.nombre ?: stringResource(R.string.adminp_label_nombre_equipo_a)
     val nombreEquipoB = equipoB?.nombre ?: stringResource(R.string.adminp_label_nombre_equipo_b)
     val fecha = partido?.fecha.orEmpty()
 
+    // Raíz de la pantalla con degradado de fondo
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(TorneoYaPalette.backgroundGradient)
     ) {
+        // Columna principal apilando header y contenido
         Column(modifier = Modifier.fillMaxSize()) {
-            // HEADER
+            // HEADER: back, título y acceso a roles
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -152,6 +166,7 @@ fun AdministrarPartidoOnlineScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (navController != null) {
+                    // Botón volver
                     IconButton(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier
@@ -184,6 +199,7 @@ fun AdministrarPartidoOnlineScreen(
                     }
                 }
                 Spacer(Modifier.width(10.dp))
+                // Título de sección
                 Text(
                     text = stringResource(R.string.adminp_title),
                     fontSize = 22.sp,
@@ -191,6 +207,7 @@ fun AdministrarPartidoOnlineScreen(
                     fontWeight = FontWeight.Black
                 )
                 Spacer(Modifier.weight(1f))
+                // Botón roles (solo visible si es creador)
                 if (esCreador) {
                     IconButton(
                         onClick = {
@@ -229,6 +246,7 @@ fun AdministrarPartidoOnlineScreen(
 
             Spacer(Modifier.height(7.dp))
 
+            // Lista desplazable con toda la edición
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -236,6 +254,7 @@ fun AdministrarPartidoOnlineScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
+                    // Subtítulo con uid y fecha
                     Text(
                         text = stringResource(R.string.adminp_uid_fecha, partidoUid, fecha),
                         color = MaterialTheme.colorScheme.mutedText,
@@ -245,6 +264,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
+                    // ---- Bloque: fecha, hora y tiempos ----
                     Column(Modifier.fillMaxWidth()) {
                         // ------ FECHA ------
                         ModernMainButton(
@@ -252,13 +272,20 @@ fun AdministrarPartidoOnlineScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.adminp_btn_seleccionar_fecha, fechaEditable)) }
 
+                        // Diálogo selector de fecha
                         CustomDatePickerDialog(
                             show = showDatePicker,
                             initialDate = Calendar.getInstance().apply {
                                 val parts = fechaEditable.split("-")
                                 if (parts.size == 3) {
-                                    set(Calendar.DAY_OF_MONTH, parts[0].toIntOrNull() ?: get(Calendar.DAY_OF_MONTH))
-                                    set(Calendar.MONTH, (parts[1].toIntOrNull() ?: (get(Calendar.MONTH) + 1)) - 1)
+                                    set(
+                                        Calendar.DAY_OF_MONTH,
+                                        parts[0].toIntOrNull() ?: get(Calendar.DAY_OF_MONTH)
+                                    )
+                                    set(
+                                        Calendar.MONTH,
+                                        (parts[1].toIntOrNull() ?: (get(Calendar.MONTH) + 1)) - 1
+                                    )
                                     set(Calendar.YEAR, parts[2].toIntOrNull() ?: get(Calendar.YEAR))
                                 }
                             },
@@ -269,7 +296,7 @@ fun AdministrarPartidoOnlineScreen(
                                     cal.get(Calendar.MONTH) + 1,
                                     cal.get(Calendar.YEAR)
                                 )
-                                viewModel.setFechaEditable(fechaSel)
+                                viewModel.setFechaEditable(fechaSel) // guarda fecha en VM
                             }
                         )
                         Spacer(Modifier.height(8.dp))
@@ -280,14 +307,16 @@ fun AdministrarPartidoOnlineScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.adminp_btn_seleccionar_hora, horaEditable)) }
 
+                        // Diálogo selector de hora
                         CustomTimePickerDialog(
                             show = showTimePicker,
                             initialHour = horaEditable.split(":").getOrNull(0)?.toIntOrNull() ?: 12,
-                            initialMinute = horaEditable.split(":").getOrNull(1)?.toIntOrNull() ?: 0,
+                            initialMinute = horaEditable.split(":").getOrNull(1)?.toIntOrNull()
+                                ?: 0,
                             onDismiss = { showTimePicker = false },
                             onTimeSelected = { hour, min ->
                                 val hora = "%02d:%02d".format(hour, min)
-                                viewModel.setHoraEditable(hora)
+                                viewModel.setHoraEditable(hora) // guarda hora en VM
                             }
                         )
                         Spacer(Modifier.height(8.dp))
@@ -298,7 +327,7 @@ fun AdministrarPartidoOnlineScreen(
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setNumeroPartesEditable(it) } },
                             label = { Text(stringResource(R.string.adminp_label_num_partes)) },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
                                 unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
@@ -313,7 +342,7 @@ fun AdministrarPartidoOnlineScreen(
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoPorParteEditable(it) } },
                             label = { Text(stringResource(R.string.adminp_label_minutos_por_parte),color = MaterialTheme.colorScheme.mutedText) },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
                                 unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
@@ -327,13 +356,14 @@ fun AdministrarPartidoOnlineScreen(
                             onValueChange = { s -> s.toIntOrNull()?.let { viewModel.setTiempoDescansoEditable(it) } },
                             label = { Text(stringResource(R.string.adminp_label_minutos_descanso),color = MaterialTheme.colorScheme.mutedText) },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = MaterialTheme.colorScheme.mutedText,
                                 unfocusedLabelColor = MaterialTheme.colorScheme.mutedText
                             )
                         )
                         Spacer(Modifier.height(8.dp))
+                        // Botón guardar parámetros del partido
                         ModernMainButton(
                             onClick = { viewModel.actualizarDatosPartido() },
                             modifier = Modifier.fillMaxWidth()
@@ -361,6 +391,7 @@ fun AdministrarPartidoOnlineScreen(
                             )
                         )
                         Spacer(Modifier.width(8.dp))
+                        // Guardar nombre A
                         ModernMainButton(
                             onClick = { viewModel.actualizarNombreEquipoA() },
                             enabled = nombreEquipoAEditable.isNotBlank() && nombreEquipoAEditable != nombreEquipoA
@@ -388,6 +419,7 @@ fun AdministrarPartidoOnlineScreen(
                             )
                         )
                         Spacer(Modifier.width(8.dp))
+                        // Guardar nombre B
                         ModernMainButton(
                             onClick = { viewModel.actualizarNombreEquipoB() },
                             enabled = nombreEquipoBEditable.isNotBlank() && nombreEquipoBEditable != nombreEquipoB
@@ -399,6 +431,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
+                    // ---- Cabecera de lista de goles ----
                     Text(
                         stringResource(R.string.adminp_goles_registrados),
                         color = MaterialTheme.colorScheme.secondary,
@@ -408,6 +441,7 @@ fun AdministrarPartidoOnlineScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                // ---- Ítems de goles existentes con opción de borrado ----
                 items(goles) { gol ->
                     val equipoNombre = when (gol.equipoUid) {
                         equipoA?.uid -> nombreEquipoA
@@ -435,6 +469,7 @@ fun AdministrarPartidoOnlineScreen(
                             .padding(vertical = 8.dp, horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Texto del gol con equipo, jugador, minuto y asistencia
                         Text(
                             text = "$equipoNombre - ${stringResource(R.string.adminp_label_jugador)}: $jugadorNombre" +
                                     (gol.minuto?.let { " (${it}') " } ?: "") +
@@ -442,6 +477,7 @@ fun AdministrarPartidoOnlineScreen(
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.text
                         )
+                        // Botón eliminar gol
                         IconButton(
                             onClick = { viewModel.borrarGol(gol) }
                         ) {
@@ -458,6 +494,7 @@ fun AdministrarPartidoOnlineScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Divider(color = MaterialTheme.colorScheme.outline)
                     Spacer(modifier = Modifier.height(8.dp))
+                    // Cabecera para añadir gol
                     Text(
                         stringResource(R.string.adminp_btn_agregar_gol),
                         color = MaterialTheme.colorScheme.secondary,
@@ -468,7 +505,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
-                    // Equipo
+                    // Selector de equipo para el nuevo gol
                     ExposedDropdownMenuBox(
                         expanded = expandedEquipo,
                         onExpandedChange = { expandedEquipo = !expandedEquipo }
@@ -516,7 +553,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
-                    // Jugador (solo del equipo seleccionado)
+                    // Selector de jugador (según equipo elegido) incluyendo manuales
                     val jugadoresOnline = if (equipoSeleccionado == "A") jugadoresA else jugadoresB
                     val jugadoresManual = if (equipoSeleccionado == "A") jugadoresManualA else jugadoresManualB
 
@@ -582,12 +619,13 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
-                    // Minuto y Asistencia juntos
+                    // Fila: campo minuto y selector de asistente (opcional)
                     val jugadoresOnline = if (equipoSeleccionado == "A") jugadoresA else jugadoresB
                     val jugadoresManual = if (equipoSeleccionado == "A") jugadoresManualA else jugadoresManualB
                     val asistentesPosiblesOnline = jugadoresOnline.filter { it.uid != jugadorSeleccionado?.uid }
                     val asistentesPosiblesManual = jugadoresManual.filter { it.nombre != jugadorSeleccionado?.nombre }
                     Row(modifier = Modifier.fillMaxWidth()) {
+                        // Campo numérico de minuto
                         OutlinedTextField(
                             value = minuto,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -603,11 +641,12 @@ fun AdministrarPartidoOnlineScreen(
                             },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions.Default.copy(
-                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                                keyboardType = KeyboardType.Number
                             ),
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
+                        // Desplegable de asistente
                         ExposedDropdownMenuBox(
                             expanded = expandedAsistente,
                             onExpandedChange = { expandedAsistente = !expandedAsistente }
@@ -684,11 +723,11 @@ fun AdministrarPartidoOnlineScreen(
 
                     }
 
-
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 item {
+                    // Botón que añade el gol (online o manual) y limpia campos
                     ModernMainButton(
                         onClick = {
                             val equipoUid = if (equipoSeleccionado == "A") equipoA?.uid else equipoB?.uid
@@ -722,6 +761,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
+                    // Guardar y volver
                     ModernMainButton(
                         onClick = { showDialog = true },
                         modifier = Modifier.fillMaxWidth()
@@ -732,6 +772,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
 
                 item {
+                    // Navegar a gestión de jugadores
                     ModernOutlineButton(
                         onClick = { navController?.navigate("administrar_jugadores_online/$partidoUid/${equipoA?.uid}/${equipoB?.uid}") },
                         modifier = Modifier.fillMaxWidth()
@@ -741,7 +782,7 @@ fun AdministrarPartidoOnlineScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                // ======== NUEVA SECCIÓN: ELIMINAR PARTIDO (SOLO CREADOR) ========
+                // ======== Sección: eliminar partido (solo creador) ========
                 if (esCreador) {
                     item {
                         Divider(color = MaterialTheme.colorScheme.outline)
@@ -754,6 +795,7 @@ fun AdministrarPartidoOnlineScreen(
                             modifier = Modifier.align(Alignment.Start)
                         )
                         Spacer(Modifier.height(8.dp))
+                        // Botón rojo de eliminar
                         ModernDangerButton(
                             onClick = { showDeleteDialog = true },
                             enabled = !deleting,
@@ -765,6 +807,7 @@ fun AdministrarPartidoOnlineScreen(
                     }
                 }
 
+                // Diálogo confirmar guardado y volver
                 if (showDialog) {
                     item {
                         AlertDialog(
@@ -787,6 +830,7 @@ fun AdministrarPartidoOnlineScreen(
                 }
             }
 
+            // Diálogo de eliminación con acciones
             DeleteMatchDialog(
                 visible = showDeleteDialog && esCreador,
                 deleting = deleting,
@@ -796,9 +840,9 @@ fun AdministrarPartidoOnlineScreen(
                     deleting = true
                     scope.launch {
                         try {
-                            repo.eliminarPartidoCompleto(partidoUid, usuarioUid)
+                            repo.eliminarPartidoCompleto(partidoUid, usuarioUid) // borra partido y dependencias
                             showDeleteDialog = false
-                            navController?.popBackStack(2)
+                            navController?.popBackStack(2) // vuelve dos pantallas
                         } catch (_: Exception) {
                             deleting = false
                         }
@@ -809,6 +853,7 @@ fun AdministrarPartidoOnlineScreen(
     }
 }
 
+// Diálogo personalizado para confirmar la eliminación de un partido
 @Composable
 private fun DeleteMatchDialog(
     visible: Boolean,
@@ -818,7 +863,8 @@ private fun DeleteMatchDialog(
 ) {
     if (!visible) return
 
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = onDismiss) {
+        // Tarjeta con título, descripción y acciones Cancelar/Eliminar
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -856,7 +902,7 @@ private fun DeleteMatchDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // IZQUIERDA: CANCELAR
+                // Botón cancelar
                 ModernOutlineButton(
                     enabled = !deleting,
                     onClick = onDismiss,
@@ -870,7 +916,7 @@ private fun DeleteMatchDialog(
                     )
                 }
                 Spacer(Modifier.width(12.dp))
-                // DERECHA: ELIMINAR
+                // Botón eliminar (contorno de peligro)
                 ModernDangerOutlineButton(
                     enabled = !deleting,
                     onClick = onConfirm,
@@ -891,6 +937,7 @@ private fun DeleteMatchDialog(
 
 // -------- BOTONES MODERNOS --------
 
+// Botón principal con relleno degradado y borde; contiene el slot de contenido
 @Composable
 fun ModernMainButton(
     onClick: () -> Unit,
@@ -927,8 +974,9 @@ fun ModernMainButton(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Propaga color según estado habilitado
             CompositionLocalProvider(
-                androidx.compose.material3.LocalContentColor provides if (enabled)
+                LocalContentColor provides if (enabled)
                     MaterialTheme.colorScheme.text
                 else
                     MaterialTheme.colorScheme.mutedText,
@@ -938,6 +986,7 @@ fun ModernMainButton(
     }
 }
 
+// Botón secundario con solo borde; contiene el slot de contenido
 @Composable
 fun ModernOutlineButton(
     onClick: () -> Unit,
@@ -959,7 +1008,7 @@ fun ModernOutlineButton(
                 ),
                 shape = RoundedCornerShape(13.dp)
             )
-            .background(androidx.compose.ui.graphics.Color.Transparent)
+            .background(Color.Transparent)
             .clickable(enabled = enabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -967,8 +1016,9 @@ fun ModernOutlineButton(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Color principal atenuado si está deshabilitado
             CompositionLocalProvider(
-                androidx.compose.material3.LocalContentColor provides MaterialTheme.colorScheme.primary.copy(
+                LocalContentColor provides MaterialTheme.colorScheme.primary.copy(
                     alpha = if (enabled) 1f else 0.45f
                 ),
                 content = { content() }
@@ -977,7 +1027,7 @@ fun ModernOutlineButton(
     }
 }
 
-// Botón de peligro (usa error del esquema)
+// Botón de peligro (fondo tenue rojo) para acciones destructivas
 @Composable
 fun ModernDangerButton(
     onClick: () -> Unit,
@@ -1012,8 +1062,9 @@ fun ModernDangerButton(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Color de texto según habilitado
             CompositionLocalProvider(
-                androidx.compose.material3.LocalContentColor provides if (enabled)
+                LocalContentColor provides if (enabled)
                     MaterialTheme.colorScheme.text
                 else
                     MaterialTheme.colorScheme.text.copy(alpha = 0.4f),
@@ -1023,6 +1074,7 @@ fun ModernDangerButton(
     }
 }
 
+// Botón de peligro con solo borde (para confirmaciones)
 @Composable
 fun ModernDangerOutlineButton(
     onClick: () -> Unit,
@@ -1042,7 +1094,7 @@ fun ModernDangerOutlineButton(
                 ),
                 shape = RoundedCornerShape(13.dp)
             )
-            .background(androidx.compose.ui.graphics.Color.Transparent)
+            .background(Color.Transparent)
             .clickable(enabled = enabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -1050,8 +1102,9 @@ fun ModernDangerOutlineButton(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Usa color de error; atenuado si deshabilitado
             CompositionLocalProvider(
-                androidx.compose.material3.LocalContentColor provides if (enabled) error else error.copy(alpha = 0.4f),
+                LocalContentColor provides if (enabled) error else error.copy(alpha = 0.4f),
                 content = { content() }
             )
         }

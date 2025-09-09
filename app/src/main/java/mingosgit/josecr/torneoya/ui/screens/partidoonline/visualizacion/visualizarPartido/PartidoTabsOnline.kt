@@ -1,4 +1,4 @@
-package mingosgit.josecr.torneoya.ui.screens.partidoonline
+package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,6 +17,7 @@ import mingosgit.josecr.torneoya.viewmodel.partidoonline.VisualizarPartidoOnline
 import mingosgit.josecr.torneoya.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.delay
 import mingosgit.josecr.torneoya.ui.theme.mutedText
 
 @Composable
@@ -74,7 +75,7 @@ fun PartidoTabsOnline(
                             1 -> { reloadEventos++ }
                             2, 3 -> vm.cargarComentariosEncuestas(usuarioUid)
                         }
-                        kotlinx.coroutines.delay(400)
+                        delay(400)
                         isLoading = false
                     }
                 },
