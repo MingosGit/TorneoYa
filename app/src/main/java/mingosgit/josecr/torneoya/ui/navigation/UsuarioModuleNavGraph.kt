@@ -29,14 +29,9 @@ fun NavGraphBuilder.addUsuarioModuleNavGraph(
     globalUserViewModel: GlobalUserViewModel,
     db: AppDatabase,
     partidoRepository: PartidoRepository,
-    equipoRepositoryInst: EquipoRepository,
-    usuarioLocalRepository: UsuarioLocalRepository,
     jugadorRepositoryInst: JugadorRepository,
     eventoRepository: EventoRepository,
     goleadorRepository: GoleadorRepository,
-    comentarioRepository: ComentarioRepository,
-    encuestaRepository: EncuestaRepository,
-    relacionRepositoryInst: PartidoEquipoJugadorRepository,
     equipoPredefinidoRepository: EquipoPredefinidoRepository
 ) {
     composable(BottomNavItem.Usuario.route) {

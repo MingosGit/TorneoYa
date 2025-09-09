@@ -314,14 +314,9 @@ fun NavGraph(
             globalUserViewModel = globalUserViewModel,
             db = db,
             partidoRepository = partidoRepository,
-            equipoRepositoryInst = equipoRepositoryInst,
-            usuarioLocalRepository = usuarioLocalRepository,
             jugadorRepositoryInst = jugadorRepositoryInst,
             eventoRepository = eventoRepository,
             goleadorRepository = goleadorRepository,
-            comentarioRepository = comentarioRepository,
-            encuestaRepository = encuestaRepository,
-            relacionRepositoryInst = relacionRepositoryInst,
             equipoPredefinidoRepository = equipoPredefinidoRepository
         )
 
