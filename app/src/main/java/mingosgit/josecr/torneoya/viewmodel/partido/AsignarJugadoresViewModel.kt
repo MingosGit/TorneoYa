@@ -36,21 +36,26 @@ class AsignarJugadoresViewModel(
         private set
 
     init {
+        // init: limpia listas, carga jugadores guardados y aplica equipos predefinidos si hay
         setNumJugadoresPorEquipo()
         cargarJugadoresExistentes()
         cargarPredefinidosSiAplica()
     }
 
     fun setNumJugadoresPorEquipo() {
+        // setNumJugadoresPorEquipo: reinicia los slots de ambos equipos y la lista libre
         equipoAJugadores.clear()
         equipoBJugadores.clear()
         listaNombres.clear()
-        // NO AGREGUES CAMPOS VACÍOS
     }
 
-    fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
+    fun cambiarModo(aleatorio: Boolean) {
+        // cambiarModo: alterna entre selección manual y reparto aleatorio
+        modoAleatorio = aleatorio
+    }
 
     fun repartirAleatoriamente(nombres: List<String>) {
+        // repartirAleatoriamente: baraja nombres no vacíos y los divide en 2 equipos (balanceando si impar)
         val nombresLimpios = nombres.filter { it.isNotBlank() }.shuffled(Random(System.currentTimeMillis()))
         val mitad = nombresLimpios.size / 2
 
@@ -70,10 +75,10 @@ class AsignarJugadoresViewModel(
                 equipoBJugadores.addAll(nombresLimpios.drop(mitad))
             }
         }
-        // NO RELLENES MÁS CAMPOS, SOLO LOS QUE TOCAN
     }
 
     fun guardarEnBD(onFinish: () -> Unit) {
+        // guardarEnBD: persiste asignaciones en la tabla relación, sustituyendo lo anterior
         viewModelScope.launch {
             relacionRepository.eliminarJugadoresDeEquipo(partidoId, equipoAId)
             relacionRepository.eliminarJugadoresDeEquipo(partidoId, equipoBId)
@@ -103,12 +108,14 @@ class AsignarJugadoresViewModel(
     }
 
     fun cargarJugadoresExistentes() {
+        // cargarJugadoresExistentes: lee de repositorio todos los jugadores locales
         viewModelScope.launch {
             jugadoresExistentes = jugadorRepository.getAll()
         }
     }
 
     fun cargarPredefinidosSiAplica() {
+        // cargarPredefinidosSiAplica: si hay ids predefinidos, rellena listas con esos jugadores
         viewModelScope.launch {
             if (equipoAPredefinidoId != null) {
                 val eqA = equipoPredefinidoRepository.getEquipoConJugadores(equipoAPredefinidoId)
@@ -124,6 +131,7 @@ class AsignarJugadoresViewModel(
     }
 
     fun jugadoresDisponiblesManual(equipo: String, idx: Int): List<JugadorEntity> {
+        // jugadoresDisponiblesManual: lista de jugadores no usados en el otro equipo ni en la misma posición
         val (jugadoresActuales, jugadoresOtroEquipo) = if (equipo == "A") {
             equipoAJugadores to equipoBJugadores
         } else {
@@ -137,6 +145,7 @@ class AsignarJugadoresViewModel(
     }
 
     fun jugadoresDisponiblesAleatorio(idx: Int): List<JugadorEntity> {
+        // jugadoresDisponiblesAleatorio: candidatos no repetidos respecto a la lista libre
         val yaElegidos = listaNombres.withIndex().filter { it.index != idx }.map { it.value }
         return jugadoresExistentes.filter { jugador -> jugador.nombre !in yaElegidos }
     }
@@ -155,6 +164,7 @@ class AsignarJugadoresViewModelFactory(
     private val equipoBPredefinidoId: Long?
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        // create: construye el ViewModel inyectando dependencias; lanza error si no coincide el tipo
         if (modelClass.isAssignableFrom(AsignarJugadoresViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return AsignarJugadoresViewModel(

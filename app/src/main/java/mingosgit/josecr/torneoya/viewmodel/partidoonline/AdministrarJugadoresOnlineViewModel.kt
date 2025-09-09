@@ -37,7 +37,6 @@ class AdministrarJugadoresOnlineViewModel(
     var amigos = mutableStateOf<List<AmigoFirebaseEntity>>(emptyList())
     var equipoSeleccionado = mutableStateOf("A")
 
-    // NUEVO: nombre de los equipos
     var equipoANombre by mutableStateOf("Equipo A")
     var equipoBNombre by mutableStateOf("Equipo B")
 
@@ -72,7 +71,6 @@ class AdministrarJugadoresOnlineViewModel(
         amigos.value = obtenerListaAmigos()
         val jugadoresList = mutableListOf<JugadorFirebase>()
 
-        // --- CORRECCIÓN SEGURA DEL CAMPO AVATAR ---
         suspend fun getAvatarSafe(usuarioUid: String): Int? {
             val db = FirebaseFirestore.getInstance()
             val doc = db.collection("usuarios").document(usuarioUid).get().await()

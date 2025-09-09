@@ -12,6 +12,7 @@ class CreatePartidoOnlineViewModel(
     private val userUid: String
 ) : ViewModel() {
 
+    // Método para crear un partido online con dos equipos, sus parámetros y guardarlo en Firebase
     fun crearPartidoOnline(
         equipoA: String,
         equipoB: String,
@@ -25,8 +26,11 @@ class CreatePartidoOnlineViewModel(
         onFinish: (String, String, String) -> Unit = { _, _, _ -> }
     ) {
         viewModelScope.launch {
+            // Se crean los equipos en Firebase y se obtienen sus IDs
             val equipoAId = partidoFirebaseRepository.crearEquipo(EquipoFirebase(nombre = equipoA))
             val equipoBId = partidoFirebaseRepository.crearEquipo(EquipoFirebase(nombre = equipoB))
+
+            // Se construye el objeto PartidoFirebase con todos los datos necesarios
             val partido = PartidoFirebase(
                 fecha = fecha,
                 horaInicio = horaInicio,
@@ -36,18 +40,22 @@ class CreatePartidoOnlineViewModel(
                 equipoAId = equipoAId,
                 equipoBId = equipoBId,
                 numeroJugadores = numeroJugadores,
-                estado = "PREVIA",
+                estado = "PREVIA", // Estado inicial del partido
                 golesEquipoA = 0,
                 golesEquipoB = 0,
                 jugadoresEquipoA = emptyList(),
                 jugadoresEquipoB = emptyList(),
                 nombresManualEquipoA = emptyList(),
                 nombresManualEquipoB = emptyList(),
-                creadorUid = userUid,  // <- ESTE CAMPO SE USA Y SE GUARDA SIEMPRE
-                isPublic = isPublic,
-                usuariosConAcceso = listOf(userUid)  // <- ESTE CAMPO SE USA Y SE GUARDA SIEMPRE
+                creadorUid = userUid, // Se guarda el creador
+                isPublic = isPublic, // Define si el partido es público o no
+                usuariosConAcceso = listOf(userUid) // Se asigna acceso al creador
             )
+
+            // Se guarda el partido en Firebase y se obtiene su UID
             val partidoUid = partidoFirebaseRepository.crearPartidoConRetornoUid(partido)
+
+            // Se ejecuta el callback con los identificadores creados
             onFinish(partidoUid, equipoAId, equipoBId)
         }
     }

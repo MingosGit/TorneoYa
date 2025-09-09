@@ -45,8 +45,10 @@ class AsignarJugadoresOnlineViewModel(
     var miUsuario: UsuarioFirebaseEntity? by mutableStateOf(null)
     var amigos: List<AmigoFirebaseEntity> by mutableStateOf(emptyList())
 
+    // Cambia entre modo manual y aleatorio.
     fun cambiarModo(aleatorio: Boolean) { modoAleatorio = aleatorio }
 
+    // Actualiza en Firebase el contador "partidosJugados" según altas/bajas de jugadores.
     suspend fun actualizarContadoresPartidosJugados(
         oldA: List<String>,
         oldB: List<String>,
@@ -72,6 +74,7 @@ class AsignarJugadoresOnlineViewModel(
         }
     }
 
+    // Reparte la lista en dos equipos al azar, equilibrando el número.
     fun repartirAleatoriamente(jugadores: List<JugadorFirebase>) {
         val jugadoresLimpios = jugadores.filter { it.nombre.isNotBlank() }.shuffled()
         val mitad = jugadoresLimpios.size / 2
@@ -86,6 +89,7 @@ class AsignarJugadoresOnlineViewModel(
         }
     }
 
+    // Guarda en Firestore los jugadores de cada equipo, actualiza accesos y lanza notificaciones a nuevos asignados.
     fun guardarEnBD(onFinish: () -> Unit) {
         viewModelScope.launch {
             val equipoA_uids = equipoAJugadores.mapNotNull { if (it.uid.isNotBlank()) it.uid else null }
@@ -107,7 +111,7 @@ class AsignarJugadoresOnlineViewModel(
                 newB = equipoB_uids
             )
 
-            // Guardar jugadores y actualizar accesos
+            // Guardar jugadores y actualizar accesos del partido.
             partidoFirebaseRepository.actualizarJugadoresPartidoOnline(
                 partidoUid = partidoUid,
                 jugadoresEquipoA = equipoA_uids,
@@ -122,7 +126,7 @@ class AsignarJugadoresOnlineViewModel(
                 .update("usuariosConAcceso", nuevosAccesos)
                 .await()
 
-            // NOTIFICACIONES: enviar notificación a jugadores añadidos nuevos (solo a los que entran ahora)
+            // Notifica solo a quienes se añaden ahora.
             val jugadoresAgregados = (equipoA_uids + equipoB_uids).toSet() - (oldA + oldB).toSet()
             jugadoresAgregados.forEach { uidJugador ->
                 lanzarNotificacionAsignacion(uidJugador)
@@ -132,6 +136,7 @@ class AsignarJugadoresOnlineViewModel(
         }
     }
 
+    // Crea y guarda una notificación de asignación de jugador.
     private suspend fun lanzarNotificacionAsignacion(usuarioUid: String) {
         val usuario = usuarioAuthRepository.getUsuarioByUid(usuarioUid) ?: return
         val notificacion = NotificacionFirebase(
@@ -144,6 +149,7 @@ class AsignarJugadoresOnlineViewModel(
         notificacionRepository.agregarNotificacion(notificacion)
     }
 
+    // Carga desde repositorio la lista base de jugadores y después usuario+amigos.
     fun cargarJugadoresExistentes() {
         viewModelScope.launch {
             jugadoresExistentes = partidoFirebaseRepository.obtenerJugadores()
@@ -151,6 +157,7 @@ class AsignarJugadoresOnlineViewModel(
         }
     }
 
+    // Monta la lista de disponibles combinando mi usuario, amigos y jugadores ya existentes (evitando duplicados).
     private suspend fun cargarUsuarioYAmigos() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         miUsuario = usuarioAuthRepository.getUsuarioByUid(uid)
@@ -182,6 +189,7 @@ class AsignarJugadoresOnlineViewModel(
         jugadoresDisponiblesTodos = jugadoresList
     }
 
+    // Devuelve los jugadores disponibles para una posición manual, excluyendo los ya elegidos en ambos equipos.
     fun jugadoresDisponiblesManual(equipo: String, idx: Int): List<JugadorFirebase> {
         val (jugadoresActuales, jugadoresOtroEquipo) = if (equipo == "A") {
             equipoAJugadores to equipoBJugadores
@@ -195,11 +203,13 @@ class AsignarJugadoresOnlineViewModel(
         }
     }
 
+    // Devuelve los jugadores disponibles para modo aleatorio evitando duplicados en la lista de nombres.
     fun jugadoresDisponiblesAleatorio(idx: Int): List<JugadorFirebase> {
         val yaElegidos = listaNombres.withIndex().filter { it.index != idx }.map { it.value.uid }
         return jugadoresDisponiblesTodos.filter { it.uid !in yaElegidos }
     }
 
+    // Se añade a sí mismo al equipo indicado si aún no está.
     fun agregarmeComoJugador(equipo: String) {
         val yo = jugadoresDisponiblesTodos.firstOrNull { it.uid == miUsuario?.uid } ?: return
         when (equipo) {
@@ -207,6 +217,8 @@ class AsignarJugadoresOnlineViewModel(
             "B" -> if (equipoBJugadores.none { it.uid == yo.uid }) equipoBJugadores.add(yo)
         }
     }
+
+    // Asigna un amigo por su uid al equipo indicado si no está previamente.
     fun asignarAmigoPorUid(uid: String, equipo: String) {
         val amigo = jugadoresDisponiblesTodos.firstOrNull { it.uid == uid } ?: return
         when (equipo) {
@@ -216,6 +228,7 @@ class AsignarJugadoresOnlineViewModel(
     }
 }
 
+// Extensión: obtiene de Firestore el usuario por uid y lo convierte a entidad.
 suspend fun UsuarioAuthRepository.getUsuarioByUid(uid: String): UsuarioFirebaseEntity? {
     val snap = this.firestore.collection("usuarios").document(uid).get().await()
     return snap.toObject(UsuarioFirebaseEntity::class.java)

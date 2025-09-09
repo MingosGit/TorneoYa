@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter
 import mingosgit.josecr.torneoya.viewmodel.partido.VisualizarPartidoComentariosEncuestasUiState
 import mingosgit.josecr.torneoya.viewmodel.partido.EncuestaConResultados
 
+// Estado UI con nombres, plantillas, marcador y tiempo del partido
 data class VisualizarPartidoUiState(
     val nombreEquipoA: String = "",
     val nombreEquipoB: String = "",
@@ -32,6 +33,7 @@ data class VisualizarPartidoUiState(
     val golesEquipoB: Int = 0
 )
 
+// ViewModel que orquesta datos del partido y su feed (comentarios/encuestas)
 class VisualizarPartidoViewModel(
     private val partidoId: Long,
     private val partidoRepository: PartidoRepository,
@@ -40,15 +42,19 @@ class VisualizarPartidoViewModel(
     private val encuestaRepository: EncuestaRepository
 ) : ViewModel() {
 
+    // Estado principal de la cabecera del partido
     private val _uiState = MutableStateFlow(VisualizarPartidoUiState())
     val uiState: StateFlow<VisualizarPartidoUiState> = _uiState
 
+    // Flag de que el partido se ha eliminado
     private val _eliminado = MutableStateFlow(false)
     val eliminado: StateFlow<Boolean> = _eliminado
 
+    // Estado combinado de comentarios y encuestas para la UI
     private val _comentariosEncuestasState = MutableStateFlow(VisualizarPartidoComentariosEncuestasUiState())
     val comentariosEncuestasState: StateFlow<VisualizarPartidoComentariosEncuestasUiState> = _comentariosEncuestasState
 
+    // Carga datos del partido y luego el feed; opcionalmente personaliza con usuarioId
     fun cargarDatos(usuarioId: Long? = null) {
         viewModelScope.launch {
             val partido = partidoRepository.getPartidoById(partidoId)
@@ -86,10 +92,12 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // Obtiene el voto del usuario en una encuesta concreta
     suspend fun getVotoUsuarioEncuesta(encuestaId: Long, usuarioId: Long): Int? {
         return encuestaRepository.getVotoUsuario(encuestaId, usuarioId)
     }
 
+    // Emite voto único en encuesta y refresca resultados
     fun votarUnicoEnEncuesta(encuestaId: Long, opcionIndex: Int, usuarioId: Long) {
         viewModelScope.launch {
             encuestaRepository.votarUnico(encuestaId, opcionIndex, usuarioId)
@@ -97,6 +105,7 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // Carga comentarios con votos y encuestas con recuentos; opcionalmente marca mi voto
     fun cargarComentariosEncuestas(usuarioId: Long? = null) {
         viewModelScope.launch {
             val comentarios = comentarioRepository.obtenerComentarios(partidoId)
@@ -126,6 +135,7 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // Inserta un nuevo comentario con timestamp y refresca el feed
     fun agregarComentario(usuarioNombre: String, texto: String, usuarioId: Long? = null) {
         viewModelScope.launch {
             val fechaHora = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -140,6 +150,7 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // Vota un comentario (like/dislike) y refresca recuentos
     fun votarComentario(comentarioId: Long, usuarioId: Long, tipo: Int) {
         viewModelScope.launch {
             comentarioRepository.votarComentario(comentarioId, usuarioId, tipo)
@@ -147,6 +158,7 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // Crea una encuesta (hasta 5 opciones) y refresca el feed
     fun agregarEncuesta(pregunta: String, opciones: List<String>, usuarioId: Long? = null) {
         if (opciones.isEmpty() || opciones.size > 5) return
         viewModelScope.launch {
@@ -160,6 +172,7 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // Elimina el partido en repositorio y marca estado eliminado
     fun eliminarPartido() {
         viewModelScope.launch {
             val partido = partidoRepository.getPartidoById(partidoId)
@@ -170,12 +183,14 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // DTO interno para mostrar estado y tiempo actual
     private data class InfoMinutoParte(
         val estadoVisible: String,
         val minutoVisible: String,
         val parteActual: Int
     )
 
+    // Calcula en qué parte/minuto va el partido o si está en previa/descanso/finalizado
     private fun calcularMinutoYParte(
         fecha: String,
         horaInicio: String,
@@ -225,11 +240,13 @@ class VisualizarPartidoViewModel(
         }
     }
 
+    // Carga inicial automática al crear el ViewModel
     init {
         cargarDatos()
     }
 }
 
+// Factory para crear el ViewModel con sus dependencias
 class VisualizarPartidoViewModelFactory(
     private val partidoId: Long,
     private val partidoRepository: PartidoRepository,
@@ -237,6 +254,7 @@ class VisualizarPartidoViewModelFactory(
     private val comentarioRepository: ComentarioRepository,
     private val encuestaRepository: EncuestaRepository
 ) : ViewModelProvider.Factory {
+    // Construye instancia del ViewModel cuando la solicita el provider
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(VisualizarPartidoViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

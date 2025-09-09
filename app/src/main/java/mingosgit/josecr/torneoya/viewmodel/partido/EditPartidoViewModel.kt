@@ -106,16 +106,6 @@ class EditPartidoViewModel(
         }
     }
 
-    suspend fun getEquipoNombre(equipoId: Long): String? {
-        // Usa el nombre guardado si ya fue editado
-        return if (_partido.value?.equipoAId == equipoId) {
-            _nombreEquipoA.value ?: equipoRepository.getById(equipoId)?.nombre
-        } else if (_partido.value?.equipoBId == equipoId) {
-            _nombreEquipoB.value ?: equipoRepository.getById(equipoId)?.nombre
-        } else {
-            equipoRepository.getById(equipoId)?.nombre
-        }
-    }
 
     suspend fun actualizarEquipoNombre(equipoId: Long, nuevoNombre: String): Boolean {
         val equipo = equipoRepository.getById(equipoId)

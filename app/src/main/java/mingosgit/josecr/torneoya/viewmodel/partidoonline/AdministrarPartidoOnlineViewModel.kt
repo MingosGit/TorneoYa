@@ -56,14 +56,28 @@ class AdministrarPartidoOnlineViewModel(
     private val _tiempoDescansoEditable = MutableStateFlow(5)
     val tiempoDescansoEditable: StateFlow<Int> = _tiempoDescansoEditable.asStateFlow()
 
+    // setNombreEquipoAEditable: actualiza el texto editable del nombre del equipo A
     fun setNombreEquipoAEditable(valor: String) { _nombreEquipoAEditable.value = valor }
+
+    // setNombreEquipoBEditable: actualiza el texto editable del nombre del equipo B
     fun setNombreEquipoBEditable(valor: String) { _nombreEquipoBEditable.value = valor }
+
+    // setFechaEditable: fija la fecha editable del partido
     fun setFechaEditable(valor: String) { _fechaEditable.value = valor }
+
+    // setHoraEditable: fija la hora editable del partido
     fun setHoraEditable(valor: String) { _horaEditable.value = valor }
+
+    // setNumeroPartesEditable: fija el nº de partes editable
     fun setNumeroPartesEditable(valor: Int) { _numeroPartesEditable.value = valor }
+
+    // setTiempoPorParteEditable: fija los minutos por parte
     fun setTiempoPorParteEditable(valor: Int) { _tiempoPorParteEditable.value = valor }
+
+    // setTiempoDescansoEditable: fija los minutos de descanso entre partes
     fun setTiempoDescansoEditable(valor: Int) { _tiempoDescansoEditable.value = valor }
 
+    // recargarTodo: vuelve a leer partido, equipos, jugadores y goles; rellena campos editables
     fun recargarTodo() {
         viewModelScope.launch {
             _loading.value = true
@@ -91,6 +105,7 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
+    // getJugadoresByUidList: construye lista de JugadorFirebase buscando por uid en jugadores/usuarios
     private suspend fun getJugadoresByUidList(uids: List<String>): List<JugadorFirebase> {
         val db = FirebaseFirestore.getInstance()
         val jugadores = mutableListOf<JugadorFirebase>()
@@ -128,6 +143,7 @@ class AdministrarPartidoOnlineViewModel(
         return jugadores
     }
 
+    // obtenerGoleadoresPartido: lee todos los goles del partido y añade uid de documento
     private suspend fun obtenerGoleadoresPartido(partidoUid: String): List<GoleadorFirebase> {
         val db = FirebaseFirestore.getInstance()
         val res = db.collection("goleadores")
@@ -139,6 +155,7 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
+    // agregarGol: crea un gol con referencias (equipo/jugador/asistencia) y refresca marcador
     fun agregarGol(
         equipoUid: String,
         jugadorUid: String,
@@ -167,6 +184,7 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
+    // agregarGolManual: registra gol con nombres manuales e intenta detectar uid del asistente
     fun agregarGolManual(
         equipoUid: String,
         nombreJugadorManual: String,
@@ -222,6 +240,7 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
+    // borrarGol: elimina un gol por uid y actualiza marcador
     fun borrarGol(gol: GoleadorFirebase) {
         viewModelScope.launch {
             val db = FirebaseFirestore.getInstance()
@@ -231,6 +250,7 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
+    // actualizarMarcadorPartido: recalcula goles A/B y actualiza el documento del partido
     private suspend fun actualizarMarcadorPartido() {
         val partido = _partido.value ?: return
         val db = FirebaseFirestore.getInstance()
@@ -251,6 +271,7 @@ class AdministrarPartidoOnlineViewModel(
             ).await()
     }
 
+    // actualizarNombreEquipoA: guarda el nuevo nombre del equipo A si no está en blanco
     fun actualizarNombreEquipoA() {
         val equipo = _equipoA.value ?: return
         val nuevoNombre = _nombreEquipoAEditable.value
@@ -265,6 +286,7 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
+    // actualizarNombreEquipoB: guarda el nuevo nombre del equipo B si no está en blanco
     fun actualizarNombreEquipoB() {
         val equipo = _equipoB.value ?: return
         val nuevoNombre = _nombreEquipoBEditable.value
@@ -279,6 +301,7 @@ class AdministrarPartidoOnlineViewModel(
         }
     }
 
+    // actualizarDatosPartido: persiste cambios básicos (fecha/hora/partes/duración/descanso) del partido
     fun actualizarDatosPartido() {
         val fecha = _fechaEditable.value.trim()
         val hora = _horaEditable.value.trim()

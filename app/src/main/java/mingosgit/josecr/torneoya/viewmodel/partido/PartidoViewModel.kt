@@ -19,19 +19,25 @@ data class PartidoConNombres(
     val horaFin: String
 )
 
+// ViewModel de gestión de partidos (lista, altas, bajas y utilidades de presentación)
 class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() {
+
+    // Estado: lista cruda de entidades Partido
     private val _partidos = MutableStateFlow<List<PartidoEntity>>(emptyList())
     val partidos: StateFlow<List<PartidoEntity>> = _partidos
 
+    // Estado: lista enriquecida con nombres de equipos y hora fin calculada
     private val _partidosConNombres = MutableStateFlow<List<PartidoConNombres>>(emptyList())
     val partidosConNombres: StateFlow<List<PartidoConNombres>> = _partidosConNombres
 
+    // cargarPartidos: obtiene todos los partidos (sin enriquecer) y actualiza estado
     fun cargarPartidos() {
         viewModelScope.launch {
             _partidos.value = repository.getAllPartidos()
         }
     }
 
+    // cargarPartidosConNombres: compone DTO con nombres de equipos y hora fin calculada
     fun cargarPartidosConNombres(equipoRepository: EquipoRepository) {
         viewModelScope.launch {
             val partidos = repository.getAllPartidos()
@@ -44,13 +50,19 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
                     nombreEquipoB = equipoB?.nombre ?: "Equipo B",
                     fecha = partido.fecha,
                     horaInicio = partido.horaInicio,
-                    horaFin = calcularHoraFin(partido.horaInicio, partido.numeroPartes, partido.tiempoPorParte, partido.tiempoDescanso)
+                    horaFin = calcularHoraFin(
+                        partido.horaInicio,
+                        partido.numeroPartes,
+                        partido.tiempoPorParte,
+                        partido.tiempoDescanso
+                    )
                 )
             }
             _partidosConNombres.value = partidosNombres
         }
     }
 
+    // calcularHoraFin: calcula la hora de fin sumando partes y descansos a la hora de inicio
     private fun calcularHoraFin(horaInicio: String, numeroPartes: Int, tiempoPorParte: Int, tiempoDescanso: Int): String {
         return try {
             val partesTotal = (numeroPartes * tiempoPorParte) + ((numeroPartes - 1) * tiempoDescanso)
@@ -63,6 +75,7 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
+    // agregarPartido: inserta un partido y refresca la lista enriquecida
     fun agregarPartido(partido: PartidoEntity, equipoRepository: EquipoRepository) {
         viewModelScope.launch {
             repository.insertPartido(partido)
@@ -70,6 +83,7 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
+    // asignarJugadorAPartido: crea relación partido-equipo-jugador
     fun asignarJugadorAPartido(partidoId: Long, equipoId: Long, jugadorId: Long) {
         viewModelScope.launch {
             val rel = PartidoEquipoJugadorEntity(partidoId, equipoId, jugadorId)
@@ -77,6 +91,7 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
+    // eliminarJugadorDePartido: elimina la relación del jugador con ambos equipos del partido
     fun eliminarJugadorDePartido(partidoId: Long, equipoAId: Long, equipoBId: Long, jugadorId: Long) {
         viewModelScope.launch {
             val relA = PartidoEquipoJugadorEntity(partidoId, equipoAId, jugadorId)
@@ -86,6 +101,7 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
+    // eliminarPartido: borra por id y refresca la lista enriquecida
     fun eliminarPartido(partidoId: Long, equipoRepository: EquipoRepository) {
         viewModelScope.launch {
             repository.deletePartidoById(partidoId)
@@ -93,13 +109,12 @@ class PartidoViewModel(private val repository: PartidoRepository) : ViewModel() 
         }
     }
 
+    // duplicarPartido: clona un partido (id a 0L) y refresca la lista enriquecida
     fun duplicarPartido(partidoId: Long, equipoRepository: EquipoRepository) {
         viewModelScope.launch {
             val partido = repository.getPartidoById(partidoId)
             partido?.let {
-                val nuevoPartido = it.copy(
-                    id = 0L
-                )
+                val nuevoPartido = it.copy(id = 0L)
                 repository.insertPartido(nuevoPartido)
             }
             cargarPartidosConNombres(equipoRepository)

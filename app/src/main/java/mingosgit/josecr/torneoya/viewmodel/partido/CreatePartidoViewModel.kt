@@ -14,7 +14,6 @@ class CreatePartidoViewModel(
     private val equipoRepository: EquipoRepository
 ) : ViewModel() {
 
-    // callback: (partidoId: Long, equipoAId: Long, equipoBId: Long) -> Unit
     fun crearPartidoYEquipos(
         equipoA: String,
         equipoB: String,

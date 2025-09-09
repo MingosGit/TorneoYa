@@ -104,7 +104,7 @@ fun AdministrarPartidoOnlineScreen(
 
     var esCreador by remember { mutableStateOf(false) } // si el usuario es creador del partido
 
-    // NUEVO: diálogo y estado para eliminar partido
+    // diálogo y estado para eliminar partido
     var showDeleteDialog by remember { mutableStateOf(false) } // visibilidad del diálogo de borrado
     var deleting by remember { mutableStateOf(false) } // estado de borrado en curso
     val scope = rememberCoroutineScope() // scope para corrutinas locales

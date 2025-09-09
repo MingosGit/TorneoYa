@@ -13,6 +13,7 @@ import mingosgit.josecr.torneoya.data.firebase.EncuestaFirebase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+// Estado de UI: nombres, listas de jugadores, marcador y estado temporal del partido.
 data class VisualizarPartidoOnlineUiState(
     val nombreEquipoA: String = "",
     val nombreEquipoB: String = "",
@@ -26,6 +27,7 @@ data class VisualizarPartidoOnlineUiState(
     val golesEquipoB: Int = 0
 )
 
+// Comentario enriquecido con avatar y conteo de votos (+ mi voto).
 data class ComentarioOnlineConVotos(
     val comentario: ComentarioFirebase,
     val avatar: Int?,
@@ -34,12 +36,14 @@ data class ComentarioOnlineConVotos(
     val miVoto: Int? // 1=like, -1=dislike, null=sin voto
 )
 
+// Encuesta con resultados por opción y avatar del creador.
 data class EncuestaOnlineConResultadosConAvatar(
     val encuesta: EncuestaFirebase,
     val votos: List<Int>,
     val avatar: Int? // avatar del creador
 )
 
+// Estado de UI para lista de comentarios y encuestas (con avatares).
 data class VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares(
     val comentarios: List<ComentarioOnlineConVotos> = emptyList(),
     val encuestas: List<EncuestaOnlineConResultadosConAvatar> = emptyList()
@@ -62,6 +66,7 @@ class VisualizarPartidoOnlineViewModel(
     private val _partidoCreadorUid = MutableStateFlow<String?>(null)
     val partidoCreadorUid: StateFlow<String?> = _partidoCreadorUid
 
+    // Carga datos del partido (nombres, jugadores, marcador y estado temporal) y después comentarios/encuestas.
     fun cargarDatos(usuarioUid: String? = null) {
         viewModelScope.launch {
             val partido = repo.obtenerPartido(partidoUid)
@@ -102,6 +107,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Carga comentarios (con votos y avatar) y encuestas (con resultados y avatar) del partido.
     fun cargarComentariosEncuestas(usuarioUid: String? = null) {
         viewModelScope.launch {
             val comentarios = repo.obtenerComentarios(partidoUid)
@@ -142,6 +148,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Añade un comentario (resolviendo nombre/avatar si hay usuario) y refresca la lista.
     fun agregarComentario(usuarioNombre: String, texto: String, usuarioUid: String? = null) {
         viewModelScope.launch {
             var nombreFinal = usuarioNombre
@@ -173,6 +180,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Registra un voto (like/dislike) sobre un comentario y recarga.
     fun votarComentario(comentarioUid: String, usuarioUid: String, tipo: Int) {
         viewModelScope.launch {
             repo.votarComentario(comentarioUid, usuarioUid, tipo)
@@ -180,6 +188,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Elimina un comentario si el usuario está autorizado y recarga.
     fun eliminarComentario(comentarioUid: String, usuarioUid: String) {
         viewModelScope.launch {
             repo.eliminarComentarioSiAutorizado(comentarioUid, usuarioUid)
@@ -187,6 +196,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Crea una encuesta (máx 5 opciones), guarda en Firestore y actualiza la vista al completar.
     fun agregarEncuesta(
         pregunta: String,
         opciones: List<String>,
@@ -205,7 +215,7 @@ class VisualizarPartidoOnlineViewModel(
                     creadorNombre = "Usuario"
                 }
             }
-            // UID UNICO PARA LA ENCUESTA (FIRESTORE LO ASIGNA AUTOMATICO EN .add())
+            // Construye el mapa y deja que Firestore asigne UID automáticamente con .add()
             val encuesta = hashMapOf(
                 "partidoUid" to partidoUid,
                 "pregunta" to pregunta,
@@ -220,15 +230,17 @@ class VisualizarPartidoOnlineViewModel(
                     cargarComentariosEncuestas(usuarioUid)
                 }
                 .addOnFailureListener {
-                    // Si quieres puedes poner un log
+                    // Aquí se podría registrar un log
                 }
         }
     }
 
+    // Devuelve el voto del usuario en una encuesta (si existe).
     suspend fun getVotoUsuarioEncuesta(encuestaUid: String, usuarioUid: String): Int? {
         return repo.obtenerVotoUsuarioEncuesta(encuestaUid, usuarioUid)
     }
 
+    // Voto único para una opción de encuesta y recarga resultados.
     fun votarUnicoEnEncuesta(encuestaUid: String, opcionIndex: Int, usuarioUid: String) {
         viewModelScope.launch {
             repo.votarEncuestaUnico(encuestaUid, opcionIndex, usuarioUid)
@@ -236,6 +248,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Elimina el partido y marca el estado de eliminado.
     fun eliminarPartido() {
         viewModelScope.launch {
             repo.borrarPartido(partidoUid)
@@ -243,12 +256,14 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // DTO interno con estado visible, minuto y parte actual calculados.
     private data class InfoMinutoParte(
         val estadoVisible: String,
         val minutoVisible: String,
         val parteActual: Int
     )
 
+    // Calcula estado/minuto/parte en función de fecha/hora, número de partes y descansos.
     private fun calcularMinutoYParte(
         fecha: String,
         horaInicio: String,
@@ -298,6 +313,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Quita al usuario de la lista de acceso al partido y ejecuta callback al terminar.
     fun dejarDeVerPartido(usuarioUid: String, onFinish: () -> Unit) {
         viewModelScope.launch {
             repo.quitarUsuarioDeAcceso(partidoUid, usuarioUid)
@@ -305,6 +321,7 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
+    // Busca nombres por uid: primero en "jugadores", si no existe prueba en "usuarios" y si no, pone "Desconocido".
     private suspend fun obtenerNombresPorUid(uids: List<String>): List<String> {
         if (uids.isEmpty()) return emptyList()
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
