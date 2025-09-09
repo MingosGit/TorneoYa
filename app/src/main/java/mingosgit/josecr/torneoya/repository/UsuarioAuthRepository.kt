@@ -6,11 +6,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.entities.UsuarioFirebaseEntity
 
+/** Repositorio de auth/usuarios con Firebase. */
 class UsuarioAuthRepository(
     val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
+    /** Comprueba si un nombre de usuario está disponible en Firestore. */
     suspend fun isNombreUsuarioDisponible(nombreUsuario: String): Boolean {
         val query = firestore.collection("usuarios")
             .whereEqualTo("nombreUsuario", nombreUsuario)
@@ -19,13 +21,14 @@ class UsuarioAuthRepository(
         return query.isEmpty
     }
 
+    /** Obtiene un usuario de Firestore por su UID. */
     suspend fun getUsuarioByUid(uid: String): UsuarioFirebaseEntity? {
         val snap = firestore.collection("usuarios").document(uid).get().await()
         return snap.toObject(UsuarioFirebaseEntity::class.java)
     }
 
     /**
-     * REGISTRO con trazabilidad de aceptación de privacidad.
+     * REGISTRA usuario en Auth y crea documento en Firestore con trazabilidad de privacidad.
      * Debes pasar:
      * - acceptedPrivacy=true si el usuario marcó la casilla.
      * - privacyVersion: por ejemplo "2025-08-11" (sincroniza con tu HTML).
@@ -74,6 +77,7 @@ class UsuarioAuthRepository(
         }
     }
 
+    /** Inicia sesión, exige email verificado y devuelve el usuario de Firestore. */
     suspend fun login(email: String, password: String): Result<UsuarioFirebaseEntity> {
         return try {
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
@@ -93,6 +97,7 @@ class UsuarioAuthRepository(
         }
     }
 
+    /** Envía email de restablecimiento de contraseña. */
     suspend fun enviarCorreoRestablecerPassword(email: String): Result<Unit> {
         return try {
             auth.sendPasswordResetEmail(email).await()

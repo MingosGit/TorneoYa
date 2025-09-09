@@ -12,7 +12,6 @@ class EquipoRepository(
 ) {
     suspend fun insertEquipo(equipo: EquipoEntity) = equipoDao.insert(equipo)
     suspend fun updateEquipo(equipo: EquipoEntity) = equipoDao.update(equipo)
-    suspend fun deleteEquipo(equipo: EquipoEntity) = equipoDao.delete(equipo)
     suspend fun getById(id: Long) = equipoDao.getById(id)
     suspend fun getAll() = equipoDao.getAll()
 

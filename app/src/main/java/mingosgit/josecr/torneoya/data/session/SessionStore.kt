@@ -16,6 +16,7 @@ private const val SESSION_DS = "session_store"
 
 private val Context.sessionDataStore: DataStore<Preferences> by preferencesDataStore(name = SESSION_DS)
 
+/** Snapshot inmutable de la sesión del usuario. */
 data class SessionSnapshot(
     val uid: String = "",
     val email: String = "",
@@ -28,9 +29,11 @@ data class SessionSnapshot(
     val isEmailVerified: Boolean? = null,
     val lastTokenRefreshAtMillis: Long? = null
 ) {
+    /** Devuelve true si hay UID guardado. */
     val hasCachedSession: Boolean get() = uid.isNotBlank()
 }
 
+/** Envuelve DataStore para leer/escribir datos de sesión. */
 class SessionStore(private val appContext: Context) {
 
     private object Keys {
@@ -46,6 +49,7 @@ class SessionStore(private val appContext: Context) {
         val LAST_TOKEN_REFRESH = longPreferencesKey("last_token_refresh")
     }
 
+    /** Flujo que emite el estado de sesión mapeado desde DataStore. */
     val session: Flow<SessionSnapshot> = appContext.sessionDataStore.data.map { p ->
         SessionSnapshot(
             uid = p[Keys.UID] ?: "",
@@ -61,6 +65,10 @@ class SessionStore(private val appContext: Context) {
         )
     }
 
+    /**
+     * Actualiza/inserta solo las claves provistas en DataStore.
+     * (avatar: null guarda null; usa -1 para limpiar)
+     */
     suspend fun upsert(
         uid: String? = null,
         email: String? = null,
@@ -87,6 +95,7 @@ class SessionStore(private val appContext: Context) {
         }
     }
 
+    /** Borra toda la información de sesión de DataStore. */
     suspend fun clear() {
         appContext.sessionDataStore.edit { it.clear() }
     }
