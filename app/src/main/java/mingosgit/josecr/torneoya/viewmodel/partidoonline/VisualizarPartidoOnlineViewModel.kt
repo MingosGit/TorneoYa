@@ -1,7 +1,9 @@
+// VisualizarPartidoOnlineViewModel.kt
 package mingosgit.josecr.torneoya.viewmodel.partidoonline
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,10 +13,12 @@ import kotlinx.coroutines.tasks.await
 import mingosgit.josecr.torneoya.data.firebase.PartidoFirebaseRepository
 import mingosgit.josecr.torneoya.data.firebase.ComentarioFirebase
 import mingosgit.josecr.torneoya.data.firebase.EncuestaFirebase
+import mingosgit.josecr.torneoya.data.firebase.EquipoFirebase
+import mingosgit.josecr.torneoya.data.firebase.GoleadorFirebase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-// Estado de UI: nombres, listas de jugadores, marcador y estado temporal del partido.
+// ---------- UI STATE PRINCIPAL (ya existente) ----------
 data class VisualizarPartidoOnlineUiState(
     val nombreEquipoA: String = "",
     val nombreEquipoB: String = "",
@@ -28,28 +32,60 @@ data class VisualizarPartidoOnlineUiState(
     val golesEquipoB: Int = 0
 )
 
-// Comentario enriquecido con avatar y conteo de votos (+ mi voto).
+// ---------- MODELOS AUXILIARES (ya existentes + eventos) ----------
 data class ComentarioOnlineConVotos(
     val comentario: ComentarioFirebase,
     val avatar: Int?,
     val likes: Int,
     val dislikes: Int,
-    val miVoto: Int? // 1=like, -1=dislike, null=sin voto
+    val miVoto: Int?
 )
 
-// Encuesta con resultados por opción y avatar del creador.
 data class EncuestaOnlineConResultadosConAvatar(
     val encuesta: EncuestaFirebase,
     val votos: List<Int>,
-    val avatar: Int? // avatar del creador
+    val avatar: Int?
 )
 
-// Estado de UI para lista de comentarios y encuestas (con avatares).
 data class VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares(
     val comentarios: List<ComentarioOnlineConVotos> = emptyList(),
     val encuestas: List<EncuestaOnlineConResultadosConAvatar> = emptyList()
 )
 
+// ---------- EVENTOS: MODELOS DE UI ----------
+data class GolEvento(
+    val equipoUid: String,
+    val jugador: String,
+    val minuto: Int?,
+    val asistente: String?
+)
+
+data class JugadorOption(
+    val uid: String?,     // null -> nombre manual
+    val nombre: String,
+    val esManual: Boolean
+)
+
+data class PartidoEventosUiState(
+    val isLoading: Boolean = true,
+    val guardando: Boolean = false,
+    val error: String? = null,
+
+    val reloadToken: Int = 0,
+
+    val equipoAUid: String? = null,
+    val equipoBUid: String? = null,
+    val nombreEquipoA: String? = null,
+    val nombreEquipoB: String? = null,
+
+    val jugadoresEquipoA: List<JugadorOption> = emptyList(),
+    val jugadoresEquipoB: List<JugadorOption> = emptyList(),
+
+    val eventos: List<GolEvento> = emptyList(),
+    val puedeEditar: Boolean = false
+)
+
+// ---------- VIEWMODEL ----------
 class VisualizarPartidoOnlineViewModel(
     private val partidoUid: String,
     private val repo: PartidoFirebaseRepository
@@ -61,13 +97,20 @@ class VisualizarPartidoOnlineViewModel(
     private val _eliminado = MutableStateFlow(false)
     val eliminado: StateFlow<Boolean> = _eliminado
 
-    private val _comentariosEncuestasState = MutableStateFlow(VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares())
-    val comentariosEncuestasState: StateFlow<VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares> = _comentariosEncuestasState
+    private val _comentariosEncuestasState = MutableStateFlow(
+        VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares()
+    )
+    val comentariosEncuestasState: StateFlow<VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares> =
+        _comentariosEncuestasState
 
     private val _partidoCreadorUid = MutableStateFlow<String?>(null)
     val partidoCreadorUid: StateFlow<String?> = _partidoCreadorUid
 
-    // Carga datos del partido (nombres, jugadores, marcador y estado temporal) y después comentarios/encuestas.
+    // --- NUEVO: UI STATE PARA EVENTOS ---
+    private val _uiStateEventos = MutableStateFlow(PartidoEventosUiState())
+    val uiStateEventos: StateFlow<PartidoEventosUiState> = _uiStateEventos
+
+    // ---------- LÓGICA EXISTENTE ----------
     fun cargarDatos(usuarioUid: String? = null) {
         viewModelScope.launch {
             val partido = repo.obtenerPartido(partidoUid)
@@ -108,7 +151,6 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    // Carga comentarios (con votos y avatar) y encuestas (con resultados y avatar) del partido.
     fun cargarComentariosEncuestas(usuarioUid: String? = null) {
         viewModelScope.launch {
             val comentarios = repo.obtenerComentarios(partidoUid)
@@ -122,13 +164,7 @@ class VisualizarPartidoOnlineViewModel(
                     val snap = db.collection("usuarios").document(comentario.usuarioUid).get().await()
                     avatar = snap.getLong("avatar")?.toInt()
                 }
-                ComentarioOnlineConVotos(
-                    comentario = comentario,
-                    avatar = avatar,
-                    likes = likes,
-                    dislikes = dislikes,
-                    miVoto = miVoto
-                )
+                ComentarioOnlineConVotos(comentario, avatar, likes, dislikes, miVoto)
             }
             val encuestas = repo.obtenerEncuestas(partidoUid)
             val encuestasConResultados = encuestas.map { encuesta ->
@@ -142,14 +178,14 @@ class VisualizarPartidoOnlineViewModel(
                 votosPorOpcion.forEach { votosList[it.opcionIndex] = it.votos }
                 EncuestaOnlineConResultadosConAvatar(encuesta, votosList, avatar)
             }
-            _comentariosEncuestasState.value = VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares(
-                comentarios = comentariosConVotos,
-                encuestas = encuestasConResultados
-            )
+            _comentariosEncuestasState.value =
+                VisualizarPartidoOnlineComentariosEncuestasUiStateConAvatares(
+                    comentarios = comentariosConVotos,
+                    encuestas = encuestasConResultados
+                )
         }
     }
 
-    // Añade un comentario (resolviendo nombre/avatar si hay usuario) y refresca la lista.
     fun agregarComentario(usuarioNombre: String, texto: String, usuarioUid: String? = null) {
         viewModelScope.launch {
             var nombreFinal = usuarioNombre
@@ -168,7 +204,7 @@ class VisualizarPartidoOnlineViewModel(
                 }
             }
 
-            val fechaHora = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            val fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             val comentario = ComentarioFirebase(
                 partidoUid = partidoUid,
                 usuarioUid = uid,
@@ -181,7 +217,6 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    // Registra un voto (like/dislike) sobre un comentario y recarga.
     fun votarComentario(comentarioUid: String, usuarioUid: String, tipo: Int) {
         viewModelScope.launch {
             repo.votarComentario(comentarioUid, usuarioUid, tipo)
@@ -189,7 +224,6 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    // Elimina un comentario si el usuario está autorizado y recarga.
     fun eliminarComentario(comentarioUid: String, usuarioUid: String) {
         viewModelScope.launch {
             repo.eliminarComentarioSiAutorizado(comentarioUid, usuarioUid)
@@ -197,7 +231,6 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    // Crea una encuesta (máx 5 opciones), guarda en Firestore y actualiza la vista al completar.
     fun agregarEncuesta(
         pregunta: String,
         opciones: List<String>,
@@ -209,14 +242,13 @@ class VisualizarPartidoOnlineViewModel(
             val uid = usuarioUid ?: ""
             if (uid.isNotBlank()) {
                 try {
-                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    val db = FirebaseFirestore.getInstance()
                     val snapUsuario = db.collection("usuarios").document(uid).get().await()
                     creadorNombre = snapUsuario.getString("nombreUsuario") ?: "Usuario"
                 } catch (_: Exception) {
                     creadorNombre = "Usuario"
                 }
             }
-            // Construye el mapa y deja que Firestore asigne UID automáticamente con .add()
             val encuesta = hashMapOf(
                 "partidoUid" to partidoUid,
                 "pregunta" to pregunta,
@@ -224,24 +256,17 @@ class VisualizarPartidoOnlineViewModel(
                 "creadorNombre" to creadorNombre,
                 "creadorUid" to uid
             )
-            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            val db = FirebaseFirestore.getInstance()
             db.collection("encuestas")
                 .add(encuesta)
-                .addOnSuccessListener {
-                    cargarComentariosEncuestas(usuarioUid)
-                }
-                .addOnFailureListener {
-                    // Aquí se podría registrar un log
-                }
+                .addOnSuccessListener { cargarComentariosEncuestas(usuarioUid) }
         }
     }
 
-    // Devuelve el voto del usuario en una encuesta (si existe).
     suspend fun getVotoUsuarioEncuesta(encuestaUid: String, usuarioUid: String): Int? {
         return repo.obtenerVotoUsuarioEncuesta(encuestaUid, usuarioUid)
     }
 
-    // Voto único para una opción de encuesta y recarga resultados.
     fun votarUnicoEnEncuesta(encuestaUid: String, opcionIndex: Int, usuarioUid: String) {
         viewModelScope.launch {
             repo.votarEncuestaUnico(encuestaUid, opcionIndex, usuarioUid)
@@ -249,7 +274,6 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    // Elimina el partido y marca el estado de eliminado.
     fun eliminarPartido() {
         viewModelScope.launch {
             repo.borrarPartido(partidoUid)
@@ -257,14 +281,12 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    // DTO interno con estado visible, minuto y parte actual calculados.
     private data class InfoMinutoParte(
         val estadoVisible: String,
         val minutoVisible: String,
         val parteActual: Int
     )
 
-    // Calcula estado/minuto/parte en función de fecha/hora, número de partes y descansos.
     private fun calcularMinutoYParte(
         fecha: String,
         horaInicio: String,
@@ -279,12 +301,8 @@ class VisualizarPartidoOnlineViewModel(
             val duracionTotalMin = (partes * minPorParte) + ((partes - 1) * minDescanso)
             val fin = inicio.plusMinutes(duracionTotalMin.toLong())
 
-            if (ahora.isBefore(inicio)) {
-                return InfoMinutoParte("Previa", "-", 0)
-            }
-            if (ahora.isAfter(fin)) {
-                return InfoMinutoParte("Finalizado", "-", partes)
-            }
+            if (ahora.isBefore(inicio)) return InfoMinutoParte("Previa", "-", 0)
+            if (ahora.isAfter(fin)) return InfoMinutoParte("Finalizado", "-", partes)
 
             var t = 0L
             for (parte in 1..partes) {
@@ -292,20 +310,15 @@ class VisualizarPartidoOnlineViewModel(
                 val finParte = iniParte.plusMinutes(minPorParte.toLong())
                 if (ahora.isBefore(finParte)) {
                     val minuto = (java.time.Duration.between(iniParte, ahora).toMinutes() + 1).coerceAtLeast(1)
-                    return InfoMinutoParte(
-                        "Jugando",
-                        "Parte $parte | Minuto $minuto",
-                        parte
-                    )
+                    return InfoMinutoParte("Jugando", "Parte $parte | Minuto $minuto", parte)
                 }
-                t += minPorParte.toLong()
+                t += minPorParte
                 if (parte != partes) {
-                    val iniDescanso = finParte
-                    val finDescanso = iniDescanso.plusMinutes(minDescanso.toLong())
+                    val finDescanso = finParte.plusMinutes(minDescanso.toLong())
                     if (ahora.isBefore(finDescanso)) {
                         return InfoMinutoParte("Descanso", "Descanso entre parte $parte y ${parte + 1}", parte)
                     }
-                    t += minDescanso.toLong()
+                    t += minDescanso
                 }
             }
             return InfoMinutoParte("Finalizado", "-", partes)
@@ -314,38 +327,223 @@ class VisualizarPartidoOnlineViewModel(
         }
     }
 
-    // Quita al usuario de la lista de acceso al partido y ejecuta callback al terminar.
     fun dejarDeVerPartido(usuarioUid: String, onFinish: () -> Unit) {
         viewModelScope.launch {
             repo.quitarUsuarioDeAcceso(partidoUid, usuarioUid)
             onFinish()
         }
     }
-    // En VisualizarPartidoOnlineViewModel.kt
+
+    // ---------- NUEVO BLOQUE: EVENTOS 100% EN EL VM ----------
+
+    fun recargar() {
+        _uiStateEventos.value = _uiStateEventos.value.copy(
+            reloadToken = _uiStateEventos.value.reloadToken + 1
+        )
+        // disparar carga real
+        cargarEventosYEquipos(partidoUid)
+    }
+
+    fun cargarEventosYEquipos(partidoUid: String) {
+        viewModelScope.launch {
+            try {
+                _uiStateEventos.value = _uiStateEventos.value.copy(isLoading = true, error = null)
+
+                val db = FirebaseFirestore.getInstance()
+                val snapPartido = db.collection("partidos").document(partidoUid).get().await()
+                val equipoAUid = snapPartido.getString("equipoAId")
+                val equipoBUid = snapPartido.getString("equipoBId")
+                val creadorUid = snapPartido.getString("creadorUid") ?: ""
+                val administradores = (snapPartido.get("administradores") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+
+                val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+                val puedeEditar = currentUid != null && (currentUid == creadorUid || administradores.contains(currentUid))
+
+                val equipoA = equipoAUid?.let {
+                    db.collection("equipos").document(it).get().await().toObject(EquipoFirebase::class.java)
+                }
+                val equipoB = equipoBUid?.let {
+                    db.collection("equipos").document(it).get().await().toObject(EquipoFirebase::class.java)
+                }
+
+                // Jugadores para diálogo: roster online + nombres manuales guardados en el partido
+                val jugadoresEquipoA = cargarJugadoresPorEquipoForVm(db, partidoUid, equipoAUid, snapPartido)
+                val jugadoresEquipoB = cargarJugadoresPorEquipoForVm(db, partidoUid, equipoBUid, snapPartido)
+
+                // Cargar goleadores del partido
+                val golesDocs = db.collection("goleadores")
+                    .whereEqualTo("partidoUid", partidoUid)
+                    .get().await()
+                    .documents
+
+                val goles = golesDocs.mapNotNull { it.toObject(GoleadorFirebase::class.java)?.copy(uid = it.id) }
+
+                // Resolver nombres por UID (jugador o usuario)
+                val jugadorUids = goles.mapNotNull { it.jugadorUid?.takeIf { u -> u.isNotBlank() } } +
+                        goles.mapNotNull { it.asistenciaJugadorUid?.takeIf { u -> u.isNotBlank() } }
+                val nombresMap = mutableMapOf<String, String>()
+                for (uid in jugadorUids.distinct()) {
+                    val jugSnap = db.collection("jugadores").document(uid).get().await()
+                    val nombreJugador = jugSnap.getString("nombre")
+                    if (!nombreJugador.isNullOrBlank()) {
+                        nombresMap[uid] = nombreJugador
+                    } else {
+                        val userSnap = db.collection("usuarios").document(uid).get().await()
+                        userSnap.getString("nombreUsuario")?.let { nombresMap[uid] = it }
+                    }
+                }
+
+// golesDocs ya lo tienes; lo mapeamos por id para leer claves legacy
+                val docsById = golesDocs.associateBy { it.id }
+
+                val eventos = goles
+                    .sortedBy { it.minuto ?: Int.MIN_VALUE }
+                    .map { gol ->
+                        val doc = docsById[gol.uid]
+
+                        // Jugador: preferir UID -> nombre por mapa; si no, leer ambos nombres manuales
+                        val jugadorNombreManualLegacy = doc?.getString("jugadorManual") // legacy
+                        val jugadorNombreManualNuevo = gol.jugadorNombreManual // data class
+                        val nombreJugador = when {
+                            !gol.jugadorUid.isNullOrBlank() ->
+                                nombresMap[gol.jugadorUid] ?: jugadorNombreManualNuevo ?: jugadorNombreManualLegacy ?: ""
+                            !jugadorNombreManualNuevo.isNullOrBlank() -> jugadorNombreManualNuevo!!
+                            !jugadorNombreManualLegacy.isNullOrBlank() -> jugadorNombreManualLegacy!!
+                            else -> ""
+                        }
+
+                        // Asistente: igual lógica
+                        val asistenciaManualLegacy = doc?.getString("asistenciaManual")
+                        val asistenciaManualNueva = gol.asistenciaNombreManual
+                        val nombreAsistente = when {
+                            !gol.asistenciaJugadorUid.isNullOrBlank() ->
+                                nombresMap[gol.asistenciaJugadorUid] ?: asistenciaManualNueva ?: asistenciaManualLegacy
+                            !asistenciaManualNueva.isNullOrBlank() -> asistenciaManualNueva
+                            !asistenciaManualLegacy.isNullOrBlank() -> asistenciaManualLegacy
+                            else -> null
+                        }
+
+                        GolEvento(
+                            equipoUid = gol.equipoUid,
+                            jugador = nombreJugador.ifBlank { "Desconocido" },
+                            minuto = gol.minuto,
+                            asistente = nombreAsistente
+                        )
+                    }
+
+
+                _uiStateEventos.value = _uiStateEventos.value.copy(
+                    isLoading = false,
+                    error = null,
+                    equipoAUid = equipoAUid,
+                    equipoBUid = equipoBUid,
+                    nombreEquipoA = equipoA?.nombre ?: "Equipo A",
+                    nombreEquipoB = equipoB?.nombre ?: "Equipo B",
+                    jugadoresEquipoA = jugadoresEquipoA,
+                    jugadoresEquipoB = jugadoresEquipoB,
+                    eventos = eventos,
+                    puedeEditar = puedeEditar
+                )
+            } catch (e: Exception) {
+                _uiStateEventos.value = _uiStateEventos.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "Error cargando eventos"
+                )
+            }
+        }
+    }
+
+    private suspend fun cargarJugadoresPorEquipoForVm(
+        db: FirebaseFirestore,
+        partidoUid: String,
+        equipoId: String?,
+        snapPartido: com.google.firebase.firestore.DocumentSnapshot
+    ): List<JugadorOption> {
+        if (equipoId.isNullOrBlank()) return emptyList()
+
+        val jugadoresA = (snapPartido.get("jugadoresEquipoA") as? List<*>)?.mapNotNull { it?.toString() } ?: emptyList()
+        val jugadoresB = (snapPartido.get("jugadoresEquipoB") as? List<*>)?.mapNotNull { it?.toString() } ?: emptyList()
+        val manualA = (snapPartido.get("nombresManualEquipoA") as? List<*>)?.mapNotNull { it?.toString() } ?: emptyList()
+        val manualB = (snapPartido.get("nombresManualEquipoB") as? List<*>)?.mapNotNull { it?.toString() } ?: emptyList()
+
+        val uids = if (equipoId == snapPartido.getString("equipoAId")) jugadoresA else jugadoresB
+        val manual = if (equipoId == snapPartido.getString("equipoAId")) manualA else manualB
+
+        val nombresPorUid = mutableMapOf<String, String>()
+        for (uid in uids) {
+            val jugSnap = db.collection("jugadores").document(uid).get().await()
+            val nombre = jugSnap.getString("nombre")
+            if (!nombre.isNullOrBlank()) {
+                nombresPorUid[uid] = nombre
+            } else {
+                val userSnap = db.collection("usuarios").document(uid).get().await()
+                userSnap.getString("nombreUsuario")?.let { nombresPorUid[uid] = it }
+            }
+        }
+
+        val online = uids.map { uid -> JugadorOption(uid = uid, nombre = nombresPorUid[uid] ?: uid, esManual = false) }
+        val manualOpts = manual.map { nombre -> JugadorOption(uid = null, nombre = nombre, esManual = true) }
+        return online + manualOpts
+    }
+
     fun agregarEvento(
         partidoUid: String,
         equipoUid: String,
-        jugadorNombre: String,
+        jugador: JugadorOption,
         minuto: Int?,
-        asistenteNombre: String?
+        asistente: JugadorOption?,
+        onSuccess: () -> Unit = {}
     ) {
         viewModelScope.launch {
             try {
+                _uiStateEventos.value = _uiStateEventos.value.copy(guardando = true)
+
                 val db = FirebaseFirestore.getInstance()
-                val eventoMap = hashMapOf(
+                val doc = db.collection("goleadores").document()
+
+                val data = hashMapOf<String, Any?>(
+                    "uid" to doc.id,
                     "partidoUid" to partidoUid,
                     "equipoUid" to equipoUid,
-                    "jugadorNombreManual" to jugadorNombre,
                     "minuto" to minuto,
-                    "asistenciaManual" to asistenteNombre,
                     "timestamp" to FieldValue.serverTimestamp()
                 )
 
-                db.collection("goleadores").add(eventoMap).await()
-                // Actualizar el marcador del partido
+                // jugador
+                if (jugador.uid.isNullOrBlank()) {
+                    data["jugadorUid"] = ""
+                    data["jugadorManual"] = jugador.nombre
+                } else {
+                    data["jugadorUid"] = jugador.uid
+                    data["jugadorManual"] = ""
+                }
+
+                // asistencia
+                if (asistente == null) {
+                    data["asistenciaJugadorUid"] = ""
+                    data["asistenciaManual"] = ""
+                } else if (asistente.uid.isNullOrBlank()) {
+                    data["asistenciaJugadorUid"] = ""
+                    data["asistenciaManual"] = asistente.nombre
+                } else {
+                    data["asistenciaJugadorUid"] = asistente.uid
+                    data["asistenciaManual"] = ""
+                }
+
+                doc.set(data).await()
+
+                // Actualizar marcador del partido
                 actualizarMarcadorPartido(partidoUid, equipoUid)
+
+                _uiStateEventos.value = _uiStateEventos.value.copy(guardando = false)
+                onSuccess()
+                // recargar lista
+                cargarEventosYEquipos(partidoUid)
             } catch (e: Exception) {
-                // Manejar error
+                _uiStateEventos.value = _uiStateEventos.value.copy(
+                    guardando = false,
+                    error = e.message ?: "Error guardando evento"
+                )
             }
         }
     }
@@ -357,7 +555,8 @@ class VisualizarPartidoOnlineViewModel(
             .whereEqualTo("equipoUid", equipoUid)
             .get().await().size()
 
-        val campo = if (equipoUid == obtenerEquipoAId(partidoUid)) "golesEquipoA" else "golesEquipoB"
+        val equipoAId = obtenerEquipoAId(partidoUid)
+        val campo = if (equipoUid == equipoAId) "golesEquipoA" else "golesEquipoB"
         db.collection("partidos").document(partidoUid).update(campo, golesCount).await()
     }
 
@@ -366,10 +565,11 @@ class VisualizarPartidoOnlineViewModel(
         val snap = db.collection("partidos").document(partidoUid).get().await()
         return snap.getString("equipoAId") ?: ""
     }
-    // Busca nombres por uid: primero en "jugadores", si no existe prueba en "usuarios" y si no, pone "Desconocido".
+
+    // ---------- UTILIDADES EXISTENTES ----------
     private suspend fun obtenerNombresPorUid(uids: List<String>): List<String> {
         if (uids.isEmpty()) return emptyList()
-        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val db = FirebaseFirestore.getInstance()
         val nombres = mutableListOf<String>()
         for (uid in uids) {
             if (uid.isBlank()) continue

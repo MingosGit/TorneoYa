@@ -117,7 +117,12 @@ fun PartidoTabsOnline(
     } else {
         when (selectedTabIndex) {
             0 -> PartidoTabJugadoresOnline(uiState)
-            1 -> PartidoTabEventosOnline(partidoUid, uiState, reloadKey = reloadEventos + golesReloadKey)
+            1 -> PartidoTabEventosOnline(
+                partidoUid = partidoUid,
+                uiState = uiState,
+                reloadKey = reloadEventos + golesReloadKey,
+                viewModel = vm
+            )
             2 -> PartidoTabComentariosOnline(vm, usuarioUid)
             3 -> PartidoTabEncuestasOnline(vm, usuarioUid)
         }
