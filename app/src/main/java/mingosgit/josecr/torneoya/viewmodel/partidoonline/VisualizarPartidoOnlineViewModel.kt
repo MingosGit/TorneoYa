@@ -2,6 +2,7 @@ package mingosgit.josecr.torneoya.viewmodel.partidoonline
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -320,7 +321,51 @@ class VisualizarPartidoOnlineViewModel(
             onFinish()
         }
     }
+    // En VisualizarPartidoOnlineViewModel.kt
+    fun agregarEvento(
+        partidoUid: String,
+        equipoUid: String,
+        jugadorNombre: String,
+        minuto: Int?,
+        asistenteNombre: String?
+    ) {
+        viewModelScope.launch {
+            try {
+                val db = FirebaseFirestore.getInstance()
+                val eventoMap = hashMapOf(
+                    "partidoUid" to partidoUid,
+                    "equipoUid" to equipoUid,
+                    "jugadorNombreManual" to jugadorNombre,
+                    "minuto" to minuto,
+                    "asistenciaManual" to asistenteNombre,
+                    "timestamp" to FieldValue.serverTimestamp()
+                )
 
+                db.collection("goleadores").add(eventoMap).await()
+                // Actualizar el marcador del partido
+                actualizarMarcadorPartido(partidoUid, equipoUid)
+            } catch (e: Exception) {
+                // Manejar error
+            }
+        }
+    }
+
+    private suspend fun actualizarMarcadorPartido(partidoUid: String, equipoUid: String) {
+        val db = FirebaseFirestore.getInstance()
+        val golesCount = db.collection("goleadores")
+            .whereEqualTo("partidoUid", partidoUid)
+            .whereEqualTo("equipoUid", equipoUid)
+            .get().await().size()
+
+        val campo = if (equipoUid == obtenerEquipoAId(partidoUid)) "golesEquipoA" else "golesEquipoB"
+        db.collection("partidos").document(partidoUid).update(campo, golesCount).await()
+    }
+
+    private suspend fun obtenerEquipoAId(partidoUid: String): String {
+        val db = FirebaseFirestore.getInstance()
+        val snap = db.collection("partidos").document(partidoUid).get().await()
+        return snap.getString("equipoAId") ?: ""
+    }
     // Busca nombres por uid: primero en "jugadores", si no existe prueba en "usuarios" y si no, pone "Desconocido".
     private suspend fun obtenerNombresPorUid(uids: List<String>): List<String> {
         if (uids.isEmpty()) return emptyList()
