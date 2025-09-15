@@ -244,7 +244,7 @@ fun PartidoTabEventosOnline(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 72.dp),
+                            .padding(bottom = 0.dp),
                         state = listState
                     ) {
                         items(eventos) { evento ->
