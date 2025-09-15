@@ -267,6 +267,17 @@
     <string name="ponlineeve_text_no_events">Sense esdeveniments registrats</string>
     <string name="ponlineeve_icon_goal">⚽</string>
     <string name="ponlineeve_icon_assist">🅰️</string>
+    <string name="ponlineeve_dialog_title">Afegir esdeveniment</string>
+    <string name="ponlineeve_label_team">Equip</string>
+    <string name="ponlineeve_label_player_required">Jugador (obligatori)</string>
+    <string name="ponlineeve_label_assist_optional">Assistència (opcional)</string>
+    <string name="ponlineeve_label_minute_required">Minut (obligatori)</string>
+    <string name="ponlineeve_no_assist">Sense assistència</string>
+    <string name="ponlineeve_btn_cancel">Cancel·lar</string>
+    <string name="ponlineeve_btn_save">Desar</string>
+    <string name="ponlineeve_saving">Desant…</string>
+    <string name="ponlineeve_manual_suffix">%1$s (manual)</string>
+    <string name="ponlineeve_fab_plus">＋</string>
 
     <!--- ====== PARTIT PESTANYA JUGADORS SCREEN ====== -->
     <string name="ponlinejug_text_no_players">Sense jugadors assignats</string>

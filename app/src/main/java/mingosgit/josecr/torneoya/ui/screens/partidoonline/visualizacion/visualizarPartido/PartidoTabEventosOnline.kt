@@ -90,7 +90,11 @@ fun PartidoTabEventosOnline(
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(onClick = { viewModel.recargar() }) {
-                    Icon(Icons.Default.Refresh, contentDescription = descReloadGoals, tint = cs.primary)
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = descReloadGoals,
+                        tint = cs.primary
+                    )
                 }
             }
 
@@ -132,20 +136,32 @@ fun PartidoTabEventosOnline(
                                             .clip(RoundedCornerShape(16.dp))
                                             .background(
                                                 brush = Brush.horizontalGradient(
-                                                    listOf(cs.primary.copy(alpha = 0.18f), cs.surface)
+                                                    listOf(
+                                                        cs.primary.copy(alpha = 0.18f),
+                                                        cs.surface
+                                                    )
                                                 ),
                                                 shape = RoundedCornerShape(16.dp)
                                             )
                                             .border(
                                                 width = 2.dp,
-                                                brush = Brush.horizontalGradient(listOf(cs.primary, cs.secondary)),
+                                                brush = Brush.horizontalGradient(
+                                                    listOf(
+                                                        cs.primary,
+                                                        cs.secondary
+                                                    )
+                                                ),
                                                 shape = RoundedCornerShape(16.dp)
                                             )
                                             .padding(vertical = 11.dp, horizontal = 16.dp)
                                     ) {
                                         Column(horizontalAlignment = Alignment.Start) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(text = iconGoal, fontSize = 20.sp, modifier = Modifier.padding(end = 6.dp))
+                                                Text(
+                                                    text = iconGoal,
+                                                    fontSize = 20.sp,
+                                                    modifier = Modifier.padding(end = 6.dp)
+                                                )
                                                 Text(
                                                     text = evento.jugador,
                                                     fontWeight = FontWeight.Bold,
@@ -159,7 +175,11 @@ fun PartidoTabEventosOnline(
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     modifier = Modifier.padding(top = 2.dp)
                                                 ) {
-                                                    Text(text = iconAssist, fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
+                                                    Text(
+                                                        text = iconAssist,
+                                                        fontSize = 16.sp,
+                                                        modifier = Modifier.padding(end = 4.dp)
+                                                    )
                                                     Text(
                                                         text = evento.asistente!!,
                                                         fontSize = 14.sp,
@@ -203,13 +223,21 @@ fun PartidoTabEventosOnline(
                                             .clip(RoundedCornerShape(16.dp))
                                             .background(
                                                 brush = Brush.horizontalGradient(
-                                                    listOf(cs.surface, cs.secondary.copy(alpha = 0.18f))
+                                                    listOf(
+                                                        cs.surface,
+                                                        cs.secondary.copy(alpha = 0.18f)
+                                                    )
                                                 ),
                                                 shape = RoundedCornerShape(16.dp)
                                             )
                                             .border(
                                                 width = 2.dp,
-                                                brush = Brush.horizontalGradient(listOf(cs.secondary, cs.primary)),
+                                                brush = Brush.horizontalGradient(
+                                                    listOf(
+                                                        cs.secondary,
+                                                        cs.primary
+                                                    )
+                                                ),
                                                 shape = RoundedCornerShape(16.dp)
                                             )
                                             .padding(vertical = 11.dp, horizontal = 16.dp)
@@ -223,7 +251,11 @@ fun PartidoTabEventosOnline(
                                                     fontSize = 16.sp,
                                                     modifier = Modifier.padding(end = 4.dp)
                                                 )
-                                                Text(text = iconGoal, fontSize = 20.sp, modifier = Modifier.padding(start = 6.dp))
+                                                Text(
+                                                    text = iconGoal,
+                                                    fontSize = 20.sp,
+                                                    modifier = Modifier.padding(start = 6.dp)
+                                                )
                                             }
                                             if (!evento.asistente.isNullOrBlank()) {
                                                 Row(
@@ -239,7 +271,11 @@ fun PartidoTabEventosOnline(
                                                         fontWeight = FontWeight.Medium,
                                                         color = cs.tertiary
                                                     )
-                                                    Text(text = iconAssist, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
+                                                    Text(
+                                                        text = iconAssist,
+                                                        fontSize = 16.sp,
+                                                        modifier = Modifier.padding(start = 4.dp)
+                                                    )
                                                 }
                                             }
                                         }
@@ -253,7 +289,6 @@ fun PartidoTabEventosOnline(
                 }
             }
         }
-
 // FAB: abrir diálogo (solo si el VM indica permiso)
         if (eventosUi.puedeEditar) {
             val blue = mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette.blue
@@ -274,7 +309,7 @@ fun PartidoTabEventosOnline(
                     .background( // fondo semitransparente y PLANO (adiós hexágono)
                         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
                     )
-                    .noIndicationClickable { // click sin ripple/overlays “raros” de Material
+                    .noIndicationClickable {
                         val preUid = eventosUi.equipoAUid ?: eventosUi.equipoBUid
                         equipoSeleccionadoUid = preUid
                         equipoSeleccionadoNombre = when (preUid) {
@@ -289,11 +324,13 @@ fun PartidoTabEventosOnline(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Text("＋", fontSize = 26.sp, color = MaterialTheme.colorScheme.onBackground)
+                Text(
+                    text = stringResource(R.string.ponlineeve_fab_plus),
+                    fontSize = 26.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
         }
-
-
 
         if (showAddDialog) {
             Dialog(onDismissRequest = { if (!eventosUi.guardando) showAddDialog = false }) {
@@ -315,16 +352,18 @@ fun PartidoTabEventosOnline(
                             brush = Brush.horizontalGradient(listOf(blue, violet)),
                             shape = RoundedCornerShape(16.dp)
                         )
-
                         .background(
                             Brush.horizontalGradient(
-                                listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
+                                listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
                             )
                         )
                         .padding(18.dp)
                 ) {
                     Text(
-                        text = "Agregar evento",
+                        text = stringResource(R.string.ponlineeve_dialog_title),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 20.sp
@@ -344,8 +383,12 @@ fun PartidoTabEventosOnline(
                             readOnly = true,
                             value = equipoSeleccionadoNombre,
                             onValueChange = {},
-                            label = { Text(
-                                text="Equipo", color = MaterialTheme.colorScheme.onSurface) },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.ponlineeve_label_team),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipo) },
                             modifier = Modifier
                                 .menuAnchor()
@@ -360,7 +403,8 @@ fun PartidoTabEventosOnline(
                                     text = { Text(eventosUi.nombreEquipoA ?: nombreA) },
                                     onClick = {
                                         equipoSeleccionadoUid = eventosUi.equipoAUid
-                                        equipoSeleccionadoNombre = eventosUi.nombreEquipoA ?: nombreA
+                                        equipoSeleccionadoNombre =
+                                            eventosUi.nombreEquipoA ?: nombreA
                                         expandedEquipo = false
                                         jugadorSeleccionado = null
                                         asistenteSeleccionado = null
@@ -372,7 +416,8 @@ fun PartidoTabEventosOnline(
                                     text = { Text(eventosUi.nombreEquipoB ?: nombreB) },
                                     onClick = {
                                         equipoSeleccionadoUid = eventosUi.equipoBUid
-                                        equipoSeleccionadoNombre = eventosUi.nombreEquipoB ?: nombreB
+                                        equipoSeleccionadoNombre =
+                                            eventosUi.nombreEquipoB ?: nombreB
                                         expandedEquipo = false
                                         jugadorSeleccionado = null
                                         asistenteSeleccionado = null
@@ -396,8 +441,12 @@ fun PartidoTabEventosOnline(
                             readOnly = true,
                             value = jugadorSeleccionado?.nombre ?: "",
                             onValueChange = {},
-                            label = { Text(
-                                text="Jugador (obligatorio)", color = MaterialTheme.colorScheme.onSurface) },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.ponlineeve_label_player_required),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJugador) },
                             modifier = Modifier
                                 .menuAnchor()
@@ -408,11 +457,14 @@ fun PartidoTabEventosOnline(
                             onDismissRequest = { expandedJugador = false }
                         ) {
                             opcionesJugador.forEach { j ->
+                                val manualText =
+                                    stringResource(R.string.ponlineeve_manual_suffix, j.nombre)
                                 DropdownMenuItem(
-                                    text = { Text(if (j.esManual) "${j.nombre} (manual)" else j.nombre) },
+                                    text = { Text(if (j.esManual) manualText else j.nombre) },
                                     onClick = {
                                         jugadorSeleccionado = j
-                                        if (asistenteSeleccionado?.nombre == j.nombre) asistenteSeleccionado = null
+                                        if (asistenteSeleccionado?.nombre == j.nombre) asistenteSeleccionado =
+                                            null
                                         expandedJugador = false
                                     }
                                 )
@@ -434,8 +486,12 @@ fun PartidoTabEventosOnline(
                             readOnly = true,
                             value = asistenteSeleccionado?.nombre ?: "",
                             onValueChange = {},
-                            label = { Text(
-                                text="Asistencia (opcional)", color = MaterialTheme.colorScheme.onSurface) },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.ponlineeve_label_assist_optional),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAsistente) },
                             modifier = Modifier
                                 .menuAnchor()
@@ -446,15 +502,17 @@ fun PartidoTabEventosOnline(
                             onDismissRequest = { expandedAsistente = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Sin asistencia") },
+                                text = { Text(stringResource(R.string.ponlineeve_no_assist)) },
                                 onClick = {
                                     asistenteSeleccionado = null
                                     expandedAsistente = false
                                 }
                             )
                             opcionesAsistente.forEach { j ->
+                                val manualText =
+                                    stringResource(R.string.ponlineeve_manual_suffix, j.nombre)
                                 DropdownMenuItem(
-                                    text = { Text(if (j.esManual) "${j.nombre} (manual)" else j.nombre) },
+                                    text = { Text(if (j.esManual) manualText else j.nombre) },
                                     onClick = {
                                         asistenteSeleccionado = j
                                         expandedAsistente = false
@@ -473,8 +531,12 @@ fun PartidoTabEventosOnline(
                         ),
                         value = minutoTexto,
                         onValueChange = { minutoTexto = it.filter { c -> c.isDigit() }.take(3) },
-                        label = { Text(
-                            text="Minuto (obligatorio)", color = MaterialTheme.colorScheme.onSurface) },
+                        label = {
+                            Text(
+                                text = stringResource(R.string.ponlineeve_label_minute_required),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -501,7 +563,12 @@ fun PartidoTabEventosOnline(
                             TextButton(
                                 enabled = !eventosUi.guardando,
                                 onClick = { showAddDialog = false }
-                            ) { Text("Cancelar", fontWeight = FontWeight.Bold) }
+                            ) {
+                                Text(
+                                    stringResource(R.string.ponlineeve_btn_cancel),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
 
                         Spacer(Modifier.width(12.dp))
@@ -523,7 +590,10 @@ fun PartidoTabEventosOnline(
                                 )
                                 .background(
                                     Brush.horizontalGradient(
-                                        listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surface)
+                                        listOf(
+                                            MaterialTheme.colorScheme.surfaceVariant,
+                                            MaterialTheme.colorScheme.surface
+                                        )
                                     )
                                 ),
                             contentAlignment = Alignment.Center
@@ -537,18 +607,23 @@ fun PartidoTabEventosOnline(
                                         jugador = jugadorSeleccionado!!,
                                         minuto = minutoTexto.toInt(),
                                         asistente = asistenteSeleccionado
-                                    ) {
-                                        // onSuccess
-                                        showAddDialog = false
-                                    }
+                                    ) { showAddDialog = false }
                                 }
-                            ) { Text(if (eventosUi.guardando) "Guardando..." else "Guardar", fontWeight = FontWeight.Bold, color= MaterialTheme.colorScheme.onBackground) }
+                            ) {
+                                Text(
+                                    text = if (eventosUi.guardando)
+                                        stringResource(R.string.ponlineeve_saving)
+                                    else
+                                        stringResource(R.string.ponlineeve_btn_save),
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 }
 // Helper para clickable sin ripple/overlays (evita artefactos)

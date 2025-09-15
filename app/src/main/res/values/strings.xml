@@ -265,6 +265,19 @@
     <string name="ponlineeve_text_no_events">Sin eventos registrados</string>
     <string name="ponlineeve_icon_goal">⚽</string>
     <string name="ponlineeve_icon_assist">🅰️</string>
+    <string name="ponlineeve_dialog_title">Agregar evento</string>
+    <string name="ponlineeve_label_team">Equipo</string>
+    <string name="ponlineeve_label_player_required">Jugador (obligatorio)</string>
+    <string name="ponlineeve_label_assist_optional">Asistencia (opcional)</string>
+    <string name="ponlineeve_label_minute_required">Minuto (obligatorio)</string>
+    <string name="ponlineeve_no_assist">Sin asistencia</string>
+    <string name="ponlineeve_btn_cancel">Cancelar</string>
+    <string name="ponlineeve_btn_save">Guardar</string>
+    <string name="ponlineeve_saving">Guardando...</string>
+    <string name="ponlineeve_manual_suffix">%1$s (manual)</string>
+    <string name="ponlineeve_fab_plus">＋</string>
+
+
 
     <!--- ====== PARTIDO TAB JUGADORES SCREEN ====== -->
     <string name="ponlinejug_text_no_players">Sin jugadores asignados</string>
