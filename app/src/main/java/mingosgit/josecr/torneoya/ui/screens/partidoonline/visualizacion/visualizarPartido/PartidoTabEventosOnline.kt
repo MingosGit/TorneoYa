@@ -1,8 +1,12 @@
 // PartidoTabEventosOnline.kt
 package mingosgit.josecr.torneoya.ui.screens.partidoonline.visualizacion.visualizarPartido
 
+import android.R.attr.clickable
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
@@ -101,7 +106,7 @@ fun PartidoTabEventosOnline(
                     Text(
                         text = textNoEvents,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = cs.mutedText,
+                        color = cs.onSurface,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 } else {
@@ -178,7 +183,7 @@ fun PartidoTabEventosOnline(
                                     evento.minuto?.let {
                                         Text(
                                             text = "${it}'",
-                                            color = cs.mutedText,
+                                            color = cs.onSurface,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
                                             modifier = Modifier
@@ -249,46 +254,46 @@ fun PartidoTabEventosOnline(
             }
         }
 
-        // FAB: abrir diálogo (solo si el VM indica permiso)
+// FAB: abrir diálogo (solo si el VM indica permiso)
         if (eventosUi.puedeEditar) {
             val blue = mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette.blue
             val violet = mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette.violet
 
-            FloatingActionButton(
-                onClick = {
-                    val preUid = eventosUi.equipoAUid ?: eventosUi.equipoBUid
-                    equipoSeleccionadoUid = preUid
-                    equipoSeleccionadoNombre = when (preUid) {
-                        eventosUi.equipoAUid -> eventosUi.nombreEquipoA ?: nombreA
-                        eventosUi.equipoBUid -> eventosUi.nombreEquipoB ?: nombreB
-                        else -> ""
-                    }
-                    jugadorSeleccionado = null
-                    asistenteSeleccionado = null
-                    minutoTexto = ""
-                    showAddDialog = true
-                },
+            // Reemplazo del FAB por un botón custom circular sin capas internas de Material
+            Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(14.dp)
                     .size(60.dp)
+                    .clip(CircleShape)
                     .border(
                         width = 2.dp,
                         brush = Brush.horizontalGradient(listOf(blue, violet)),
                         shape = CircleShape
                     )
-                    .background(
-                        brush = Brush.horizontalGradient(listOf(cs.surface, cs.surfaceVariant)),
-                        shape = CircleShape
-                    ),
-                containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                contentColor = cs.onBackground,
-                shape = CircleShape,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
+                    .background( // fondo semitransparente y PLANO (adiós hexágono)
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+                    )
+                    .noIndicationClickable { // click sin ripple/overlays “raros” de Material
+                        val preUid = eventosUi.equipoAUid ?: eventosUi.equipoBUid
+                        equipoSeleccionadoUid = preUid
+                        equipoSeleccionadoNombre = when (preUid) {
+                            eventosUi.equipoAUid -> eventosUi.nombreEquipoA ?: nombreA
+                            eventosUi.equipoBUid -> eventosUi.nombreEquipoB ?: nombreB
+                            else -> ""
+                        }
+                        jugadorSeleccionado = null
+                        asistenteSeleccionado = null
+                        minutoTexto = ""
+                        showAddDialog = true
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Text("＋", fontSize = 26.sp)
+                Text("＋", fontSize = 26.sp, color = MaterialTheme.colorScheme.onBackground)
             }
         }
+
+
 
         if (showAddDialog) {
             Dialog(onDismissRequest = { if (!eventosUi.guardando) showAddDialog = false }) {
@@ -310,16 +315,17 @@ fun PartidoTabEventosOnline(
                             brush = Brush.horizontalGradient(listOf(blue, violet)),
                             shape = RoundedCornerShape(16.dp)
                         )
+
                         .background(
                             Brush.horizontalGradient(
-                                listOf(cs.surface, cs.surfaceVariant)
+                                listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
                             )
                         )
                         .padding(18.dp)
                 ) {
                     Text(
                         text = "Agregar evento",
-                        color = cs.onBackground,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 20.sp
                     )
@@ -330,10 +336,16 @@ fun PartidoTabEventosOnline(
                         onExpandedChange = { expandedEquipo = !expandedEquipo }
                     ) {
                         OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            ),
                             readOnly = true,
                             value = equipoSeleccionadoNombre,
                             onValueChange = {},
-                            label = { Text("Equipo") },
+                            label = { Text(
+                                text="Equipo", color = MaterialTheme.colorScheme.onSurface) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipo) },
                             modifier = Modifier
                                 .menuAnchor()
@@ -376,10 +388,16 @@ fun PartidoTabEventosOnline(
                         onExpandedChange = { expandedJugador = !expandedJugador }
                     ) {
                         OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            ),
                             readOnly = true,
                             value = jugadorSeleccionado?.nombre ?: "",
                             onValueChange = {},
-                            label = { Text("Jugador (obligatorio)") },
+                            label = { Text(
+                                text="Jugador (obligatorio)", color = MaterialTheme.colorScheme.onSurface) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJugador) },
                             modifier = Modifier
                                 .menuAnchor()
@@ -408,10 +426,16 @@ fun PartidoTabEventosOnline(
                         onExpandedChange = { expandedAsistente = !expandedAsistente }
                     ) {
                         OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            ),
                             readOnly = true,
                             value = asistenteSeleccionado?.nombre ?: "",
                             onValueChange = {},
-                            label = { Text("Asistencia (opcional)") },
+                            label = { Text(
+                                text="Asistencia (opcional)", color = MaterialTheme.colorScheme.onSurface) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAsistente) },
                             modifier = Modifier
                                 .menuAnchor()
@@ -442,9 +466,15 @@ fun PartidoTabEventosOnline(
                     Spacer(Modifier.height(10.dp))
 
                     OutlinedTextField(
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        ),
                         value = minutoTexto,
                         onValueChange = { minutoTexto = it.filter { c -> c.isDigit() }.take(3) },
-                        label = { Text("Minuto (obligatorio)") },
+                        label = { Text(
+                            text="Minuto (obligatorio)", color = MaterialTheme.colorScheme.onSurface) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -493,7 +523,7 @@ fun PartidoTabEventosOnline(
                                 )
                                 .background(
                                     Brush.horizontalGradient(
-                                        listOf(cs.surfaceVariant, cs.surface)
+                                        listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surface)
                                     )
                                 ),
                             contentAlignment = Alignment.Center
@@ -512,11 +542,25 @@ fun PartidoTabEventosOnline(
                                         showAddDialog = false
                                     }
                                 }
-                            ) { Text(if (eventosUi.guardando) "Guardando..." else "Guardar", fontWeight = FontWeight.Bold) }
+                            ) { Text(if (eventosUi.guardando) "Guardando..." else "Guardar", fontWeight = FontWeight.Bold, color= MaterialTheme.colorScheme.onBackground) }
                         }
                     }
                 }
             }
         }
+
     }
 }
+// Helper para clickable sin ripple/overlays (evita artefactos)
+@SuppressLint("SuspiciousModifierThen")
+@Composable
+private fun Modifier.noIndicationClickable(onClick: () -> Unit): Modifier =
+    composed {
+        this.then(
+            clickable(
+                indication = null,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            ) { onClick() }
+        )
+    }
+
