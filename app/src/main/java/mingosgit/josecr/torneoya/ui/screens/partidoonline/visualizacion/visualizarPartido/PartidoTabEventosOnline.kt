@@ -18,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -391,47 +392,61 @@ fun PartidoTabEventosOnline(
             val blue = mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette.blue
             val violet = mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette.violet
 
-            // Botón estilo app (círculo con borde y fondo en gradiente)
-            IconButton(
-                onClick = {
-                    val preUid = equipoAUid ?: equipoBUid
-                    equipoSeleccionadoUid = preUid
-                    equipoSeleccionadoNombre = when (preUid) {
-                        equipoAUid -> nombreA
-                        equipoBUid -> nombreB
-                        else -> ""
-                    }
-                    jugadorSeleccionado = null
-                    asistenteSeleccionado = null
-                    minutoTexto = ""
-                    showAddDialog = true
+            // Usa el usuario actual de FirebaseAuth (evita depender de `usuarioUid`)
+            val currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
 
-                    scope.launch {
-                        val db = FirebaseFirestore.getInstance()
-                        jugadoresEquipoA = cargarJugadoresPorEquipo(db, equipoAUid)
-                        jugadoresEquipoB = cargarJugadoresPorEquipo(db, equipoBUid)
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(10.dp)
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .border(
-                        width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(blue, violet)),
-                        shape = CircleShape
-                    )
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(cs.surface, cs.surfaceVariant)
-                        )
-                    )
-            ) {
-                Text("＋", fontSize = 24.sp, color = cs.onBackground)
+            var puedeEditar by remember { mutableStateOf(false) }
+            LaunchedEffect(partidoUid, currentUid) {
+                val firestore = FirebaseFirestore.getInstance()
+                val snap = firestore.collection("partidos").document(partidoUid).get().await()
+                val creadorUid = snap.getString("creadorUid") ?: ""
+                val administradores = (snap.get("administradores") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                puedeEditar = currentUid != null && (currentUid == creadorUid || administradores.contains(currentUid))
             }
 
-            // Popup para agregar evento (estética con borde degradado y fondo suave)
+            if (puedeEditar) {
+                FloatingActionButton(
+                    onClick = {
+                        val preUid = equipoAUid ?: equipoBUid
+                        equipoSeleccionadoUid = preUid
+                        equipoSeleccionadoNombre = when (preUid) {
+                            equipoAUid -> nombreA
+                            equipoBUid -> nombreB
+                            else -> ""
+                        }
+                        jugadorSeleccionado = null
+                        asistenteSeleccionado = null
+                        minutoTexto = ""
+                        showAddDialog = true
+
+                        scope.launch {
+                            val db = FirebaseFirestore.getInstance()
+                            jugadoresEquipoA = cargarJugadoresPorEquipo(db, equipoAUid)
+                            jugadoresEquipoB = cargarJugadoresPorEquipo(db, equipoBUid)
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(14.dp)
+                        .size(60.dp)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.horizontalGradient(listOf(blue, violet)),
+                            shape = CircleShape
+                        )
+                        .background(
+                            brush = Brush.horizontalGradient(listOf(cs.surface, cs.surfaceVariant)),
+                            shape = CircleShape
+                        ),
+                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    contentColor = cs.onBackground,
+                    shape = CircleShape,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
+                ) {
+                    Text("＋", fontSize = 26.sp)
+                }
+            }
+
             if (showAddDialog) {
                 androidx.compose.ui.window.Dialog(onDismissRequest = { if (!guardando) showAddDialog = false }) {
                     Column(
@@ -459,7 +474,6 @@ fun PartidoTabEventosOnline(
                         )
                         Spacer(Modifier.height(12.dp))
 
-                        // Equipo
                         ExposedDropdownMenuBox(
                             expanded = expandedEquipo,
                             onExpandedChange = { expandedEquipo = !expandedEquipo }
@@ -506,7 +520,6 @@ fun PartidoTabEventosOnline(
                         }
                         Spacer(Modifier.height(10.dp))
 
-                        // Jugador (OBLIGATORIO)
                         val opcionesJugador = if (equipoSeleccionadoUid == equipoAUid) jugadoresEquipoA else jugadoresEquipoB
                         ExposedDropdownMenuBox(
                             expanded = expandedJugador,
@@ -540,7 +553,6 @@ fun PartidoTabEventosOnline(
                         }
                         Spacer(Modifier.height(10.dp))
 
-                        // Asistente (opcional)
                         val opcionesAsistente = (if (equipoSeleccionadoUid == equipoAUid) jugadoresEquipoA else jugadoresEquipoB)
                             .filter { it.nombre != jugadorSeleccionado?.nombre }
                         ExposedDropdownMenuBox(
@@ -581,7 +593,6 @@ fun PartidoTabEventosOnline(
                         }
                         Spacer(Modifier.height(10.dp))
 
-                        // Minuto (OBLIGATORIO)
                         OutlinedTextField(
                             value = minutoTexto,
                             onValueChange = { minutoTexto = it.filter { c -> c.isDigit() }.take(3) },
@@ -592,12 +603,10 @@ fun PartidoTabEventosOnline(
 
                         Spacer(Modifier.height(16.dp))
 
-                        // Botonera acorde al estilo (botón contorno y botón principal con borde degradado)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Cancelar (outline)
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -608,13 +617,7 @@ fun PartidoTabEventosOnline(
                                         brush = Brush.horizontalGradient(listOf(blue, violet)),
                                         shape = RoundedCornerShape(13.dp)
                                     )
-                                    .background(color = androidx.compose.ui.graphics.Color.Transparent)
-                                    .let { base ->
-                                        if (!guardando) base
-                                        else base
-                                    }
-                                    .padding(horizontal = 0.dp)
-                                    .then(Modifier),
+                                    .background(androidx.compose.ui.graphics.Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 TextButton(
@@ -625,7 +628,6 @@ fun PartidoTabEventosOnline(
 
                             Spacer(Modifier.width(12.dp))
 
-                            // Guardar (fondo suave + borde degradado)
                             val puedeGuardar = !guardando &&
                                     !equipoSeleccionadoUid.isNullOrBlank() &&
                                     jugadorSeleccionado != null &&
@@ -700,6 +702,8 @@ fun PartidoTabEventosOnline(
                 }
             }
         }
+
+
 
     }
 }
