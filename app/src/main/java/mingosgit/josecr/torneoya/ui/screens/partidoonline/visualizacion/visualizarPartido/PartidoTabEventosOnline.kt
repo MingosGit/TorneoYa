@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -385,40 +386,79 @@ fun PartidoTabEventosOnline(
         }
 
         // FAB: abrir diálogo
-        FloatingActionButton(
-            onClick = {
-                val preUid = equipoAUid ?: equipoBUid
-                equipoSeleccionadoUid = preUid
-                equipoSeleccionadoNombre = when (preUid) {
-                    equipoAUid -> nombreA
-                    equipoBUid -> nombreB
-                    else -> ""
-                }
-                jugadorSeleccionado = null
-                asistenteSeleccionado = null
-                minutoTexto = ""
-                showAddDialog = true
+        run {
+            val cs = MaterialTheme.colorScheme
+            val blue = mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette.blue
+            val violet = mingosgit.josecr.torneoya.ui.theme.TorneoYaPalette.violet
 
-                scope.launch {
-                    val db = FirebaseFirestore.getInstance()
-                    jugadoresEquipoA = cargarJugadoresPorEquipo(db, equipoAUid)
-                    jugadoresEquipoB = cargarJugadoresPorEquipo(db, equipoBUid)
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Añadir evento")
-        }
+            // Botón estilo app (círculo con borde y fondo en gradiente)
+            IconButton(
+                onClick = {
+                    val preUid = equipoAUid ?: equipoBUid
+                    equipoSeleccionadoUid = preUid
+                    equipoSeleccionadoNombre = when (preUid) {
+                        equipoAUid -> nombreA
+                        equipoBUid -> nombreB
+                        else -> ""
+                    }
+                    jugadorSeleccionado = null
+                    asistenteSeleccionado = null
+                    minutoTexto = ""
+                    showAddDialog = true
 
-        // Diálogo para agregar evento: jugador y minuto OBLIGATORIOS
-        if (showAddDialog) {
-            AlertDialog(
-                onDismissRequest = { if (!guardando) showAddDialog = false },
-                title = { Text("Agregar evento") },
-                text = {
-                    Column {
+                    scope.launch {
+                        val db = FirebaseFirestore.getInstance()
+                        jugadoresEquipoA = cargarJugadoresPorEquipo(db, equipoAUid)
+                        jugadoresEquipoB = cargarJugadoresPorEquipo(db, equipoBUid)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(10.dp)
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(listOf(blue, violet)),
+                        shape = CircleShape
+                    )
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(cs.surface, cs.surfaceVariant)
+                        )
+                    )
+            ) {
+                Text("＋", fontSize = 24.sp, color = cs.onBackground)
+            }
+
+            // Popup para agregar evento (estética con borde degradado y fondo suave)
+            if (showAddDialog) {
+                androidx.compose.ui.window.Dialog(onDismissRequest = { if (!guardando) showAddDialog = false }) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.horizontalGradient(listOf(blue, violet)),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(cs.surface, cs.surfaceVariant)
+                                )
+                            )
+                            .padding(18.dp)
+                    ) {
+                        Text(
+                            text = "Agregar evento",
+                            color = cs.onBackground,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp
+                        )
+                        Spacer(Modifier.height(12.dp))
+
                         // Equipo
                         ExposedDropdownMenuBox(
                             expanded = expandedEquipo,
@@ -464,7 +504,7 @@ fun PartidoTabEventosOnline(
                                 }
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(10.dp))
 
                         // Jugador (OBLIGATORIO)
                         val opcionesJugador = if (equipoSeleccionadoUid == equipoAUid) jugadoresEquipoA else jugadoresEquipoB
@@ -491,17 +531,14 @@ fun PartidoTabEventosOnline(
                                         text = { Text(if (j.esManual) "${j.nombre} (manual)" else j.nombre) },
                                         onClick = {
                                             jugadorSeleccionado = j
-                                            // impedir asistente igual al goleador
-                                            if (asistenteSeleccionado?.nombre == j.nombre) {
-                                                asistenteSeleccionado = null
-                                            }
+                                            if (asistenteSeleccionado?.nombre == j.nombre) asistenteSeleccionado = null
                                             expandedJugador = false
                                         }
                                     )
                                 }
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(10.dp))
 
                         // Asistente (opcional)
                         val opcionesAsistente = (if (equipoSeleccionadoUid == equipoAUid) jugadoresEquipoA else jugadoresEquipoB)
@@ -542,7 +579,7 @@ fun PartidoTabEventosOnline(
                                 }
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(10.dp))
 
                         // Minuto (OBLIGATORIO)
                         OutlinedTextField(
@@ -552,71 +589,118 @@ fun PartidoTabEventosOnline(
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
-                    }
-                },
-                confirmButton = {
-                    val puedeGuardar = !guardando &&
-                            !equipoSeleccionadoUid.isNullOrBlank() &&
-                            jugadorSeleccionado != null &&
-                            minutoTexto.isNotBlank()
 
-                    TextButton(
-                        enabled = puedeGuardar,
-                        onClick = {
-                            scope.launch {
-                                guardando = true
-                                try {
-                                    val db = FirebaseFirestore.getInstance()
-                                    val doc = db.collection("goleadores").document()
-                                    val minuto = minutoTexto.toIntOrNull()
+                        Spacer(Modifier.height(16.dp))
 
-                                    val data = hashMapOf<String, Any?>(
-                                        "uid" to doc.id,
-                                        "partidoUid" to partidoUid,
-                                        "equipoUid" to (equipoSeleccionadoUid ?: ""),
-                                        "minuto" to minuto,
+                        // Botonera acorde al estilo (botón contorno y botón principal con borde degradado)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Cancelar (outline)
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(45.dp)
+                                    .clip(RoundedCornerShape(13.dp))
+                                    .border(
+                                        width = 2.dp,
+                                        brush = Brush.horizontalGradient(listOf(blue, violet)),
+                                        shape = RoundedCornerShape(13.dp)
                                     )
-
-                                    // goleador: uid o manual
-                                    if (jugadorSeleccionado?.uid.isNullOrBlank()) {
-                                        data["jugadorUid"] = ""
-                                        data["jugadorManual"] = jugadorSeleccionado?.nombre ?: ""
-                                    } else {
-                                        data["jugadorUid"] = jugadorSeleccionado?.uid
-                                        data["jugadorManual"] = ""
+                                    .background(color = androidx.compose.ui.graphics.Color.Transparent)
+                                    .let { base ->
+                                        if (!guardando) base
+                                        else base
                                     }
+                                    .padding(horizontal = 0.dp)
+                                    .then(Modifier),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                TextButton(
+                                    enabled = !guardando,
+                                    onClick = { showAddDialog = false }
+                                ) { Text("Cancelar", fontWeight = FontWeight.Bold) }
+                            }
 
-                                    // asistencia: uid o manual o vacío
-                                    if (asistenteSeleccionado == null) {
-                                        data["asistenciaJugadorUid"] = ""
-                                        data["asistenciaManual"] = ""
-                                    } else if (asistenteSeleccionado?.uid.isNullOrBlank()) {
-                                        data["asistenciaJugadorUid"] = ""
-                                        data["asistenciaManual"] = asistenteSeleccionado?.nombre ?: ""
-                                    } else {
-                                        data["asistenciaJugadorUid"] = asistenteSeleccionado?.uid
-                                        data["asistenciaManual"] = ""
+                            Spacer(Modifier.width(12.dp))
+
+                            // Guardar (fondo suave + borde degradado)
+                            val puedeGuardar = !guardando &&
+                                    !equipoSeleccionadoUid.isNullOrBlank() &&
+                                    jugadorSeleccionado != null &&
+                                    minutoTexto.isNotBlank()
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(45.dp)
+                                    .clip(RoundedCornerShape(13.dp))
+                                    .border(
+                                        width = 2.dp,
+                                        brush = Brush.horizontalGradient(listOf(blue, violet)),
+                                        shape = RoundedCornerShape(13.dp)
+                                    )
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            listOf(cs.surfaceVariant, cs.surface)
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                TextButton(
+                                    enabled = puedeGuardar,
+                                    onClick = {
+                                        scope.launch {
+                                            guardando = true
+                                            try {
+                                                val db = FirebaseFirestore.getInstance()
+                                                val doc = db.collection("goleadores").document()
+                                                val minuto = minutoTexto.toIntOrNull()
+
+                                                val data = hashMapOf<String, Any?>(
+                                                    "uid" to doc.id,
+                                                    "partidoUid" to partidoUid,
+                                                    "equipoUid" to (equipoSeleccionadoUid ?: ""),
+                                                    "minuto" to minuto,
+                                                )
+
+                                                if (jugadorSeleccionado?.uid.isNullOrBlank()) {
+                                                    data["jugadorUid"] = ""
+                                                    data["jugadorManual"] = jugadorSeleccionado?.nombre ?: ""
+                                                } else {
+                                                    data["jugadorUid"] = jugadorSeleccionado?.uid
+                                                    data["jugadorManual"] = ""
+                                                }
+
+                                                if (asistenteSeleccionado == null) {
+                                                    data["asistenciaJugadorUid"] = ""
+                                                    data["asistenciaManual"] = ""
+                                                } else if (asistenteSeleccionado?.uid.isNullOrBlank()) {
+                                                    data["asistenciaJugadorUid"] = ""
+                                                    data["asistenciaManual"] = asistenteSeleccionado?.nombre ?: ""
+                                                } else {
+                                                    data["asistenciaJugadorUid"] = asistenteSeleccionado?.uid
+                                                    data["asistenciaManual"] = ""
+                                                }
+
+                                                doc.set(data).await()
+                                                showAddDialog = false
+                                                guardando = false
+                                                recargar()
+                                            } catch (_: Exception) {
+                                                guardando = false
+                                            }
+                                        }
                                     }
-
-                                    doc.set(data).await()
-                                    showAddDialog = false
-                                    guardando = false
-                                    recargar()
-                                } catch (_: Exception) {
-                                    guardando = false
-                                }
+                                ) { Text(if (guardando) "Guardando..." else "Guardar", fontWeight = FontWeight.Bold) }
                             }
                         }
-                    ) { Text(if (guardando) "Guardando..." else "Guardar") }
-                },
-                dismissButton = {
-                    TextButton(
-                        enabled = !guardando,
-                        onClick = { showAddDialog = false }
-                    ) { Text("Cancelar") }
+                    }
                 }
-            )
+            }
         }
+
     }
 }
 
