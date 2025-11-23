@@ -43,8 +43,13 @@ fun IdiomaScreen(
     val cardShape = RoundedCornerShape(17.dp)
     // Contexto de la actividad
     val context = LocalContext.current
-    // Idioma actual del sistema guardado en estado
-    val currentLocale = remember { mutableStateOf(Locale.getDefault().language) }
+    
+    // Obtener preferencias compartidas para leer el idioma actual
+    val sharedPref = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
+    val savedLanguage = sharedPref.getString("app_language", "es") ?: "es"
+
+    // Idioma actual del sistema guardado en estado, inicializado con lo guardado en prefs
+    val currentLocale = remember { mutableStateOf(savedLanguage) }
 
     // Textos visibles de los idiomas
     val idiomas = listOf(
@@ -182,14 +187,13 @@ fun IdiomaScreen(
                                 )
                                 .clickable {
                                     // Guarda el código de idioma en preferencias
-                                    val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                                    sharedPref.edit().putString("app_language", languageCodes[index]).apply()
+                                    // Usamos commit() para asegurar que se guarde antes de recrear
+                                    sharedPref.edit().putString("app_language", languageCodes[index]).commit()
 
                                     // Actualiza estado local y notifica al host
                                     currentLocale.value = languageCodes[index]
                                     onLanguageChanged()
-                                    // Recrea la actividad para aplicar strings/recursos
-                                    (context as? Activity)?.recreate()
+                                    // NOTA: No llamamos a recreate() aquí porque onLanguageChanged ya lo hace en NavGraph
                                 },
                             color = Color.Transparent,
                             shadowElevation = 0.dp
